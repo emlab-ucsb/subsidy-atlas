@@ -1,0 +1,95 @@
+---
+title: "Separate out distant water fishing vessels from GFW data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+results_dir <- here::here("results", "distant-water-vessels/")
+if (dir.exists(results_dir) == F) {
+  dir.create(results_dir, recursive = T)
+}
+
+```
+
+## Notes
+
+The method of pulling vessels will change - I want to do a new compilation of the raw data over the weekend. But this should be enough to get you started! 
+
+
+```{r cars}
+# Raw (ish) vessel info - previously pulled from GFW and cleaned up slightly. 
+# Will change this over the weekend so the full process is documented in one place
+vessel_info <- read.csv(here::here("data", "GFW", "EDIT_FV_effort_by_eez_and_region_2018.csv"))
+
+
+# Summary of totals
+vessel_totals <- vessel_info %>%
+  group_by(ssvid, flag, vessel_class, length_m, length_class, tonnage_gt, tonnage_class, engine_power_kw, engine_class, fao_region) %>%
+  summarize(fishing_h = sum(fishing_hours_year_eez_fao, na.rm = T),
+            fishing_days = sum(fishing_days_year_eez_fao, na.rm = T)) %>%
+  mutate(fishing_KWh = fishing_h*engine_power_kw,
+         fishing_KW_days = fishing_days*engine_power_kw)
+
+# 783 vessels with no flag
+nas_flag <- vessel_totals %>%
+  dplyr::filter(is.na(flag))
+
+# 0 vessels with no vessel class
+nas_vessel_class <- vessel_totals %>%
+  dplyr::filter(is.na(vessel_class))
+
+# 0 vessels with no known length
+nas_length_m <- vessel_totals %>%
+  dplyr::filter(is.na(length_m))
+
+# 0 vessels with no known tonnage
+nas_tonnage_gt <- vessel_totals %>%
+  dplyr::filter(is.na(tonnage_gt))
+
+# 0 vessels with no known engine_power
+nas_engine_power_kw <- vessel_totals %>%
+  dplyr::filter(is.na(engine_power_kw))
+
+# 0 vessels with no fishing h
+nas_fishing_h <- vessel_totals %>%
+  dplyr::filter(is.na(fishing_h))
+
+# 0 vessels with no fishing KWh
+nas_fishing_KWh <- vessel_totals %>%
+  dplyr::filter(is.na(fishing_KWh))
+
+### FIX THIS LATER
+# Assuming for now that vessels with an unknown flag are all Chinese
+vessel_totals_edit <- vessel_totals %>%
+  ungroup() %>%
+  mutate(flag = ifelse(is.na(flag), "CHN", flag))
+
+```
+
+```{r}
+# Distant water vessels - have ever fished in an eez that is not their own. 
+# We'll need to play around with a few definitions, but this is good to start
+vessel_totals_dw <- vessel_info %>%
+  dplyr::filter(eez_iso3 != "High Seas") %>%
+  mutate(distant_water = ifelse(as.character(flag) == as.character(eez_iso3), FALSE, TRUE)) %>%
+  dplyr::filter(distant_water == TRUE) %>%
+  group_by(ssvid, flag, vessel_class, length_m, length_class, tonnage_gt, tonnage_class, engine_power_kw, engine_class, distant_water) %>%
+  summarize(fishing_h = sum(fishing_hours_year_eez_fao, na.rm = T),
+            fishing_days = sum(fishing_days_year_eez_fao, na.rm = T)) %>%
+  mutate(fishing_KWh = fishing_h*engine_power_kw,
+         fishing_KW_days = fishing_days*engine_power_kw) 
+
+distant_water_vessels <- vessel_totals_dw %>%
+  group_by(ssvid) %>%
+  summarize()
+
+out_vessel_list  <- vessel_info %>%
+  mutate(distant_water = ifelse(ssvid %in% distant_water_vessels$ssvid, TRUE, FALSE)) %>%
+  dplyr::filter(distant_water == TRUE)
+
+write_csv(out_vessel_list, paste0(results_dir, "distant_water_vessel_list_2018.csv"))
+```
+
