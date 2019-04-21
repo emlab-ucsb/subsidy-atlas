@@ -6,6 +6,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+install.packages("here")
+library(here)
 
 results_dir <- here::here("results", "distant-water-vessels/")
 if (dir.exists(results_dir) == F) {
