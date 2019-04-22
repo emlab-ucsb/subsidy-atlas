@@ -14,8 +14,8 @@ knitr::opts_chunk$set(echo = TRUE)
 #load data
 
 library(readr)
-vessel_list <- read_csv("results/distant-water-vessels/distant_water_vessel_list_2018.csv")
-#View(vessel_list)
+vessel_list <- read_csv("/Users/matthewwarham/Documents/GitHub/subsidy-atlas/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+#View(vessel_list)⁩
 
 library(tidyverse)
 library(dplyr)
@@ -187,13 +187,15 @@ FRA_eez <- vessel_tidy %>%
 length(unique(vessel_list$ssvid))
 
 vessel_numbersummary <- vessel_tidy %>% 
-  select(year,ssvid, flag) %>% 
+  select(ssvid, flag) %>% 
   group_by(flag) %>% 
-  top_n(20)
-  #tally()
+  tally() %>% 
+  arrange(flag, desc(n))
+  
 
 View(vessel_numbersummary)
 
+write_csv(vessel_numbersummary, "MW_vesselnumber_total.csv")
 
 ## Total effort by each country
 vessel_effortsummary <- vessel_tidy %>% 
