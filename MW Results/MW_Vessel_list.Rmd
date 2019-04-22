@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #load data
 
 library(readr)
-vessel_list <- read_csv("/Users/matthewwarham/Documents/GitHub/subsidy-atlas/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
 #View(vessel_list)⁩
 
 library(tidyverse)
@@ -51,7 +51,7 @@ length(unique(CHN$ssvid)) #6255 unique vessels
 
 unique(CHN$vessel_class)
 
-View(CHN)
+#View(CHN)
 
 ## Number of EEZ's that China fished in in 2018 (top 20)
 CHN_eez <- vessel_tidy %>% 
@@ -60,7 +60,7 @@ CHN_eez <- vessel_tidy %>%
   summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) #%>% 
   #top_n(20)
 
-View(CHN_eez)
+#View(CHN_eez)
 
 ```
 
@@ -172,44 +172,57 @@ FRA_eez <- vessel_tidy %>%
 
 ```
 
-```{r}
+```{r Number of unique vessels per country tally}
 
-#wine_summary <- wine_new %>% 
-  #group_by(state) %>% 
-  #summarize(
-   # mean_ppd = mean(ppd, na.rm = TRUE) ,
-    #max_ppd = max(ppd, na.rm = TRUE)
-  #)
-#counts_eth <- pol_df %>% 
- # group_by(ethnicity, political_party) %>% #behind the scenes grouping
-  #tally()
+## Number of unique vessels per country tally, each tally value is another EEZ that vessel fished in
+vessel_EEZtally <- vessel_tidy %>% 
+  select(ssvid, flag) %>% 
+  group_by(flag,ssvid) %>% 
+  tally(sort = TRUE) 
+  
 
-length(unique(vessel_list$ssvid))
+#View(vessel_EEZtally)
+
+write_csv(vessel_EEZtally, "MW_EEZtally.csv")
+
+```
+
+```{r Number of uniqie vessels per country}
+
+## Number of unique vessels per country
 
 vessel_numbersummary <- vessel_tidy %>% 
   select(ssvid, flag) %>% 
-  group_by(flag) %>% 
-  tally() %>% 
-  arrange(flag, desc(n))
+  group_by(flag) %>%
+  summarize(total_vessels = n_distinct(ssvid)) %>% 
+  arrange(desc(total_vessels))  
   
-
-View(vessel_numbersummary)
+  
+#View(vessel_numbersummary)
 
 write_csv(vessel_numbersummary, "MW_vesselnumber_total.csv")
 
+```
+
+```{r Total effort per country}
+
 ## Total effort by each country
+
 vessel_effortsummary <- vessel_tidy %>% 
   group_by(flag) %>% 
   #mutate(total_effort = sum(fishing_hours_year_tot)) 
-  summarize(total_effort = sum(fishing_hours_year_tot, na.rm = TRUE))  
+  summarize(total_effort = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  arrange(desc(total_effort))
   #sort(total_effort, decreasing= TRUE)
     
 
-  
-   
-View(vessel_effortsummary)
+#View(vessel_effortsummary)
 
 write_csv(vessel_effortsummary, "MW_effort_total.csv")
+
+```
+
+```{r Effort by each country in each EEZ they fished in}
 
 ## Effort by each country in each EEZ they have fished in
 
@@ -218,12 +231,26 @@ vessel_eez <- vessel_tidy %>%
   summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) 
   
 
-View(vessel_eez)
+#View(vessel_eez)
 write_csv(vessel_eez, "MW_effort_eez.csv")
 
 
 length(unique(vessel_eez$eez_iso3))
 
+```
+
+
+```{r Combining number of vessels and total effort}
+
+## Combining number of vessels and total effort
+
+final_results <- merge(vessel_numbersummary, vessel_effortsummary, by = "flag") %>% 
+  arrange(desc(total_vessels))
+
+
+#View(final_results)
+
+write_csv(final_results, "final_vessels_effort.csv")
 
 ```
 
