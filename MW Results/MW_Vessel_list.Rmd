@@ -13,10 +13,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #load data
 
-library(readr)
-vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
-#View(vessel_list)⁩
 
+### Read in csv for PC
+#library(readr)
+#vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+
+### Read in csv for MAC
+library(readr)
+
+vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
+
+#View(vessel_list)
+
+
+library(tidyverse)
+library(tmap)
+library(sf)
+library(spatstat)
+library(maptools)
+library(sp)
+library(raster)
+# library(rgdal)
+library(gstat)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
@@ -24,7 +42,8 @@ library(ggplot2)
 #unique(vessel_list$flag)
 
 vessel_tidy <- vessel_list %>% 
-  select(year, ssvid, flag, vessel_class, fishing_hours_year_tot, fishing_hours_year_eez_fao, eez_iso3) 
+  select(year, ssvid, flag, vessel_class, length_m, length_class, engine_power_kw, fishing_hours_year_tot, fishing_hours_year_eez_fao, eez_iso3) %>% 
+  mutate(kwhr = engine_power_kw * fishing_hours_year_tot)
   
 
 vessel_tidy_topflags <- vessel_list %>% 
@@ -64,113 +83,6 @@ CHN_eez <- vessel_tidy %>%
 
 ```
 
-```{r Taiwan}
-
-
-TWN <- vessel_tidy %>% 
-  filter(flag == "TWN") 
-
-length(unique(TWN$ssvid)) #810 unique vessels
-
-unique(TWN$vessel_class)
-
-TWN_eez <- vessel_tidy %>% 
-  filter(flag == "TWN") %>% 
-  group_by(flag, eez_iso3) %>% 
-  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) %>% 
-  top_n(20)
-
-
-
-```
-
-```{r Japan}
-
-JPN <- vessel_tidy %>% 
-  filter(flag == "JPN") 
-
-length(unique(JPN$ssvid)) #286 unique vessels
-
-unique(JPN$vessel_class)
-
-JPN_eez <- vessel_tidy %>% 
-  filter(flag == "JPN") %>% 
-  group_by(flag, eez_iso3) %>% 
-  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) %>% 
-  top_n(20)
-
-
-```
-
-```{r Indonesia}
-
-IDN <- vessel_tidy %>% 
-  filter(flag == "IDN") 
-
-length(unique(IDN$ssvid)) #16 unique vessels
-
-unique(IDN$vessel_class)
-
-#View(Vessel_tidy_IDN)
-
-IDN_eez <- vessel_tidy %>% 
-  filter(flag == "IDN") %>% 
-  group_by(flag, eez_iso3) %>% 
-  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) %>% 
-  top_n(20)
-```
-
-```{r Korea}
-
-KOR <- vessel_tidy %>% 
-  filter(flag == "KOR") 
-
-length(unique(KOR$ssvid)) #363 unique vessels
-
-unique(KOR$vessel_class)
-
-KOR_eez <- vessel_tidy %>% 
-  filter(flag == "KOR") %>% 
-  group_by(flag, eez_iso3) %>% 
-  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) %>% 
-  top_n(20)
-
-```
-
-```{r USA}
-
-USA <- vessel_tidy %>% 
-  filter(flag == "USA") 
-
-length(unique(USA$ssvid)) #270 unique vessels
-
-unique(USA$vessel_class)
-
-USA_eez <- vessel_tidy %>% 
-  filter(flag == "USA") %>% 
-  group_by(flag, eez_iso3) %>% 
-  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) %>% 
-  top_n(20)
-
-
-```
-
-```{r France}
-
-FRA <- vessel_tidy %>% 
-  filter(flag == "FRA") 
-
-length(unique(FRA$ssvid)) #270 unique vessels
-
-unique(FRA$vessel_class)
-
-FRA_eez <- vessel_tidy %>% 
-  filter(flag == "FRA") %>% 
-  group_by(flag, eez_iso3) %>% 
-  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) %>% 
-  top_n(20)
-
-```
 
 ```{r Number of unique vessels per country tally}
 
@@ -210,13 +122,12 @@ write_csv(vessel_numbersummary, "MW_vesselnumber_total.csv")
 
 vessel_effortsummary <- vessel_tidy %>% 
   group_by(flag) %>% 
-  #mutate(total_effort = sum(fishing_hours_year_tot)) 
   summarize(total_effort = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
   arrange(desc(total_effort))
   #sort(total_effort, decreasing= TRUE)
     
 
-#View(vessel_effortsummary)
+View(vessel_effortsummary)
 
 write_csv(vessel_effortsummary, "MW_effort_total.csv")
 
@@ -240,17 +151,90 @@ length(unique(vessel_eez$eez_iso3))
 ```
 
 
-```{r Combining number of vessels and total effort}
+```{r Killowatt hours per country}
+
+
+kwhr_percountry <- vessel_tidy %>% 
+  group_by(flag) %>% 
+  #mutate(total_effort = sum(fishing_hours_year_tot)) 
+  summarize(total_kwhr = sum(kwhr, na.rm = TRUE)) %>% 
+  arrange(desc(total_kwhr))
+  #sort(total_effort, decreasing= TRUE)
+
+View(kwhr_percountry)
+
+write_csv(kwhr_percountry, "kwhr_percountry.csv")
+
+```
+
+
+```{r Combining number of vessels and total effort in kwhr}
 
 ## Combining number of vessels and total effort
 
-final_results <- merge(vessel_numbersummary, vessel_effortsummary, by = "flag") %>% 
-  arrange(desc(total_vessels))
+final_results <- merge(vessel_numbersummary, kwhr_percountry, by = "flag") %>% 
+  arrange(desc(total_kwhr))
 
 
-#View(final_results)
+#View(final_results_effort)
 
-write_csv(final_results, "final_vessels_effort.csv")
+final_results_top25 <- final_results %>% 
+  filter(flag != "CHN") %>% 
+  top_n(25)
+
+view(final_results_top25)
+
+ggplot(final_results_top25, aes(x = total_vessels, y = total_kwhr)) +
+       geom_point() +
+        geom_text(aes(label = flag, hjust=0, vjust=0))
+      
+
+       
+
+
+write_csv(final_results, "final_results.csv")
+
+```
+
+```{r Sort by gear type}
+
+gear_type <- vessel_list %>% 
+  select(ssvid, flag, vessel_class, length_m, length_class) %>% 
+  group_by(flag,vessel_class) %>% 
+  summarize(number_vesselclass = n_distinct(ssvid))  #, d = toString((unique(ssvid)))) Each vessel in in the class
+
+
+View(gear_type)
+
+write_csv(gear_type, "gear_type_percountry.csv")
+
+```
+
+
+
+```{r mapping}
+
+##EEZ boundaries
+
+#install.packages("mregions")
+library(mregions)
+#install.packages("rmapshaper")
+library(rmapshaper)
+
+
+
+library(leaflet)
+#leaflet() %>%
+ # addTiles() %>%
+  #addPolygons(data = shp)
+
+#EEZ <- st_read("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/EEZ/eez_v10.shp") %>% 
+  #st_transform(crs = 4326) %>% 
+  #st_simplify(dTolerance = )
+
+#plot(EEZ)
+
+##Maps
 
 ```
 
