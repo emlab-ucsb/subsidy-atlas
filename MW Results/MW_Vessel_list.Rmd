@@ -16,12 +16,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Read in csv for PC
 #library(readr)
-#vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
 
 ### Read in csv for MAC
 library(readr)
 
-vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
+#vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
 
 #View(vessel_list)
 
@@ -29,11 +29,13 @@ vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Resul
 library(tidyverse)
 library(tmap)
 library(sf)
+#install.packages("spatstat")
 library(spatstat)
 library(maptools)
 library(sp)
 library(raster)
 # library(rgdal)
+#install.packages("gstat")
 library(gstat)
 library(tidyverse)
 library(dplyr)
@@ -42,12 +44,12 @@ library(ggplot2)
 #unique(vessel_list$flag)
 
 vessel_tidy <- vessel_list %>% 
-  select(year, ssvid, flag, vessel_class, length_m, length_class, engine_power_kw, fishing_hours_year_tot, fishing_hours_year_eez_fao, eez_iso3) %>% 
+  dplyr::select(year, ssvid, flag, vessel_class, length_m, length_class, tonnage_gt, engine_power_kw, fishing_hours_year_tot, fishing_hours_year_eez_fao, eez_iso3) %>% 
   mutate(kwhr = engine_power_kw * fishing_hours_year_tot)
   
 
 vessel_tidy_topflags <- vessel_list %>% 
-  select(ssvid, flag, vessel_class, fishing_hours_year_tot) %>% 
+  dplyr::select(ssvid, flag, vessel_class, fishing_hours_year_tot) %>% 
   filter(flag == "CHN" | flag == "TWN" | flag == "JPN" | flag == "KOR" | flag == "IDN") 
 
 
@@ -88,7 +90,7 @@ CHN_eez <- vessel_tidy %>%
 
 ## Number of unique vessels per country tally, each tally value is another EEZ that vessel fished in
 vessel_EEZtally <- vessel_tidy %>% 
-  select(ssvid, flag) %>% 
+  dplyr::select(ssvid, flag) %>% 
   group_by(flag,ssvid) %>% 
   tally(sort = TRUE) 
   
@@ -104,7 +106,7 @@ write_csv(vessel_EEZtally, "MW_EEZtally.csv")
 ## Number of unique vessels per country
 
 vessel_numbersummary <- vessel_tidy %>% 
-  select(ssvid, flag) %>% 
+  dplyr::select(ssvid, flag) %>% 
   group_by(flag) %>%
   summarize(total_vessels = n_distinct(ssvid)) %>% 
   arrange(desc(total_vessels))  
@@ -127,7 +129,7 @@ vessel_effortsummary <- vessel_tidy %>%
   #sort(total_effort, decreasing= TRUE)
     
 
-View(vessel_effortsummary)
+#View(vessel_effortsummary)
 
 write_csv(vessel_effortsummary, "MW_effort_total.csv")
 
@@ -158,21 +160,76 @@ kwhr_percountry <- vessel_tidy %>%
   group_by(flag) %>% 
   #mutate(total_effort = sum(fishing_hours_year_tot)) 
   summarize(total_kwhr = sum(kwhr, na.rm = TRUE)) %>% 
+  mutate(pct_effort = (total_kwhr/ sum(total_kwhr)), pct_effort = round(pct_effort,4)) %>% 
   arrange(desc(total_kwhr))
   #sort(total_effort, decreasing= TRUE)
 
-View(kwhr_percountry)
+#View(kwhr_percountry)
 
 write_csv(kwhr_percountry, "kwhr_percountry.csv")
 
 ```
 
 
-```{r Combining number of vessels and total effort in kwhr}
+
+
+```{r Sort by gear type}
+
+gear_type <- vessel_list %>% 
+  dplyr::select(ssvid, flag, vessel_class, length_m, length_class) %>% 
+  group_by(flag,vessel_class) %>% 
+  summarize(number_vesselclass = n_distinct(ssvid))  #, d = toString((unique(ssvid)))) Each vessel in in the class
+
+
+#View(gear_type)
+
+write_csv(gear_type, "gear_type_percountry.csv")
+
+unique(gear_type$vessel_class)
+
+gear_table <- table(gear_type$vessel_class, gear_type$number_vesselclass)
+
+```
+
+```{r Average Vessel Length per country}
+
+vessel_length <- vessel_tidy %>% 
+  dplyr::select(ssvid, flag, length_m) %>% 
+  group_by(flag) %>% 
+  summarize(average_length = mean(length_m, na.rm = TRUE))
+
+#View(vessel_length)
+
+write_csv(vessel_length, "average_vessel_length.csv")
+
+```
+
+
+```{r Average vessel tonnage per country}
+
+vessel_tonnage <- vessel_tidy %>% 
+  dplyr::select(ssvid, flag, tonnage_gt) %>% 
+  group_by(flag) %>% 
+  summarize(average_tonnage = mean(tonnage_gt, na.rm = TRUE))
+
+#View(vessel_tonnage)
+
+write_csv(vessel_tonnage, "average_vessel_tonnage.csv")
+
+```
+
+
+```{r Final results: #vessels, kwrh, average length, and average tonnage per country}
 
 ## Combining number of vessels and total effort
 
-final_results <- merge(vessel_numbersummary, kwhr_percountry, by = "flag") %>% 
+final_results_1 <- merge(vessel_numbersummary, kwhr_percountry, by = "flag") %>% 
+  arrange(desc(total_kwhr))
+
+final_results_2 <- merge(final_results_1, vessel_length, by = "flag") %>% 
+  arrange(desc(total_kwhr))
+
+final_results <- merge(final_results_2, vessel_tonnage, by = "flag") %>% 
   arrange(desc(total_kwhr))
 
 
@@ -182,11 +239,11 @@ final_results_top25 <- final_results %>%
   filter(flag != "CHN") %>% 
   top_n(25)
 
-view(final_results_top25)
+#view(final_results_top25)
 
-ggplot(final_results_top25, aes(x = total_vessels, y = total_kwhr)) +
-       geom_point() +
-        geom_text(aes(label = flag, hjust=0, vjust=0))
+#ggplot(final_results_top25, aes(x = total_vessels, y = total_kwhr)) +
+       #geom_point() +
+        #geom_text(aes(label = flag, hjust=0, vjust=0))
       
 
        
@@ -196,17 +253,16 @@ write_csv(final_results, "final_results.csv")
 
 ```
 
-```{r Sort by gear type}
+```{r Who is fishing in EEZ's}
 
-gear_type <- vessel_list %>% 
-  select(ssvid, flag, vessel_class, length_m, length_class) %>% 
-  group_by(flag,vessel_class) %>% 
-  summarize(number_vesselclass = n_distinct(ssvid))  #, d = toString((unique(ssvid)))) Each vessel in in the class
+EEZ <- vessel_tidy %>% 
+  dplyr::select(ssvid, flag, fishing_hours_year_eez_fao, eez_iso3) %>% 
+  group_by(eez_iso3)  %>% 
+  summarize(number_countries_in_EEZ = n_distinct(flag), d = toString((unique(flag))))
 
+View(EEZ)
 
-View(gear_type)
-
-write_csv(gear_type, "gear_type_percountry.csv")
+write_csv(EEZ,"EEZ.csv")
 
 ```
 
@@ -217,9 +273,9 @@ write_csv(gear_type, "gear_type_percountry.csv")
 ##EEZ boundaries
 
 #install.packages("mregions")
-library(mregions)
+#library(mregions)
 #install.packages("rmapshaper")
-library(rmapshaper)
+#library(rmapshaper)
 
 
 
