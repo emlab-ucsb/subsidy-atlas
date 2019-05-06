@@ -15,13 +15,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ### Read in csv for PC
-#library(readr)
-#vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+library(readr)
+vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
 
 ### Read in csv for MAC
 library(readr)
 
-vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
+#vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
 
 #View(vessel_list)
 
@@ -45,7 +45,8 @@ library(ggplot2)
 
 vessel_tidy_raw<- vessel_list %>% ##Removed vessels fishing in their own EEZ's
   dplyr::select(year, ssvid, flag, eez_iso3, vessel_class, length_m, length_class, tonnage_gt, engine_power_kw, fishing_hours_year_tot, fishing_hours_year_eez_fao) %>% 
-  mutate(kwhr = engine_power_kw * fishing_hours_year_tot) 
+  mutate(kwhr = engine_power_kw * fishing_hours_year_tot) %>% 
+  mutate(kwhr_in_eez = engine_power_kw * fishing_hours_year_eez_fao)
   
 
 vessel_tidy <- vessel_tidy_raw %>% 
@@ -327,26 +328,67 @@ EEZ <- vessel_tidy %>%
 KIR <- vessel_tidy %>% 
   filter(eez_iso3 == "KIR")
 
-View(KIR)
+length(unique(KIR$ssvid))
+sum(KIR$fishing_hours_year_eez_fao)
+mean(KIR$fishing_hours_year_eez_fao)
+sum(KIR$kwhr_in_eez)
+mean(KIR$kwhr_in_eez)
+
+#View(KIR)
 
 NAM <- vessel_tidy %>% 
   filter(eez_iso3 == "NAM")
 
-View(NAM)
+length(unique(NAM$ssvid))
+sum(NAM$fishing_hours_year_eez_fao)
+mean(NAM$fishing_hours_year_eez_fao)
+sum(NAM$kwhr_in_eez)
+mean(NAM$kwhr_in_eez)
+
+#View(NAM)
 
 NZL <- vessel_tidy %>% 
   filter(eez_iso3 == "NZL")
 
-View(NZL)
+length(unique(NZL$ssvid))
+sum(NZL$fishing_hours_year_eez_fao)
+mean(NZL$fishing_hours_year_eez_fao)
+sum(NZL$kwhr_in_eez)
+mean(NZL$kwhr_in_eez)
+
+
+#View(NZL)
 
 KOR <- vessel_tidy %>% 
   filter(eez_iso3 == "KOR")
+
+length(unique(KOR$ssvid))
+sum(KOR$fishing_hours_year_eez_fao)
+mean(KOR$fishing_hours_year_eez_fao)
+sum(KOR$kwhr_in_eez)
+mean(KOR$kwhr_in_eez)
+
+CHN <- vessel_tidy %>% 
+  filter(eez_iso3 == "CHN")
+
+length(unique(CHN$ssvid))
+sum(CHN$fishing_hours_year_eez_fao)
+mean(CHN$fishing_hours_year_eez_fao)
+sum(CHN$kwhr_in_eez)
+mean(CHN$kwhr_in_eez)
 
 write_csv(KIR,"KIR.csv")
 write_csv(NAM,"NAM.csv")
 write_csv(NZL, "NZL.csv")
 write_csv(KOR, "KOR.csv")
+write_csv(CHN, "CHN.csv")
 write_csv(EEZ,"EEZ.csv")
+
+
+test_eezs <- read_csv("~/GitHub/subsidy-atlas/MW Results/test_eezs.csv")
+View(test_eezs)
+
+
 
 ```
 
