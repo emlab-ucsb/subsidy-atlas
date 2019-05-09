@@ -417,20 +417,73 @@ write_csv(TWN, "TWN.csv")
 #install.packages("rmapshaper")
 #library(rmapshaper)
 
-
+library(tidyverse)
+library(sf)
+library(tmap)
+library(leaflet)
+library(ggrepel)
+#install.packages("ggspatial")
+library(ggspatial)
+library(RColorBrewer)
+library(raster)
 
 library(leaflet)
 #leaflet() %>%
  # addTiles() %>%
   #addPolygons(data = shp)
 
-#EEZ <- st_read("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/EEZ/eez_v10.shp") %>% 
-  #st_transform(crs = 4326) %>% 
+EEZ <- read_sf("H:/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
+  st_transform(crs = 4326) #%>% 
   #st_simplify(dTolerance = )
 
-#plot(EEZ)
+
+plot(EEZ)
+
+ggplot(EEZ)+
+  geom_sf(aes(fill = iso_tr1),
+          color = "NA",  # gets rid of lines
+          show.legend = FALSE)+
+  #scale_fill_manual(values = my_colors)+ # change color scheme to the one we created earlier
+  #geom_sf(data = ca_counties,
+          #fill = "NA",
+          #color = "black", #color of line
+          #size = 0.1)+
+  #geom_point(data = ca_dams, # add dams layer
+            # aes(x = Longitude, y = Latitude),
+             #size = 1,
+             #color = "gray10",
+             #alpha = 0.5)+
+  theme_minimal()+
+  coord_sf(datum = NA) #remove coordinate axis
+
 
 ##Maps
+
+```
+
+```{r map script from kat}
+
+(network_with_color_gradient <- ggplot() +
+   geom_polygon(data = world_df, aes(long, lat, group = group), 
+               fill = "grey8", color = "grey8", size = 0.1) +
+   geom_path(data = all_routes_df, 
+            aes(long, lat, group = group, col = normalized_distance , alpha = fishing_hours),  show.legend = NA) +
+   geom_point(data = network_data %>% 
+                group_by(end_lon,end_lat) %>% 
+                summarize(fishing_days = sum(fishing_days)), 
+              aes(end_lon, end_lat, size = fishing_days), col = "orange", shape = 21, stroke = 1.5)+
+   scale_size_continuous(range = c(0.5,10)) +
+   scale_alpha_continuous(range = c(0.3,1))+
+   theme_minimal()+
+   theme(panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank(),
+         panel.background = element_rect(fill = "white",
+                                 colour = "white"),
+         axis.title = element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank()) +
+   guides(colour =  FALSE, alpha = F, size = F) +
+   scale_color_gradient2(low = "#0571b0", mid = "#0571b0", midpoint = .5, high = "#b2182b"))
 
 ```
 
