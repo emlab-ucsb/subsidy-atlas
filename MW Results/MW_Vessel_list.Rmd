@@ -8,7 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-min_hours_fished_cutoff <- 1
+# min_hours_fished_cutoff <- 1
+# number_of_top_countries <- 10
 ```
 
 ```{r}
@@ -30,6 +31,18 @@ library(dplyr)
 library(ggplot2)
 library(here)
 
+# table <- table_all %>%
+#   mutate(rank = top_n) %>%
+#   filter(rank >= number_of_top_countries)
+# 
+# list_of_countries <- table$country
+# 
+# for(i in 1:length(list_of_countries)){
+#   
+#   country_dat <- table %>%
+#     filter(country == list_of_countries[1])
+#   
+# }
 # Read in vessel list
 #vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
 
@@ -413,6 +426,8 @@ write_csv(TWN, "TWN.csv")
 ```{r mapping}
 
 ##EEZ boundaries
+
+
 
 #install.packages("mregions")
 #library(mregions)
