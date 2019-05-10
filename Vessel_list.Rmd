@@ -1,0 +1,220 @@
+---
+title: "MW Initial Data Exploration - Vessel Data"
+author: "Matthew Warham"
+date: "4/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+#load data
+
+library(readr)
+vessel_list <- read_csv("results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+#View(vessel_list)
+
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+#unique(vessel_list$flag)
+
+vessel_tidy <- vessel_list %>% 
+  select(year, ssvid, flag, vessel_class, fishing_hours_year_tot, fishing_hours_year_eez_fao, eez_iso3) 
+  
+
+vessel_tidy_topflags <- vessel_list %>% 
+  select(ssvid, flag, vessel_class, fishing_hours_year_tot) %>% 
+  filter(flag == "CHN" | flag == "TWN" | flag == "JPN" | flag == "KOR" | flag == "IDN") 
+
+
+
+#unique(Vessel_tidy_topflags$flag)
+#unique(Vessel_tidy_topflags$ssvid)
+  
+
+#view(Vessel_tidy_topflags)
+
+
+```
+
+```{r China}
+
+CHN <- vessel_tidy %>% 
+  filter(flag == "CHN") 
+
+length(unique(CHN$ssvid)) #6255 unique vessels
+
+unique(CHN$vessel_class)
+
+View(CHN)
+
+## Number of EEZ's that China fished in in 2018 (top 20)
+CHN_eez <- vessel_tidy %>% 
+  filter(flag == "CHN") %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_tot, na.rm = TRUE)) #%>% 
+  #top_n(20)
+
+
+
+```
+
+```{r Taiwan}
+
+
+TWN <- vessel_tidy %>% 
+  filter(flag == "TWN") 
+
+length(unique(TWN$ssvid)) #810 unique vessels
+
+unique(TWN$vessel_class)
+
+TWN_eez <- vessel_tidy %>% 
+  filter(flag == "TWN") %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  top_n(20)
+
+
+
+```
+
+```{r Japan}
+
+JPN <- vessel_tidy %>% 
+  filter(flag == "JPN") 
+
+length(unique(JPN$ssvid)) #286 unique vessels
+
+unique(JPN$vessel_class)
+
+JPN_eez <- vessel_tidy %>% 
+  filter(flag == "JPN") %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  top_n(20)
+
+
+```
+
+```{r Indonesia}
+
+IDN <- vessel_tidy %>% 
+  filter(flag == "IDN") 
+
+length(unique(IDN$ssvid)) #16 unique vessels
+
+unique(IDN$vessel_class)
+
+#View(Vessel_tidy_IDN)
+
+IDN_eez <- vessel_tidy %>% 
+  filter(flag == "IDN") %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  top_n(20)
+```
+
+```{r Korea}
+
+KOR <- vessel_tidy %>% 
+  filter(flag == "KOR") 
+
+length(unique(KOR$ssvid)) #363 unique vessels
+
+unique(KOR$vessel_class)
+
+KOR_eez <- vessel_tidy %>% 
+  filter(flag == "KOR") %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  top_n(20)
+
+```
+
+```{r USA}
+
+USA <- vessel_tidy %>% 
+  filter(flag == "USA") 
+
+length(unique(USA$ssvid)) #270 unique vessels
+
+unique(USA$vessel_class)
+
+USA_eez <- vessel_tidy %>% 
+  filter(flag == "USA") %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  top_n(20)
+
+
+```
+
+```{r France}
+
+FRA <- vessel_tidy %>% 
+  filter(flag == "FRA") 
+
+length(unique(FRA$ssvid)) #270 unique vessels
+
+unique(FRA$vessel_class)
+
+FRA_eez <- vessel_tidy %>% 
+  filter(flag == "FRA") %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  top_n(20)
+
+```
+
+```{r}
+
+#wine_summary <- wine_new %>% 
+  #group_by(state) %>% 
+  #summarize(
+   # mean_ppd = mean(ppd, na.rm = TRUE) ,
+    #max_ppd = max(ppd, na.rm = TRUE)
+  #)
+#counts_eth <- pol_df %>% 
+ # group_by(ethnicity, political_party) %>% #behind the scenes grouping
+  #tally()
+
+length(unique(vessel_list$ssvid))
+
+vessel_numbersummary <- vessel_tidy %>% 
+  select(year,ssvid, flag) %>% 
+  group_by(flag) %>% 
+  top_n(20)
+  #tally()
+
+View(vessel_numbersummary)
+
+
+## Total effort by each country
+vessel_effortsummary <- vessel_tidy %>% 
+  group_by(flag) %>% 
+  summarize(total_effort = sum(fishing_hours_year_tot, na.rm = TRUE)) %>% 
+  top_n(20)
+   
+View(vessel_effortsummary)
+
+## Effort by each country in each EEZ they have fished in
+
+vessel_eez <- vessel_tidy %>% 
+  group_by(flag, eez_iso3) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) 
+  
+
+View(vessel_eez)
+write_csv(vessel_eez, "distant_water_vessel_list_2018.csv")
+
+length(unique(vessel_eez$eez_iso3))
+
+
+```
+
