@@ -1,0 +1,224 @@
+---
+title: "Mapping"
+author: "Matthew Warham"
+date: "5/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r mapping}
+
+##EEZ boundaries
+
+#install.packages("mregions")
+#library(mregions)
+#install.packages("rmapshaper")
+#library(rmapshaper)
+
+library(tidyverse)
+library(sf)
+library(tmap)
+library(leaflet)
+library(ggrepel)
+#install.packages("ggspatial")
+library(ggspatial)
+library(RColorBrewer)
+library(raster)
+
+library(leaflet)
+#leaflet() %>%
+ # addTiles() %>%
+  #addPolygons(data = shp)
+
+
+##Map for mac
+EEZ_map <- read_sf("~/Documents/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
+  st_transform(crs = 4326) 
+  #mutate(st_centroid())
+  
+plot(EEZ_map)
+par(mfrow=c(1,2))
+plot(EEZ_map)
+plot(st_centroid(EEZ_map), add = TRUE, col = 'red')
+plot(EEZ_map)
+
+plot(st_geometry(st_centroid(EEZ_map)), pch = 3, col = 'red', add = TRUE)
+
+
+## Map for PC
+#EEZ_map <- read_sf("H:/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
+  #st_transform(crs = 4326) #%>% 
+  #st_simplify(dTolerance = )
+
+EEZ_map
+
+
+library(maps)
+
+
+## Change Global center of map to pacific
+library(raster)
+library(maptools)
+data(EEZ_map)
+r <- rasterize(EEZ_map, raster())
+
+x1 <- crop(r, extent(-180, 0, -90, 90))
+x2 <- crop(r, extent(0, 180, -90, 90))   
+extent(x1) <- c(180, 360, -90, 90)
+EEZ_pacific <- merge(x1, x2)
+
+EEZ_shp <- as.data.frame(EEZ_pacific)
+
+EEZ_centroids <- sf::st_centroid(EEZ_map$geometry)
+
+ggplot(EEZ_centroids) +
+  geom_sf(colour = "red") +
+  geom_sf(data = EEZ_map, fill = "blue") #+
+  #geom_sf(aes(geometry = mid, size = AREA), show.legend = "point")
+
+#st_write(EEZ_shp, "EEZ_pacific.shp")
+
+#plot(EEZ_pacific)
+
+View(EEZ_pacific)
+
+#eez_geom <- st_geometry(EEZ_pacific)
+
+#View (eez_geom)
+
+#eez_geom
+
+#eez_geom[[19]]
+
+
+options(sf_max.plot=25)
+plot(EEZ)
+
+par(mar = c(0,0,1,0))
+plot(EEZ[25], reset = FALSE)
+plot(EEZ[25,25], col = 'grey', add = TRUE)
+
+plot(EEZ)
+
+ggplot(EEZ_pacific)+
+  geom_sf(aes(fill = iso_tr1),
+          color = "NA",  # gets rid of lines
+          show.legend = FALSE)+
+  #scale_fill_manual(values = my_colors)+ # change color scheme to the one we created earlier
+  #geom_sf(data = ca_counties,
+          #fill = "NA",
+          #color = "black", #color of line
+          #size = 0.1)+
+  #geom_point(data = ca_dams, # add dams layer
+            # aes(x = Longitude, y = Latitude),
+             #size = 1,
+             #color = "gray10",
+             #alpha = 0.5)+
+  theme_minimal()+
+  coord_sf(datum = NA) #remove coordinate axis
+
+CHN <- EEZ_pacific %>% 
+  filter(ez_hs_c == "CHN")
+
+#USA <- EEZ %>% 
+  #filter(ez_hs_c == "USA" | ez_hs_c == "ARG" | ez_hs_c==)
+
+
+## Mexico Example
+MEX <- EEZ %>% 
+  filter(ez_hs_c == "MEX" | ez_hs_c == "CAN" |ez_hs_c == "CHN" |ez_hs_c == "GBR" | ez_hs_c == "ISL" | ez_hs_c == "LTU" | ez_hs_c == "USA" | ez_hs_c == "VEN")
+
+ggplot(MEX)+
+  geom_sf(data = EEZ, fill = "lightskyblue2")+
+  geom_sf(aes(fill = ez_hs_c), color = "NA")+
+  scale_fill_manual(values = c("blue", "blue", "blue", "blue", "blue", "red", "blue", "blue"))
+
+plot(MEX)
+
+## ARG example
+
+## Mac load
+ARG <- read_csv("~/Documents/GitHub/subsidy-atlas/MW Results/ARG.csv")
+View(ARG)
+
+## PC load
+#ARG <- read_csv("~/GitHub/subsidy-atlas/MW Results/ARG.csv")
+#View(ARG)
+
+ARG_1 <- EEZ %>% 
+  filter(ez_hs_c == ARG$EEZs)
+
+View(ARG_1)
+
+ggplot(ARG_1)+
+  geom_sf(data = EEZ, fill = "lightskyblue2")+
+  geom_sf(aes(fill = ez_hs_c), color = "NA")
+
+##AUS Example
+##Mac load
+
+AUS <- read_csv("~/Documents/GitHub/subsidy-atlas/MW Results/AUS.csv")
+View(AUS)
+
+##PC Load
+#AUS <- read_csv("~/GitHub/subsidy-atlas/MW Results/AUS.csv")
+View(AUS)
+
+AUS_1 <- EEZ %>% 
+  filter(ez_hs_c == AUS$EEZs)
+
+View(AUS_1)
+
+ggplot(ARG_1)+
+  geom_sf(data = EEZ, fill = "lightskyblue2")+
+  geom_sf(aes(fill = ez_hs_c), color = "NA")
+
+## Sample Code
+
+ggplot(eco_clip) +
+  geom_sf(data = ca_counties, fill = "gray90", color = "gray80", size = 0.2) + # First add gray California
+  geom_sf(aes(fill = Region), color = "NA") + # ...then add eco-regions (clipped)
+  scale_fill_manual(values = c("darkolivegreen2","darkolivegreen","gold2")) + # Change color scheme
+  coord_sf(xlim = c(-121,-119), ylim = c(33.5,35.5)) + # Crop plotting area
+  geom_point(aes(x = -119.6982, y = 34.4208), size = 2) + # Add a point for SB City
+  geom_text(x = -119.6982, y = 34.35, label = "Santa Barbara") +
+  theme_minimal() + # Update theme
+  theme(legend.position = c(0.5,0.15)) +# Move the legend
+  labs(x = "", y = "", title = "Santa Barbara County Eco-Regions")
+##Maps
+
+```
+
+```{r maps}
+
+EEZ_centroids <- sf::st_centroid(EEZ_map$geometry)
+
+ggplot(EEZ_centroids) +
+  geom_sf(data = EEZ_map, fill = "skyblue")+
+  geom_sf(colour = "red") 
+  ## #+
+  #geom_sf(aes(geometry = mid, size = AREA), show.legend = "point")
+
+
+country_map <- read_sf("~/Documents/GitHub/subsidy-atlas/data/shapefiles/world_happy_180/world_happy_180.shp") %>% 
+  st_transform(crs = 4326)
+
+country_centroids <- st_centroid((country_map$geometry))
+
+ggplot(country_centroids) +
+  geom_sf(data = country_map, fill = "skyblue")+
+  geom_sf(colour = "red") 
+
+
+## For next week
+#File with all country and their EEZ
+#Also number of hours, vessels, and hwhrs in Each EEZ
+#try and automate script so that it can be re-run with different levels of effort
+#mapping- try and do similar thing- # of countries cut off
+
+```
+
