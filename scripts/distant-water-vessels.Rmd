@@ -18,7 +18,6 @@ if (dir.exists(results_dir) == F) {
 
 The method of pulling vessels will change - I want to do a new compilation of the raw data over the weekend. But this should be enough to get you started! 
 
-
 ```{r cars}
 # Raw (ish) vessel info - previously pulled from GFW and cleaned up slightly. 
 # Will change this over the weekend so the full process is documented in one place

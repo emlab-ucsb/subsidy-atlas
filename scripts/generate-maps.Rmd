@@ -1,0 +1,32 @@
+---
+title: "Global atlas of distant water fisheries subsidies"
+output: html_document
+---
+
+# Introduction
+
+This script generates the maps for the global atlas of distant water fisheries subsidies. 
+
+```{r setup, include=FALSE}
+# Packages
+library(sf)
+library(tidyverse)
+
+# Document options
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Section 1: Maps by Flag State
+
+```{r cars}
+eez_fao <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer="eez_v10_fao_combined_simple") # Ocean map of EEZ boundaries and fao regions
+world <- read_sf(dsn = here::here("data", "shapefiles", "world_happy_180"), layer="world_happy_180") # Simplified world map
+
+test_map <- ggplot()+
+  geom_sf(data = eez_fao)+
+  geom_sf(data = world)
+
+```
+
+# Section 2: Maps by EEZ
+
