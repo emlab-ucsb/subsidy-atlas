@@ -528,6 +528,20 @@ ggplot(ARG_1)+
   geom_sf(data = EEZ, fill = "lightskyblue2")+
   geom_sf(aes(fill = ez_hs_c), color = "NA")
 
+##AUS Example
+
+AUS <- read_csv("~/GitHub/subsidy-atlas/MW Results/AUS.csv")
+View(AUS)
+
+AUS_1 <- EEZ %>% 
+  filter(ez_hs_c == AUS$EEZs)
+
+View(AUS_1)
+
+ggplot(ARG_1)+
+  geom_sf(data = EEZ, fill = "lightskyblue2")+
+  geom_sf(aes(fill = ez_hs_c), color = "NA")
+
 ## Sample Code
 
 ggplot(eco_clip) +
