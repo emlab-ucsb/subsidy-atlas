@@ -16,12 +16,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Read in csv for PC
 library(readr)
-vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+#vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
 
 ### Read in csv for MAC
 library(readr)
 
-#vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
+vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
 
 #View(vessel_list)
 
@@ -51,7 +51,8 @@ vessel_tidy_raw<- vessel_list %>% ##Removed vessels fishing in their own EEZ's
 
 vessel_tidy <- vessel_tidy_raw %>% 
   group_by(flag, eez_iso3) %>% 
-  filter(flag != eez_iso3)
+  filter(flag != eez_iso3) %>% 
+  filter(eez_iso3 != "High Seas")
   
 
 
@@ -191,11 +192,13 @@ length(unique(vessel_eez$eez_iso3))
 
 kwhr_percountry <- vessel_tidy %>% 
   group_by(flag) %>% 
-  #mutate(total_effort = sum(fishing_hours_year_tot)) 
+  #mutate(total_effort = sum(fishing_hours_year_tot)) %>% 
   summarize(total_kwhr = sum(kwhr, na.rm = TRUE)) %>% 
   mutate(pct_effort = (total_kwhr/ sum(total_kwhr)), pct_effort = round(pct_effort,4)) %>% 
   arrange(desc(total_kwhr))
   #sort(total_effort, decreasing= TRUE)
+
+View(kwhr_percountry)
 
 kwhr_percountry_raw <- vessel_tidy_raw %>% 
   group_by(flag) %>% 
@@ -385,8 +388,8 @@ write_csv(CHN, "CHN.csv")
 write_csv(EEZ,"EEZ.csv")
 
 
-test_eezs <- read_csv("~/GitHub/subsidy-atlas/MW Results/test_eezs.csv")
-View(test_eezs)
+#test_eezs <- read_csv("~/GitHub/subsidy-atlas/MW Results/test_eezs.csv")
+#View(test_eezs)
 
 
 
@@ -401,7 +404,7 @@ length(unique(TWN$ssvid)) #6255 unique vessels
 
 unique(TWN$vessel_class)
 
-View(TWN)
+#View(TWN)
 
 write_csv(TWN, "TWN.csv")
 
@@ -432,11 +435,19 @@ library(leaflet)
  # addTiles() %>%
   #addPolygons(data = shp)
 
-EEZ_map <- read_sf("H:/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
-  st_transform(crs = 4326) #%>% 
+
+##Map for mac
+EEZ_map <- read_sf("~/Documents/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
+  st_transform(crs = 4326)
+
+
+## Map for PC
+#EEZ_map <- read_sf("H:/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
+  #st_transform(crs = 4326) #%>% 
   #st_simplify(dTolerance = )
 
 EEZ_map
+
 
 library(maps)
 
@@ -455,19 +466,19 @@ EEZ_pacific <- merge(x1, x2)
 EEZ_shp <- as.data.frame(EEZ_pacific)
 
 
-st_write(EEZ_shp, "EEZ_pacific.shp")
+#st_write(EEZ_shp, "EEZ_pacific.shp")
 
-plot(EEZ_pacific)
+#plot(EEZ_pacific)
 
 View(EEZ_pacific)
 
-eez_geom <- st_geometry(EEZ_pacific)
+#eez_geom <- st_geometry(EEZ_pacific)
 
-View (eez_geom)
+#View (eez_geom)
 
-eez_geom
+#eez_geom
 
-eez_geom[[19]]
+#eez_geom[[19]]
 
 
 options(sf_max.plot=25)
@@ -516,8 +527,13 @@ plot(MEX)
 
 ## ARG example
 
-ARG <- read_csv("~/GitHub/subsidy-atlas/MW Results/ARG.csv")
+## Mac load
+ARG <- read_csv("~/Documents/GitHub/subsidy-atlas/MW Results/ARG.csv")
 View(ARG)
+
+## PC load
+#ARG <- read_csv("~/GitHub/subsidy-atlas/MW Results/ARG.csv")
+#View(ARG)
 
 ARG_1 <- EEZ %>% 
   filter(ez_hs_c == ARG$EEZs)
@@ -529,8 +545,13 @@ ggplot(ARG_1)+
   geom_sf(aes(fill = ez_hs_c), color = "NA")
 
 ##AUS Example
+##Mac load
 
-AUS <- read_csv("~/GitHub/subsidy-atlas/MW Results/AUS.csv")
+AUS <- read_csv("~/Documents/GitHub/subsidy-atlas/MW Results/AUS.csv")
+View(AUS)
+
+##PC Load
+#AUS <- read_csv("~/GitHub/subsidy-atlas/MW Results/AUS.csv")
 View(AUS)
 
 AUS_1 <- EEZ %>% 
@@ -581,6 +602,63 @@ ggplot(eco_clip) +
          axis.ticks = element_blank()) +
    guides(colour =  FALSE, alpha = F, size = F) +
    scale_color_gradient2(low = "#0571b0", mid = "#0571b0", midpoint = .5, high = "#b2182b"))
+
+```
+
+
+```{r Summary Tables}
+
+View(final_results)
+
+## Number of Vessels Table
+
+library(dplyr)
+library(knitr)
+library(DT)
+library(xtable)
+library(tidyr)
+library(formattable)
+library(data.table)
+library(gridExtra)
+library(kableExtra)
+
+number_vessels_table <- final_results %>% 
+  dplyr::select(flag, total_vessels) %>% 
+  arrange(desc(total_vessels)) %>%
+  top_n(20) %>% 
+  rename("Country" = flag, "Number of Vessels" = total_vessels)
+  
+kable(number_vessels_table)
+#formattable(number_vessels_table)
+
+
+png(filename = "number_vessels_table.png", width=480,height=480,bg = "white")
+grid.table(number_vessels_table)
+dev.off()
+
+
+kwhr_table <- final_results %>% 
+  dplyr::select(flag, total_kwhr) %>% 
+  arrange(desc(total_kwhr)) %>%
+  top_n(20) %>% 
+  rename("Country" = flag, "Kilowatt Hours Fishing" = total_kwhr)  
+    
+  
+
+kable(kwhr_table)  
+  
+#formattable(kwhr_table)
+
+png(filename = "kwhr_table.png", width=480,height=480,bg = "white")
+grid.table(kwhr_table)
+dev.off()
+
+#total_effort <- final_results %>%
+  #dplyr::select(flag, total_vessels) %>% 
+  #arrange(desc(total_vessels)) %>%
+ # top_n(20)
+
+#kable(total_effort)
 
 ```
 
