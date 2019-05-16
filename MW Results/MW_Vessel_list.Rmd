@@ -7,25 +7,14 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# min_hours_fished_cutoff <- 1
+# number_of_top_countries <- 10
 ```
 
 ```{r}
-
-#load data
-
-
-### Read in csv for PC
+### Packages
 library(readr)
-#vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
-
-### Read in csv for MAC
-library(readr)
-
-vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
-
-#View(vessel_list)
-
-
 library(tidyverse)
 library(tmap)
 library(sf)
@@ -40,6 +29,29 @@ library(gstat)
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+library(here)
+
+# table <- table_all %>%
+#   mutate(rank = top_n) %>%
+#   filter(rank >= number_of_top_countries)
+# 
+# list_of_countries <- table$country
+# 
+# for(i in 1:length(list_of_countries)){
+#   
+#   country_dat <- table %>%
+#     filter(country == list_of_countries[1])
+#   
+# }
+# Read in vessel list
+#vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
+
+### Read in csv for MAC
+vessel_list <- read_csv(here::here("MW Results", "distant_water_vessel_list_2018.csv"))
+
+#vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
+
+#View(vessel_list)
 
 #unique(vessel_list$flag)
 
@@ -49,16 +61,16 @@ vessel_tidy_raw<- vessel_list %>% ##Removed vessels fishing in their own EEZ's
   mutate(kwhr_in_eez = engine_power_kw * fishing_hours_year_eez_fao)
   
 
+# Remove vessels fishing in thier own EEZs and high seas
 vessel_tidy <- vessel_tidy_raw %>% 
   group_by(flag, eez_iso3) %>% 
   filter(flag != eez_iso3) %>% 
   filter(eez_iso3 != "High Seas")
   
-
-
-write_csv(vessel_tidy, "vessel_tidy_onlydistantfleet.csv")
+write_csv(vessel_tidy, here::here("MW Results", "vessel_tidy_onlydistantfleet.csv"))
   
 
+# 
 vessel_tidy_topflags <- vessel_list %>% 
   dplyr::select(ssvid, flag, vessel_class, fishing_hours_year_tot) %>% 
   filter(flag == "CHN" | flag == "TWN" | flag == "JPN" | flag == "KOR" | flag == "IDN") 
@@ -415,6 +427,8 @@ write_csv(TWN, "TWN.csv")
 
 ##EEZ boundaries
 
+
+
 #install.packages("mregions")
 #library(mregions)
 #install.packages("rmapshaper")
@@ -437,9 +451,20 @@ library(leaflet)
 
 
 ##Map for mac
-EEZ_map <- read_sf("~/Documents/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
+EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326)
 
+world_map <- read_sf(dsn = here::here("data", "shapefiles", "world_happy_180"), layer = "world_happy_180") %>% 
+  st_transform(crs = 4326)
+
+
+# Tidy eez connection map
+EEZ_tidy <- EEZ %>%
+  mutate(eez_fished = strsplit(d, ", ")) %>%
+        unnest(eez_fished) %>%
+        dplyr::select(eez_iso3, number_countries_in_EEZ, eez_fished)
+
+write_csv(EEZ_tidy, here::here("MW Results", "EEZ_tidy.csv"))
 
 ## Map for PC
 #EEZ_map <- read_sf("H:/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
@@ -468,7 +493,7 @@ EEZ_shp <- as.data.frame(EEZ_pacific)
 
 #st_write(EEZ_shp, "EEZ_pacific.shp")
 
-#plot(EEZ_pacific)
+plot(EEZ_pacific)
 
 View(EEZ_pacific)
 
@@ -489,6 +514,20 @@ plot(EEZ[25], reset = FALSE)
 plot(EEZ[25,25], col = 'grey', add = TRUE)
 
 plot(EEZ)
+
+# China as a test plot
+china <- EEZ_tidy %>%
+  dplyr::filter(eez_iso3 == "CHN")
+
+eez_filtered <- EEZ_map %>%
+  dplyr::filter(ez_hs_c %in% china$eez_fished)
+
+plot <- ggplot()+
+  geom_sf(data = EEZ_map, fill = "grey", alpha = 0.5)+
+  geom_sf(data = world, fill = "grey")+
+  geom_sf(data = world %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
+  geom_sf(data = eez_filtered, fill = "blue", alpha = 0.5)
+
 
 ggplot(EEZ_pacific)+
   geom_sf(aes(fill = iso_tr1),
