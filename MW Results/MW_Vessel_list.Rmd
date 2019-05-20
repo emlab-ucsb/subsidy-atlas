@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 min_hours_fished_cutoff <- 50
-number_of_top_countries <- 10
+number_of_top_countries = 10
 ```
 
 ```{r}
@@ -17,6 +17,7 @@ number_of_top_countries <- 10
 library(readr)
 library(tidyverse)
 library(tmap)
+library(maps)
 library(sf)
 library(spatstat)
 library(maptools)
@@ -36,15 +37,17 @@ library(formattable)
 library(data.table)
 library(gridExtra)
 library(kableExtra)
+library(leaflet)
+library(ggrepel)
+library(ggspatial)
+library(RColorBrewer)
+library(leaflet)
 
 
-# Read in vessel list
-#vessel_list <- read_csv("H:/GitHub/subsidy-atlas/results/distant-water-vessels/distant_water_vessel_list_2018.csv")
 
-### Read in csv for MAC
 vessel_list <- read_csv(here::here("MW Results", "distant_water_vessel_list_2018.csv"))
 
-#vessel_list <- read_csv("~/Documents/GitHub/subsidy-atlas/subsidy-atlas/MW Results/distant_water_vessel_list_2018.csv")
+
 
 # Tidy data, filter out vessels fishing in their own EEZs and High Seas
 
@@ -61,20 +64,6 @@ vessel_tidy<- vessel_list %>% ##Removed vessels fishing in their own EEZ's and h
 length(unique(vessel_tidy$flag))
   
 write_csv(vessel_tidy, here::here("MW Results", "vessel_tidy.csv"))
-  
-
-# 
-vessel_tidy_topflags <- vessel_list %>% 
-  dplyr::select(ssvid, flag, vessel_class, fishing_hours_year_tot) %>% 
-  filter(flag == "CHN" | flag == "TWN" | flag == "JPN" | flag == "KOR" | flag == "IDN") 
-
-
-
-#unique(Vessel_tidy_topflags$flag)
-#unique(Vessel_tidy_topflags$ssvid)
-  
-
-#view(Vessel_tidy_topflags)
 
 
 ```
@@ -84,7 +73,7 @@ vessel_tidy_topflags <- vessel_list %>%
 
 ```{r Top Tables}
 
-#1: Top flags: # vessels
+###1: Top flags: # vessels
 
 flag_vessel_number <- vessel_tidy %>% 
   dplyr::select(ssvid, flag) %>% 
@@ -106,7 +95,7 @@ png(filename = "flag_vessel_number_table.png", width=600,height=600,bg = "white"
 grid.table(flag_vessel_number_table)
 dev.off()
 
-#2: Top flags: total hours
+###2: Top flags: total hours
 
 flag_totaleffort <- vessel_tidy %>% 
   group_by(flag) %>% 
@@ -127,7 +116,7 @@ png(filename = "flag_totaleffort_table.png", width=600,height=600,bg = "white")
 grid.table(flag_totaleffort_table)
 dev.off()
 
-#3: Top flags: kwhr
+###3: Top flags: kwhr
 
 flag_totalkwhr <- vessel_tidy %>% 
   group_by(flag) %>% 
@@ -149,7 +138,7 @@ png(filename = "flag_totalkwhr_table.png", width=600,height=600,bg = "white")
 grid.table(flag_totalkwhr_table)
 dev.off()
 
-#4 Top EEZ: # vessels
+###4 Top EEZ: # vessels
 
 EEZ_vessel_number <- vessel_tidy %>% 
   dplyr::select(ssvid, flag, fishing_hours_year_eez_fao, eez_iso3) %>% 
@@ -169,7 +158,7 @@ png(filename = "EEZ_vessel_number_table.png", width=600,height=600,bg = "white")
 grid.table(EEZ_vessel_number_table)
 dev.off()
 
-#5 Top EEZ: total hours
+###5 Top EEZ: total hours
 
 EEZ_totaleffort <- vessel_tidy %>% 
   group_by(eez_iso3) %>% 
@@ -189,7 +178,7 @@ png(filename = "EEZ_totaleffort_table.png", width=600,height=600,bg = "white")
 grid.table(EEZ_totaleffort_table)
 dev.off()
 
-#6 Top EEZ: kwhr
+###6 Top EEZ: kwhr
 
 EEZ_totalkwhr <- vessel_tidy %>% 
   group_by(eez_iso3) %>% 
@@ -220,20 +209,20 @@ dev.off()
  #mutate(rank = top_n) %>%
   #filter(rank >= number_of_top_countries)
  #
-list_of_countries <- flag_vessel_number_table$flag
+#list_of_countries <- flag_vessel_number_table$flag
 # 
-for(i in 1:length(list_of_countries)){
+#for(i in 1:length(list_of_countries)){
   
-   country_dat <- flag_vessel_number_table %>%
-    filter(flag == list_of_countries[1])
+   #country_dat <- flag_vessel_number_table %>%
+   # filter(flag == list_of_countries[1])
   
- }
+# }
 
-for (i in 1:list_of_countries) {
-    if (surveys_adjusted$year[i] == 1984) {
-      print(surveys_adjusted$weight[i]*1.1)
-    } 
-}
+#for (i in 1:list_of_countries) {
+    #if (surveys_adjusted$year[i] == 1984) {
+     # print(surveys_adjusted$weight[i]*1.1)
+    #} 
+#}
 
 ```
 
@@ -291,9 +280,6 @@ vessel_EEZtally <- vessel_tidy %>%
   tally(sort = TRUE) 
   
 
-
-#View(vessel_EEZtally)
-
 #write_csv(vessel_EEZtally, "MW_EEZtally.csv")
 
 ```
@@ -305,16 +291,28 @@ vessel_EEZtally <- vessel_tidy %>%
 
 ## Effort by each country in each EEZ they have fished in
 
+effort_eez <- vessel_tidy %>% 
+  group_by(eez_iso3, flag) %>% 
+  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE))
+
+kwhr_eez <- vessel_tidy %>% 
+  group_by(eez_iso3, flag) %>% 
+  summarize(kwhr = sum(kwhr_in_eez, na.rm = TRUE))
+
 vessel_eez <- vessel_tidy %>% 
-  group_by(flag, eez_iso3) %>% 
-  summarize(effort_per_eez = sum(fishing_hours_year_eez_fao, na.rm = TRUE)) 
+  group_by(eez_iso3, flag) %>% 
+  summarize(vessels_per_eez = length(unique(ssvid)))
+
   
+  
+### EEZ Results: # vessels, total hours, and kwhr in each EEZ
+EEZ_results <- vessel_eez %>% 
+  right_join(effort_eez, by=c("eez_iso3", "flag")) %>% 
+  right_join(kwhr_eez, by = c("eez_iso3" , "flag"))
+  
+write_csv(EEZ_results, "EEZ_results.csv")
 
-#View(vessel_eez)
-#write_csv(vessel_eez, "MW_effort_eez.csv")
 
-
-length(unique(vessel_eez$eez_iso3))
 
 ```
 
@@ -329,13 +327,8 @@ gear_type <- vessel_tidy %>%
   summarize(number_vesselclass = n_distinct(ssvid))  #, d = toString((unique(ssvid)))) Each vessel in in the class
 
 
-#View(gear_type)
 
-#write_csv(gear_type, "gear_type_percountry.csv")
-
-unique(gear_type$vessel_class)
-
-gear_table <- table(gear_type$vessel_class, gear_type$number_vesselclass)
+#gear_table <- table(gear_type$vessel_class, gear_type$number_vesselclass)
 
 ```
 
@@ -372,152 +365,27 @@ vessel_tonnage <- vessel_tidy %>%
 
 ## Combining number of vessels and total effort
 
-final_results_1 <- merge(vessel_numbersummary, kwhr_percountry, by = "flag") %>% 
-  arrange(desc(total_kwhr))
+final_results <- flag_vessel_number %>% 
+  right_join(flag_totalkwhr, by=c("flag")) %>% 
+  right_join(vessel_length, by = c("flag")) %>% 
+  right_join(vessel_tonnage, by = c("flag")) %>%
+  arrange(desc(total_kwhr)) %>% 
+  as.data.frame() 
+   
+  
 
-final_results_2 <- merge(final_results_1, vessel_length, by = "flag") %>% 
-  arrange(desc(total_kwhr))
-
-final_results <- merge(final_results_2, vessel_tonnage, by = "flag") %>% 
-  arrange(desc(total_kwhr))
-
-## Top 25 without china
-
-final_results_top25 <- final_results %>% 
-  filter(flag != "CHN") %>% 
-  top_n(25)
+#final_results_ranked <- final_results %>% 
+  #top_n(number_of_top_countries)
 
 
-#write_csv(final_results, "final_results.csv")
+
+write_csv(final_results, "final_results.csv")
 
 
 ```
 
 
-```{r mapping}
 
-##EEZ boundaries
-
-
-
-#install.packages("mregions")
-#library(mregions)
-#install.packages("rmapshaper")
-#library(rmapshaper)
-
-library(tidyverse)
-library(sf)
-library(tmap)
-library(leaflet)
-library(ggrepel)
-#install.packages("ggspatial")
-library(ggspatial)
-library(RColorBrewer)
-library(raster)
-
-library(leaflet)
-#leaflet() %>%
- # addTiles() %>%
-  #addPolygons(data = shp)
-
-
-##Map for mac
-EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
-  st_transform(crs = 4326)
-
-world_map <- read_sf(dsn = here::here("data", "shapefiles", "world_happy_180"), layer = "world_happy_180") %>% 
-  st_transform(crs = 4326)
-
-
-
-
-## Map for PC
-#EEZ_map <- read_sf("H:/GitHub/subsidy-atlas/eez_v10_fao_combined_simple.shp") %>% 
-  #st_transform(crs = 4326) #%>% 
-  #st_simplify(dTolerance = )
-
-EEZ_map
-
-
-library(maps)
-
-
-## Change Global center of map to pacific
-library(raster)
-library(maptools)
-data(EEZ_map)
-r <- rasterize(EEZ_map, raster())
-
-#x1 <- crop(r, extent(-180, 0, -90, 90))
-#x2 <- crop(r, extent(0, 180, -90, 90))   
-#extent(x1) <- c(180, 360, -90, 90)
-#EEZ_pacific <- merge(x1, x2)
-
-#EEZ_shp <- as.data.frame(EEZ_pacific)
-
-
-#st_write(EEZ_shp, "EEZ_pacific.shp")
-
-#plot(EEZ_pacific)
-
-#View(EEZ_pacific)
-
-#eez_geom <- st_geometry(EEZ_pacific)
-
-#View (eez_geom)
-
-#eez_geom
-
-#eez_geom[[19]]
-
-
-#options(sf_max.plot=25)
-#plot(EEZ)
-
-#par(mar = c(0,0,1,0))
-#plot(EEZ[25], reset = FALSE)
-#plot(EEZ[25,25], col = 'grey', add = TRUE)
-
-#plot(EEZ)
-
-# China as a test plot
-china <- EEZ_tidy %>%
-  dplyr::filter(eez_iso3 == "CHN")
-
-eez_filtered_CHN <- EEZ_map %>%
-  dplyr::filter(ez_hs_c %in% china$eez_fished)
-
-plot_map_CHN <- ggplot()+
-  geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
-  geom_sf(data = world_map, fill = "white")+
-  geom_sf(data = world_map %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
-  geom_sf(data = eez_filtered_CHN, fill = "blue", alpha = 0.5) +
-  geom_path(data = EEZ_map, 
-            aes(long, lat, group = group), alpha = 0.5, color = "#fa6900") 
-
-plot_map_CHN
-
-
-### USA test
-
-
-USA <- EEZ_tidy %>%
-  dplyr::filter(eez_iso3 == "USA")
-
-eez_filtered_USA <- EEZ_map %>%
-  dplyr::filter(ez_hs_c %in% USA$eez_fished)
-
-plot_map_USA <- ggplot()+
-  geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
-  geom_sf(data = world_map, fill = "white")+
-  geom_sf(data = world_map %>% dplyr::filter(iso3 == "USA"), fill = "red") +
-  geom_sf(data = eez_filtered_USA, fill = "blue", alpha = 0.5)
-
-plot_map_USA
-
-
-
-```
 
 ```{r}
 
