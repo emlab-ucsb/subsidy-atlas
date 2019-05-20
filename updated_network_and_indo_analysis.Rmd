@@ -1,0 +1,1090 @@
+---
+title: "Updated Analysis of transnational fisheries and foreign fishin in Indonesia"
+output: html_notebook
+---
+
+```{r echo = F}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(bigrquery))
+suppressPackageStartupMessages(library(DBI))
+suppressPackageStartupMessages(library(forcats))
+suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(maps))
+suppressPackageStartupMessages(library(rnaturalearth))
+suppressPackageStartupMessages(library(ggsci))
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE)
+
+BQ_connection <-  dbConnect(dbi_driver(), dataset = "", project = "world-fishing-827")
+```
+
+## How does the network of transboundary fisheries looks like?
+
+### Get Distant water fishing effort
+
+The purpose of this section is to identify all fishing vessels that operate in distant water fishing. Distant water fishing is defined as vessels fishing in the high seas and in EEZ of nations that are not directly their own flag state. There are some complication with this definition that need to deal with such as vessel fishing in conflict or joint management zones as well as vessels fishing in overseas territories of their flag state. 
+We begin by querying and summarizing, at the vessel level, all the combinations of sovereign flags and eez where there was fishing activity each year. We exclude all those combinations where the flag is the same as the eez. 
+
+```{sql, connection = BQ_connection, output.var = "ALL_DWF_effort", eval = F}
+SELECT
+  a.year year,
+  a.month month, 
+  a.mmsi mmsi,
+  b.flag_country_name flag_country_name,
+  b.flag_iso3 flag_iso3,
+  b.sovereign_flag_country_name sovereign_flag_country_name,
+  b.sovereign_flag_iso3 sovereign_flag_iso3,
+  e.known_iso3 known_iso3,
+  b.gear_type gear_type,
+  b.length length,
+  b.tonnage tonnage,
+  b.engine_power engine_power,
+  if(a.eez_name IS NULL AND (distance_from_shore >= 10*1852 OR FAO_region IN (88, 48,58)), "high seas", a.eez_name) eez_name,
+  if(a.eez_name IS NULL AND (distance_from_shore >= 10*1852 OR FAO_region IN (88, 48,58)), "high seas", a.eez_iso3) eez_iso3,
+  if(a.eez_name IS NULL AND (distance_from_shore >= 10*1852 OR FAO_region IN (88, 48,58)), 0, a.eez_id) eez_id,
+  d.eez_type eez_type,
+  d.GeoName eez_geoname,
+  d.Sovereign1 eez_sovereign1,
+  d.Sovereign2 eez_sovereign2,
+  d.Sovereign3 eez_sovereign3,
+  FAO_region,
+  exact_count_distinct(IF(distance_from_shore > 1000 or (implied_speed >.1 and implied_speed < 20), date(timestamp), null)) days,
+  exact_count_distinct(IF(nnet_score == 1 and (distance_from_shore > 1000 or (implied_speed >.1 and implied_speed < 20)), date(timestamp), null)) fishing_days,
+  sum(hours) hours,
+  sum(IF(nnet_score == 1 and (distance_from_shore > 1000 or (implied_speed >.1 and implied_speed < 20)), hours, 0)) fishing_hours,
+  sum(hours*engine_power) energy,
+  sum(IF(nnet_score == 1 and (distance_from_shore > 1000 or (implied_speed >.1 and implied_speed < 20)), hours*engine_power, 0)) fishing_energy,
+FROM (
+  SELECT
+    year(timestamp) year,
+    month(timestamp) month,
+    mmsi, distance_from_shore , eez_name ,eez_iso3,implied_speed , nnet_score ,hours,timestamp,
+    Integer(REGEXP_REPLACE( if(REGEXP_EXTRACT(regions,'\"(fao:.*?)\"') contains ".",  LEFT(REGEXP_EXTRACT(regions,'\"(fao:.*?)\"'),INSTR(REGEXP_EXTRACT(regions,'\"(fao:.*?)\"'),".")-1),REGEXP_EXTRACT(regions,'\"(fao:.*?)\"')), '[^0-9 ]','')) FAO_region,
+    Integer(REGEXP_REPLACE( if(REGEXP_EXTRACT(regions,'\"(eez:.*?)\"') contains ".",  LEFT(REGEXP_EXTRACT(regions,'\"(eez:.*?)\"'),INSTR(REGEXP_EXTRACT(regions,'\"(eez:.*?)\"'),".")-1),REGEXP_EXTRACT(regions,'\"(eez:.*?)\"')), '[^0-9 ]','')) eez_id,
+  FROM
+    [world-fishing-827:gfw_research.nn]
+  WHERE
+    _PARTITIONTIME BETWEEN TIMESTAMP('2013-01-01')
+    AND TIMESTAMP('2016-12-31') 
+    and lat < 90 
+    and lat > -90 
+    and lon < 180 
+    and lon >-180
+    AND seg_id IN ( SELECT seg_id FROM [world-fishing-827:gfw_research.good_segments])
+    and mmsi not in (Select mmsi from [ucsb-gfw:Juan.suspicious_flags_in_china_eez])
+    ) a
+inner JOIN (
+  SELECT
+    year,
+    mmsi,
+    flag_country_name,
+    flag_iso3,
+    sovereign_flag_country_name,
+    sovereign_flag_iso3,
+    gear_type_all_years gear_type,
+    length,
+    tonnage,
+    engine_power,
+  FROM
+    [high-seas:vessel_characteristics.complete_ais_vessel_characteristics] 
+  GROUP BY
+    year,
+    mmsi,
+    flag_country_name,
+    flag_iso3,
+    sovereign_flag_country_name,
+    sovereign_flag_iso3,
+    length,
+    tonnage,
+    engine_power,
+    gear_type)b
+ON
+  a.mmsi = b.mmsi and a.year = b.year
+Left join (
+ SELECT 
+  Integer(MRGID) as eez_id,
+  Pol_type eez_type,
+  GeoName,
+  Territory1,
+  ISO_Ter1,
+  Sovereign1,
+  if(Sovereign2 == "NA", Sovereign1, Sovereign2) as Sovereign2,
+  if(Sovereign3 == "NA", Sovereign1, Sovereign3) as Sovereign3, 
+ FROM
+  [ucsb-gfw:regions_ids.eez_metadata]) d 
+ON
+ a.eez_id = d.eez_id
+LEFT JOIN (
+ SELECT
+  mmsi,
+  flag known_iso3
+FROM
+  [vessel_database.all_vessels_20171020]
+WHERE
+  mmsi IN (
+  SELECT
+    mmsi,
+  FROM
+    [vessel_database.all_vessels_20171020]
+  GROUP BY
+    mmsi,
+  HAVING
+    EXACT_COUNT_DISTINCT(flag) <= 1)
+  group by mmsi, known_iso3 having known_iso3 is not null order by mmsi  ) e
+ON
+  a.mmsi = e.mmsi
+GROUP BY
+  year,
+  month,
+  mmsi, 
+  gear_type,
+  flag_country_name,
+  flag_iso3,
+  sovereign_flag_country_name,
+  sovereign_flag_iso3,
+  known_iso3,
+  eez_name,
+  eez_iso3,
+  eez_id,
+  eez_type,
+  eez_geoname,
+  eez_sovereign1,
+  eez_sovereign2,
+  eez_sovereign3,
+  FAO_region,
+  engine_power,
+  b.engine_power,
+  tonnage,
+  length
+having 
+fishing_days > 1 
+and fishing_hours > 1 
+and sovereign_flag_iso3 != eez_iso3
+and flag_iso3 != eez_iso3
+```
+
+```{r eval = F}
+gfw_countries <- ALL_DWF_effort %>% 
+  distinct(sovereign_flag_iso3, sovereign_flag_country_name) %>% 
+  rename(known_iso3 = sovereign_flag_iso3, known_flag_name = sovereign_flag_country_name)
+
+```
+
+```{r eval = F}
+ALL_DWF_effort <- ALL_DWF_effort %>% 
+  left_join(gfw_countries) %>% 
+  mutate(flag_country_name = ifelse(is.na(known_flag_name),flag_country_name,known_flag_name),
+         flag_iso3 = ifelse(is.na(known_iso3),flag_iso3,known_iso3),
+         sovereign_flag_country_name = ifelse(is.na(known_flag_name) | sovereign_flag_iso3 == "ESP",sovereign_flag_country_name,known_flag_name),
+         sovereign_flag_iso3 = ifelse(is.na(known_iso3)  | sovereign_flag_iso3 == "ESP",sovereign_flag_iso3,known_iso3)) %>% 
+  select(-known_iso3, -known_flag_name)
+```
+
+Now lets filter out all connections between EU member states (excluding their overseas territories) and the northern agreements with Norway, and Iceland 
+
+```{sql  connection = BQ_connection, output.var = "eu_iso", eval = F}
+SELECT
+  iso3
+FROM
+  [world-fishing-827:gfw_published.country_codes]
+WHERE
+  is_EU
+  and iso3 not in ('WLF', 'GUF', 'SXM', 'SPM', 'MAF', 'MYT', 'BLM', 'REU', 'CUW', 'ABW', 'IOT', 'BES', 'GLP', 'MTQ', 'SHN', 'ASC', 'SGS', 'ATF', 'TAA', 'FLK', 'BMU', 'TCA','CYM', 'VGB','AIA', 'MSR', 'PCN', 'PYF')
+```
+
+```{r filter_eu_connections, eval = F}
+ALL_DWF_effort <- ALL_DWF_effort %>% 
+  mutate(is_EU = ifelse( flag_iso3 %in% c(eu_iso$iso3, "NOR", "SJM", "ISL") & eez_iso3 %in% c(eu_iso$iso3, "NOR", "SJM", "ISL")|
+                           sovereign_flag_iso3 %in% c(eu_iso$iso3, "NOR", "SJM", "ISL") & eez_iso3 %in% c(eu_iso$iso3, "NOR", "SJM", "ISL"),
+                    TRUE,
+                    FALSE)) %>%
+  filter(!is_EU)
+```
+
+Dealing with sovereignty:
+
+If a vesssel is in an EEZ that is sovereign by its flag country or its sovereign flag country, then this connection would not be foreign DWF although it can be still distant water fishing  (e.g., US vessel in Palmyra Atoll). For some purposes we may want to remove this connections (network map of foreign fishing), for some other we may not. So, lets add a field that contains whether or not a connection is foreign. 
+
+First, lets add the ISO codes for the sovereign country of the EEZs
+
+```{r add_sovereign_iso3, eval = F}
+ALL_DWF_effort <- ALL_DWF_effort %>% 
+  mutate(eez_sovereign1_iso3 = countrycode::countrycode(eez_sovereign1, "country.name",'iso3c'),
+         eez_sovereign2_iso3 = countrycode::countrycode(eez_sovereign2, "country.name",'iso3c'),
+         eez_sovereign3_iso3 = countrycode::countrycode(eez_sovereign3, "country.name",'iso3c')) 
+
+ALL_DWF_effort$eez_sovereign1_iso3[ALL_DWF_effort$eez_sovereign1 == "Comores"] <- countrycode::countrycode("Comoros", "country.name",'iso3c')
+ALL_DWF_effort$eez_sovereign2_iso3[ALL_DWF_effort$eez_sovereign2 == "Comores"] <- countrycode::countrycode("Comoros", "country.name",'iso3c')
+ALL_DWF_effort$eez_sovereign3_iso3[ALL_DWF_effort$eez_sovereign3 == "Comores"] <- countrycode::countrycode("Comoros", "country.name",'iso3c')
+ALL_DWF_effort$eez_sovereign1_iso3[ALL_DWF_effort$eez_sovereign1 == "Micronesia"] <- countrycode::countrycode("Federated states of micronesia", "country.name",'iso3c')
+ALL_DWF_effort$eez_sovereign2_iso3[ALL_DWF_effort$eez_sovereign2 == "Micronesia"] <- countrycode::countrycode("Federated states of micronesia", "country.name",'iso3c')
+ALL_DWF_effort$eez_sovereign3_iso3[ALL_DWF_effort$eez_sovereign3 == "Micronesia"] <- countrycode::countrycode("Federated states of micronesia", "country.name",'iso3c')
+```
+
+```{r is_sovereign_field, eval = F}
+ALL_DWF_effort <- ALL_DWF_effort %>% 
+  mutate(is_sovereign = case_when(eez_name == "high seas" ~ FALSE,
+                                sovereign_flag_iso3 != eez_sovereign1_iso3 &  
+                                sovereign_flag_iso3 != eez_sovereign2_iso3 &
+                                sovereign_flag_iso3 != eez_sovereign3_iso3 &
+                                flag_iso3 != eez_sovereign1_iso3 &
+                                flag_iso3 != eez_sovereign2_iso3 &
+                                flag_iso3 != eez_sovereign3_iso3  ~ FALSE,
+                                TRUE ~ TRUE))
+```
+
+Now, in some cases there may be connections that are not foreign and that because of their particular situation should not be considered distant water. An example of this are disputed and joint regime EEZ.  These are listed and removed here:
+
+```{r remove_sovereign_not_distant_water, eval = F}
+sovereign_connections <- ALL_DWF_effort %>% 
+  filter(is_sovereign) %>% 
+  distinct(flag_country_name, sovereign_flag_country_name, eez_geoname, eez_name, eez_type , eez_sovereign1, eez_sovereign2, eez_sovereign3) %>% 
+  arrange(desc(sovereign_flag_country_name))
+
+sovereign_not_distant_water_connections <- sovereign_connections %>% 
+  filter(!(sovereign_flag_country_name == "United States" & eez_type == "200NM")) %>% 
+  filter(!(sovereign_flag_country_name == "United Kingdom" & eez_name == "Falkland Islands")) %>% 
+  filter(!(sovereign_flag_country_name == "United Kingdom" & eez_name == "South Georgia and the South Sandwich Islands")) %>% 
+  filter(!(sovereign_flag_country_name == "United Kingdom" & eez_name == "Tristan da Cunha")) %>% 
+  filter(!(sovereign_flag_country_name == "New Zealand")) %>% 
+  filter(!(sovereign_flag_country_name == "France")) %>% 
+  filter(!(sovereign_flag_country_name == "Australia"))
+
+ALL_DWF_effort <- ALL_DWF_effort %>% 
+  anti_join(sovereign_not_distant_water_connections) 
+```
+
+```{r, eval = F}
+ALL_DWF_effort <- ALL_DWF_effort %>% filter(!mmsi %in% c(625018045))
+```
+
+
+```{r eval = F}
+foreign_DWF_effort <- ALL_DWF_effort %>% filter(!is_sovereign)
+
+write_csv(foreign_DWF_effort, "saved_files/foreign_DWF_effort.csv")
+
+BQ_connection_ucsb <-  dbConnect(dbi_driver(), dataset = "iuu_and_network_analysis", project = "ucsb-gfw", billing = "world-fishing-827")
+
+if (dbExistsTable(BQ_connection_ucsb, "foreign_DWF_monthly_effort")) {
+  dbRemoveTable(BQ_connection_ucsb, "foreign_DWF_monthly_effort") 
+  dbWriteTable(BQ_connection_ucsb, "foreign_DWF_monthly_effort", foreign_DWF_effort)
+} else {dbWriteTable(BQ_connection_ucsb, "foreign_DWF_monthly_effort", foreign_DWF_effort)}
+```
+
+### Make the network 
+
+```{r read_saved_dwf_effort_file, message=FALSE}
+foreign_DWF_effort <- read_csv("saved_files/foreign_DWF_effort.csv")
+
+fishing_connections <- foreign_DWF_effort %>% 
+  filter(eez_id != 0) %>% # remove the high seas
+  group_by(flag_country_name, flag_iso3, sovereign_flag_country_name, sovereign_flag_iso3, eez_name,eez_geoname, eez_iso3, eez_id, eez_type,eez_sovereign1, eez_sovereign1_iso3, eez_sovereign2, eez_sovereign2_iso3, eez_sovereign3, eez_sovereign3_iso3) %>% 
+  summarise(vessels = n_distinct(mmsi),
+               days = sum(days),
+               hours = sum(hours),
+               fishing_days = sum(fishing_days),
+               fishing_hours = sum(fishing_hours),
+               fishing_energy = sum(fishing_energy)) %>% 
+  ungroup()
+
+fishing_connections$flag_country_name[fishing_connections$flag_iso3 == "BOL"] <- "Bolivia"
+fishing_connections$sovereign_flag_country_name[fishing_connections$flag_iso3 == "BOL"] <- "Bolivia"
+
+fishing_connections <- fishing_connections %>% 
+  filter(!flag_iso3 %in% c("PSE","BOL","AFG"))
+```
+
+
+```{r add_eez_coords, message = FALSE}
+eez_metadata <- read_csv("saved_files/eez_metadata.csv")
+
+eez_coords <- fishing_connections %>%
+  distinct(eez_iso3, eez_id, eez_geoname, eez_type) %>% 
+  left_join(eez_metadata %>% 
+              select(eez_id = MRGID, eez_lon = x_1, eez_lat = y_1)) %>% 
+  ungroup() %>% 
+  select(iso3 = eez_iso3, eez_id,  lon = eez_lon, lat = eez_lat) 
+```
+
+```{r}
+eez_nodes <- eez_coords %>%
+  left_join(fishing_connections %>%
+              group_by(eez_name, eez_id, eez_geoname, eez_type) %>%
+              summarize(foreign_days = sum(fishing_days, na.rm = T),
+                        foreign_hours = sum(fishing_hours, na.rm = T),
+                        foreign_vessels = sum(vessels),
+                        foreign_flags = n_distinct(sovereign_flag_iso3)))
+
+world_map <- ne_countries(type = 'countries', scale = 'medium')
+
+world_df <- broom::tidy(world_map)
+
+plotly::ggplotly(eez_nodes %>% 
+  ggplot()+
+  geom_polygon(data = world_df, aes(long, lat, group = group), 
+               fill = "grey8", color = "grey8", size = 0.1) +
+  geom_point(aes(lon, lat, size = foreign_days, key = eez_geoname, group = eez_id), shape = 1, color = "orange"), width = 800, height = 800)
+```
+
+```{r message=FALSE}
+eez_nodes$lat[eez_nodes$eez_name == "Tuvalu"] <- ggmap::geocode("Tuvalu")$lat
+eez_nodes$lon[eez_nodes$eez_name == "Tuvalu"] <- ggmap::geocode("Tuvalu")$lon
+eez_nodes$lat[eez_nodes$eez_name == "Alaska"] <- ggmap::geocode("Alaska pacific coast")$lat
+eez_nodes$lon[eez_nodes$eez_name == "Alaska"] <- ggmap::geocode("Alaska pacific coast")$lon
+eez_nodes$lat[eez_nodes$eez_name == "New Zealand"] <- ggmap::geocode("New Zealand coast")$lat
+eez_nodes$lon[eez_nodes$eez_name == "New Zealand"] <- ggmap::geocode("New Zealand coast")$lon
+eez_nodes$lat[eez_nodes$eez_name == "Fiji"] <- ggmap::geocode("Fiji")$lat
+eez_nodes$lon[eez_nodes$eez_name == "Fiji"] <- ggmap::geocode("Fiji")$lon
+eez_nodes$lat[eez_nodes$eez_name == "United States"] <- ggmap::geocode("Los Angeles")$lat
+eez_nodes$lon[eez_nodes$eez_name == "United States"] <- ggmap::geocode("Los Angeles")$lon
+eez_nodes$lat[eez_nodes$eez_name == "Portugal"] <- ggmap::geocode("portugal coast")$lat
+eez_nodes$lon[eez_nodes$eez_name == "Portugal"] <- ggmap::geocode("portugal coast")$lon
+eez_nodes$lat[eez_nodes$eez_name == "Ecuador"] <- ggmap::geocode("ecuador coast")$lat
+eez_nodes$lon[eez_nodes$eez_name == "Ecuador"] <- ggmap::geocode("ecuador coast")$lon
+eez_nodes$lat[eez_nodes$eez_name == "Hawaii"] <- ggmap::geocode("Oahu")$lat
+eez_nodes$lon[eez_nodes$eez_name == "Hawaii"] <- ggmap::geocode("Oahu")$lon
+eez_nodes$lat[eez_nodes$eez_name == "Canada"] <- ggmap::geocode("Nova Scotia")$lat
+eez_nodes$lon[eez_nodes$eez_name == "Canada"] <- ggmap::geocode("Nova Scotia")$lon
+```
+
+```{r}
+flags_coords <- fishing_connections %>% 
+  group_by(sovereign_flag_country_name,iso3 = sovereign_flag_iso3) %>% 
+  distinct(sovereign_flag_country_name, iso3) %>% 
+  left_join(eez_nodes %>% 
+              filter(eez_type == "200NM") %>% 
+              group_by(iso3) %>% 
+              mutate(n_eez = n_distinct(eez_id)) %>% 
+              filter(n_eez == 1) %>% 
+              select(iso3, lat, lon))
+
+flags_coords %>% 
+  filter(is.na(lat) & iso3 %in% eez_coords$iso3)
+```
+
+
+
+```{r add_flag_coords}
+flags_coords$lat[flags_coords$iso3 == "USA"] <- eez_coords$lat[eez_coords$eez_id == 8456]
+flags_coords$lon[flags_coords$iso3 == "USA"] <- eez_coords$lon[eez_coords$eez_id == 8456]
+flags_coords$lat[flags_coords$iso3 == "ESP"] <- eez_coords$lat[eez_coords$eez_id == 5693]
+flags_coords$lon[flags_coords$iso3 == "ESP"] <- eez_coords$lon[eez_coords$eez_id == 5693]
+flags_coords$lat[flags_coords$iso3 == "ECU"] <- eez_coords$lat[eez_coords$eez_id == 8431]
+flags_coords$lon[flags_coords$iso3 == "ECU"] <- eez_coords$lon[eez_coords$eez_id == 8431]
+flags_coords$lat[flags_coords$iso3 == "CHL"] <- eez_coords$lat[eez_coords$eez_id == 8465]
+flags_coords$lon[flags_coords$iso3 == "CHL"] <- eez_coords$lon[eez_coords$eez_id == 8465]
+flags_coords$lat[flags_coords$iso3 == "BES"] <- eez_coords$lat[eez_coords$eez_id == 26520]
+flags_coords$lon[flags_coords$iso3 == "BES"] <- eez_coords$lon[eez_coords$eez_id == 26520]
+flags_coords$lat[flags_coords$iso3 == "AUS"] <- eez_coords$lat[eez_coords$eez_id == 8323]
+flags_coords$lon[flags_coords$iso3 == "AUS"] <- eez_coords$lon[eez_coords$eez_id == 8323]
+
+available_flags_coords <- flags_coords %>% 
+  filter(!is.na(lat)) %>% 
+  select(sovereign_flag_country_name, iso3, lon,lat)
+
+geocoded_flags_coords <- flags_coords %>% 
+  filter(is.na(lat)) %>% 
+  select(sovereign_flag_country_name, iso3) %>% 
+  group_by(sovereign_flag_country_name,iso3) %>% 
+  nest() %>% 
+  mutate(coords = purrr::map(sovereign_flag_country_name, ggmap::geocode)) %>% 
+  unnest()
+```
+
+```{r}
+plotly::ggplotly(geocoded_flags_coords %>% 
+  ggplot()+
+  geom_polygon(data = world_df, aes(long, lat, group = group), 
+               fill = "grey8", color = "grey8", size = 0.1) +
+  geom_point(aes(lon, lat,  key = sovereign_flag_country_name), shape = 1, color = "orange"), width = 800, height = 800)
+```
+
+```{r}
+flags_coords <- bind_rows(available_flags_coords,geocoded_flags_coords)
+
+write_csv(flags_coords, "saved_files/all_flags_coords.csv")
+```
+
+
+```{r read_saved_flag_coords}
+all_flags_coords <- read_csv("saved_files/all_flags_coords.csv") %>% 
+  ungroup()
+```
+
+```{r}
+flag_nodes <- all_flags_coords %>%
+  left_join(fishing_connections %>%
+              ungroup() %>% 
+              rename(iso3 = sovereign_flag_iso3) %>% 
+              group_by(iso3) %>%
+              summarize(foreign_days = sum(fishing_days, na.rm = T),
+                        foreign_hours = sum(fishing_hours, na.rm = T),
+                        foreign_vessels = sum(vessels)))
+
+plotly::ggplotly(flag_nodes %>% 
+  ggplot()+
+  geom_polygon(data = world_df, aes(long, lat, group = group), 
+               fill = "grey8", color = "grey8", size = 0.1) +
+  geom_point(aes(lon, lat, size = foreign_days, key = iso3), shape = 1, color = "orange"), width = 800, height = 800)
+```
+
+
+```{r}
+flag_nodes$lat[flag_nodes$iso3 == "TUV"] <- ggmap::geocode("Tuvalu")$lat
+flag_nodes$lon[flag_nodes$iso3 == "TUV"] <- ggmap::geocode("Tuvalu")$lon
+flag_nodes$lat[flag_nodes$iso3 == "NZL"] <- ggmap::geocode("New Zealand coast")$lat
+flag_nodes$lon[flag_nodes$iso3 == "NZL"] <- ggmap::geocode("New Zealand coast")$lon
+flag_nodes$lat[flag_nodes$iso3 == "FJI"] <- ggmap::geocode("Fiji")$lat
+flag_nodes$lon[flag_nodes$iso3 == "FJI"] <- ggmap::geocode("Fiji")$lon
+flag_nodes$lat[flag_nodes$iso3 == "USA"] <- ggmap::geocode("Los Angeles")$lat
+flag_nodes$lon[flag_nodes$iso3 == "USA"] <- ggmap::geocode("Los Angeles")$lon
+flag_nodes$lat[flag_nodes$iso3 == "CAN"] <- ggmap::geocode("Nova Scotia")$lat
+flag_nodes$lon[flag_nodes$iso3 == "CAN"] <- ggmap::geocode("Nova Scotia")$lon
+flag_nodes$lat[flag_nodes$iso3 == "KIR"] <- ggmap::geocode("South Tarawa")$lat
+flag_nodes$lon[flag_nodes$iso3 == "KIR"] <- ggmap::geocode("South Tarawa")$lon
+# flag_nodes$lat[flag_nodes$iso3 == "LVA"] <- ggmap::geocode("Latvia")$lat
+# flag_nodes$lon[flag_nodes$iso3 == "LVA"] <- ggmap::geocode("Latvia")$lon
+
+```
+
+
+```{r}
+fishing_connections_with_coords <- fishing_connections %>% 
+  ungroup() %>% 
+  left_join(flag_nodes %>%
+              select(sovereign_flag_iso3 = iso3, start_lon = lon, start_lat = lat))
+
+fishing_connections_with_coords <- fishing_connections_with_coords %>% 
+    left_join(eez_nodes  %>% 
+                select(-iso3, end_lon = lon, end_lat = lat) %>% 
+                distinct(eez_id, end_lon, end_lat)
+              ) 
+
+
+fishing_connections_with_coords <- fishing_connections_with_coords %>% 
+  group_by(sovereign_flag_country_name, sovereign_flag_iso3, eez_name, eez_iso3, eez_id, start_lat, start_lon, end_lon, end_lat) %>% 
+  summarise(fishing_vessels = sum(vessels),
+            fishing_hours = sum(fishing_hours),
+            fishing_energy = sum(fishing_energy),
+            fishing_days = sum(fishing_days)) %>% 
+  ungroup()
+
+fishing_connections_with_coords <- fishing_connections_with_coords %>% filter(!sovereign_flag_iso3 %in%  c("BOL", "MNG"))
+
+fishing_connections_with_coords %>% 
+  select(flag = sovereign_flag_country_name, eez = eez_name, fishing_vessels,fishing_days, fishing_hours, fishing_KwH = fishing_energy, start_lat, start_lon, end_lon, end_lat) %>% 
+  write_csv("saved_files/network_data.csv")
+```
+
+We first create the great circles with all their intermediate points (n) between flag country and eez. 
+
+```{r}
+network_data <- read_csv("saved_files/network_data.csv")
+```
+
+
+```{r}
+network_data %>% 
+    map_dfc(function(x) sum(is.na(x))) %>%
+    gather(feature, num_nulls) %>%
+    print(n = 100)
+
+network_data %>% filter(is.na(start_lon))
+```
+
+```{r create_great_circles}
+all_routes <-  geosphere::gcIntermediate(network_data[c("start_lon", "start_lat")],
+                            network_data[c("end_lon", "end_lat")],
+                            n = 360, addStartEnd = TRUE, sp = TRUE, 
+                            breakAtDateLine = TRUE)
+
+
+all_routes <- sp::SpatialLinesDataFrame(all_routes, 
+                                   network_data)
+
+all_routes_df <- broom::tidy(all_routes) %>% 
+  mutate(line_id = as.double(id)) %>% 
+  left_join(network_data %>% 
+              select(start_lon, start_lat, fishing_days, fishing_hours, fishing_vessels) %>% 
+              mutate(line_id = seq(1:nrow(network_data)))) %>% 
+  ungroup()
+```
+
+We then use the Harversine method to calculate the cummulative distance traveled for each point in each great circle.
+
+```{r calculate_distance_traveled}
+estimate_distance_traveled <- function(start_lon, start_lat, current_lon, current_lat){
+  
+  start_coords <- c(start_lon, start_lat)
+  current_coords <- c(current_lon, current_lat)
+  
+  geosphere::distHaversine(current_coords,start_coords)
+  
+}
+
+all_routes_df <- all_routes_df %>% 
+  mutate(distance = purrr::pmap_dbl(list(start_lon, start_lat, long, lat), estimate_distance_traveled))
+
+all_routes_df <- all_routes_df %>% 
+  group_by(line_id) %>% 
+  mutate(normalized_distance = distance/max(distance))
+```
+
+
+```{r}
+eez_nodes %>% 
+  group_by(iso3) %>% 
+  summarise(d = sum(foreign_days)) %>% 
+  arrange(desc(d))
+
+fishing_connections %>% 
+  filter(eez_iso3 == "TUN") %>% 
+  group_by(flag_iso3) %>% 
+  summarize(d = sum(fishing_days)) %>% 
+  arrange(desc(d))
+```
+
+```{r}
+network_data
+```
+
+```{r}
+(network_with_color_gradient <- ggplot() +
+   geom_polygon(data = world_df, aes(long, lat, group = group), 
+               fill = "grey8", color = "grey8", size = 0.1) +
+   geom_path(data = all_routes_df, 
+            aes(long, lat, group = group, col = normalized_distance , alpha = fishing_hours),  show.legend = NA) +
+   geom_point(data = network_data %>% 
+                group_by(end_lon,end_lat) %>% 
+                summarize(fishing_days = sum(fishing_days)), 
+              aes(end_lon, end_lat, size = fishing_days), col = "orange", shape = 21, stroke = 1.5)+
+   scale_size_continuous(range = c(0.5,10)) +
+   scale_alpha_continuous(range = c(0.3,1))+
+   theme_minimal()+
+   theme(panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank(),
+         panel.background = element_rect(fill = "white",
+                                 colour = "white"),
+         axis.title = element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank()) +
+   guides(colour =  FALSE, alpha = F, size = F) +
+   scale_color_gradient2(low = "#0571b0", mid = "#0571b0", midpoint = .5, high = "#b2182b"))
+
+tiff(paste('saved_figures/network_with_color_gradient_all_years_No_EU_with_points.tiff',sep = ""), height = 12, width = 17, units = 'cm', 
+     compression = "lzw", res = 300)
+print(network_with_color_gradient)
+invisible(dev.off())
+
+pdf(paste('saved_figures/network_with_color_gradient_all_years_No_EU_with_points.pdf',sep = ""), height = 12, width = 17)
+print(network_with_color_gradient)
+invisible(dev.off())
+
+
+ggsave(filename = "network_with_color_gradient_all_years_No_EU_with_points.pdf",
+       network_with_color_gradient,
+       device = 'pdf',
+       dpi = 300,
+       height = 12, width = 17, units = 'cm', 
+       path = "saved_figures")
+```
+
+
+
+
+
+
+
+
+
+
+```{r}
+(network_with_color_gradient_no_points <- ggplot() +
+   geom_polygon(data = world_df, aes(long, lat, group = group), 
+               fill = "grey8", color = "grey8", size = 0.1) +
+   geom_path(data = all_routes_df, 
+            aes(long, lat, group = group, col = normalized_distance , alpha = fishing_hours),  show.legend = NA) +
+   scale_size_continuous(range = c(0.5,5)) +
+   scale_alpha_continuous(range = c(0.3,1))+
+   theme_minimal()+
+   theme(panel.grid.major = element_blank(),
+         panel.grid.minor = element_blank(),
+         panel.background = element_rect(fill = "white",
+                                 colour = "white"),
+         axis.title = element_blank(),
+         axis.text = element_blank(),
+         axis.ticks = element_blank()) +
+   guides(colour =  FALSE, alpha = F, size = F) +
+   scale_color_gradient2(low = "#0571b0", mid = "#0571b0", midpoint = .5, high = "#b2182b"))
+
+tiff(paste('saved_figures/network_with_color_gradient_all_years_No_points.tiff',sep = ""), height = 12, width = 17, units = 'cm', 
+     compression = "lzw", res = 300)
+print(network_with_color_gradient_no_points)
+invisible(dev.off())
+
+
+```
+
+### Which country fishes in most other nations?
+
+```{r}
+fishing_connections_with_coords %>% 
+  group_by(sovereign_flag_country_name) %>% 
+  summarize(distinct_eez = n_distinct(eez_id)) %>% 
+  ungroup() %>% 
+  top_n(20, distinct_eez) %>% 
+  ggplot() +
+  geom_bar(aes(x = fct_reorder(sovereign_flag_country_name, distinct_eez) , y = distinct_eez, fill = distinct_eez), stat = "identity") +
+  coord_flip() + 
+  theme_minimal() +
+  ylab("Number of EEZ")+
+  xlab("")+
+  guides(fill = F)
+```
+
+```{r}
+fishing_connections_with_coords %>% 
+  group_by(sovereign_flag_country_name) %>% 
+  summarize(fishing_hours = sum(fishing_hours, na.rm = T)/10^6) %>% 
+  top_n(20, fishing_hours) %>% 
+  ggplot() +
+  geom_bar(aes(x = fct_reorder(sovereign_flag_country_name, fishing_hours) , y = fishing_hours, fill = fishing_hours), stat = "identity") +
+  coord_flip() + 
+  theme_minimal() +
+  ylab("fishing hours in foreign eez (10^6 hours)")+
+  xlab("")+
+  guides(fill = F)
+```
+
+
+### Which EEZ get's fished the most?
+
+#### Over the entire time
+
+```{r}
+bold_axis_labels <- function(labels, labels_of_interest) {
+  if (!is.factor(labels)) 
+    labels <- factor(labels)                   # make sure it's a factor
+    labels_levels <- levels(labels)                                 # retrieve the levels in their order
+  in_factor_levels <- labels_of_interest %in% labels_levels                          # make sure everything we want to make bold is actually in the factor levels
+  if (all(in_factor_levels)) {                                         # if so
+    b_pos <- purrr::map_int(labels_of_interest, ~which(.==labels_levels)) # then find out where they are
+    b_vec <- rep("plain", length(labels_levels))               # make'm all plain first
+    b_vec[b_pos] <- "bold"                                  # make our targets bold
+    b_vec                                                   # return the new vector
+  } else {
+    stop("label of interest not in axis levels")
+  }
+}
+
+summary_by_eez_all_years <- fishing_connections_with_coords %>% 
+  filter(!stringr::str_detect(eez_name, "Disputed")) %>% 
+  filter(!eez_name %in% c("Antarctica", "Western Sahara")) %>%  
+  mutate(country_name = countrycode::countrycode(eez_iso3, "iso3c", "country.name"),
+         country_name = case_when(
+           eez_iso3 == "ASC" ~ "Ascension",
+           eez_iso3 == "CPT" ~ "Clipperton",
+           eez_iso3 == "TAA" ~ "Tristan da Cunha",
+           TRUE ~ country_name
+         )) %>% 
+  group_by(country_name) %>% 
+  summarize(foreign_flags = n_distinct(sovereign_flag_iso3),
+            foreign_vessels = sum(fishing_vessels, na.rm = T),
+            fishing_days = sum(fishing_days, na.rm  = T),
+            fishing_hours = sum(fishing_hours, na.rm = T)) %>% 
+  rename(eez_name = country_name)
+```
+
+```{r}
+top_eez_with_most_flags <- summary_by_eez_all_years %>% 
+  arrange(desc(foreign_flags)) %>% 
+  head(20)
+
+(top_eez_with_most_flags_plot <- top_eez_with_most_flags %>% 
+  ggplot() +
+  geom_bar(aes(x = fct_reorder(eez_name, foreign_flags) , y = foreign_flags, fill = (foreign_flags)), stat = "identity") +
+  coord_flip() + 
+  theme_minimal() +
+  ylab("Number of flag states") +
+  xlab("")+
+  guides(fill = F)+
+  theme(axis.text.y=element_text(face = bold_axis_labels(fct_reorder(top_eez_with_most_flags$eez_name, top_eez_with_most_flags$foreign_flags),  c("Indonesia")))))
+```
+
+```{r}
+top_eez_with_most_vessels <- summary_by_eez_all_years %>% 
+  arrange(desc(foreign_vessels)) %>% 
+  head(50)
+
+(top_eez_with_most_vessels_all_years_plot <- top_eez_with_most_vessels %>% 
+  ggplot() +
+  geom_bar(aes(x = fct_reorder(eez_name, foreign_vessels) , y = foreign_vessels, fill = (foreign_vessels)), stat = "identity") +
+  coord_flip() + 
+  theme_minimal() +
+  ylab("Number of foreign vessels")+
+  xlab("")+
+  guides(fill = F) +
+  theme(axis.text.y=element_text(face = bold_axis_labels(fct_reorder(top_eez_with_most_vessels$eez_name, top_eez_with_most_vessels$foreign_vessels),  c("Indonesia")))))
+```
+
+```{r}
+top_eez_with_most_fishing_days <- summary_by_eez_all_years %>% 
+  arrange(desc(fishing_days)) %>% 
+  head(50)
+
+(top_days_all_years_plot <- top_eez_with_most_fishing_days %>% 
+  ggplot() +
+  geom_bar(aes(x = fct_reorder(eez_name, fishing_days) , y = fishing_days, fill = (fishing_days)), stat = "identity") +
+  coord_flip() + 
+  theme_minimal() +
+  ylab("Fishing days by foreign vessels")+
+  xlab("")+
+  guides(fill = F)+
+  theme(axis.text.y=element_text(face = bold_axis_labels(fct_reorder(top_eez_with_most_fishing_days$eez_name, top_eez_with_most_fishing_days$fishing_days),  c("Indonesia")))))
+```
+
+```{r}
+top_eez_with_most_fishing_hours <- summary_by_eez_all_years %>% 
+   arrange(desc(fishing_hours)) %>% 
+  head(50)
+
+(top_hours_all_years_plot <- top_eez_with_most_fishing_hours %>% 
+  ggplot() +
+  geom_bar(aes(x = fct_reorder(eez_name, fishing_hours) , y = fishing_hours, fill = (fishing_hours)), stat = "identity") +
+  coord_flip() + 
+  theme_minimal() +
+  ylab("Fishing hours by  foreign vessels")+
+  xlab("")+
+  guides(fill = F)+
+  theme(axis.text.y=element_text(face = bold_axis_labels(fct_reorder(top_eez_with_most_fishing_hours$eez_name, top_eez_with_most_fishing_hours$fishing_hours),  c("Indonesia")))))
+```
+
+#### Trends
+
+```{r}
+fishing_connections_by_year <- foreign_DWF_effort %>% 
+  filter(eez_id != 0) %>% # remove the high seas
+  group_by(year, flag_country_name, flag_iso3, sovereign_flag_country_name, sovereign_flag_iso3, eez_name,eez_geoname, eez_iso3, eez_id, eez_type,eez_sovereign1, eez_sovereign1_iso3, eez_sovereign2, eez_sovereign2_iso3, eez_sovereign3, eez_sovereign3_iso3) %>% 
+  summarise(vessels = n_distinct(mmsi),
+               days = sum(days),
+               hours = sum(hours),
+               fishing_days = sum(fishing_days),
+               fishing_hours = sum(fishing_hours),
+               fishing_energy = sum(fishing_energy)) %>% 
+  ungroup()
+
+fishing_connections_by_year$flag_country_name[fishing_connections_by_year$flag_iso3 == "BOL"] <- "Bolivia"
+fishing_connections_by_year$sovereign_flag_country_name[fishing_connections_by_year$flag_iso3 == "BOL"] <- "Bolivia"
+
+fishing_connections_by_year <- fishing_connections_by_year %>% 
+  filter(flag_iso3 != "PSE")
+
+summary_by_eez_by_year <- fishing_connections_by_year %>% 
+   mutate(country_name = countrycode::countrycode(eez_iso3, "iso3c", "country.name"),
+         country_name = case_when(
+           eez_iso3 == "ASC" ~ "Ascension",
+           eez_iso3 == "CPT" ~ "Clipperton",
+           eez_iso3 == "TAA" ~ "Tristan da Cunha",
+           TRUE ~ country_name
+         )) %>% 
+  group_by(year, country_name) %>% 
+  summarize(foreign_flags = n_distinct(sovereign_flag_iso3),
+            foreign_vessels = sum(vessels, na.rm = T),
+            fishing_days = sum(fishing_days, na.rm  = T),
+            fishing_hours = sum(fishing_hours, na.rm = T)) %>% 
+  rename(eez_name = country_name)
+```
+
+```{r}
+ranked_summary_by_eez_by_year <- summary_by_eez_by_year %>% 
+  group_by(year) %>% 
+  mutate(flags_rank = dense_rank(desc(foreign_flags)),
+         vessels_rank = dense_rank(desc(foreign_vessels)), 
+         days_rank = dense_rank(desc(fishing_days)),
+         hours_rank = dense_rank(desc(fishing_hours)))
+
+ranked_summary_by_eez_by_year %>% 
+  filter(eez_name == "Vanuatu")
+```
+
+```{r}
+top_ranks <- ranked_summary_by_eez_by_year %>% 
+  filter(hours_rank <= 95)
+
+top_ranks %>% filter(year == 2016)
+
+countries_16 <- top_ranks %>% 
+  ungroup() %>% 
+  filter(year == max(year)) %>%
+  mutate(year = as.numeric(year) + 0.03)%>% 
+  select(year, hours_rank, eez_name) %>% 
+  mutate(iso3 = countrycode::countrycode(eez_name, "country.name", "iso3c"),
+         country_name = countrycode::countrycode(iso3,"iso3c", "country.name.en"))
+
+countries_16$iso3[countries_16$eez_name == "Clipperton"] <- "CLP"
+
+countries_16 <- countries_16 %>% 
+  mutate(country_name = case_when(
+    iso3 == "BRN" ~ "Brunei",
+    iso3 == "PRK" ~ "North Korea",
+    iso3 == "CLP" ~ "Clipperton",
+    iso3 == "FLK" ~ "Falkland Islands",
+    iso3 == "GMB" ~ "Gambia",
+    iso3 == "FSM" ~ "Micronesia",
+    iso3 == "KOR" ~ "South Korea",
+    iso3 == "RUS" ~ "Russia",
+    iso3 == "SJM" ~ "Svalbard",
+    iso3 == "TWN" ~ "Taiwan",
+    iso3 == "SGS" ~ "South Georgia",
+    iso3 == "GBR" ~ "UK",
+    iso3 == "TZA" ~ "Tanzania",
+    iso3 == "USA" ~ "USA",
+    iso3 == "COD" ~ "Congo",
+    iso3 == "IRN" ~ "Iran",
+    iso3 == "UMI" ~ "U.S Minor Outlying Isl.",
+    TRUE ~ country_name))
+
+countries_13 <- top_ranks %>% 
+  ungroup() %>% 
+  filter(year == min(year)) %>%
+  mutate(year = as.numeric(year) - 0.03) %>% 
+  select(year, hours_rank, eez_name) %>% 
+  mutate(iso3 = countrycode::countrycode(eez_name, "country.name", "iso3c"),
+         country_name = countrycode::countrycode(iso3,"iso3c", "country.name.en"))
+
+
+countries_13 <- countries_13 %>% 
+  mutate(country_name = case_when(
+    iso3 == "BRN" ~ "Brunei",
+    iso3 == "PRK" ~ "North Korea",
+    iso3 == "CLP" ~ "Clipperton",
+    iso3 == "FLK" ~ "Falkland Islands",
+    iso3 == "GMB" ~ "Gambia",
+    iso3 == "FSM" ~ "Micronesia",
+    iso3 == "KOR" ~ "South Korea",
+    iso3 == "RUS" ~ "Russia",
+    iso3 == "SJM" ~ "Svalbard",
+    iso3 == "TWN" ~ "Taiwan",
+    iso3 == "SGS" ~ "South Georgia",
+    iso3 == "GBR" ~ "UK",
+    iso3 == "TZA" ~ "Tanzania",
+    iso3 == "USA" ~ "USA",
+    TRUE ~ country_name))
+
+```
+
+
+```{r }
+countries_13$iso3[countries_13$eez_name == "Clipperton"] <- "CLP"
+countries_13$country_name[countries_13$iso3 == "CLP"] <- "Clipperton"
+
+countries_16$country_name[countries_16$eez_name == "Ascension"] <- "Ascension"
+
+#colors <- c("Indonesia" = "#6a40fd", "Papua New Guinea" = "#198ce7", "Marshall Islands" = "#563d7c", "Guinea Bissau" = "#f1e05a",
+#           "Seychelles" = "aquamarine")
+
+colors <- c("Indonesia" = "#6a40fd")
+
+othercountries <- top_ranks %>% distinct(eez_name) %>% filter(!eez_name %in% names(colors)) %>% .$eez_name
+
+colors <- c(colors, setNames(rep("gray", length(othercountries)), othercountries))
+
+rank_plot <- ggplot(mapping = aes(x = year, y = hours_rank, group = eez_name, color = eez_name)) +
+  geom_line(size = 1, alpha = 0.25, data = top_ranks, show.legend = FALSE)+
+  geom_line(size = 1.5, data = top_ranks %>% filter(eez_name %in% names(colors)[colors != "gray"]), show.legend = FALSE)+
+  geom_point(size = 1, shape = 21,  alpha = 0.25, fill = "white", data = top_ranks, show.legend = FALSE) +
+  geom_point(size = 1, shape = 21, fill = "white" , data = top_ranks %>% filter(eez_name %in% names(colors)[colors != "gray"]), show.legend = FALSE) +
+  geom_point(size = 1.5, shape = 21, fill = "white", data = top_ranks, show.legend = FALSE) +
+  geom_text(data = countries_13, aes(label = country_name), hjust = 1, size = 2.5, show.legend = FALSE) +
+  geom_text(data = countries_16, aes(label = country_name), hjust = 0, size = 2.5, show.legend = FALSE) +
+  scale_color_manual(values = colors) +
+  labs(y = "Rank", x = "Year")+
+  scale_x_continuous(minor_breaks = c(2014, 2014, 2015, 2016),
+                   breaks = c(2013, 2014,2015,2016),
+                   labels = c(2013, 2014,2015,2016),
+                   limits = c(2012.5,2016.5), expand = c(.1,.1))+
+  theme_minimal()+
+  scale_y_reverse(breaks = c(1,10,20,30,40,50,60,70,80,90))+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+
+
+tiff(paste('saved_figures/rank_plot_indo_only.tiff',sep = ""), height = 21, width = 17, units = 'cm', 
+     compression = "lzw", res = 300)
+print(rank_plot)
+invisible(dev.off())
+
+
+ggsave(filename = "rank_plot_indo_only.pdf",
+       rank_plot,
+       device = 'pdf',
+       dpi = 300,
+       path = "saved_figures",
+       height = 21,
+       width = 17,
+       units = 'cm',
+       limitsize = FALSE)
+
+
+```
+
+## Fishing effort in Indonesia EEZ
+
+
+```{r}
+monthly_foreign_effort_in_Indonesia_EEZ <- foreign_DWF_effort %>%
+  filter(eez_name == "Indonesia") %>% 
+  mutate(date = as.character(lubridate::make_date(year, month))) %>% 
+  select(date, everything()) %>% 
+  ungroup() %>% 
+  group_by(date, flag_country_name) %>% 
+  summarise_at(vars(days, fishing_days, hours, fishing_hours, energy, fishing_energy), funs(sum)) %>% 
+  ungroup()
+
+write_csv(monthly_foreign_effort_in_Indonesia_EEZ, "saved_files/monthly_foreign_effort_in_Indonesia_EEZ.csv")
+```
+
+
+```{r}
+monthly_foreign_effort_in_Indonesia_EEZ %>% 
+  filter(flag_country_name == "China") %>% 
+  mutate(date = lubridate::date(date)) %>% 
+  group_by(date) %>% 
+  summarise(fishing_hours = sum(fishing_hours)) %>% 
+  ggplot(aes(date, fishing_hours))+
+  geom_point()+
+  theme_minimal()
+```
+
+## Fishing effort in all foreign regions
+
+```{r}
+all_foreign_vessels_hours_of_the_world_per_month <- foreign_DWF_effort %>% 
+  filter(eez_name != "high seas") %>% 
+  group_by(year, month) %>% 
+  summarise(vessels = n_distinct(mmsi),
+            days = sum(days),
+            fishing_days = sum(fishing_days),
+            fishing_hours = sum(fishing_hours),
+            fishing_energy = sum(fishing_energy)) %>% 
+  mutate(date = as.character(lubridate::make_date(year, month))) %>% 
+  select(date, everything()) %>% 
+  ungroup() %>% 
+  select(-year, -month) 
+
+write_csv(all_foreign_vessels_hours_of_the_world_per_month, "saved_files/all_foreign_vessels_and_effort_of_the_world_per_month.csv")
+```
+
+
+```{r}
+monthly_foreign_effort_all_countries_all_EEZ <- foreign_DWF_effort %>% 
+  filter(eez_name != "high seas") %>% 
+  group_by(year, month, flag_country_name, eez_name) %>% 
+  summarise(vessels = n_distinct(mmsi),
+            days = sum(days),
+            fishing_days = sum(fishing_days),
+            fishing_hours = sum(fishing_hours),
+            fishing_energy = sum(fishing_energy)) %>% 
+  mutate(date = as.character(lubridate::make_date(year, month))) %>% 
+  select(date, everything()) %>% 
+  ungroup() %>% 
+  select(-year, -month) 
+
+write_csv(monthly_foreign_effort_all_countries_all_EEZ,"saved_files/monthly_foreign_effort_all_countries_all_EEZ.csv")
+```
+
+```{r}
+number_of_eez_fished_per_year_for_each_country <- foreign_DWF_effort %>% 
+  filter(eez_name != 'high seas') %>% 
+  group_by(year, flag_country_name) %>% 
+  summarise(n_eez_fished = n_distinct(eez_name)) %>% 
+  arrange(desc(n_eez_fished))
+
+write_csv(number_of_eez_fished_per_year_for_each_country, "saved_files/number_of_eez_fished_per_year_for_each_country.csv")
+```
+
+### VMS
+```{sql, connection = BQ_connection, output.var = "vms_effort_per_year"}
+SELECT
+  YEAR(timestamp) year,
+  EXACT_COUNT_DISTINCT(mmsi) n_vessels,
+  SUM(hours) hours,
+  SUM(IF(nnet_score == 1, hours, 0)) fishing_hours
+FROM
+  [ucsb-gfw:vms.indo_vms_nn]
+WHERE
+  eez_id == "8492"
+GROUP BY
+  year
+```
+```{r}
+vms_effort_per_year %>% 
+  write_csv("saved_files/indonesia_vms_effort_per_year_inside_EEZ.csv")
+```
+
+```{sql, connection = BQ_connection, output.var = "vms_effort_per_month"}
+SELECT
+  YEAR(timestamp) year,
+  MONTH(timestamp) month,
+  EXACT_COUNT_DISTINCT(mmsi) n_vessels,
+  SUM(hours) hours,
+  SUM(IF(nnet_score == 1, hours, 0)) fishing_hours
+FROM
+  [ucsb-gfw:vms.indo_vms_nn]
+WHERE
+  eez_id == "8492"
+GROUP BY
+  year,
+  month
+```
+
+
+```{r}
+vms_effort_per_month %>% 
+  mutate(date = lubridate::make_date(year, month)) %>% 
+  ggplot(aes(date, fishing_hours))+
+  geom_point()
+
+vms_effort_per_month %>% 
+  mutate(date = lubridate::make_date(year, month)) %>% 
+  write_csv("saved_files/indonesia_vms_effort_per_month_inside_EEZ.csv")
+```
+
+```{r}
+vms_transmitters_trends_plot <- vms_effort_per_month %>% 
+  mutate(date = lubridate::make_date(year, month)) %>% 
+  ggplot(aes(date, n_vessels))+
+  geom_point()+
+  hrbrthemes::theme_ipsum()+
+  labs(y = "No. transmitters")
+
+tiff(paste('saved_figures/vms_transmitters_trends_plot.tiff',sep = ""), height = 12, width = 17, units = 'cm', 
+     compression = "lzw", res = 300)
+print(vms_transmitters_trends_plot)
+invisible(dev.off())
+```
+
+### Foreign effort by FAO region
+
+```{r}
+foreign_effort_by_FAO_region <- foreign_DWF_effort %>% 
+  filter(eez_name != "high seas") %>% 
+  group_by(year, FAO_region) %>% 
+  summarise(number_of_foreign_vessels = n_distinct(mmsi),
+            number_of_foreign_flags = n_distinct(sovereign_flag_iso3),
+            foreign_fishing_hours = sum(fishing_hours),
+            foreign_fishing_days = sum(fishing_energy))
+
+
+foreign_effort_by_FAO_region %>% 
+  filter(year == 2016) %>% 
+  arrange(desc(number_of_foreign_vessels))
+
+
+table(foreign_DWF_effort$eez_name)
+
+write_csv(foreign_effort_by_FAO_region, "saved_files/foreign_effort_by_FAO_region.csv")
+```
+
+

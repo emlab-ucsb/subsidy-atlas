@@ -24,7 +24,6 @@ library(ggspatial)
 library(RColorBrewer)
 library(raster)
 library(tidyverse)
-library(argosfilter)
 library(sf)
 library(leaflet)
 
@@ -135,7 +134,7 @@ plot_map_USA <- ggplot()+
 
 plot(plot_map_USA)
 
-
+### EEZ and Country Centroids
 EEZ_centroids <- sf::st_centroid(EEZ_map$geometry)
 
 ggplot(EEZ_centroids) +
@@ -145,9 +144,12 @@ ggplot(EEZ_centroids) +
   #geom_sf(aes(geometry = mid, size = AREA), show.legend = "point")
 
 
-country_centroids <- st_centroid((country_map$geometry)) %>% 
-  as_tibble() %>% 
-  setNames(c("lon", "lat"))
+country_centroids <- st_centroid((country_map$geometry)) 
+
+ggplot(country_centroids) +
+  geom_sf(data = EEZ_map, fill = "skyblue")+
+  geom_sf(colour = "red")
+  
   
 ######
 
@@ -157,6 +159,8 @@ country_centroids <- st_centroid((country_map$geometry)) %>%
 ```{r Juan Mayorga Code}
 
 ##Juan Mayorga Code
+
+## http://jsmayorga.com/post/mapping-the-global-network-of-transnational-fisheries/
 
 
 paths <- network_data_sf %>% 
