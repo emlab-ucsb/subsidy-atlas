@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-# min_hours_fished_cutoff <- 1
+min_hours_fished_cutoff <- 50
 number_of_top_countries <- 10
 ```
 
@@ -53,9 +53,10 @@ vessel_tidy<- vessel_list %>% ##Removed vessels fishing in their own EEZ's and h
   group_by(flag, eez_iso3) %>% 
   filter(flag != eez_iso3) %>% 
   filter(eez_iso3 != "High Seas") %>% 
+  #filter(fishing_hours_year_eez_fao >= min_hours_fished_cutoff) %>% 
   mutate(kwhr = engine_power_kw * fishing_hours_year_tot) %>% 
   mutate(kwhr_in_eez = engine_power_kw * fishing_hours_year_eez_fao)
-  
+
 
 length(unique(vessel_tidy$flag))
   
@@ -79,22 +80,7 @@ vessel_tidy_topflags <- vessel_list %>%
 ```
 
 
-```{r kat Tables}
 
-#table <- table_all %>%
- # mutate(rank = top_n) %>%
-  #filter(rank >= number_of_top_countries)
- #
-# list_of_countries <- table$country
-# 
-# for(i in 1:length(list_of_countries)){
-#   
-#   country_dat <- table %>%
-#     filter(country == list_of_countries[1])
-#   
-# }
-
-```
 
 ```{r Top Tables}
 
@@ -110,13 +96,13 @@ flag_vessel_number <- vessel_tidy %>%
 write_csv(flag_vessel_number, here::here("MW Results", "Final", "flag_vessel_number.csv"))
 
 flag_vessel_number_table <- flag_vessel_number %>%
-  top_n(20)
+  top_n(number_of_top_countries)
   
   
 kable(flag_vessel_number_table)
 
 
-png(filename = "flag_vessel_number_table.png", width=480,height=480,bg = "white")
+png(filename = "flag_vessel_number_table.png", width=600,height=600,bg = "white")
 grid.table(flag_vessel_number_table)
 dev.off()
 
@@ -131,13 +117,13 @@ flag_totaleffort <- vessel_tidy %>%
 write_csv(flag_totaleffort, here::here("MW Results", "Final", "flag_totaleffort.csv"))
 
 flag_totaleffort_table <- flag_totaleffort %>%
-  top_n(20)
+  top_n(number_of_top_countries)
   
   
 kable(flag_totaleffort_table)
 
 
-png(filename = "flag_totaleffort_table.png", width=480,height=480,bg = "white")
+png(filename = "flag_totaleffort_table.png", width=600,height=600,bg = "white")
 grid.table(flag_totaleffort_table)
 dev.off()
 
@@ -154,12 +140,12 @@ flag_totalkwhr <- vessel_tidy %>%
 write_csv(flag_totalkwhr, here::here("MW Results", "Final", "flag_totalkwhr.csv"))
 
 flag_totalkwhr_table <- flag_totalkwhr %>%
-  top_n(20)
+  top_n(number_of_top_countries)
   
   
 kable(flag_totalkwhr_table)
 
-png(filename = "flag_totalkwhr_table.png", width=480,height=480,bg = "white")
+png(filename = "flag_totalkwhr_table.png", width=600,height=600,bg = "white")
 grid.table(flag_totalkwhr_table)
 dev.off()
 
@@ -174,12 +160,12 @@ EEZ_vessel_number <- vessel_tidy %>%
 write_csv(EEZ_vessel_number, here::here("MW Results", "Final", "EEZ_vessel_number.csv"))
 
 EEZ_vessel_number_table <- EEZ_vessel_number %>%
-  top_n(20)
+  top_n(number_of_top_countries)
   
   
 kable(EEZ_vessel_number_table)
 
-png(filename = "EEZ_vessel_number_table.png", width=480,height=480,bg = "white")
+png(filename = "EEZ_vessel_number_table.png", width=600,height=600,bg = "white")
 grid.table(EEZ_vessel_number_table)
 dev.off()
 
@@ -194,12 +180,12 @@ EEZ_totaleffort <- vessel_tidy %>%
 write_csv(EEZ_totaleffort, here::here("MW Results", "Final", "EEZ_totaleffort.csv"))
 
 EEZ_totaleffort_table <- EEZ_totaleffort %>%
-  top_n(20)
+  top_n(number_of_top_countries)
   
   
 kable(EEZ_totaleffort_table)
 
-png(filename = "EEZ_totaleffort_table.png", width=480,height=480,bg = "white")
+png(filename = "EEZ_totaleffort_table.png", width=600,height=600,bg = "white")
 grid.table(EEZ_totaleffort_table)
 dev.off()
 
@@ -214,12 +200,12 @@ EEZ_totalkwhr <- vessel_tidy %>%
 write_csv(EEZ_totalkwhr, here::here("MW Results", "Final", "EEZ_totalkwhr.csv"))
 
 EEZ_totalkwhr_table <- EEZ_totalkwhr %>%
-  top_n(20)
+  top_n(number_of_top_countries)
   
   
 kable(EEZ_totalkwhr_table)
 
-png(filename = "EEZ_totalkwhr_table.png", width=480,height=480,bg = "white")
+png(filename = "EEZ_totalkwhr_table.png", width=600,height=600,bg = "white")
 grid.table(EEZ_totalkwhr_table)
 dev.off()
 
@@ -228,7 +214,28 @@ dev.off()
 ```
 
 
+```{r kat Tables}
 
+#table <- flag_vessel_number_table %>%
+ #mutate(rank = top_n) %>%
+  #filter(rank >= number_of_top_countries)
+ #
+list_of_countries <- flag_vessel_number_table$flag
+# 
+for(i in 1:length(list_of_countries)){
+  
+   country_dat <- flag_vessel_number_table %>%
+    filter(flag == list_of_countries[1])
+  
+ }
+
+for (i in 1:list_of_countries) {
+    if (surveys_adjusted$year[i] == 1984) {
+      print(surveys_adjusted$weight[i]*1.1)
+    } 
+}
+
+```
 
 ```{r Who is fishing in EEZ's}
 
@@ -374,30 +381,17 @@ final_results_2 <- merge(final_results_1, vessel_length, by = "flag") %>%
 final_results <- merge(final_results_2, vessel_tonnage, by = "flag") %>% 
   arrange(desc(total_kwhr))
 
-
-
-#View(final_results_effort)
+## Top 25 without china
 
 final_results_top25 <- final_results %>% 
   filter(flag != "CHN") %>% 
   top_n(25)
-
-#view(final_results_top25)
-
-#ggplot(final_results_top25, aes(x = total_vessels, y = total_kwhr)) +
-       #geom_point() +
-        #geom_text(aes(label = flag, hjust=0, vjust=0))
-      
-
-       
 
 
 #write_csv(final_results, "final_results.csv")
 
 
 ```
-
-
 
 
 ```{r mapping}
@@ -497,7 +491,9 @@ plot_map_CHN <- ggplot()+
   geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
   geom_sf(data = world_map, fill = "white")+
   geom_sf(data = world_map %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
-  geom_sf(data = eez_filtered_CHN, fill = "blue", alpha = 0.5)
+  geom_sf(data = eez_filtered_CHN, fill = "blue", alpha = 0.5) +
+  geom_path(data = EEZ_map, 
+            aes(long, lat, group = group), alpha = 0.5, color = "#fa6900") 
 
 plot_map_CHN
 
@@ -523,6 +519,27 @@ plot_map_USA
 
 ```
 
+```{r}
+
+countries_1 <- c('CHN','USA','TWN')
+
+dat_list = lapply(countries_1, function(i) {
+  st_as_sf(getData("EEZ_map", flag = i, level = 0))
+})
+
+m = leaflet() %>% addTiles()
+
+for (i in dat_list) {
+  m = mapview::addFeatures(map = m, 
+                           data = i, 
+                           weight = 3, 
+                           fillColor = 'purple', 
+                           color = 'purple')
+}
+
+m
+
+```
 
 
 
