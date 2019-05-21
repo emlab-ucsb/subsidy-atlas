@@ -102,11 +102,11 @@ plot_map_USA
 
 data(country_map)
 
-map_sf <- st_as_sf(country_map, coords = c("lon","lat")) %>% 
+countrymap_sf <- st_as_sf(country_map, coords = c("lon","lat")) %>% 
   st_centroid(country_map$geometry) %>% 
   st_set_crs(4326)
 
-map_coords <- unlist(st_geometry(map_sf)) %>% 
+countrymap_coords <- unlist(st_geometry(countrymap_sf)) %>% 
   matrix(ncol=2,byrow=TRUE) %>% 
   as_tibble() %>% 
   setNames(c("lon","lat")) 
@@ -116,7 +116,31 @@ country_names <- country_map %>%
   select(iso3)  
   
 
-centroid_coordinates_country <- cbind(country_names, map_coords) 
+centroid_coordinates_country <- cbind(country_names, countrymap_coords) %>% 
+  rename(flag = iso3) %>% 
+  arrange((flag))
+
+
+### Data frame of EEZ Centroids
+
+data(EEZ_map)
+
+EEZmap_sf <- st_as_sf(EEZ_map, coords = c("lon","lat")) %>% 
+  st_centroid(EEZ_map$geometry) %>% 
+  st_set_crs(4326)
+
+EEZmap_coords <- unlist(st_geometry(EEZmap_sf)) %>% 
+  matrix(ncol=2,byrow=TRUE) %>% 
+  as_tibble() %>% 
+  setNames(c("lon","lat")) 
+
+EEZ_names <- EEZ_map %>% 
+  as.data.frame() %>% 
+  select(ez_hs_c)  
+  
+
+centroid_coordinates_EEZ <- cbind(EEZ_names, EEZmap_coords) %>% 
+  rename(eez_iso3 = ez_hs_c)
 
 ##test
 
@@ -127,9 +151,9 @@ plot_map_USA <- ggplot()+
   geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
   geom_sf(data = country_map, fill = "white")+
   geom_sf(data = country_map %>% dplyr::filter(iso3 == "USA"), fill = "red") +
-  geom_sf(data = eez_filtered_USA, fill = "blue", alpha = 0.5) +
-  geom_point(data = CHNUSA, aes(x = lon, y = lat, fill = "green"))+
-  geom_path(data = CHNUSA, aes(x = lon, y = lat))
+  geom_sf(data = country_map, fill = "blue", alpha = 0.5) +
+  geom_point(data = EEZ_final_results %>% dplyr::filter(flag == "USA"), aes(x = lon, y = lat, fill = "green"))+
+  geom_path(data = EEZ_final_results, dplyr::filter(flag == "USA"), aes(x = lon, y = lat))
   #geom_curve(data = CHNUSA, aes(x= lon, y = lat))
 
 plot(plot_map_USA)

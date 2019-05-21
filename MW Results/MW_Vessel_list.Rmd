@@ -242,10 +242,12 @@ EEZ_vessels <- vessel_tidy %>%
 
 # Tidy eez connection map
 EEZ_tidy <- EEZ %>%
-  mutate(eez_fished = strsplit(d, ", ")) %>%
-        unnest(eez_fished) %>%
-        dplyr::select(eez_iso3, number_countries_in_EEZ, eez_fished) %>% 
-  arrange(desc(number_countries_in_EEZ))
+  mutate(flag = strsplit(d, ", ")) %>%
+        unnest(flag) %>%
+        dplyr::select(eez_iso3, number_countries_in_EEZ, flag) %>% 
+  #rename(eez_fished = eez_iso3) %>% 
+  select(eez_iso3, flag, number_countries_in_EEZ) %>% 
+  arrange(eez_iso3)
   
 
 write_csv(EEZ_tidy, here::here("MW Results", "Final", "EEZ_tidy.csv"))
@@ -308,7 +310,8 @@ vessel_eez <- vessel_tidy %>%
 ### EEZ Results: # vessels, total hours, and kwhr in each EEZ
 EEZ_results <- vessel_eez %>% 
   right_join(effort_eez, by=c("eez_iso3", "flag")) %>% 
-  right_join(kwhr_eez, by = c("eez_iso3" , "flag"))
+  right_join(kwhr_eez, by = c("eez_iso3" , "flag"))  
+   
   
 write_csv(EEZ_results, "EEZ_results.csv")
 
@@ -316,6 +319,25 @@ write_csv(EEZ_results, "EEZ_results.csv")
 
 ```
 
+```{r Combining final EEZ tables}
+
+
+EEZ_final_results <- EEZ_tidy %>% 
+  right_join(EEZ_results, by = c("eez_iso3", "flag")) %>% 
+  select(flag, eez_iso3, vessels_per_eez, effort_per_eez, kwhr) %>% 
+  right_join(centroid_coordinates_country, by = c("flag")) %>% 
+  rename(startlon = lon, startlat = lat) %>% 
+  right_join(centroid_coordinates_EEZ, by = c("eez_iso3")) %>%
+  rename(endlon = lon, endlat = lat) %>%
+  arrange(flag) %>% 
+  drop_na() 
+  
+
+write_csv(EEZ_final_results, here::here("MW Results","Final", "EEZ_final_results.csv"))
+
+
+
+```
 
 
 
@@ -361,7 +383,7 @@ vessel_tonnage <- vessel_tidy %>%
 ```
 
 
-```{r Final results: #vessels, kwrh, average length, and average tonnage per country}
+```{r Final flag results: #vessels, kwrh, average length, and average tonnage per country}
 
 ## Combining number of vessels and total effort
 
