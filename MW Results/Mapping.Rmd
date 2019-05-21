@@ -53,20 +53,33 @@ r <- rasterize(EEZ_map, raster())
 china <- EEZ_tidy %>%
   dplyr::filter(eez_iso3 == "CHN")
 
+
+## check naming conventions of columns, changed from earlier today
 eez_filtered_CHN <- EEZ_map %>%
-  dplyr::filter(ez_hs_c %in% china$eez_fished)
+  dplyr::filter(ez_hs_c %in% china$flag)
 
 plot_map_CHN <- ggplot()+
   geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
   geom_sf(data = world_map, fill = "white")+
   geom_sf(data = world_map %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
-  geom_sf(data = eez_filtered_CHN, fill = "blue", alpha = 0.5) 
+  geom_sf(data = eez_filtered_CHN, fill = "blue", alpha = 0.5) +
+  geom_sf(data = EEZ_final_results %>% dplyr::filter(flag =="CHN"), col = "orange")
   #geom_path(data = EEZ_map, 
             #aes(lon, lat, group = group), alpha = 0.5, color = "#fa6900") 
 
+#EEZ_final_results %>% 
+  #filter(flag == "CHN") %>% 
+  #filter(eez_iso3 == "USA", flag == "CHN") %>% 
+  #ggplot() +
+  #borders()+
+  #geom_sf(col = "blue")+
+ # borders()+
+  #theme_minimal()+
+  #coord_sf(datum = NA)
+
 plot_map_CHN
 
-
+ggsave(filename = "plot_map_CHN.png")
 ### USA test
 
 

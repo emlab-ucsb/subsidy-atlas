@@ -341,10 +341,12 @@ EEZ_final_results <- EEZ_final_results1 %>%
   st_sfc(crs = 4326) %>%
   st_sf(geometry = .)%>%
   bind_cols(EEZ_final_results) %>%
-  select(everything(), geometry)
+  select(everything(), geometry) %>% 
+  as.data.frame()
 
 EEZ_final_results %>% 
-  filter(eez_iso3 == "BRA", flag == "CHN") %>% 
+  filter(flag == "CHN") %>% 
+  #filter(eez_iso3 == "USA", flag == "CHN") %>% 
   ggplot() +
   borders()+
   geom_sf(col = "blue")+
@@ -356,6 +358,8 @@ EEZ_final_results %>%
 
 
 write_csv(EEZ_final_results, here::here("MW Results","Final", "EEZ_final_results.csv"))
+
+ggsave(filename = "EEZ_final_results.png")
 
 
 
