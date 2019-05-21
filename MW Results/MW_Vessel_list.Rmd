@@ -26,6 +26,7 @@ library(raster)
 library(gstat)
 library(tidyverse)
 library(dplyr)
+library(purrr)
 library(ggplot2)
 library(here)
 library(dplyr)
@@ -322,7 +323,7 @@ write_csv(EEZ_results, "EEZ_results.csv")
 ```{r Combining final EEZ tables}
 
 
-EEZ_final_results <- EEZ_tidy %>% 
+EEZ_final_results1 <- EEZ_tidy %>% 
   right_join(EEZ_results, by = c("eez_iso3", "flag")) %>% 
   select(flag, eez_iso3, vessels_per_eez, effort_per_eez, kwhr) %>% 
   right_join(centroid_coordinates_country, by = c("flag")) %>% 
@@ -330,8 +331,29 @@ EEZ_final_results <- EEZ_tidy %>%
   right_join(centroid_coordinates_EEZ, by = c("eez_iso3")) %>%
   rename(endlon = lon, endlat = lat) %>%
   arrange(flag) %>% 
-  drop_na() 
-  
+  drop_na()
+
+EEZ_final_results <- EEZ_final_results1 %>% 
+  select(startlon, startlat, endlon, endlat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .)%>%
+  bind_cols(EEZ_final_results) %>%
+  select(everything(), geometry)
+
+EEZ_final_results %>% 
+  filter(eez_iso3 == "BRA", flag == "CHN") %>% 
+  ggplot() +
+  borders()+
+  geom_sf(col = "blue")+
+  borders()+
+  theme_minimal()+
+  coord_sf(datum = NA)
+
+
+
 
 write_csv(EEZ_final_results, here::here("MW Results","Final", "EEZ_final_results.csv"))
 
