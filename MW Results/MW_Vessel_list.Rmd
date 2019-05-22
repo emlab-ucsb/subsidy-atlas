@@ -344,18 +344,8 @@ EEZ_final_results <- EEZ_final_results1 %>%
   select(everything(), geometry) %>% 
   as.data.frame()
 
-EEZ_final_results %>% 
-  filter(flag == "CHN") %>% 
-  #filter(eez_iso3 == "USA", flag == "CHN") %>% 
-  ggplot() +
-  borders()+
-  geom_sf(col = "blue")+
-  borders()+
-  theme_minimal()+
-  coord_sf(datum = NA)
 
-
-
+  
 
 write_csv(EEZ_final_results, here::here("MW Results","Final", "EEZ_final_results.csv"))
 
@@ -437,23 +427,23 @@ write_csv(final_results, "final_results.csv")
 
 ```{r}
 
-countries_1 <- c('CHN','USA','TWN')
+#countries_1 <- c('CHN','USA','TWN')
 
-dat_list = lapply(countries_1, function(i) {
-  st_as_sf(getData("EEZ_map", flag = i, level = 0))
-})
+#dat_list = lapply(countries_1, function(i) {
+  #st_as_sf(getData("EEZ_map", flag = i, level = 0))
+#})
 
-m = leaflet() %>% addTiles()
+#m = leaflet() %>% addTiles()
 
-for (i in dat_list) {
-  m = mapview::addFeatures(map = m, 
-                           data = i, 
-                           weight = 3, 
-                           fillColor = 'purple', 
-                           color = 'purple')
-}
+#for (i in dat_list) {
+  #m = mapview::addFeatures(map = m, 
+                           #data = i, 
+                           #weight = 3, 
+                           #fillColor = 'purple', 
+                           #color = 'purple')
+#}
 
-m
+#m
 
 ```
 
