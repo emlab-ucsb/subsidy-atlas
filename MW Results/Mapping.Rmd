@@ -93,6 +93,8 @@ plot_map_ARG
 
 ggsave(filename = "plot_map_ARG.png")
 
+
+
 ### USA TESt
 
 USA <- EEZ_final_results %>%
