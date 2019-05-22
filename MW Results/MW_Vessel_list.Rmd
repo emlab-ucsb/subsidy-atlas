@@ -43,6 +43,8 @@ library(ggrepel)
 library(ggspatial)
 library(RColorBrewer)
 library(leaflet)
+library(geosphere)
+library(rnaturalearth)
 
 
 
@@ -320,10 +322,91 @@ write_csv(EEZ_results, "EEZ_results.csv")
 
 ```
 
+```{r Centroid Data Frame}
+
+##Map for EEZ's
+EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+  st_transform(crs = 4326)
+
+
+##Map for country boundaries
+country_map <- read_sf(dsn = here::here("data", "shapefiles", "world_happy_180"), layer = "world_happy_180") %>%   st_transform(crs = 4326)
+
+
+### Data frame of country centroids
+
+
+
+data(country_map)
+
+countrymap_sf <- st_as_sf(country_map, coords = c("lon","lat")) %>% 
+  st_centroid(country_map$geometry) %>% 
+  st_set_crs(4326)
+
+countrymap_coords <- unlist(st_geometry(countrymap_sf)) %>% 
+  matrix(ncol=2,byrow=TRUE) %>% 
+  as_tibble() %>% 
+  setNames(c("lon","lat")) 
+
+country_names <- country_map %>% 
+  as.data.frame() %>% 
+  select(iso3)  
+  
+
+centroid_coordinates_country <- cbind(country_names, countrymap_coords) %>% 
+  rename(flag = iso3) %>% 
+  arrange((flag))
+
+
+### Data frame of EEZ Centroids
+
+data(EEZ_map)
+
+EEZmap_sf <- st_as_sf(EEZ_map, coords = c("lon","lat")) %>% 
+  st_centroid(EEZ_map$geometry) %>% 
+  st_set_crs(4326)
+
+EEZmap_coords <- unlist(st_geometry(EEZmap_sf)) %>% 
+  matrix(ncol=2,byrow=TRUE) %>% 
+  as_tibble() %>% 
+  setNames(c("lon","lat")) 
+
+EEZ_names <- EEZ_map %>% 
+  as.data.frame() %>% 
+  select(ez_hs_c)  
+  
+
+centroid_coordinates_EEZ <- cbind(EEZ_names, EEZmap_coords) %>% 
+  rename(eez_iso3 = ez_hs_c)
+
+
+
+### EEZ and Country Centroids
+EEZ_centroids <- sf::st_centroid(EEZ_map$geometry)
+
+#ggplot(EEZ_centroids) +
+  #geom_sf(data = EEZ_map, fill = "skyblue")+
+  #geom_sf(colour = "red") 
+  ## #+
+  #geom_sf(aes(geometry = mid, size = AREA), show.legend = "point")
+
+
+country_centroids <- st_centroid((country_map$geometry)) 
+
+#ggplot(country_centroids) +
+  #geom_sf(data = EEZ_map, fill = "skyblue")+
+  #geom_sf(colour = "red")
+  
+  
+######
+
+```
+
+
 ```{r Combining final EEZ tables}
 
 
-EEZ_final_results1 <- EEZ_tidy %>% 
+EEZ_final_results_table <- EEZ_tidy %>% 
   right_join(EEZ_results, by = c("eez_iso3", "flag")) %>% 
   select(flag, eez_iso3, vessels_per_eez, effort_per_eez, kwhr) %>% 
   right_join(centroid_coordinates_country, by = c("flag")) %>% 
@@ -333,16 +416,24 @@ EEZ_final_results1 <- EEZ_tidy %>%
   arrange(flag) %>% 
   drop_na()
 
-EEZ_final_results <- EEZ_final_results1 %>% 
+EEZ_final_results <- EEZ_final_results_table %>% 
   select(startlon, startlat, endlon, endlat) %>% 
   purrr::transpose() %>% 
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
   purrr::map(st_linestring) %>%
   st_sfc(crs = 4326) %>%
-  st_sf(geometry = .)%>%
-  bind_cols(EEZ_final_results) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(EEZ_final_results_table) %>%
   select(everything(), geometry) %>% 
-  as.data.frame()
+  st_segmentize(units::set_units(100,km)) %>% 
+  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
+  sf::st_sf(crs = 4326)
+
+
+  
+
+
 
 
   
@@ -425,6 +516,7 @@ write_csv(final_results, "final_results.csv")
 
 
 
+
 ```{r}
 
 #countries_1 <- c('CHN','USA','TWN')
@@ -451,35 +543,30 @@ write_csv(final_results, "final_results.csv")
 
 ```{r map script from kat}
 
-(network_with_color_gradient <- ggplot() +
-   geom_polygon(data = world_df, aes(long, lat, group = group), 
-               fill = "grey8", color = "grey8", size = 0.1) +
-   geom_path(data = all_routes_df, 
-            aes(long, lat, group = group, col = normalized_distance , alpha = fishing_hours),  show.legend = NA) +
-   geom_point(data = network_data %>% 
-                group_by(end_lon,end_lat) %>% 
-                summarize(fishing_days = sum(fishing_days)), 
-              aes(end_lon, end_lat, size = fishing_days), col = "orange", shape = 21, stroke = 1.5)+
-   scale_size_continuous(range = c(0.5,10)) +
-   scale_alpha_continuous(range = c(0.3,1))+
-   theme_minimal()+
-   theme(panel.grid.major = element_blank(),
-         panel.grid.minor = element_blank(),
-         panel.background = element_rect(fill = "white",
-                                 colour = "white"),
-         axis.title = element_blank(),
-         axis.text = element_blank(),
-         axis.ticks = element_blank()) +
-   guides(colour =  FALSE, alpha = F, size = F) +
-   scale_color_gradient2(low = "#0571b0", mid = "#0571b0", midpoint = .5, high = "#b2182b"))
+#(network_with_color_gradient <- ggplot() +
+   #geom_polygon(data = world_df, aes(long, lat, group = group), 
+              # fill = "grey8", color = "grey8", size = 0.1) +
+  # geom_path(data = all_routes_df, 
+            #aes(long, lat, group = group, col = normalized_distance , alpha = fishing_hours),  show.legend = NA) +
+   #geom_point(data = network_data %>% 
+               # group_by(end_lon,end_lat) %>% 
+               # summarize(fishing_days = sum(fishing_days)), 
+             # aes(end_lon, end_lat, size = fishing_days), col = "orange", shape = 21, stroke = 1.5)+
+   #scale_size_continuous(range = c(0.5,10)) +
+   #scale_alpha_continuous(range = c(0.3,1))+
+   #theme_minimal()+
+   #theme(panel.grid.major = element_blank(),
+         #panel.grid.minor = element_blank(),
+         #panel.background = element_rect(fill = "white",
+                                 #colour = "white"),
+         #axis.title = element_blank(),
+         #axis.text = element_blank(),
+         #axis.ticks = element_blank()) +
+   #guides(colour =  FALSE, alpha = F, size = F) +
+   #scale_color_gradient2(low = "#0571b0", mid = "#0571b0", midpoint = .5, high = "#b2182b"))
 
 ```
 
 
-```{r}
 
-#continue maps with final coords
-#
-
-```
 
