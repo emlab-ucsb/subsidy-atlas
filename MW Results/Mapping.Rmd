@@ -109,7 +109,7 @@ EEZ_final_results_USA <- EEZ_final_results%>%
 
 plot_map_USA <- ggplot()+
   geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
-  geom_sf(data = country_map, fill = "white")+
+  geom_sf(data = country_map, fill = "white") +
   geom_sf(data = country_map %>% dplyr::filter(iso3 == "USA"), fill = "red") +
   geom_sf(data = eez_filtered_USA, fill = "blue", alpha = 0.5)+
   geom_sf(data = EEZ_final_results_USA, col = "orange" )

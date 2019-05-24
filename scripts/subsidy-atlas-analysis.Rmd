@@ -466,8 +466,55 @@ We then match these centroids to each of our top flag states, as well as all EEZ
 ```{r}
 flag_state_mapping <- flag_state_combinations %>%
   left_join(centroid_coordinates_flag, by = c("flag" = "flag")) %>%
-  left_join(centroid_coordinates_EEZ, by = c("eez_code" = "eez_code"))
+  left_join(centroid_coordinates_EEZ, by = c("eez_code" = "eez_code")) %>% 
+  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(flag_state_mapping) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
+  sf::st_sf(crs = 4326)
 ```
+
+```{r China Map}
+
+# China as a test plot
+china <- flag_state_mapping %>%
+  dplyr::filter(flag == "CHN")
+
+
+## check naming conventions of columns, changed from earlier today
+eez_filtered_CHN <- EEZ_map %>%
+  dplyr::filter(name %in% china$eez_name)
+
+EEZ_final_results_CHN <- flag_state_mapping%>% 
+  filter(flag == "CHN") 
+  #filter(eez_iso3 == "USA", flag == "CHN") %>% 
+
+plot_map_CHN <- ggplot()+
+  geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
+  geom_sf(data = country_map, fill = "white")+
+  geom_sf(data = country_map %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
+  geom_sf(data = eez_filtered_CHN , fill = "blue", alpha = 0.5) +
+  geom_sf(data = EEZ_final_results_CHN, col = "darkorange", alpha = 0.2) +  #%>% dplyr::filter(flag =="CHN"), col = "orange")
+  theme_minimal() +
+  labs(title = "Global Network of Chinese Distant Water Fishing Fleets")
+  
+  
+
+plot_map_CHN
+
+ggsave(filename = "plot_map_CHN.png")
+
+
+
+```
+
 
 
 
