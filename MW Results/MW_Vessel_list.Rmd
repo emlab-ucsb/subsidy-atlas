@@ -336,7 +336,6 @@ country_map <- read_sf(dsn = here::here("data", "shapefiles", "world_happy_180")
 ### Data frame of country centroids
 
 
-
 data(country_map)
 
 countrymap_sf <- st_as_sf(country_map, coords = c("lon","lat")) %>% 
