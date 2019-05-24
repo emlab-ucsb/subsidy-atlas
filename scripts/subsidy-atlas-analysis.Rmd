@@ -470,6 +470,8 @@ flag_state_mapping <- flag_state_combinations %>%
 ```
 
 
+
+
 # Identify top DW fishing fleets by EEZ
 
 We identify the top `r number_of_top_countries_eez` EEZs in which DW fleets fish. We consider the following metrics:
@@ -544,5 +546,23 @@ In order to make our connection plots, we again need the centroids of each EEZ a
 eez_mapping <- eez_combinations %>%
   left_join(centroid_coordinates_EEZ, by = c("eez_code" = "eez_code")) %>%
   left_join(centroid_coordinates_flag, by = c("flag" = "flag")) 
+
+# There are some flag states for which we need to manually assign centroids (mostly small island states not included in the world map because they don't show up)
+# Tuvalu (TUV)
+eez_mapping$flag_lon[eez_mapping$flag == "TUV"] <- centroid_coordinates_EEZ$eez_lon[centroid_coordinates_EEZ$eez_code == 8326]
+eez_mapping$flag_lat[eez_mapping$flag == "TUV"] <- centroid_coordinates_EEZ$eez_lat[centroid_coordinates_EEZ$eez_code == 8326]
+
+# Réunion (REU)
+eez_mapping$flag_lon[eez_mapping$flag == "REU"] <- centroid_coordinates_EEZ$eez_lon[centroid_coordinates_EEZ$eez_code == 8338]
+eez_mapping$flag_lat[eez_mapping$flag == "REU"] <- centroid_coordinates_EEZ$eez_lat[centroid_coordinates_EEZ$eez_code == 8338]
+
+# Bonaire, Sint Eustatius and Saba (BES)
+eez_mapping$flag_lon[eez_mapping$flag == "BES"] <- centroid_coordinates_EEZ$eez_lon[centroid_coordinates_EEZ$eez_code == 26520]
+eez_mapping$flag_lat[eez_mapping$flag == "BES"] <- centroid_coordinates_EEZ$eez_lat[centroid_coordinates_EEZ$eez_code == 26520]
+
+# Guatemala - old code (GCA)
+eez_mapping$flag_lon[eez_mapping$flag == "GCA"] <- centroid_coordinates_flag$flag_lon[centroid_coordinates_flag$flag == "GTM"]
+eez_mapping$flag_lat[eez_mapping$flag == "GCA"] <- centroid_coordinates_flag$flag_lat[centroid_coordinates_flag$flag == "GTM"]
+
 ```
 
