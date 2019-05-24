@@ -424,7 +424,7 @@ top_flag_states <- flag_state_ranking_top$flag
 
 flag_state_combinations <- dw_effort_final %>%
   dplyr::filter(flag %in% top_flag_states) %>%
-  distinct(flag, eez_code, eez_territory_iso3) %>%
+  distinct(flag, eez_code = as.numeric(eez_code)) %>%
   arrange(flag)
 ```
 
@@ -443,7 +443,7 @@ EEZ_map_centroids <- EEZ_map %>%
 centroid_coordinates_EEZ <- tibble(eez_code = EEZ_map_centroids$eez_code,
                                    eez_name = EEZ_map_centroids$eez_name) %>% 
   bind_cols(do.call(rbind, st_geometry(EEZ_map_centroids)) %>% 
-    as_tibble() %>% setNames(c("lon","lat"))) %>%
+    as_tibble() %>% setNames(c("eez_lon","eez_lat"))) %>%
   arrange(eez_code)
 
 # Get centroids of each flag state
@@ -456,7 +456,7 @@ country_map_centroids <- country_map %>%
 
 centroid_coordinates_flag <- tibble(flag = country_map$iso3) %>% 
   bind_cols(do.call(rbind, st_geometry(country_map_centroids)) %>% 
-    as_tibble() %>% setNames(c("lon","lat"))) %>%
+    as_tibble() %>% setNames(c("flag_lon","flag_lat"))) %>%
   arrange(flag)
 
 ```
@@ -464,9 +464,10 @@ centroid_coordinates_flag <- tibble(flag = country_map$iso3) %>%
 We then match these centroids to each of our top flag states, as well as all EEZs in which DW vessels from these states fish. 
 
 ```{r}
-
+flag_state_mapping <- flag_state_combinations %>%
+  left_join(centroid_coordinates_flag, by = c("flag" = "flag")) %>%
+  left_join(centroid_coordinates_EEZ, by = c("eez_code" = "eez_code"))
 ```
-
 
 
 # Identify top DW fishing fleets by EEZ
@@ -533,6 +534,15 @@ top_eezs <- EEZ_ranking_top$eez_code
 
 eez_combinations <- dw_effort_final %>%
   dplyr::filter(eez_code %in% top_eezs) %>%
-  distinct(eez_code, eez_territory_iso3, flag) %>%
+  distinct(eez_code = as.numeric(eez_code), flag) %>%
   arrange(eez_code)
 ```
+
+In order to make our connection plots, we again need the centroids of each EEZ and flag state, which we match to each of our top EEZs, as well as to all flag states from which vessels are fishing in each EEZ.
+
+```{r}
+eez_mapping <- eez_combinations %>%
+  left_join(centroid_coordinates_EEZ, by = c("eez_code" = "eez_code")) %>%
+  left_join(centroid_coordinates_flag, by = c("flag" = "flag")) 
+```
+
