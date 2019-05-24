@@ -57,8 +57,14 @@ ucsb_project <-  "ucsb-gfw"
 gfw_project <- "world-fishing-827"
 
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- T
+rerun_gfw <- F
 
+# Set benchmarks 
+number_of_top_countries_flag <- 10
+number_of_top_countries_eez <- 10
+
+# Choose analysis year (2012 - 2018)
+analysis_year <- 2018
 ```
 
 # Data pull from Global Fishing Watch
@@ -181,23 +187,25 @@ bq_table(project = ucsb_project, table = "all_dw_fishing_effort_by_eez", dataset
 all_dw_fishing_effort_by_eez <- bq_project_query(ucsb_project, sql2, destination_table = bq_table(project = ucsb_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
   bq_table_download(max_results = Inf)
 
-all_dw_fishing_effort_by_eez <- all_dw_fishing_effort_by_eez %>%
+dw_effort <- all_dw_fishing_effort_by_eez %>%
   mutate(fishing_KWh = fishing_hours_year_eez*engine_power_kw,
          fishing_KW_days = fishing_days_year_eez*engine_power_kw)
+dw_effort[dw_effort == "NA"] <- NA
+dw_effort$flag[is.na(dw_effort$flag)] <- "UNK"
 
-write_csv(all_dw_fishing_effort_by_eez, path = paste0(results_dir, "all_dw_fishing_effort_by_eez.csv"))
+write_csv(dw_effort, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
 
 } else{
   
 # Pull local stored copy of the data 
-dw_effort <- read_csv(paste0(results_dir, "all_dw_fishing_effort_by_eez.csv"))
+dw_effort <- read_csv(paste0(results_dir, "RAW_dw_effort_by_eez.csv"), col_types = "icccnnncccccccccccccninn")
   
 }
 ```
 
-# Country/territory naming
+# Naming of political entities
 
-Based on comments recieved by the SFG team on other aspects of the subsidies project, our naming of flag states and EEZ states and sovereigns needs to be extremely deliberate. We therefore take the following approach to country names. We use the `codelist` data frame from the `countrycode` package as a starting point to extract the ISO-3 character codes of each entity, as well as names in English from four sources: 1) the `countrycode` package, 2) the FAO, 3) the United Nations, and 4) the World Bank. 
+Based on comments recieved by the SFG team on other aspects of the subsidies project, our naming of flag states and EEZ states needs to be extremely deliberate. We therefore take the following approach to naming political entities. We use the `codelist` data frame from the `countrycode` package as a starting point to extract the ISO-3 character codes of each entity, as well as names in English from four sources: 1) the `countrycode` package, 2) the FAO, 3) the United Nations, and 4) the World Bank. 
 
 For the purposes of our maps and figures, the display name of each politial entity is determined with the following heiarchy. If available, names from the World Bank are used. If no official name exists for an entitry from the World Bank, we instead use names from the FAO. If no official name exists for an entity from either the World Bank or the FAO, we instead use names from the broader United Nations.
 
@@ -207,17 +215,39 @@ country_list <- codelist %>%
   mutate(official_name = case_when(!is.na(wb.name) ~ wb.name,
                              !is.na(fao.name) ~ fao.name,
                              !is.na(un.name.en) ~ un.name.en,
-                             TRUE ~ country.name.en))
+                             TRUE ~ country.name.en)) %>%
+  dplyr::filter(!is.na(iso3c))
 ```
 
 We then assign these names to the flag states of vessels, as well as to the EEZ states and sovereigns in the GFW database by matching ISO-3 character codes of each entity. 
 
 ```{r}
-# All sovereignty pairings 
+# Sovereignty pairings from EEZs
 sovereign_pairings <- dw_effort %>%
   distinct(eez_sovereign_iso3, eez_territory_iso3) %>%
-  arrange(eez_sovereign_iso3) %>%
-  na.omit()
+  rename(flag_sovereign = eez_sovereign_iso3, flag = eez_territory_iso3) %>%
+  dplyr::filter(flag_sovereign != "NA", flag != "NA") %>%
+  na.omit() %>%
+  arrange(flag)
+
+# Custom sovereignty pairings that are missing
+c_sovereign_pairings <- tibble(flag = c("BLZ", "ARM", "ROM", "AUT", "SRB", "CHE", "LIE", "UNK", "SVK", "MNG", "IRQ", "JOR", "HKG", "NER", "GCA", "BOL", "LSO", "HUN", "KHM", "AFG")) %>%
+  left_join(country_list %>% dplyr::select(iso3c, official_name), by = c("flag" = "iso3c"))
+c_sovereign_pairings$official_name[c_sovereign_pairings$flag == "ROM"] <- country_list$official_name[country_list$iso3c == "ROU"]
+c_sovereign_pairings$official_name[c_sovereign_pairings$flag == "UNK"] <- "Unknown"
+c_sovereign_pairings$official_name[c_sovereign_pairings$flag == "GCA"] <- country_list$official_name[country_list$iso3c == "GTM"]
+
+c_sovereign_pairings <- c_sovereign_pairings %>%
+  mutate(flag_sovereign = flag) 
+c_sovereign_pairings$flag_sovereign[c_sovereign_pairings$flag_sovereign == "HKG"] <- "CHN"
+
+# Put them all back together
+sovereign_pairings_all <- sovereign_pairings %>%
+  bind_rows(c_sovereign_pairings %>% dplyr::select(flag_sovereign, flag))
+
+# Add sovereign state to each vessel
+dw_effort <- dw_effort %>%
+  left_join(sovereign_pairings_all, by = c("flag" = "flag"))
 
 # Rename flag states
 dw_effort_renamed <- dw_effort %>%
@@ -230,17 +260,49 @@ dw_effort_renamed <- dw_effort_renamed %>%
   rename(eez_territory_name = official_name) %>%
   dplyr::select(-eez_territory)
 
+dw_effort_renamed$eez_territory_name[dw_effort_renamed$eez_territory_iso3 == "ASC"] <- country_list$official_name[country_list$iso3c == "SHN"]
+dw_effort_renamed$eez_territory_name[dw_effort_renamed$eez_territory_iso3 == "TAA"] <- country_list$official_name[country_list$iso3c == "SHN"]
+
 # Rename EEZ sovereign names
 dw_effort_renamed <- dw_effort_renamed %>%
   left_join(country_list %>% dplyr::select(iso3c, official_name), by = c("eez_sovereign_iso3" = "iso3c")) %>%
   rename(eez_sovereign_name = official_name) %>%
   dplyr::select(-eez_sovereign)
+dw_effort_renamed$eez_sovereign_iso3[dw_effort_renamed$eez_sovereign_iso3 == "TWN"] <- "CHN" # Check on this - what's the most politically sensitive way of doing this... 
+
+# Rename EEZ sovereign2 names
+dw_effort_renamed <- dw_effort_renamed %>%
+  left_join(country_list %>% dplyr::select(iso3c, official_name), by = c("eez_sovereign2_iso3" = "iso3c")) %>%
+  rename(eez_sovereign2_name = official_name) %>%
+  dplyr::select(-eez_sovereign2)
+
+dw_effort_renamed$eez_sovereign2_iso3[dw_effort_renamed$eez_sovereign2_name == "Comores"] <- "COM"
+
+# Rename EEZ sovereign3 names
+dw_effort_renamed <- dw_effort_renamed %>%
+  left_join(country_list %>% dplyr::select(iso3c, official_name), by = c("eez_sovereign3_iso3" = "iso3c")) %>%
+  rename(eez_sovereign3_name = official_name) %>%
+  dplyr::select(-eez_sovereign3)
+
+# Rematch flag states with eez states/sovereigns 
+dw_effort_cleaned <- dw_effort_renamed %>%
+  dplyr::filter(flag != eez_territory_iso3) %>%
+  dplyr::filter(flag != eez_sovereign_iso3 | flag != eez_sovereign2_iso3 | flag != eez_sovereign3_iso3)
+
+#write_csv(dw_effort_cleaned, path = paste0(results_dir, "clean_dw_fishing_effort_by_eez.csv"))
 
 ```
 
 # European Union vessels
 
 Vessels flagged to EU member states have the right to fish in the EEZs of other EU member states, therefore we do not include these instances as "distant water fishing". In order to remove these from our dataset, we first need create a list of EU member states (including remote regions), as well as non-member states with with the EU has fishing agreements (i.e. Norway and Iceland). 
+
+We define "intra-EU fishing" as fishing activity that meets one of the following criteria: 
+1. The flag state of the vessel is a member state of the EU (or Norway, Svalbard and Jan Mayen, and Iceland) and the EEZ in which it is fishing belongs to a member state of the EU (or Norway, Svalbard and Jan Mayen, and Iceland);
+2. The sovereign flag state of the vessel is a member state of the EU (or Norway, Svalbard and Jan Mayen, and Iceland) and the EEZ in which it is fishing belongs to a member state of the EU (or Norway, Svalbard and Jan Mayen, and Iceland)
+
+We do not consider the following to be "intra-EU fishing" (see below for "sovereign fishing"): 
+1. The flag state of the vessel is a member state of the EU (or Norway, Svalbard and Jan Mayen, and Iceland) and the EEZ in which it is fishing belongs to a territory or distant region of the EU. 
 
 ```{r}
 # EU member states
@@ -256,66 +318,137 @@ eu_distant_states <- c('WLF', 'GUF', 'SXM', 'SPM', 'MAF', 'MYT', 'BLM', 'REU', '
 eu_northern_agreement <- c("NOR", "SJM", "ISL")
 
 # Identify flag/eez pairings which we're excluding from "distant water" because of the EU relationship between nations
-dw_effort_non_eu <- dw_effort_renamed %>%
+dw_effort_findEU <- dw_effort_cleaned %>%
   mutate(is_EU = ifelse(flag %in% c(eu_states, eu_northern_agreement) & eez_territory_iso3 %in% c(eu_states, eu_northern_agreement)|
-                      flag %in% c(eu_states, eu_northern_agreement) & eez_sovereign_iso3 %in% c(eu_states, eu_northern_agreement),
-                    TRUE,
-                    FALSE)) %>%
-  dplyr::filter(!is_EU)
+                      flag_sovereign %in% c(eu_states, eu_northern_agreement) & eez_territory_iso3 %in% c(eu_states, eu_northern_agreement), TRUE, FALSE))
+
 ```
  
 # Sovereignty issues
 
 If the sovereign flag state of a vessel is the same as the sovereign state of the EEZ in which it's fishing, this connection may still be considered to be distant water fishing (e.g. US vessel fishing in Palmyra Atoll), though this is generally not considered to be foreign distant water fishing. Let's add a field identifying effort in which this is the case. 
 
-```{r cars}
-# Raw (ish) vessel info - previously pulled from GFW and cleaned up slightly. 
-# Will change this over the weekend so the full process is documented in one place
-vessel_info <- read.csv(here::here("data", "GFW", "EDIT_FV_effort_by_eez_and_region_2018.csv"))
+We descibe "sovereign fishing" as fishing activity that meets one of the following criteria: 
+1. The sovereign flag state of the vessel is the same as the sovereign state of the EEZ in which it is fishing;
+2. The flag state of the vessel is the same as the sovereign state of the EEZ in which it is fishing.
 
-# Summary of totals
-vessel_totals <- vessel_info %>%
-  group_by(ssvid, flag, vessel_class, length_m, length_class, tonnage_gt, tonnage_class, engine_power_kw, engine_class, fao_region) %>%
-  summarize(fishing_h = sum(fishing_hours_year_eez_fao, na.rm = T),
-            fishing_days = sum(fishing_days_year_eez_fao, na.rm = T)) %>%
-  mutate(fishing_KWh = fishing_h*engine_power_kw,
-         fishing_KW_days = fishing_days*engine_power_kw)
+```{r}
+dw_effort_findsovereign <- dw_effort_findEU %>%
+  mutate(is_sovereign = case_when(flag_sovereign != eez_sovereign_iso3 &  
+                                  flag != eez_sovereign_iso3 ~ FALSE,
+                                  TRUE ~ TRUE))
+```
 
-# 783 vessels with no flag
-nas_flag <- vessel_totals %>%
-  dplyr::filter(is.na(flag))
+<!-- There are some cases in which there may be connections that are not foreign and that because of their particular situation should not be considered distant water. An example of this are disputed and joint regime EEZ.  These are listed and removed here: -->
 
-# 0 vessels with no vessel class
-nas_vessel_class <- vessel_totals %>%
-  dplyr::filter(is.na(vessel_class))
+```{r}
+# sovereign_connections <- dw_effort_findsovereign %>% 
+#   filter(is_sovereign) %>% 
+#   distinct(flag, flag_sovereign, eez_code, eez_type, eez_territory_name , eez_territory_iso3, eez_sovereign_name, eez_sovereign_iso3, eez_sovereign2_name, eez_sovereign2_iso3, eez_sovereign3_name, eez_sovereign3_iso3) %>% 
+#   arrange(desc(flag_sovereign))
+# 
+# # sovereign_not_distant_water_connections <- sovereign_connections %>% 
+# #   filter(!(flag_sovereign == "United States" & eez_type == "200NM")) %>% 
+# #   filter(!(flag_sovereign == "United Kingdom" & eez_territory_name == "Falkland Islands")) %>% 
+# #   filter(!(flag_sovereign == "United Kingdom" & eez_territory_name == "South Georgia and the South Sandwich Islands")) %>% 
+# #   filter(!(flag_sovereign == "United Kingdom" & eez_territory_name == "Tristan da Cunha")) %>% 
+# #   filter(!(flag_sovereign == "New Zealand")) %>% 
+# #   filter(!(flag_sovereign == "France")) %>% 
+# #   filter(!(flag_sovereign == "Australia"))
+```
 
-# 0 vessels with no known length
-nas_length_m <- vessel_totals %>%
-  dplyr::filter(is.na(length_m))
+# Distant water fishing
 
-# 0 vessels with no known tonnage
-nas_tonnage_gt <- vessel_totals %>%
-  dplyr::filter(is.na(tonnage_gt))
+For the purposes of this analysis, we define distant water fishing in the following way. We exclude all "intra-EU fishing", but include "sovereign fishing". All DW fishing that is not "sovereign fishing" is foreign DW fishing. 
 
-# 0 vessels with no known engine_power
-nas_engine_power_kw <- vessel_totals %>%
-  dplyr::filter(is.na(engine_power_kw))
+```{r}
+# And finally get all DW effort
+dw_effort_final <- dw_effort_findsovereign %>%
+  dplyr::filter(!is_EU)
 
-# 0 vessels with no fishing h
-nas_fishing_h <- vessel_totals %>%
-  dplyr::filter(is.na(fishing_h))
-
-# 0 vessels with no fishing KWh
-nas_fishing_KWh <- vessel_totals %>%
-  dplyr::filter(is.na(fishing_KWh))
-
-### FIX THIS LATER
-# Assuming for now that vessels with an unknown flag are all Chinese
-vessel_totals_edit <- vessel_totals %>%
-  ungroup() %>%
-  mutate(flag = ifelse(is.na(flag), "CHN", flag))
+write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez.csv"))
 
 ```
+
+# Identify top DW fishing fleets by flag state
+
+We identify the top `r number_of_top_countries_flag` flag states with DW fishing fleets. We consider the following metrics:
+- Number of fishing vessels partaking in DW fishing
+- Total capacity of fishing vessels partaking of DW fishing
+- Total number of DW fishing hours
+- Total number of DW fishing KWh 
+
+```{r cars}
+# Mutate totals by flag state
+flag_state_ranking <- dw_effort_final %>% 
+  dplyr::filter(year == analysis_year) %>%
+  group_by(flag, ssvid) %>%
+  summarize(engine_power_kw = unique(engine_power_kw),
+            fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
+  ungroup() %>%
+  group_by(flag) %>%
+  summarize(total_vessels = n_distinct(ssvid),
+            total_capacity = sum(engine_power_kw, na.rm = T),
+            total_fishing_hours = sum(fishing_hours, na.rm = T),
+            total_fishing_KWh = sum(fishing_KWh, na.rm = T)) %>% 
+  arrange(desc(total_vessels)) %>%
+  ungroup() %>%
+  mutate(vessel_rank = dense_rank(desc(total_vessels)),
+         capacity_rank = dense_rank(desc(total_capacity)),
+         fishing_hours_rank = dense_rank(desc(total_fishing_hours)),
+         fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
+  mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
+
+# Identify top flag states based on average ranking
+flag_state_ranking_top <- flag_state_ranking %>%
+ top_n(-number_of_top_countries_flag, wt = avg_rank)
+
+# Write to disk
+name <- paste0("top_", number_of_top_countries_flag, "_flag_states")
+write_csv(flag_state_ranking, paste0(results_dir, name, ".csv"))
+```
+
+# Identify top DW fishing fleets by EEZ
+
+We identify the top `r number_of_top_countries_eez` EEZs in which DW fleets fish. We consider the following metrics:
+- Number of fishing vessels partaking in DW fishing
+- Total number of DW fishing hours
+- Total number of DW fishing KWh
+
+```{r}
+# Mutate totals by EEZ
+EEZ_ranking <- dw_effort_final %>% 
+  dplyr::filter(year == analysis_year) %>%
+  group_by(eez_code, eez_territory_iso3, eez_sovereign_iso3, ssvid) %>%
+  summarize(engine_power_kw = unique(engine_power_kw),
+            fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
+  ungroup() %>%
+  group_by(eez_code, eez_territory_iso3, eez_sovereign_iso3) %>%
+  summarize(total_vessels = n_distinct(ssvid),
+            total_capacity = sum(engine_power_kw, na.rm = T),
+            total_fishing_hours = sum(fishing_hours, na.rm = T),
+            total_fishing_KWh = sum(fishing_KWh, na.rm = T)) %>% 
+  arrange(desc(total_vessels)) %>%
+  ungroup() %>%
+  mutate(vessel_rank = dense_rank(desc(total_vessels)),
+         capacity_rank = dense_rank(desc(total_capacity)),
+         fishing_hours_rank = dense_rank(desc(total_fishing_hours)),
+         fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
+  mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
+
+# Identify top flag states based on average ranking
+EEZ_ranking_top <- EEZ_ranking %>%
+ top_n(-number_of_top_countries_eez, wt = avg_rank)
+
+# Write to disk
+name2 <- paste0("top_", number_of_top_countries_eez, "_eezs")
+write_csv(EEZ_ranking, paste0(results_dir, name2, ".csv"))
+```
+
+
+
 
 ```{r}
 # Distant water vessels - have ever fished in an eez that is not their own. 
