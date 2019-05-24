@@ -466,7 +466,9 @@ We then match these centroids to each of our top flag states, as well as all EEZ
 ```{r}
 flag_state_mapping <- flag_state_combinations %>%
   left_join(centroid_coordinates_flag, by = c("flag" = "flag")) %>%
-  left_join(centroid_coordinates_EEZ, by = c("eez_code" = "eez_code")) %>% 
+  left_join(centroid_coordinates_EEZ, by = c("eez_code" = "eez_code"))
+  
+flag_state_mapping_wlines <- flag_state_mapping %>%
   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
   purrr::transpose() %>% 
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
@@ -481,37 +483,38 @@ flag_state_mapping <- flag_state_combinations %>%
   sf::st_sf(crs = 4326)
 ```
 
-```{r China Map}
+```{r flagmaps}
 
-# China as a test plot
-china <- flag_state_mapping %>%
-  dplyr::filter(flag == "CHN")
+maptheme <- theme_minimal()+
+  theme(plot.background = element_rect(fill = "grey27"),
+                  panel.grid.major = element_line(colour = "grey27"),
+                  panel.border = element_blank(),
+                  plot.margin=unit(c(0,0,0,0),"cm"))
 
-## check naming conventions of columns, changed from earlier today
-eez_filtered <- EEZ_map %>%
-  dplyr::filter(name %in% china$eez_name)
+# Turn into a for loop
+# Something like...
+# for(i in 1:length(top_flag_states)){
 
-EEZ_final_results <- flag_state_mapping%>% 
-  filter(flag == "CHN") 
-  #filter(eez_iso3 == "USA", flag == "CHN") %>% 
+# comment this out when loop runs - South Korea as a test map
+i <- 4
+
+flag_dat <- flag_state_mapping_wlines %>%
+  dplyr::filter(flag == top_flag_states[i]) 
 
 plot_map <- ggplot()+
-  geom_sf(data = EEZ_map, fill = NA, alpha = 0.5)+
-  geom_sf(data = country_map, fill = "grey2")+
-  geom_sf(data = country_map %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
-  geom_sf(data = eez_filtered_CHN , fill = "blue", alpha = 0.5) +
-  geom_sf(data = EEZ_final_results_CHN, col = "darkorange", alpha = 0.2) +  #%>% dplyr::filter(flag =="CHN"), col = "orange")
-  theme_minimal() +
-  labs(title = "Global Network of Chinese Distant Water Fishing Fleets")
-  
-  
+  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = country_map %>% dplyr::filter(iso3 == top_flag_states[i]), fill = "darkmagenta", color = NA, size = 0.1) + # highlighted flag state (magenta, white border lines)
+  geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) +
+  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = flag_dat, col = "darkgoldenrod", size = 0.25) + 
+  maptheme
 
-plot_map_CHN
+#plot_map
+ggsave(plot_map, filename = paste0(map_dir, "flag_state_map_", top_flag_states[i], ".png"), width = 10, units = "in")
 
-ggsave(filename = "plot_map_CHN.png")
+#}
 
-# example dynamic naming in a loop
-#ggsave(plot, paste0(map_dir, "flag_state_map_", top_flag_states[i], ".png"))
 ```
 
 
