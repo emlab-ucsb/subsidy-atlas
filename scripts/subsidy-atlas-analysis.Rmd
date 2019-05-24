@@ -487,16 +487,15 @@ flag_state_mapping <- flag_state_combinations %>%
 china <- flag_state_mapping %>%
   dplyr::filter(flag == "CHN")
 
-
 ## check naming conventions of columns, changed from earlier today
-eez_filtered_CHN <- EEZ_map %>%
+eez_filtered <- EEZ_map %>%
   dplyr::filter(name %in% china$eez_name)
 
-EEZ_final_results_CHN <- flag_state_mapping%>% 
+EEZ_final_results <- flag_state_mapping%>% 
   filter(flag == "CHN") 
   #filter(eez_iso3 == "USA", flag == "CHN") %>% 
 
-plot_map_CHN <- ggplot()+
+plot_map <- ggplot()+
   geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
   geom_sf(data = country_map, fill = "white")+
   geom_sf(data = country_map %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
@@ -511,12 +510,9 @@ plot_map_CHN
 
 ggsave(filename = "plot_map_CHN.png")
 
-
-
+# example dynamic naming in a loop
+#ggsave(plot, paste0(map_dir, "flag_state_map_", top_flag_states[i], ".png"))
 ```
-
-
-
 
 
 # Identify top DW fishing fleets by EEZ
