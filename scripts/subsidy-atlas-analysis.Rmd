@@ -496,8 +496,8 @@ EEZ_final_results <- flag_state_mapping%>%
   #filter(eez_iso3 == "USA", flag == "CHN") %>% 
 
 plot_map <- ggplot()+
-  geom_sf(data = EEZ_map, fill = "white", alpha = 0.5)+
-  geom_sf(data = country_map, fill = "white")+
+  geom_sf(data = EEZ_map, fill = NA, alpha = 0.5)+
+  geom_sf(data = country_map, fill = "grey2")+
   geom_sf(data = country_map %>% dplyr::filter(iso3 == "CHN"), fill = "red") +
   geom_sf(data = eez_filtered_CHN , fill = "blue", alpha = 0.5) +
   geom_sf(data = EEZ_final_results_CHN, col = "darkorange", alpha = 0.2) +  #%>% dplyr::filter(flag =="CHN"), col = "orange")
