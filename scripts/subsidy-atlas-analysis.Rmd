@@ -27,6 +27,7 @@ library(DBI) # access GFW data
 library(countrycode) # country names 
 library(tidyverse) # data manipulation
 library(ggalt) # transform to robinson projection
+library(RColorBrewer) # custom color palettes
 
 # Set results directory
 results_dir <- here::here("results/")
@@ -37,13 +38,13 @@ table_dir <- here::here("results", "summary_tables/")
 if (dir.exists(table_dir) == F) {
   dir.create(table_dir, recursive = T)
 }
-map_dir <- here::here("results", "maps/")
-if (dir.exists(map_dir) == F) {
-  dir.create(map_dir, recursive = T)
-}
-country_dir <- here::here("results", "country_tables/")
+country_dir <- here::here("results", "flag_state_results/")
 if (dir.exists(country_dir) == F) {
   dir.create(country_dir, recursive = T)
+}
+eez_dir <- here::here("results", "EEZ_results/")
+if (dir.exists(eez_dir) == F) {
+  dir.create(eez_dir, recursive = T)
 }
 
 # Connection to BigQuery
@@ -361,8 +362,66 @@ dw_effort_final <- dw_effort_findsovereign %>%
   dplyr::filter(!is_EU)
 
 write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez.csv"))
+```
+
+```{r}
+# Now we need to get subsidy rates per fishing KWh for our DW vessels
+# Since Rashid has not provided a DW and/or large-scale breakdown of his subsidy estimates, we need to figure out how to do this.
+subsidy_dat <- read_csv(here::here("data", "subsidies", "Subsidies_update_Pew_final_May_10.csv")) %>%
+  setNames(tolower(names(.))) %>%
+  rename(value = `constant 2018 usd`,
+         estimate_type = `data type`) %>%
+  mutate(iso3 = countrycode(country, "country.name", 'iso3c'))
+subsidy_dat$iso3[subsidy_dat$country == "Dominican Rp"] <- "DOM"
+subsidy_dat$iso3[subsidy_dat$country == "Micronesia"] <- "FSM"
+subsidy_dat$iso3[subsidy_dat$country == "Untd Arab Em"] <- "ARE"
+
+# Order factors for custom color scale
+subsidy_dat_factors <- subsidy_dat %>%
+  distinct(category, type)
+
+category_factor_order <- c(unique(subsidy_dat_factors$category))
+type_factor_order <- c(subsidy_dat_factors$type)
+
+subsidy_dat_ordered <- subsidy_dat %>%
+  mutate(type = factor(type, levels = type_factor_order, ordered = T),
+         category = factor(category, levels = category_factor_order, ordered = T))
+
+  # Get sums of subsidy data by category for each country
+subsidy_dat_summarized <- subsidy_dat_ordered %>%
+  group_by(iso3, category) %>%
+  summarize(value = sum(value, na.rm = T))
+
+# Calculate effort totals by flag and then subsidy rates
+dw_subsidy_rates_flag <- dw_effort_final %>%
+  dplyr::filter(year == analysis_year) %>%
+  group_by(flag) %>%
+  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_days = sum(fishing_days_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T),
+            fishing_KW_days = sum(fishing_KW_days, na.rm = T)) %>%
+  left_join(subsidy_dat_summarized %>% dplyr::filter(category == "Capacity-enhancing"), by = c("flag" = "iso3")) %>%
+  mutate(subs_per_fishing_hour = value/fishing_hours,
+         subs_per_fishing_day = value/fishing_days,
+         subs_per_fishing_KWh = value/fishing_KWh,
+         subs_per_fishing_KW_day = value/fishing_KW_days)
+
+# Upload to BQ
+if(rerun_gfw == T){
+subsidy_table <- bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas")
+  if(bq_table_exists(subsidy_table) == FALSE){
+    bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas") %>%
+      bq_table_create() %>%
+      bq_table_upload(dw_subsidy_rates_flag %>% na.omit())
+  }else{
+    bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas") %>%
+      bq_table_delete() %>%
+      bq_table_upload(na.omit(dw_subsidy_rates_flag))
+  }
+}
 
 ```
+
 
 # Identify top DW fishing fleets by flag state
 
@@ -438,8 +497,6 @@ In order to make our connection plots, we find the centroids of each EEZ and fla
 
 ```{r}
 # Get centroids of each eez
-
-
 EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326) #%>% 
   #st_transform(flag_state_mapping, crs = '+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs')
@@ -504,26 +561,38 @@ flag_state_mapping_wlines <- flag_state_mapping %>%
 ```
 
 ```{r flagmaps}
-
+# Custom theme for map
 maptheme <- theme_minimal()+
   theme(plot.background = element_rect(fill = "grey27"),
                   panel.grid.major = element_line(colour = "grey27"),
                   panel.border = element_blank(),
                   plot.margin=unit(c(0,0,0,0),"cm"))
 
-## For loop to run top 10 countries
+# Custom color palette for Sumaila subsidy types
+goodColors <- rev(brewer.pal(3,"Blues"))
+names(goodColors) <- levels(subsidy_dat_ordered$type)[1:3]
+
+badColors <- rev(brewer.pal(7, "Reds"))
+names(badColors) <- levels(subsidy_dat_ordered$type)[4:10]
+
+ambigColors <- c("purple", "mediumorchid", "violet")
+names(ambigColors) <- levels(subsidy_dat_ordered$type)[11:13]
+
+myColors <- c(goodColors, badColors, ambigColors)
+
+## For loop to run top X countries
  for(i in 1:length(top_flag_states)){
 
-# comment this out when loop runs - South Korea as a test map
-#i <- 4
-
+### Step 1: Flag state connectivity data
+# Pull connectivity data for only our flag state of interest
 flag_dat <- flag_state_mapping_wlines %>%
   dplyr::filter(flag == top_flag_states[i]) 
 
-# Write country data
-write_csv(flag_dat, path = paste0(country_dir, "flag_state_dat_", top_flag_states[i], ".csv"))
+# Write flag state connectivity data
+write_csv(flag_dat, path = paste0(country_dir, top_flag_states[i], "_flag_state_dat.csv"))
 
-# Make map
+### Step 2: Make connectivity map
+# Map
 plot_map <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
@@ -533,10 +602,33 @@ plot_map <- ggplot()+
   geom_sf(data = flag_dat, col = "darkgoldenrod", size = 0.25) + 
   maptheme
 
-#plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+# Save map
+ggsave(plot_map, filename = paste0(country_dir, top_flag_states[i], "_flag_state_map.png"), width = 10, units = "in")
 
-#plot_map
-ggsave(plot_map, filename = paste0(map_dir, "flag_state_map_", top_flag_states[i], ".png"), width = 10, units = "in")
+### Step 3: Make fisheries subsidies summary plot(s) 
+# Subsidies by subtype plot
+flag_subsidy_dat <- subsidy_dat_ordered %>%
+  dplyr::filter(iso3 == top_flag_states[i]) %>%
+  na.omit()
+
+if(nrow(flag_subsidy_dat) > 0){
+  
+  # Filter color scale to only use those for subsidy types represented by that country
+  filtered_colors <- myColors[names(myColors) %in% unique(flag_subsidy_dat$type)]
+  
+  # Make plot
+  subsidy_plot <- ggplot(flag_subsidy_dat, aes(x = category, y = value/1e6, fill = type))+
+    geom_bar(stat = "identity")+
+    scale_fill_manual(name = "Subsidy Type", values = filtered_colors, labels = unique(flag_subsidy_dat$type))+
+    theme_bw()+
+    coord_flip()+
+    scale_y_continuous(expand = c(0,0), labels = scales::comma)+
+    labs(x = "", y = "Est. fisheries subsidies (2018 $USD, millions)")
+  
+  # Save plot
+  ggsave(subsidy_plot, filename = paste0(country_dir, top_flag_states[i], "_subsidy_plot.png"), width = 10, height = 6, units = "in")
+  
+}
 
 }
 
@@ -603,10 +695,11 @@ write_csv(EEZ_ranking %>%
 
 ```{r}
 top_eezs <- EEZ_ranking_top$eez_code
+top_eez_names <- EEZ_ranking_top$eez_territory_iso3
 
 eez_combinations <- dw_effort_final %>%
   dplyr::filter(eez_code %in% top_eezs) %>%
-  distinct(eez_code = as.numeric(eez_code), flag) %>%
+  distinct(eez_code = as.numeric(eez_code), eez_territory_iso3, flag) %>%
   arrange(eez_code)
 ```
 
@@ -662,11 +755,15 @@ eez_mapping_wlines <- eez_mapping %>%
 for(i in 1:length(top_eezs)){
 
 # comment this out when loop runs - Solomon islands
-i <- 6
+#i <- 6
 
 eez_dat <- eez_mapping_wlines %>%
   dplyr::filter(eez_code == top_eezs[i]) 
 
+# Write EEZ data
+write_csv(eez_dat, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i] , "_EEZ_dat.csv"))
+
+# Make EEZ connection plot
 eez_map <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
@@ -679,14 +776,62 @@ eez_map <- ggplot()+
 #plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
 #plot_map
-ggsave(eez_map, filename = paste0(map_dir, "EEZ_map_", top_eezs[i], ".png"), width = 10, units = "in")
+ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_map.png"), width = 10, units = "in")
 
 }
 ```
 
-Now we need to pull raw, aggregated GFW data for each EEZ on our list. 
+Now we need to pull raw, aggregated GFW data for each EEZ on our list and combine this with our subsidy data in order to map subsidy intensity in each EEZ
 
 ```{r}
-#sql3 <- paste0()
+# What bin size do we want to use (degrees)?
+for(i in 1:length(top_eezs)){
+
+bin_size <- 0.1
+
+sql3 <- paste0("SELECT
+      EXTRACT(year FROM _partitiontime) year,
+      if(ARRAY_LENGTH(regions.eez)=0, '0000', regions.eez[ordinal(1)]) eez_code,
+      ssvid,
+      FLOOR(lat/",bin_size,") * ",bin_size," + ",bin_size/2, " AS lat_cen,
+      FLOOR(lon/",bin_size,") * ",bin_size," + ",bin_size/2, " AS lon_cen,
+      SUM(hours) AS fishing_hours
+    FROM
+      `world-fishing-827.gfw_research.pipe_production_b_fishing`
+    WHERE
+      nnet_score2 > .5
+      AND seg_id IN (
+        SELECT
+          seg_id
+            FROM
+              `world-fishing-827.gfw_research.pipe_production_b_segs`
+            WHERE
+              good_seg)
+    GROUP BY
+      year,
+      eez_code,
+      ssvid,
+      lat_cen,
+      lon_cen
+    HAVING
+      year = ", analysis_year,
+      " AND eez_code = '", as.character(top_eezs[i]), "'")
+
+eez_table <- bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") 
+  if(bq_table_exists(eez_table) == FALSE){
+    bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") %>%
+      bq_table_create()
+  }else{
+    bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") %>%
+      bq_table_delete()
+  }
+
+bq_project_query(ucsb_project, sql3, destination_table = bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE)
+
+
+
+}
+
+
 ```
 
