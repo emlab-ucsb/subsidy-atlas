@@ -41,6 +41,10 @@ map_dir <- here::here("results", "maps/")
 if (dir.exists(map_dir) == F) {
   dir.create(map_dir, recursive = T)
 }
+country_dir <- here::here("results", "country_tables/")
+if (dir.exists(country_dir) == F) {
+  dir.create(country_dir, recursive = T)
+}
 
 # Connection to BigQuery
 ucsb_project <-  "ucsb-gfw"
@@ -465,6 +469,14 @@ centroid_coordinates_flag <- tibble(flag = country_map$iso3) %>%
     as_tibble() %>% setNames(c("flag_lon","flag_lat"))) %>%
   arrange(flag)
 
+# Matt - add in a manual .csv with centroid corrections for both flags and eezs
+# name the new lat/lon "flag_lon_edit", "flag_lat_edit"
+# centroid_coordinates_flag_edited <- centroid_coordinates_flag %>%
+#   left_join(manual_coordinates, by = c("flag")) %>%
+#   mutate(flag_lon = ifelse(!is.na(flag_lon_edit), flag_long_edit, flag_lon))
+
+# Do the same for EEZs
+
 ```
 
 We then match these centroids to each of our top flag states, as well as all EEZs in which DW vessels from these states fish. 
@@ -508,6 +520,10 @@ maptheme <- theme_minimal()+
 flag_dat <- flag_state_mapping_wlines %>%
   dplyr::filter(flag == top_flag_states[i]) 
 
+# Write country data
+write_csv(flag_dat, path = paste0(country_dir, "flag_state_dat_", top_flag_states[i], ".csv"))
+
+# Make map
 plot_map <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
