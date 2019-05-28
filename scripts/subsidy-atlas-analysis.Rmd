@@ -19,6 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # Packages
 #library(maps)
 library(sf) # spatial manipulation
+library(lwgeom) # needed for curved lines
 library(here) # path names
 library(knitr) # knit document
 library(bigrquery) # access GFW data
@@ -525,7 +526,6 @@ ggsave(plot_map, filename = paste0(map_dir, "flag_state_map_", top_flag_states[i
 
 ```
 
-
 # Identify top DW fishing fleets by EEZ
 
 We identify the top `r number_of_top_countries_eez` EEZs in which DW fleets fish. We consider the following metrics:
@@ -618,5 +618,59 @@ eez_mapping$flag_lat[eez_mapping$flag == "BES"] <- centroid_coordinates_EEZ$eez_
 eez_mapping$flag_lon[eez_mapping$flag == "GCA"] <- centroid_coordinates_flag$flag_lon[centroid_coordinates_flag$flag == "GTM"]
 eez_mapping$flag_lat[eez_mapping$flag == "GCA"] <- centroid_coordinates_flag$flag_lat[centroid_coordinates_flag$flag == "GTM"]
 
+```
+
+
+```{r}
+# We then make our lines from each EEZ going to all of the countries fishing there. 
+eez_mapping_wlines <- eez_mapping %>%
+  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(eez_mapping) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
+  sf::st_sf(crs = 4326) #%>% 
+  #st_transform(flag_state_mapping, crs = '+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs')
+
+```
+
+```{r}
+
+## For loop to run top EEZs
+for(i in 1:length(top_eezs)){
+
+# comment this out when loop runs - Solomon islands
+i <- 6
+
+eez_dat <- eez_mapping_wlines %>%
+  dplyr::filter(eez_code == top_eezs[i]) 
+
+eez_map <- ggplot()+
+  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = NA) + # highlighted flag state (magenta, white border lines)
+  # geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA) +
+  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == top_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) + 
+  maptheme
+
+#plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+
+#plot_map
+ggsave(eez_map, filename = paste0(map_dir, "EEZ_map_", top_eezs[i], ".png"), width = 10, units = "in")
+
+}
+```
+
+Now we need to pull raw, aggregated GFW data for each EEZ on our list. 
+
+```{r}
+#sql3 <- paste0()
 ```
 
