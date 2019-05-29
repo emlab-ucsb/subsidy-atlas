@@ -28,6 +28,8 @@ library(countrycode) # country names
 library(tidyverse) # data manipulation
 library(ggalt) # transform to robinson projection
 library(RColorBrewer) # custom color palettes
+library(scales) # scales for plotting
+library(ggpubr) # plot arranging
 
 # Set results directory
 results_dir <- here::here("results/")
@@ -52,7 +54,7 @@ ucsb_project <-  "ucsb-gfw"
 #gfw_project <- "world-fishing-827"
 
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- F
+rerun_gfw <- T
 
 # Set benchmarks 
 number_of_top_countries_flag <- 20
@@ -179,15 +181,19 @@ and flag != eez_sovereign_iso3"
 # Store in bigquery - all_dw_fishing_effort_by_eez (~100,000 rows - ~25MB)
 bq_table(project = ucsb_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas") %>% 
   bq_table_delete()
+
+# Download results
 all_dw_fishing_effort_by_eez <- bq_project_query(ucsb_project, sql2, destination_table = bq_table(project = ucsb_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
   bq_table_download(max_results = Inf)
 
+# Make fishing_KWh and fishing_KW_day variables
 dw_effort <- all_dw_fishing_effort_by_eez %>%
   mutate(fishing_KWh = fishing_hours_year_eez*engine_power_kw,
          fishing_KW_days = fishing_days_year_eez*engine_power_kw)
 dw_effort[dw_effort == "NA"] <- NA
 dw_effort$flag[is.na(dw_effort$flag)] <- "UNK"
 
+# Save file
 write_csv(dw_effort, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
 
 } else{
@@ -405,20 +411,33 @@ dw_subsidy_rates_flag <- dw_effort_final %>%
          subs_per_fishing_day = value/fishing_days,
          subs_per_fishing_KWh = value/fishing_KWh,
          subs_per_fishing_KW_day = value/fishing_KW_days)
+dw_subsidy_rates_flag$category[is.na(dw_subsidy_rates_flag$category)] <- "Capacity-enhancing"
+dw_subsidy_rates_flag$value[is.na(dw_subsidy_rates_flag$value)] <- 0
+dw_subsidy_rates_flag$subs_per_fishing_hour[is.na(dw_subsidy_rates_flag$subs_per_fishing_hour)] <- 0
+dw_subsidy_rates_flag$subs_per_fishing_KWh[is.na(dw_subsidy_rates_flag$subs_per_fishing_KWh)] <- 0
+dw_subsidy_rates_flag$subs_per_fishing_day[is.na(dw_subsidy_rates_flag$subs_per_fishing_day)] <- 0
+dw_subsidy_rates_flag$subs_per_fishing_KW_day[is.na(dw_subsidy_rates_flag$subs_per_fishing_KW_day)] <- 0
 
-# Upload to BQ
-if(rerun_gfw == T){
-subsidy_table <- bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas")
-  if(bq_table_exists(subsidy_table) == FALSE){
-    bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas") %>%
-      bq_table_create() %>%
-      bq_table_upload(dw_subsidy_rates_flag %>% na.omit())
-  }else{
-    bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas") %>%
-      bq_table_delete() %>%
-      bq_table_upload(na.omit(dw_subsidy_rates_flag))
-  }
-}
+# # Upload to BQ
+# if(rerun_gfw == TRUE){
+#   
+# subsidy_table <- bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas")
+# 
+#   if(bq_table_exists(subsidy_table) == FALSE){
+#     
+#     bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas") %>%
+#       bq_table_create() %>%
+#       bq_table_upload(dw_subsidy_rates_flag)
+#     
+#   }else{
+#     
+#     bq_table(project = ucsb_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas") %>%
+#       bq_table_delete() %>%
+#       bq_table_upload(dw_subsidy_rates_flag)
+#     
+#   }
+# 
+# }
 
 ```
 
@@ -645,12 +664,12 @@ We identify the top `r number_of_top_countries_eez` EEZs in which DW fleets fish
 # Mutate totals by EEZ
 EEZ_ranking <- dw_effort_final %>% 
   dplyr::filter(year == analysis_year) %>%
-  group_by(eez_code, eez_territory_iso3, eez_sovereign_iso3, ssvid) %>%
+  group_by(eez_code, eez_name, eez_territory_iso3, eez_sovereign_iso3, ssvid) %>%
   summarize(engine_power_kw = unique(engine_power_kw),
             fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
             fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
   ungroup() %>%
-  group_by(eez_code, eez_territory_iso3, eez_sovereign_iso3) %>%
+  group_by(eez_code, eez_name, eez_territory_iso3, eez_sovereign_iso3) %>%
   summarize(total_vessels = n_distinct(ssvid),
             total_capacity = sum(engine_power_kw, na.rm = T),
             total_fishing_hours = sum(fishing_hours, na.rm = T),
@@ -696,6 +715,7 @@ write_csv(EEZ_ranking %>%
 ```{r}
 top_eezs <- EEZ_ranking_top$eez_code
 top_eez_names <- EEZ_ranking_top$eez_territory_iso3
+top_eez_names_long <- EEZ_ranking_top$eez_name
 
 eez_combinations <- dw_effort_final %>%
   dplyr::filter(eez_code %in% top_eezs) %>%
@@ -776,7 +796,7 @@ eez_map <- ggplot()+
 #plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
 #plot_map
-ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_map.png"), width = 10, units = "in")
+ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
 
 }
 ```
@@ -784,29 +804,57 @@ ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "
 Now we need to pull raw, aggregated GFW data for each EEZ on our list and combine this with our subsidy data in order to map subsidy intensity in each EEZ
 
 ```{r}
-# What bin size do we want to use (degrees)?
+# Custom theme for the eez heat maps
+eezmaptheme <- theme_minimal()+
+  theme(plot.background = element_rect(fill = "grey27", color = NA),
+        text = element_text(color = "white"),
+        plot.title = element_text(hjust = 0.5),
+        panel.grid = element_blank(),
+        panel.border = element_rect(color = "white", fill = NA),
+        plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm"),
+        legend.position = "bottom",
+        axis.text = element_text(color = "white"))
+
+# Run loop to make heat maps
 for(i in 1:length(top_eezs)){
 
-bin_size <- 0.1
+  if(rerun_gfw == T){
+    # What bin size do we want to use (degrees)?  
+    bin_size <- 0.1
 
-sql3 <- paste0("SELECT
-      EXTRACT(year FROM _partitiontime) year,
-      if(ARRAY_LENGTH(regions.eez)=0, '0000', regions.eez[ordinal(1)]) eez_code,
-      ssvid,
-      FLOOR(lat/",bin_size,") * ",bin_size," + ",bin_size/2, " AS lat_cen,
-      FLOOR(lon/",bin_size,") * ",bin_size," + ",bin_size/2, " AS lon_cen,
-      SUM(hours) AS fishing_hours
+sql3 <- paste0(
+  "WITH
+  selected_vi AS (
+    SELECT
+       year,
+       ssvid,
+       best.best_engine_power_kw AS engine_power_kw,
+       best.best_flag AS flag
     FROM
-      `world-fishing-827.gfw_research.pipe_production_b_fishing`
+       `world-fishing-827.gfw_research.vi_ssvid_byyear_v20190430`
     WHERE
-      nnet_score2 > .5
-      AND seg_id IN (
-        SELECT
-          seg_id
-            FROM
-              `world-fishing-827.gfw_research.pipe_production_b_segs`
-            WHERE
-              good_seg)
+       on_fishing_list_best
+       AND activity.offsetting IS FALSE),
+   
+  eez_info AS (
+     SELECT
+       EXTRACT(year FROM _partitiontime) year,
+       if(ARRAY_LENGTH(regions.eez)=0, '0000', regions.eez[ordinal(1)]) eez_code,
+       ssvid,
+       FLOOR(lat/", bin_size,") * ", bin_size, " + ", bin_size/2, " AS lat_cen,
+       FLOOR(lon/", bin_size, ") * ", bin_size, " + ", bin_size/2, " AS lon_cen,
+       SUM(hours) AS fishing_hours
+     FROM
+       `world-fishing-827.gfw_research.pipe_production_b_fishing`
+     WHERE
+       nnet_score2 > .5
+       AND seg_id IN (
+          SELECT
+            seg_id
+          FROM
+            `world-fishing-827.gfw_research.pipe_production_b_segs`
+          WHERE
+            good_seg)
     GROUP BY
       year,
       eez_code,
@@ -814,10 +862,41 @@ sql3 <- paste0("SELECT
       lat_cen,
       lon_cen
     HAVING
-      year = ", analysis_year,
-      " AND eez_code = '", as.character(top_eezs[i]), "'")
+      year = ", analysis_year, 
+      " AND eez_code = '", as.character(top_eezs[i]), "')
+      
+ SELECT
+    year,
+    eez_code,
+    flag,
+    lat_cen,
+    lon_cen,
+    SUM(a.fishing_hours) as fishing_hours,
+    SUM(a.fishing_hours * b.engine_power_kw) as fishing_KWh,
+    SUM(a.fishing_hours * b.engine_power_kw * c.subs_per_fishing_KWh) as subs
+  FROM
+    eez_info a
+  LEFT JOIN
+    selected_vi b
+  USING
+    (year,
+    ssvid)
+  LEFT JOIN
+    `ucsb-gfw.subsidy_atlas.subsidy_rates_flag` c
+  USING
+    (flag)
+  GROUP BY
+    year,
+    eez_code,
+    flag,
+    lat_cen,
+    lon_cen
+  HAVING
+    fishing_hours > 1"
+)
 
 eez_table <- bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") 
+
   if(bq_table_exists(eez_table) == FALSE){
     bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") %>%
       bq_table_create()
@@ -826,9 +905,49 @@ eez_table <- bq_table(project = ucsb_project, table = paste0("fishing_effort_", 
       bq_table_delete()
   }
 
-bq_project_query(ucsb_project, sql3, destination_table = bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE)
+eez_effort <- bq_project_query(ucsb_project, sql3, destination_table = bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+  bq_table_download(max_results = Inf)
 
+write_csv(eez_effort, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"))
 
+# Load local data instead of rerunning global fishing watch pull 
+} else{
+  
+eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"))
+    
+}
+
+### Make Plots 
+  # Get quantiles of data for scale limits
+  eez_effort_aggregated <- eez_effort %>%
+    group_by(year, eez_code, lon_cen, lat_cen) %>%
+    summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+              fishing_KWh = sum(fishing_KWh, na.rm = T),
+              subs = sum(subs, na.rm = T)) %>%
+    mutate(subsidy_intensity = subs/fishing_KWh)
+  
+  # 95% quantiles
+  intensity_quantile <- quantile(eez_effort_aggregated$subsidy_intensity, probs = c(0.95, 0.99), na.rm = T)
+  
+  # Map of subsidy intensity
+  eez_subsidy_plot <- ggplot(eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
+    geom_raster()+
+    eezmaptheme +
+    scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", limits=c(0, intensity_quantile[1]), oob=scales::squish)+
+    #coord_fixed(ratio = 1)+
+    labs(x = "Longitude", y = "Latitude")
+  
+  eez_effort_plot <- ggplot(eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = log(fishing_KWh)))+
+    geom_raster()+
+    eezmaptheme +
+    scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort (log(KWh))")+
+    #coord_fixed(ratio = 1)+
+    labs(x = "Longitude", y = "Latitude")
+ 
+  # Combined plot  
+  eez_combined_plot <- ggarrange(eez_effort_plot, eez_subsidy_plot + rremove("y.title"), ncol = 2, nrow = 1) 
+  
+  ggsave(filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_heat_map.png"), eez_combined_plot, width = 10, height = 5, units = "in")
 
 }
 
