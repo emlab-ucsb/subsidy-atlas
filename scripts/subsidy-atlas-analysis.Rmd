@@ -54,7 +54,7 @@ ucsb_project <-  "ucsb-gfw"
 #gfw_project <- "world-fishing-827"
 
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- T
+rerun_gfw <- F
 
 # Set benchmarks 
 number_of_top_countries_flag <- 20
@@ -312,7 +312,7 @@ eu_states <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "F
 
 # EU remote regions
 # Wallis and Futuna, French Guiana, Sint Maarten (Dutch part), Saint Pierre and Miquelon, Saint Martin (French part), Mayotte, Saint Barthelemy, Reunion, Curaçao, Aruba, British Indian Ocean Territory, Bonaire, Saint Eustatius and Saba, Guadeloupe, Martinique, Saint Helena, Ascension and Tristan da Cunha, Ascension Island, South Georgia and the South Sandwich Islands, French Southern Territories, Tristan da Cunha, Falkland Islands (Malvinas), Bermuda, Turks and Caicos Islands, Cayman Islands, Virgin Islands, British, Anguilla, Montserrat, Pitcairn, French Polynesia
-eu_distant_states <- c('WLF', 'GUF', 'SXM', 'SPM', 'MAF', 'MYT', 'BLM', 'REU', 'CUW', 'ABW', 'IOT', 'BES', 'GLP', 'MTQ', 'SHN', 'ASC', 'SGS', 'ATF', 'TAA', 'FLK', 'BMU', 'TCA','CYM', 'VGB','AIA', 'MSR', 'PCN', 'PYF')
+# eu_distant_states <- c('WLF', 'GUF', 'SXM', 'SPM', 'MAF', 'MYT', 'BLM', 'REU', 'CUW', 'ABW', 'IOT', 'BES', 'GLP', 'MTQ', 'SHN', 'ASC', 'SGS', 'ATF', 'TAA', 'FLK', 'BMU', 'TCA','CYM', 'VGB','AIA', 'MSR', 'PCN', 'PYF')
 
 # States with which the EU has free fishing agreements 
 # Norway, Svalbard and Jan Mayen, Iceland
@@ -807,12 +807,15 @@ Now we need to pull raw, aggregated GFW data for each EEZ on our list and combin
 # Custom theme for the eez heat maps
 eezmaptheme <- theme_minimal()+
   theme(plot.background = element_rect(fill = "grey27", color = NA),
+        panel.background = element_rect(fill = "grey27", color = NA),
+        panel.grid.major = element_line(colour = "grey27"),
         text = element_text(color = "white"),
         plot.title = element_text(hjust = 0.5),
-        panel.grid = element_blank(),
         panel.border = element_rect(color = "white", fill = NA),
-        plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm"),
+        plot.margin = margin(t = 0, r = 0.1, b = 0, l = 0, unit = "cm"),
+        legend.margin = margin(t = 0.1, r = 0, b = 0.1, l = 0, unit = "cm"),
         legend.position = "bottom",
+        legend.box = "horizontal",
         axis.text = element_text(color = "white"))
 
 # Run loop to make heat maps
@@ -913,9 +916,10 @@ write_csv(eez_effort, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i],
 # Load local data instead of rerunning global fishing watch pull 
 } else{
   
-eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"))
+eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
     
 }
+
 
 ### Make Plots 
   # Get quantiles of data for scale limits
@@ -926,28 +930,47 @@ eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ
               subs = sum(subs, na.rm = T)) %>%
     mutate(subsidy_intensity = subs/fishing_KWh)
   
-  # 95% quantiles
-  intensity_quantile <- quantile(eez_effort_aggregated$subsidy_intensity, probs = c(0.95, 0.99), na.rm = T)
+  # Quantiles
+  intensity_quantile <- quantile(eez_effort_aggregated$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+  scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+  
+  # Set map limits for filtering global country map and eez map appropriately
+  x_lim <- c(min(eez_effort_aggregated$lon_cen) - 0.5, max(eez_effort_aggregated$lon_cen) + 0.5)
+  y_lim <- c(min(eez_effort_aggregated$lat_cen) - 0.5, max(eez_effort_aggregated$lat_cen) + 0.5)
   
   # Map of subsidy intensity
-  eez_subsidy_plot <- ggplot(eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
-    geom_raster()+
+  eez_subsidy_plot <- ggplot()+
+    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_raster(data = eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
     eezmaptheme +
-    scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", limits=c(0, intensity_quantile[1]), oob=scales::squish)+
-    #coord_fixed(ratio = 1)+
-    labs(x = "Longitude", y = "Latitude")
+    scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+                         limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
+                         labels=c(paste0("\u2264 ", scale_labels[1]), scale_labels[2:4], paste0("\u2265 ", scale_labels[5])),
+                         breaks=scale_labels,
+                         oob=scales::squish)+
+    labs(x = "", y = "")+
+    coord_sf(xlim = x_lim, ylim = y_lim)+
+    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 10))
   
-  eez_effort_plot <- ggplot(eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = log(fishing_KWh)))+
-    geom_raster()+
+  # Labels for the log scale 
+  eez_effort_plot <- ggplot()+
+    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_raster(data = eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
     eezmaptheme +
-    scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort (log(KWh))")+
-    #coord_fixed(ratio = 1)+
-    labs(x = "Longitude", y = "Latitude")
+    scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+    labs(x = "", y = "")+
+    coord_sf(xlim = x_lim, ylim = y_lim) +
+    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 10))
+
  
   # Combined plot  
-  eez_combined_plot <- ggarrange(eez_effort_plot, eez_subsidy_plot + rremove("y.title"), ncol = 2, nrow = 1) 
+  combined_title <- ggdraw() + draw_label(paste0("Distant Water Fishing in the ", top_eez_names_long[i]), fontface='bold', colour = "white", size = 12)
+  eez_combined_plot <- plot_grid(combined_title, plot_grid(eez_effort_plot, eez_subsidy_plot, ncol = 2, align = "hv"), ncol = 1, rel_heights = c(0.1,1)) +
+    theme(plot.background = element_rect(fill = "grey27", color = NA))
   
-  ggsave(filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_heat_map.png"), eez_combined_plot, width = 10, height = 5, units = "in")
+  ggsave(filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_heat_map.png"), eez_combined_plot, width = 10, units = "in")
 
 }
 
