@@ -30,6 +30,8 @@ library(ggalt) # transform to robinson projection
 library(RColorBrewer) # custom color palettes
 library(scales) # scales for plotting
 library(ggpubr) # plot arranging
+library(ggplot2)
+library(cowplot)
 
 # Set results directory
 results_dir <- here::here("results/")
@@ -667,52 +669,6 @@ if(nrow(flag_subsidy_dat) > 0){
 
 ```
 
-```{r Finding false centroids for flags ESP test}
-
-flag_dat_ESP2 <- flag_state_mapping_wlines %>%
-  dplyr::filter(flag == "ESP") 
-
-# Write flag state connectivity data
-write_csv(flag_dat_ESP2, path = paste0(country_dir, top_flag_states[i], "_flag_state_dat.csv"))
-
-plot_map_ESP2 <- ggplot()+
-  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 == "ESP"), fill = "darkmagenta", color = NA, size = 0.1) + # highlighted flag state (magenta, white border lines)
-  geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat_ESP2$eez_code == "8325"), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = flag_dat_ESP2 %>% dplyr::filter(eez_code == "8325"), col = "darkgoldenrod", size = 0.25) + 
-  maptheme
-
-plot(plot_map_ESP2)
-
-
-
-
-```
-
-```{r CHN test}
-
-flag_dat_CHN2 <- flag_state_mapping_wlines %>%
-  dplyr::filter(flag == "CHN") 
-
-# Write flag state connectivity data
-write_csv(flag_dat_CHN2, path = paste0(country_dir, top_flag_states[i], "_flag_state_dat.csv"))
-
-plot_map_CHN2 <- ggplot()+
-  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 == "CHN"), fill = "darkmagenta", color = NA, size = 0.1) + # highlighted flag state (magenta, white border lines)
-  geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat_CHN2$eez_code == "8325"), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = flag_dat_CHN2 %>% dplyr::filter(eez_code == "8325"), col = "darkgoldenrod", size = 0.25) + 
-  maptheme
-
-plot(plot_map_CHN2)
-
-
-```
-
 
 # Identify top DW fishing fleets by EEZ
 
@@ -861,30 +817,6 @@ ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "
 
 }
 ```
-
-```{r Correct flag centroids test KOR}
-
-eez_dat_KOR2 <- eez_mapping_wlines %>%
-  dplyr::filter(eez_code == "8327") 
-
-# Write EEZ data
-#write_csv(eez_dat, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i] , "_EEZ_dat.csv"))
-
-# Make EEZ connection plot
-eez_map_KOR2 <- ggplot()+
-  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat_KOR2$flag), fill = "darkmagenta", color = NA) + # highlighted flag state (magenta, white border lines)
-  # geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA) +
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == top_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = eez_dat_KOR2 %>% dplyr :: filter(flag == "KIR"), col = "darkgoldenrod", size = 0.25) + 
-  maptheme
-
-plot(eez_map_KOR2)
-
-
-```
-
 
 Now we need to pull raw, aggregated GFW data for each EEZ on our list and combine this with our subsidy data in order to map subsidy intensity in each EEZ
 
