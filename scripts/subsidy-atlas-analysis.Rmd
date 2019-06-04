@@ -59,7 +59,7 @@ ucsb_project <-  "ucsb-gfw"
 rerun_gfw <- F
 
 # Set benchmarks 
-number_of_top_countries_flag <- 20
+number_of_top_countries_flag <- 10
 number_of_top_countries_eez <- 10
 
 # Choose analysis year (2012 - 2018)
@@ -635,10 +635,17 @@ plot_map <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
   geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = flag_dat, col = "darkgoldenrod", size = 0.25) + 
+  #ggtitle(paste0(top_flag_states[i]))+
+  #labs(caption = "Countriesdksfjs;aldkfja;dlskf")+
+  labs(caption = "Distant water fishing fleet of [i]")+
+  #ggtitle(paste0(top_flag_states[i]))+
   maptheme
 
-# Save map
+# Save map png
 ggsave(plot_map, filename = paste0(country_dir, top_flag_states[i], "_flag_state_map.png"), width = 10, units = "in")
+
+# Save map pdf
+ggsave(plot_map, filename = paste0(country_dir, top_flag_states[i], "_flag_state_map.pdf"), width = 10, units = "in")
 
 ### Step 3: Make fisheries subsidies summary plot(s) 
 # Subsidies by subtype plot
@@ -666,6 +673,29 @@ if(nrow(flag_subsidy_dat) > 0){
 }
 
 }
+
+```
+
+```{r Galapagos test}
+flag_dat_JPN2 <- flag_state_mapping_wlines %>%
+  dplyr::filter(flag == "JPN") 
+
+# Write flag state connectivity data
+write_csv(flag_dat_JPN2, path = paste0(country_dir, top_flag_states[i], "_flag_state_dat.csv"))
+
+plot_map_JPN2 <- ggplot()+
+  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = country_map %>% dplyr::filter(iso3 == "JPN"), fill = "darkmagenta", color = NA, size = 0.1) + # highlighted flag state (magenta, white border lines)
+  geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
+  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat_JPN2$eez_code == "8426"), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = flag_dat_JPN2 %>% dplyr::filter(eez_code == "8426"), col = "darkgoldenrod", size = 0.25) + 
+  #labs(caption = "Countriesdksfjs;aldkfja;dlskf")+
+  labs(capion = paste0(top_flag_states[i]))+
+  #ggtitle(paste0(top_flag_states[i]))+
+  maptheme
+
+plot(plot_map_JPN2)
 
 ```
 
@@ -812,8 +842,11 @@ eez_map <- ggplot()+
 
 #plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
-#plot_map
+#plot_map pngs
 ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
+
+#plot_map pdfs
+ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.pdf"), width = 10, units = "in")
 
 }
 ```
@@ -991,6 +1024,61 @@ eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ
 
 }
 
+
+```
+
+```{r}
+for(i in 1:length(top_eezs)){
+
+# comment this out when loop runs - Solomon islands
+#i <- 6
+
+eez_dat <- eez_mapping_wlines %>%
+  dplyr::filter(eez_code == top_eezs[i]) 
+
+# Write EEZ data
+write_csv(eez_dat, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i] , "_EEZ_dat.csv"))
+
+# Make EEZ connection plot
+eez_map <- ggplot()+
+  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = NA) + # highlighted flag state (magenta, white border lines)
+  # geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA) +
+  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == top_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) + 
+  maptheme
+
+#plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+
+
+ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.pdf"), width = 10, units = "in")
+
+#plot_map
+ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
+
+}
+```
+
+
+```{r PDF}
+
+
+for(i in 1:length(top_eezs)){
+  
+  pdf(file=paste0(filenames[i], ".pdf"))
+  
+}
+
+for (i in 1:length(top_flag_states)) {
+  
+pdf(file=paste0(filnames[i],".pdf",...)
+    
+plotMA(celdata[i],...)
+
+dev.off()
+
+}
 
 ```
 
