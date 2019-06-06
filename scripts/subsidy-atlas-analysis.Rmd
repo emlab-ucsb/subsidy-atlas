@@ -53,9 +53,14 @@ if (dir.exists(eez_dir) == F) {
   dir.create(eez_dir, recursive = T)
 }
 
-pdf_dir <- here::here("results", "pdf_results/")
-if (dir.exists(pdf_dir) == F) {
-  dir.create(pdf_dir, recursive = T)
+pdf_flag_dir <- here::here("results", "pdf_flag_results/")
+if (dir.exists(pdf_flag_dir) == F) {
+  dir.create(pdf_flag_dir, recursive = T)
+}
+
+pdf_eez_dir <- here::here("results", "pdf_eez_results/")
+if (dir.exists(pdf_eez_dir) == F) {
+  dir.create(pdf_eez_dir, recursive = T)
 }
 
 # Connection to BigQuery
@@ -208,10 +213,10 @@ write_csv(dw_effort, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
 } else{
   
 # Pull local stored copy of the data 
-#dw_effort <- read_csv(paste0(results_dir, "RAW_dw_effort_by_eez.csv"), col_types = "icccnnncccccccccccccninn")
+dw_effort <- read_csv(paste0(results_dir, "RAW_dw_effort_by_eez.csv"), col_types = "icccnnncccccccccccccninn")
 
 #MW Pull local
-dw_effort <- read_csv("~/GitHub/subsidy-atlas/results/RAW_dw_effort_by_eez.csv")
+#dw_effort <- read_csv("~/GitHub/subsidy-atlas/results/RAW_dw_effort_by_eez.csv")
 
   
 }
@@ -548,10 +553,10 @@ centroid_coordinates_EEZ <- tibble(eez_code = EEZ_map_centroids$eez_code,
     as_tibble() %>% setNames(c("eez_lon","eez_lat"))) %>%
   arrange(eez_code)
 
-#manual_coordinates_EEZ <- read_csv(paste0(results_dir, "corrected_EEZ_centroids.csv"))
+manual_coordinates_EEZ <- read_csv(paste0(results_dir, "corrected_EEZ_centroids.csv"))
 
 #MW load
-manual_coordinates_EEZ <- read_csv("~/GitHub/subsidy-atlas/results/corrected_EEZ_centroids.csv")
+#manual_coordinates_EEZ <- read_csv("~/GitHub/subsidy-atlas/results/corrected_EEZ_centroids.csv")
 
 
 centroid_coordinates_EEZ_edited <- centroid_coordinates_EEZ %>% 
@@ -573,10 +578,10 @@ centroid_coordinates_flag <- tibble(flag = country_map$iso3) %>%
     as_tibble() %>% setNames(c("flag_lon","flag_lat"))) %>%
   arrange(flag)
 
-#manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
+manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
 
 #MW Load
-manual_coordinates_flags <- read_csv("~/GitHub/subsidy-atlas/results/corrected_flag_centroids.csv")
+#manual_coordinates_flags <- read_csv("~/GitHub/subsidy-atlas/results/corrected_flag_centroids.csv")
 
 centroid_coordinates_flag_edited <- centroid_coordinates_flag %>% 
   left_join(manual_coordinates_flags, by = c("flag")) %>% 
@@ -621,9 +626,12 @@ flag_state_mapping_wlines <- flag_state_mapping %>%
 # Custom theme for map
 maptheme <- theme_minimal()+
   theme(plot.background = element_rect(fill = "grey27"),
+                  line = element_line(colour = "white", size = 0.5),
                   panel.grid.major = element_line(colour = "grey27"),
                   panel.border = element_blank(),
-                  plot.margin=unit(c(0,0,0,0),"cm"))
+                  plot.margin=unit(c(0,0,0,0),"cm"),
+                  plot.title = element_text(margin = margin(t = 10, b = -10), hjust = 0.5))
+                  
 
 # Custom color palette for Sumaila subsidy types
 goodColors <- rev(brewer.pal(3,"Blues"))
@@ -657,17 +665,16 @@ plot_map <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
   geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = flag_dat, col = "darkgoldenrod", size = 0.25) + 
-  #ggtitle(paste0(top_flag_states[i]))+
-  #labs(caption = "Countriesdksfjs;aldkfja;dlskf")+
-  labs(caption = "Distant water fishing fleet of [i]")+
-  #ggtitle(paste0(top_flag_states[i]))+
+  ggtitle(paste0(top_flag_states[i], ' Distant Water Fishing Fleet', sep = ''))+
+  #labs(caption = "Distant water fishing fleet of *[i]*")+
   maptheme
+
 
 # Save map png
 ggsave(plot_map, filename = paste0(country_dir, top_flag_states[i], "_flag_state_map.png"), width = 10, units = "in")
 
 # Save map pdf
-ggsave(plot_map, filename = paste0(pdf_dir, top_flag_states[i], "_flag_state_map.pdf"), width = 10, units = "in")
+ggsave(plot_map, filename = paste0(pdf_flag_dir, top_flag_states[i], "_flag_state_map.pdf"), width = 10, units = "in")
 
 ### Step 3: Make fisheries subsidies summary plot(s) 
 # Subsidies by subtype plot
@@ -687,42 +694,19 @@ if(nrow(flag_subsidy_dat) > 0){
     theme_bw()+
     coord_flip()+
     scale_y_continuous(expand = c(0,0), labels = scales::comma)+
-    labs(x = "", y = "Est. fisheries subsidies (2018 $USD, millions)")
+    labs(x = "", y = "Est. fisheries subsidies (2018 $USD, millions)")+
+    ggtitle(paste0(top_flag_states[i], ' Estimated Fisheries Subsidies (2018 $USD, millions', sep = ''))+
   
   # Save plot as png
   ggsave(subsidy_plot, filename = paste0(country_dir, top_flag_states[i], "_subsidy_plot.png"), width = 10, height = 6, units = "in")
   
-  ggsave(subsidy_plot, filename = paste0(pdf_dir, top_flag_states[i], "_subsidy_plot.pdf"), width = 10, units = "in")
+  ggsave(subsidy_plot, filename = paste0(pdf_flag_dir, top_flag_states[i], "_subsidy_plot.pdf"), width = 10, units = "in")
   
 }
 
 }
 
 ```
-
-```{r Galapagos test}
-flag_dat_JPN2 <- flag_state_mapping_wlines %>%
-  dplyr::filter(flag == "JPN") 
-
-# Write flag state connectivity data
-write_csv(flag_dat_JPN2, path = paste0(country_dir, top_flag_states[i], "_flag_state_dat.csv"))
-
-plot_map_JPN2 <- ggplot()+
-  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 == "JPN"), fill = "darkmagenta", color = NA, size = 0.1) + # highlighted flag state (magenta, white border lines)
-  geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat_JPN2$eez_code == "8426"), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = flag_dat_JPN2 %>% dplyr::filter(eez_code == "8426"), col = "darkgoldenrod", size = 0.25) + 
-  #labs(caption = "Countriesdksfjs;aldkfja;dlskf")+
-  labs(capion = paste0(top_flag_states[i]))+
-  #ggtitle(paste0(top_flag_states[i]))+
-  maptheme
-
-plot(plot_map_JPN2)
-
-```
-
 
 # Identify top DW fishing fleets by EEZ
 
@@ -862,6 +846,8 @@ eez_map <- ggplot()+
   # geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA) +
   geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == top_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) + 
+  ggtitle(paste0("Distant Water Fishing in the ", top_eez_names_long[i]))+ #fontface='bold', colour = "white", size = 12)+
+  #ggtitle(paste0(top_eezs[i], ' EEZ Fishing Effot by Flag State', sep = ''))+
   maptheme
 
 #plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
@@ -870,7 +856,7 @@ eez_map <- ggplot()+
 ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
 
 #plot_map pdfs
-ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.pdf"), width = 10, units = "in")
+ggsave(eez_map, filename = paste0(pdf_eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.pdf"), width = 10, units = "in")
 
 }
 ```
@@ -1045,47 +1031,17 @@ eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ
     theme(plot.background = element_rect(fill = "grey27", color = NA))
   
   ggsave(filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_heat_map.png"), eez_combined_plot, width = 10, units = "in")
+  
+  ggsave(filename = paste0(pdf_eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_heat_map.pdf"), eez_combined_plot, width = 10, units = "in")
 
 }
 
 
 ```
 
-```{r}
-for(i in 1:length(top_eezs)){
-
-# comment this out when loop runs - Solomon islands
-#i <- 6
-
-eez_dat <- eez_mapping_wlines %>%
-  dplyr::filter(eez_code == top_eezs[i]) 
-
-# Write EEZ data
-write_csv(eez_dat, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i] , "_EEZ_dat.csv"))
-
-# Make EEZ connection plot
-eez_map <- ggplot()+
-  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = NA) + # highlighted flag state (magenta, white border lines)
-  # geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA) +
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == top_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) + 
-  maptheme
-
-#plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
 
-ggsave(eez_map, filename = paste0(pdf_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.pdf"), width = 10, units = "in")
-
-#plot_map
-ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
-
-}
-```
-
-
-```{r PDF}
+```{r PDF Merging}
 
 
 for(i in 1:length(top_eezs)){
@@ -1096,34 +1052,29 @@ for(i in 1:length(top_eezs)){
 
 for (i in 1:length(top_flag_states)) {
   
-pdf(file.path = pdf_dir, paste0("plot", i, ".pdf", sep = ""))
+pdf(file.path = pdf_flag_dir, paste0("plot", i, ".pdf", sep = ""))
 
     
 
 }
-CHN <- file.path(pdf_dir, paste('Full_CHN.pdf', sep = ""))
-staple_pdf(input_directory = pdf_dir, output_filepath = "CHN")
 
-staple_pdf()
-
-pdf_combine(pdf_dir, c("pdf_resultsCHN_flag_state_map.pdf","pdf_resultsCHN_subsidy_plot.pdf"), output = "joinedCHN.pdf")
 
 ###
 
 
 
 
-staple_pdf(input_files = c("pdf_resultsCHN_flag_state_map.pdf", "pdf_resultsCHN_subsidy_plot.pdf"), output_filepath = file.path(pdf_dir, 'Full_pdf.pdf'))
+staple_pdf(input_files = c("CHN_flag_state_map.pdf", "CHN_subsidy_plot.pdf"), output_filepath = file.path(pdf_flag_dir, 'Full_pdf.pdf'))
 
 ##
 
 
-output_file <- file.path(pdf_dir, paste('Full_CHN.pdf', sep = ""))
-staple_pdf(input_directory = pdf_dir, output_filepath = output_file)
+output_file <- file.path(pdf_flag_dir, paste('Full_CHN.pdf', sep = ""))
+staple_pdf(input_directory = pdf_flag_dir, output_filepath = output_file)
 
 ###
-setwd("pdf_dir") ##
-infiles <- Sys.glob("pdf_resultsCHN_*.pdf") ##
+setwd("pdf_flag_dir") ##
+infiles <- Sys.glob("CHN_*.pdf") ##
 outfile <- "CHN.pdf" ##
 system(paste("pdftk", paste(infiles, collapse = " "), "CHN", outfile))
 
@@ -1134,8 +1085,8 @@ mf <- file.path(dir, "merged.pdf")
 merge_pdf(mf)
 get_n_pages(mf)
 
-p.1 = "pdf_resultsCHN_flag_state_map.pdf"
-p.2 = "pdf_resultsCHN_subsidy_plot.pdf"
+p.1 = "CHN_flag_state_map.pdf"
+p.2 = "CHN_subsidy_plot.pdf"
 
 plots.list = list(p.1, p.2)
 
