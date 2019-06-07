@@ -30,15 +30,8 @@ library(ggalt) # transform to robinson projection
 library(RColorBrewer) # custom color palettes
 library(scales) # scales for plotting
 library(ggpubr) # plot arranging
-<<<<<<< HEAD
 library(gridExtra)
 library(grid)
-=======
-library(ggplot2)
-library(cowplot)
-library(dplyr)
-library(staplr) #pdf results
->>>>>>> 25ffb54437b937d4f6a5b8be812b0f3d457b0918
 
 # Set results directory
 results_dir <- here::here("results/")
@@ -499,6 +492,14 @@ flag_state_ranking <- dw_effort_final %>%
          fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
   mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
 
+flag_state_combinations_ranking <- dw_effort_final %>%
+  distinct(flag, eez_code = as.numeric(eez_code)) %>%
+  arrange(flag) %>%
+  group_by(flag) %>%
+  summarize(num_eezs = n_distinct(eez_code)) %>%
+  mutate(eez_rank = dense_rank(desc(num_eezs))) %>%
+  arrange(eez_rank)
+
 # Identify top flag states based on average ranking
 flag_state_ranking_top <- flag_state_ranking %>%
  top_n(-number_of_top_countries_flag, wt = avg_rank)
@@ -634,7 +635,6 @@ flag_state_mapping_wlines <- flag_state_mapping %>%
 ```{r flagmaps}
 # Custom theme for map
 maptheme <- theme_minimal()+
-<<<<<<< HEAD
   theme(panel.background = element_rect(fill = "grey27", colour = NA),
         panel.grid.major = element_line(colour = "grey27"),
         panel.border = element_blank(),
@@ -643,15 +643,6 @@ maptheme <- theme_minimal()+
         axis.title = element_blank(),
         axis.text = element_blank(),
         axis.ticks.length = unit(0, "pt"))
-=======
-  theme(plot.background = element_rect(fill = "grey27"),
-                  line = element_line(colour = "white", size = 0.5),
-                  panel.grid.major = element_line(colour = "grey27"),
-                  panel.border = element_blank(),
-                  plot.margin=unit(c(0,0,0,0),"cm"),
-                  plot.title = element_text(margin = margin(t = 10, b = -10), hjust = 0.5))
-                  
->>>>>>> 25ffb54437b937d4f6a5b8be812b0f3d457b0918
 
 # Custom color palette for Sumaila subsidy types
 goodColors <- rev(brewer.pal(3,"Blues"))
@@ -667,7 +658,7 @@ myColors <- c(goodColors, badColors, ambigColors)
 
 ## For loop to run top X countries
  for(i in 1:length(top_flag_states)){
-
+   
 ### Step 1: Flag state connectivity data
 # Pull connectivity data for only our flag state of interest
 flag_dat <- flag_state_mapping_wlines %>%
@@ -685,7 +676,6 @@ map_plot <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
   geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = flag_dat, col = "darkgoldenrod", size = 0.25) + 
-<<<<<<< HEAD
   maptheme+
   coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
   scale_x_continuous(expand = c(0,0))+
@@ -708,7 +698,7 @@ lay1 <- rbind(c(1),
               c(4))
 
 # Put together connectivity map
-map_page <- grid.arrange(general_title, map_title, map_plot, map_text, 
+map_page <- grid.arrange(general_title, flag_title, map_plot, map_text, 
                          layout_matrix = lay1,
                          heights=unit(c(0.5,0.5,1.5,5,1), c("in")), 
                          widths=unit(11, "in"))
@@ -717,18 +707,6 @@ out1 <- cowplot::ggdraw(map_page) +
 
 # Save connectivity map
 ggsave(out1, filename = paste0(country_dir, top_flag_states[i], "_map_page.pdf"), width = 11, height = 8.5, units = "in")
-=======
-  ggtitle(paste0(top_flag_states[i], ' Distant Water Fishing Fleet', sep = ''))+
-  #labs(caption = "Distant water fishing fleet of *[i]*")+
-  maptheme
-
-
-# Save map png
-ggsave(plot_map, filename = paste0(country_dir, top_flag_states[i], "_flag_state_map.png"), width = 10, units = "in")
->>>>>>> 25ffb54437b937d4f6a5b8be812b0f3d457b0918
-
-# Save map pdf
-ggsave(plot_map, filename = paste0(pdf_flag_dir, top_flag_states[i], "_flag_state_map.pdf"), width = 10, units = "in")
 
 ### Step 3: Make fisheries subsidies summary plot(s) 
 # Subsidies by subtype plot
@@ -748,13 +726,10 @@ if(nrow(flag_subsidy_dat) > 0){
     theme_bw()+
     coord_flip()+
     scale_y_continuous(expand = c(0,0), labels = scales::comma)+
-    labs(x = "", y = "Est. fisheries subsidies (2018 $USD, millions)")+
-    ggtitle(paste0(top_flag_states[i], ' Estimated Fisheries Subsidies (2018 $USD, millions', sep = ''))+
+    labs(x = "", y = "Est. fisheries subsidies (2018 $USD, millions)")
   
   # Save plot as png
   ggsave(subsidy_plot, filename = paste0(country_dir, top_flag_states[i], "_subsidy_plot.png"), width = 10, height = 6, units = "in")
-  
-<<<<<<< HEAD
   
   # Make one page pdf of subsidy/other statistics
   general_title2 <- textGrob(paste0("Global network of distant-water fishing"), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "black", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.9)
@@ -765,7 +740,7 @@ if(nrow(flag_subsidy_dat) > 0){
     paste0("Number of distant-water vessels: ", format(flag_state_ranking_top$total_vessels[i], big.mark = ","), 
            "  |  Rank: ", flag_state_ranking_top$vessel_rank[i],
            "\nNumber of EEZs fished: ", length(unique(flag_dat$eez_code)), 
-           "  |  Rank: ", flag_state_ranking_top$vessel_rank[i],
+           "  |  Rank: ", flag_state_combinations_ranking$eez_rank[flag_state_combinations_ranking$flag == top_flag_states[i]],
            "\nTotal distant-water capacity (KW): ", format(round(flag_state_ranking_top$total_capacity[i]), big.mark = ","),
            "  |  Rank: ", flag_state_ranking_top$capacity_rank[i],
            "\nTotal distant-water fishing effort (hours): ", format(round(flag_state_ranking_top$total_fishing_hours[i]), big.mark = ","),
@@ -774,7 +749,7 @@ if(nrow(flag_subsidy_dat) > 0){
            "  |  Rank: ", flag_state_ranking_top$fishing_KWh_rank[i]), just = "left", x = unit(0.14, "npc")
   )
 
-  subsidy_text <- textGrob(paste0("This figure shows fisheries subsides provided by ", top_flag_states_names[i], " in 2018 $USD. Subsidies are grouped into three types: neutral (purples), capacity-enhancing (reds), and beneficial (blues) \nbased on their generalized effects. Data are updated estimates from those in Sumaila et al. (2016)."), gp = gpar(fontsize = 10, col = "black", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
+  subsidy_text <- textGrob(paste0("This figure shows fisheries subsides provided by ", top_flag_states_names[i], " in 2018 $USD. Subsidies are grouped into three types: neutral (purples), capacity-enhancing (reds), \nand beneficial (blues) based on their generalized effects. Data are updated estimates from those found in Sumaila et al. (2016)."), gp = gpar(fontsize = 10, col = "black", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
   # Layout matrix
   lay <- rbind(c(1),
@@ -797,12 +772,8 @@ ggsave(out2, filename = paste0(country_dir, top_flag_states[i], "_info_page.pdf"
   
 
 # Save both plots into one pdf
-  out3 <- marrangeGrob(grobs = list(test, test2), nrow = 1, ncol = 1, top = NULL)
-  ggsave(out3, filename = paste0(country_dir, top_flag_states[i], "_combined.pdf"), width = 11, height = 8.5, units = "in")
-=======
-  ggsave(subsidy_plot, filename = paste0(pdf_flag_dir, top_flag_states[i], "_subsidy_plot.pdf"), width = 10, units = "in")
-  
->>>>>>> 25ffb54437b937d4f6a5b8be812b0f3d457b0918
+  out_flag_state <- marrangeGrob(grobs = list(out1, out2), nrow = 1, ncol = 1, top = NULL)
+  ggsave(out_flag_state, filename = paste0(country_dir, top_flag_states[i], "_combined.pdf"), width = 11, height = 8.5, units = "in")
 }
 
 }
@@ -930,9 +901,6 @@ eez_mapping_wlines <- eez_mapping %>%
 ## For loop to run top EEZs
 for(i in 1:length(top_eezs)){
 
-# comment this out when loop runs - Solomon islands
-#i <- 6
-
 eez_dat <- eez_mapping_wlines %>%
   dplyr::filter(eez_code == top_eezs[i]) 
 
@@ -946,26 +914,42 @@ eez_map <- ggplot()+
   geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = NA) + # highlighted flag state (magenta, white border lines)
   # geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA) +
   geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == top_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) + 
-  ggtitle(paste0("Distant Water Fishing in the ", top_eez_names_long[i]))+ #fontface='bold', colour = "white", size = 12)+
-  #ggtitle(paste0(top_eezs[i], ' EEZ Fishing Effot by Flag State', sep = ''))+
-  maptheme
+  geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) +
+  maptheme+
+  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
 
 #plot_map <- plot_map + coord_sf("+proj=robin +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
 #plot_map pngs
 ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
 
-#plot_map pdfs
-ggsave(eez_map, filename = paste0(pdf_eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.pdf"), width = 10, units = "in")
+# Combine map into a one page pdf
+general_title3 <- textGrob(paste0("Global network of distant-water fishing"), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.9)
 
-}
-```
+sub_title3 <- textGrob(paste0("EEZ: ", top_eez_names_long[i]), gp = gpar(fontsize=16, lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.1)
 
-Now we need to pull raw, aggregated GFW data for each EEZ on our list and combine this with our subsidy data in order to map subsidy intensity in each EEZ
+caption_text3 <- textGrob(paste0("This map shows the global origins of distant-water vessels fishing in the ", top_eez_names_long[i], ". Lines connect the EEZ (blue) \nwith all foreign countries (pink) from which vessels fishing in that EEZ in 2018 are flagged. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
-```{r}
-# Custom theme for the eez heat maps
+lay1 <- rbind(c(1),
+              c(2),
+              c(3),
+              c(3),
+              c(4))
+
+# Put together connectivity map
+eez_page <- grid.arrange(general_title3, sub_title3, eez_map, caption_text3, 
+                         layout_matrix = lay1,
+                         heights=unit(c(0.5,0.5,1.5,5,1), c("in")), 
+                         widths=unit(11, "in"))
+out3 <- cowplot::ggdraw(eez_page) + 
+  theme(plot.background = element_rect(fill="grey27", color = NA))
+
+# Save connectivity map
+ggsave(out3, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_map_page.pdf"), width = 11, height = 8.5, units = "in")
+
+### Step 2 - make heat maps
 eezmaptheme <- theme_minimal()+
   theme(plot.background = element_rect(fill = "grey27", color = NA),
         panel.background = element_rect(fill = "grey27", color = NA),
@@ -979,14 +963,12 @@ eezmaptheme <- theme_minimal()+
         legend.box = "horizontal",
         axis.text = element_text(color = "white"))
 
-# Run loop to make heat maps
-for(i in 1:length(top_eezs)){
-
-  if(rerun_gfw == T){
+# Pull data from GFW if necessary
+ if(rerun_gfw == T){
     # What bin size do we want to use (degrees)?  
     bin_size <- 0.1
 
-sql3 <- paste0(
+  sql3 <- paste0(
   "WITH
   selected_vi AS (
     SELECT
@@ -1057,9 +1039,9 @@ sql3 <- paste0(
     lon_cen
   HAVING
     fishing_hours > 1"
-)
+  )
 
-eez_table <- bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") 
+  eez_table <- bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") 
 
   if(bq_table_exists(eez_table) == FALSE){
     bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas") %>%
@@ -1069,20 +1051,19 @@ eez_table <- bq_table(project = ucsb_project, table = paste0("fishing_effort_", 
       bq_table_delete()
   }
 
-eez_effort <- bq_project_query(ucsb_project, sql3, destination_table = bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
-  bq_table_download(max_results = Inf)
+  eez_effort <- bq_project_query(ucsb_project, sql3, destination_table = bq_table(project = ucsb_project, table = paste0("fishing_effort_", top_eezs[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+    bq_table_download(max_results = Inf)
 
-write_csv(eez_effort, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"))
+  write_csv(eez_effort, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"))
 
-# Load local data instead of rerunning global fishing watch pull 
-} else{
+  # Load local data instead of rerunning global fishing watch pull 
+  } else{
   
-eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
+  eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
     
-}
+  }
 
-
-### Make Plots 
+  ### Make Plots 
   # Get quantiles of data for scale limits
   eez_effort_aggregated <- eez_effort %>%
     group_by(year, eez_code, lon_cen, lat_cen) %>%
@@ -1107,7 +1088,7 @@ eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ
     eezmaptheme +
     scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
                          limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
-                         labels=c(paste0("\u2264 ", scale_labels[1]), scale_labels[2:4], paste0("\u2265 ", scale_labels[5])),
+                         labels=scale_labels,
                          breaks=scale_labels,
                          oob=scales::squish)+
     labs(x = "", y = "")+
@@ -1127,74 +1108,34 @@ eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ
 
  
   # Combined plot  
-  combined_title <- ggdraw() + draw_label(paste0("Distant Water Fishing in the ", top_eez_names_long[i]), fontface='bold', colour = "white", size = 12)
-  eez_combined_plot <- plot_grid(combined_title, plot_grid(eez_effort_plot, eez_subsidy_plot, ncol = 2, align = "hv"), ncol = 1, rel_heights = c(0.1,1)) +
-    theme(plot.background = element_rect(fill = "grey27", color = NA))
   
-  ggsave(filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_heat_map.png"), eez_combined_plot, width = 10, units = "in")
-  
-  ggsave(filename = paste0(pdf_eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_heat_map.pdf"), eez_combined_plot, width = 10, units = "in")
+general_title4 <- textGrob(paste0("Global network of distant-water fishing"), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.9)
+
+sub_title4 <- textGrob(paste0("EEZ: ", top_eez_names_long[i]), gp = gpar(fontsize=16, lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.1)
+
+caption_text4 <- textGrob(paste0("These maps show distant-water fishing effort (left, KWh) and subsidy intensity (right, 2018 $USD/KWh) in the ", top_eez_names_long[i], ". \nBoth fishing effort and subsidy intensity are aggregated by 0.1 degree latitude/longitude. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
+
+lay4 <- rbind(c(1,1),
+              c(2,2),
+              c(3,4),
+              c(3,4),
+              c(5,5))
+
+# Put together connectivity map
+page4 <- grid.arrange(general_title4, sub_title4, eez_effort_plot, eez_subsidy_plot, caption_text4, 
+                         layout_matrix = lay4,
+                         heights=unit(c(0.5,0.5,1.5,5,1), c("in")),
+                         widths=unit(c(5.5,5.5), "in"))
+out4 <- cowplot::ggdraw(page4) + 
+  theme(plot.background = element_rect(fill="grey27", color = NA))
+
+# Save connectivity map
+ggsave(out4, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_effort_page.pdf"), width = 11, height = 8.5, units = "in")
+
+# Save both plots into one pdf
+  out_eez <- marrangeGrob(grobs = list(out3, out4), nrow = 1, ncol = 1, top = NULL)
+  ggsave(out_eez, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_combined.pdf"), width = 11, height = 8.5, units = "in")
 
 }
-
-
-```
-
-
-
-```{r PDF Merging}
-
-
-for(i in 1:length(top_eezs)){
-  
-  pdf(file=paste0(filenames[i], ".pdf"))
-  
-}
-
-for (i in 1:length(top_flag_states)) {
-  
-pdf(file.path = pdf_flag_dir, paste0("plot", i, ".pdf", sep = ""))
-
-    
-
-}
-
-
-###
-
-
-
-
-staple_pdf(input_files = c("CHN_flag_state_map.pdf", "CHN_subsidy_plot.pdf"), output_filepath = file.path(pdf_flag_dir, 'Full_pdf.pdf'))
-
-##
-
-
-output_file <- file.path(pdf_flag_dir, paste('Full_CHN.pdf', sep = ""))
-staple_pdf(input_directory = pdf_flag_dir, output_filepath = output_file)
-
-###
-setwd("pdf_flag_dir") ##
-infiles <- Sys.glob("CHN_*.pdf") ##
-outfile <- "CHN.pdf" ##
-system(paste("pdftk", paste(infiles, collapse = " "), "CHN", outfile))
-
-
-##
-
-mf <- file.path(dir, "merged.pdf")
-merge_pdf(mf)
-get_n_pages(mf)
-
-p.1 = "CHN_flag_state_map.pdf"
-p.2 = "CHN_subsidy_plot.pdf"
-
-plots.list = list(p.1, p.2)
-
-plots = do.call(marrangeGrob, c(plots.list, list(nrow = 1, ncol = 1)))
-
-ggsave("FullCHN.pdf", plots)
-
-
 ```
 
