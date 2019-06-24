@@ -32,6 +32,7 @@ library(scales) # scales for plotting
 library(ggpubr) # plot arranging
 library(gridExtra)
 library(grid)
+library(png)
 
 # Set results directory
 results_dir <- here::here("results/")
@@ -657,7 +658,7 @@ names(ambigColors) <- levels(subsidy_dat_ordered$type)[11:13]
 myColors <- c(goodColors, badColors, ambigColors)
 
 ## For loop to run top X countries
- for(i in 1:length(top_flag_states)){
+for(i in 1:length(top_flag_states)){
    
 ### Step 1: Flag state connectivity data
 # Pull connectivity data for only our flag state of interest
@@ -672,7 +673,7 @@ write_csv(flag_dat, path = paste0(country_dir, top_flag_states[i], "_flag_state_
 map_plot <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 == top_flag_states[i]), fill = "darkmagenta", color = NA, size = 0.1) + # highlighted flag state (magenta, white border lines)
+  geom_sf(data = country_map %>% dplyr::filter(iso3 == top_flag_states[i]), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, white border lines)
   geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
   geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = flag_dat, col = "darkgoldenrod", size = 0.25) + 
@@ -685,23 +686,23 @@ map_plot <- ggplot()+
 ggsave(map_plot, filename = paste0(country_dir, top_flag_states[i], "_flag_state_map.png"), width = 10, units = "in")
 
 # Combine map into a one page pdf
-general_title <- textGrob(paste0("Global network of distant-water fishing"), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.9)
+sfg_logo_white <- readPNG(here::here("common", "sfg-logo-white.png"))
+logo_white <- rasterGrob(sfg_logo_white, interpolate=TRUE, vjust = 0.8, hjust = 0.6)
 
-flag_title <- textGrob(paste0("Flag State: ", top_flag_states_names[i]), gp = gpar(fontsize=16, lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.1)
+title1 <- textGrob(paste0("Global network of distant-water fishing\nFlag state: ", top_flag_states_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
 
-map_text <- textGrob(paste0("This map shows the global range of distant-water fishing effort for vessels flagged to ", top_flag_states_names[i], ". Lines connect the flag state (pink) \nwith all foreign EEZs (blue) in which vessels flagged to that state fished in 2018. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
+caption1 <- textGrob(paste0("This map shows the global range of distant-water fishing effort for vessels flagged to ", top_flag_states_names[i], ". Lines connect the flag state (pink) \nwith all foreign EEZs (blue) in which vessels flagged to that state fished in 2018. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
-lay1 <- rbind(c(1),
-              c(2),
-              c(3),
-              c(3),
-              c(4))
+lay1 <- rbind(c(1,4),
+              c(2,2),
+              c(2,2),
+              c(3,3))
 
 # Put together connectivity map
-map_page <- grid.arrange(general_title, flag_title, map_plot, map_text, 
+map_page <- grid.arrange(title1, map_plot, caption1, logo_white,
                          layout_matrix = lay1,
-                         heights=unit(c(0.5,0.5,1.5,5,1), c("in")), 
-                         widths=unit(11, "in"))
+                         heights=unit(c(1,1.5,5,1), c("in")), 
+                         widths=unit(c(8,3), "in"))
 out1 <- cowplot::ggdraw(map_page) + 
   theme(plot.background = element_rect(fill="grey27", color = NA))
 
@@ -732,9 +733,10 @@ if(nrow(flag_subsidy_dat) > 0){
   ggsave(subsidy_plot, filename = paste0(country_dir, top_flag_states[i], "_subsidy_plot.png"), width = 10, height = 6, units = "in")
   
   # Make one page pdf of subsidy/other statistics
-  general_title2 <- textGrob(paste0("Global network of distant-water fishing"), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "black", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.9)
-  
-  flag_title2 <- textGrob(paste0("Flag State: ", top_flag_states_names[i]), gp = gpar(fontsize=16, lineheight=1, col = "black", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.1)
+  sfg_logo_black <- readPNG(here::here("common", "sfg-logo-black.png"))
+  logo_black <- rasterGrob(sfg_logo_black, interpolate=TRUE, vjust = 0.8, hjust = 0.6)
+
+  title2 <- textGrob(paste0("Global network of distant-water fishing\nFlag state: ", top_flag_states_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "black", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
   
   dw_summary <- textGrob(
     paste0("Number of distant-water vessels: ", format(flag_state_ranking_top$total_vessels[i], big.mark = ","), 
@@ -749,20 +751,19 @@ if(nrow(flag_subsidy_dat) > 0){
            "  |  Rank: ", flag_state_ranking_top$fishing_KWh_rank[i]), just = "left", x = unit(0.14, "npc")
   )
 
-  subsidy_text <- textGrob(paste0("This figure shows fisheries subsides provided by ", top_flag_states_names[i], " in 2018 $USD. Subsidies are grouped into three types: neutral (purples), capacity-enhancing (reds), \nand beneficial (blues) based on their generalized effects. Data are updated estimates from those found in Sumaila et al. (2016)."), gp = gpar(fontsize = 10, col = "black", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
+  caption2 <- textGrob(paste0("This figure shows fisheries subsides provided by ", top_flag_states_names[i], " in 2018 $USD. Subsidies are grouped into three types: neutral (purples), capacity-enhancing (reds), \nand beneficial (blues) based on their generalized effects. Data are updated estimates from those found in Sumaila et al. (2016)."), gp = gpar(fontsize = 10, col = "black", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
   # Layout matrix
-  lay <- rbind(c(1),
-               c(2),
-               c(3),
-               c(4),
-               c(5))
+  lay <- rbind(c(1,5),
+               c(2,2),
+               c(3,3),
+               c(4,4))
   
   # Create info/summary page
-info_page <- grid.arrange(general_title2, flag_title2, dw_summary, subsidy_plot, subsidy_text, 
+info_page <- grid.arrange(title2, dw_summary, subsidy_plot, caption2, logo_black, 
                           layout_matrix = lay, 
-                          heights = unit(c(0.5,0.5,1.5,5,1), "in"), 
-                          widths = unit(c(11), "in"))
+                          heights = unit(c(1,1.5,5,1), "in"), 
+                          widths = unit(c(8,3), "in"))
 
 out2 <- cowplot::ggdraw(info_page) +
   theme(plot.background = element_rect(fill="white", color = NA))
@@ -770,7 +771,6 @@ out2 <- cowplot::ggdraw(info_page) +
 # Save summary page
 ggsave(out2, filename = paste0(country_dir, top_flag_states[i], "_info_page.pdf"), width = 11, height = 8.5, units = "in")
   
-
 # Save both plots into one pdf
   out_flag_state <- marrangeGrob(grobs = list(out1, out2), nrow = 1, ncol = 1, top = NULL)
   ggsave(out_flag_state, filename = paste0(country_dir, top_flag_states[i], "_combined.pdf"), width = 11, height = 8.5, units = "in")
@@ -843,6 +843,7 @@ write_csv(EEZ_ranking %>%
 top_eezs <- EEZ_ranking_top$eez_code
 top_eez_names <- EEZ_ranking_top$eez_territory_iso3
 top_eez_names_long <- EEZ_ranking_top$eez_name
+top_eez_names_long[which(top_eezs == "8389")] <- "Falkland Islands Exclusive Economic Zone: UK / Argentina"
 
 eez_combinations <- dw_effort_final %>%
   dplyr::filter(eez_code %in% top_eezs) %>%
@@ -911,8 +912,7 @@ write_csv(eez_dat, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i] , "
 eez_map <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = NA) + # highlighted flag state (magenta, white border lines)
-  # geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA) +
+  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
   geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == top_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) +
   maptheme+
@@ -926,23 +926,20 @@ eez_map <- ggplot()+
 ggsave(eez_map, filename = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
 
 # Combine map into a one page pdf
-general_title3 <- textGrob(paste0("Global network of distant-water fishing"), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.9)
+title3 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", top_eez_names_long[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
 
-sub_title3 <- textGrob(paste0("EEZ: ", top_eez_names_long[i]), gp = gpar(fontsize=16, lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.1)
+caption3 <- textGrob(paste0("This map shows the global origins of distant-water vessels fishing in the ", top_eez_names_long[i], ". Lines connect the EEZ (blue) \nwith all foreign countries (pink) from which vessels fishing in that EEZ in 2018 are flagged. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
-caption_text3 <- textGrob(paste0("This map shows the global origins of distant-water vessels fishing in the ", top_eez_names_long[i], ". Lines connect the EEZ (blue) \nwith all foreign countries (pink) from which vessels fishing in that EEZ in 2018 are flagged. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
-
-lay1 <- rbind(c(1),
-              c(2),
-              c(3),
-              c(3),
-              c(4))
+lay3 <- rbind(c(1,4),
+              c(2,2),
+              c(2,2),
+              c(3,3))
 
 # Put together connectivity map
-eez_page <- grid.arrange(general_title3, sub_title3, eez_map, caption_text3, 
-                         layout_matrix = lay1,
-                         heights=unit(c(0.5,0.5,1.5,5,1), c("in")), 
-                         widths=unit(11, "in"))
+eez_page <- grid.arrange(title3, eez_map, caption3, logo_white, 
+                         layout_matrix = lay3,
+                         heights=unit(c(1,1.5,5,1), c("in")), 
+                         widths=unit(c(8.25,2.75), "in"))
 out3 <- cowplot::ggdraw(eez_page) + 
   theme(plot.background = element_rect(fill="grey27", color = NA))
 
@@ -1080,6 +1077,7 @@ eezmaptheme <- theme_minimal()+
   x_lim <- c(min(eez_effort_aggregated$lon_cen) - 0.5, max(eez_effort_aggregated$lon_cen) + 0.5)
   y_lim <- c(min(eez_effort_aggregated$lat_cen) - 0.5, max(eez_effort_aggregated$lat_cen) + 0.5)
   
+  
   # Map of subsidy intensity
   eez_subsidy_plot <- ggplot()+
     geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
@@ -1093,7 +1091,9 @@ eezmaptheme <- theme_minimal()+
                          oob=scales::squish)+
     labs(x = "", y = "")+
     coord_sf(xlim = x_lim, ylim = y_lim)+
-    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 10))
+    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+    scale_x_continuous(expand = c(0,0))+
+    scale_y_continuous(expand = c(0,0))
   
   # Labels for the log scale 
   eez_effort_plot <- ggplot()+
@@ -1104,28 +1104,42 @@ eezmaptheme <- theme_minimal()+
     scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
     labs(x = "", y = "")+
     coord_sf(xlim = x_lim, ylim = y_lim) +
-    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 10))
+    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+    scale_x_continuous(expand = c(0,0))+
+    scale_y_continuous(expand = c(0,0))
 
  
   # Combined plot  
+  logo_white2 <- rasterGrob(sfg_logo_white, interpolate=TRUE, vjust = 0.8, hjust = 0.3)
   
-general_title4 <- textGrob(paste0("Global network of distant-water fishing"), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.9)
+title4 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", top_eez_names_long[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
 
-sub_title4 <- textGrob(paste0("EEZ: ", top_eez_names_long[i]), gp = gpar(fontsize=16, lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.5, vjust = 0.1)
+caption4 <- textGrob(paste0("These maps show distant-water fishing effort (left, KWh) and subsidy intensity (right, 2018 $USD/KWh) in the ", top_eez_names_long[i], ". \nBoth fishing effort and subsidy intensity are aggregated by 0.1 degree latitude/longitude. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
-caption_text4 <- textGrob(paste0("These maps show distant-water fishing effort (left, KWh) and subsidy intensity (right, 2018 $USD/KWh) in the ", top_eez_names_long[i], ". \nBoth fishing effort and subsidy intensity are aggregated by 0.1 degree latitude/longitude. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
-
-lay4 <- rbind(c(1,1),
-              c(2,2),
-              c(3,4),
-              c(3,4),
-              c(5,5))
+  if(top_eez_names[i] == "RUS"){
+    
+    lay4 <- rbind(c(1,1,1,5),
+              c(NA,NA,NA,NA),
+              c(2,2,2,2),
+              c(3,3,3,3),
+              c(4,4,4,4))
+    
+    
+  } else{
+    
+    lay4 <- rbind(c(1,1,1,5),
+              c(NA,NA,NA,NA),
+              c(2,2,3,3),
+              c(2,2,3,3),
+              c(4,4,4,4))
+    
+  }
 
 # Put together connectivity map
-page4 <- grid.arrange(general_title4, sub_title4, eez_effort_plot, eez_subsidy_plot, caption_text4, 
+page4 <- grid.arrange(title4, eez_effort_plot, eez_subsidy_plot, caption4, logo_white, 
                          layout_matrix = lay4,
-                         heights=unit(c(0.5,0.5,1.5,5,1), c("in")),
-                         widths=unit(c(5.5,5.5), "in"))
+                         heights=unit(c(1,0.5,3,3,1), c("in")),
+                         widths=unit(c(2.75,2.75,2.75,2.75), "in"))
 out4 <- cowplot::ggdraw(page4) + 
   theme(plot.background = element_rect(fill="grey27", color = NA))
 
