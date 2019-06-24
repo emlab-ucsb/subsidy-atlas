@@ -1,0 +1,21 @@
+---
+title: "test script"
+author: "Matthew Warham"
+date: "6/24/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+ACP_codes <- read_csv("ACP_eez_codes.csv")
+
+africa_eezs <- ACP_codes %>% 
+    dplyr::filter(region == "Africa") %>% 
+    select(eez_id)
+
+```
+

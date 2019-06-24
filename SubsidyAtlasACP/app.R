@@ -37,6 +37,10 @@ source)
 # ),
 # read_csv)
 
+# Load csz of ACP eez's
+
+ACP_codes <- read_csv("ACP_eez_codes.csv")
+
 # Load shapefiles
 eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone))
@@ -145,8 +149,8 @@ ui <- shinyUI(
        # ),
        # 
        # Pacific Islands
-       tabItem(tabName = "pacific_islands"
-               #pacific_islands()
+       tabItem(tabName = "pacific_islands",
+               pacific()
        )
        
      ) # close tabItems
@@ -170,50 +174,18 @@ server <- function(input, output) {
   
   ### Africa ----------
   
-  africa_eezs <- c(8379, # Ascension
-                   8380, # St. Helena
-                   8382, # Tristan Da Cunha
-                   8334, # Comoros
-                   8348, # Madagascar
-                   8396, # South Africa
-                   8343, # Mauritius
-                   8395, # Namibia
-                   8394, # Congo
-                   8478, # Angola
-                   8347, # Mozambique
-                   8349, # Kenya
-                   8384, # Prince Edward Islands (South Africa)
-                   8479, # Tanzania
-                   8362, # Cape Verde
-                   8370, # Gambia
-                   8390, # Sierra Leone
-                   8369, # Mauritania
-                   48964, # Joint regime: Senegal/Guinea Bissau
-                   8371, # Senegal
-                   8471, # Guinea Bissau
-                   8472, # Guinea
-                   8473, # Ivory coast
-                   8391, # Liberia
-                   48956, # Overlapping claim: Djibouti/?
-                   8490, # Egypt
-                   8351, # Eritrea
-                   8372, # Libya
-                   8355, # Sudan
-                   8392, # Togo
-                   8366, # Tunisia
-                   8352, # Djibouti
-                   8474, # Nigeria
-                   8475, # Cameroon
-                   8397, # Sao Tome and Principe
-                   21797 # Joint regime
-  )
+  africa_eezs <- ACP_codes %>% 
+    dplyr::filter(region == "Africa") %>% 
+    select(eez_id)
+    
+  
   
   ### Map of African countries/EEZs highlighted for which we have DW fishing effort
   output$africa_map <- renderLeaflet({
     
     # Filter data
     africa_eezs <- eez_fao %>%
-      dplyr::filter(mrgid %in% africa_eezs)
+      dplyr::filter(mrgid %in% africa_eezs$eez_id)
     
     # Map
     leaflet('africa_map') %>% 
@@ -250,67 +222,18 @@ server <- function(input, output) {
   
   ### Caribbean ----------
   
-  caribbean_eezs <- c(8412, # Anguilla
-                      8414, # Antigua and Barbuda
-                      26519, # Aruba
-                      8404, # Bahamas
-                      8418, # Barbados
-                      8429, # Mexico
-                      8402, # Bermuda
-                      26520, # Bonaire
-                      8411, # BVI
-                      8407, # Cayman Islands
-                      26517, # Curacao
-                      8417, # Dominica
-                      8409, # Dominican Republic
-                      8419, # Grenada
-                      33177, # Guadeloupe
-                      8459, # Jamaica
-                      8415, # Montserrat
-                      33179, # Puerto Rico
-                      26518, # Saba
-                      48952, # Saint Bartholemy
-                      26526, # Sint Eustatius
-                      8413, # Saint Kitts and Nevis
-                      8416, # Saint Lucia
-                      8495, # Saint Martin
-                      8421, # Saint Vincent and the Grenadines
-                      21803, # Sint Maarten
-                      8420, # Trinidad and Tobago
-                      8405, # Turks and Caicos
-                      33180, # USVI
-                      8406, # Cuba
-                      8408, # Haiti
-                      33178, # Martinique
-                      48969, # Joint regime: Guyana/Barbados
-                      48970, # Joint regime: Colombia/Dominican Republic
-                      8424, # Costa Rica
-                      8430, # Guatemala
-                      8428, # El Salvador
-                      8457, # Belize
-                      48968, # Galapagos 
-                      8425, # Nicaragua
-                      8460, # Guyana
-                      8431, # Ecuador
-                      48985, # Colombia
-                      8403, # Ecuador (galapagos)
-                      48984, # colombia
-                      33184, # Colombia
-                      33183, # colombia
-                      8426, # colombia
-                      8456, # United States
-                      8381, # Brazil
-                      8464, # Brazil
-                      48982 # overlapping claim
-                      
-  )
+  caribbean_eezs <- ACP_codes %>% 
+    dplyr::filter(region == "Caribbean") %>% 
+    select(eez_id)
+  
+  
   
   ### Map of Caribbean countries/EEZs highlighted for which we have DW fishing effort
   output$caribbean_map <- renderLeaflet({
     
     # Filter data
     caribbean_eezs <- eez_fao %>%
-      dplyr::filter(mrgid %in% caribbean_eezs)
+      dplyr::filter(mrgid %in% caribbean_eezs$eez_id)
     
     # Map
     leaflet('caribbean_map') %>% 
@@ -347,8 +270,53 @@ server <- function(input, output) {
   
   ### Pacific Islands --------
   
-   
-   
+  pacific_eezs <- ACP_codes %>% 
+    dplyr::filter(region == "Pacific") %>% 
+    select(eez_id)
+  
+  
+  ### Map of Pacific countries/EEZs highlighted for which we have DW fishing effort
+  output$pacific_map <- renderLeaflet({
+    
+    # Filter data
+    pacific_eezs <- eez_fao %>%
+      dplyr::filter(mrgid %in% pacific_eezs$eez_id)
+    
+    # Map
+    leaflet('pacific_map') %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = pacific_eezs, 
+                  fillColor = "blue",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = (paste0("<b>", pacific_eezs$geoname, "</b>") %>%
+                             lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")
+      ) %>%
+      setView(-75,20, zoom = 4)
+    # addLegend("bottomright", pal = pal_global,
+    #           values = log10(tot_subs$value),
+    #           labels = round(tot_subs$value, 0),
+    #           title = "Est. fisheries subsidies<br>(2018 $USD)",
+    #           opacity = 1,
+    #           labFormat = labelFormat(prefix = "$",
+    #                                   transform = function(x) 10^(x)
+    #           )
+    #)
+    
+  })
+  
+  
+  
+  
 }
 
 ### ----------
