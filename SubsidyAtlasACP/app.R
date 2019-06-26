@@ -11,6 +11,9 @@
 rm(list = ls())
 set.seed(123)
 
+##install
+
+
 ### Load packages
 library(shiny)
 library(shinyjs)

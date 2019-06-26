@@ -12,8 +12,12 @@ fontsize: 11pt
 
 This script pulls information on fishing effort from Global Fishing Watch for distant water fishing vessels. The top countries with distant water fishing fleets and the top EEZs with the most distant water fishing activity are then identified.  
 
+
+
+
 ```{r setup, include=FALSE}
 # Chunk options
+
 knitr::opts_chunk$set(echo = TRUE)
 
 # Packages
@@ -1181,14 +1185,18 @@ ACP_eez_names_filter <- EEZ_ranking %>%
   filter(!eez_code %in% c("21797", "21798", "33176", "33185", "48964", "48969")) ## Filte#ACP_eez_names_long <- EEZ_ranking %>% 
   #filter(eez_code %in% ACP_codes$eez_id)
 
+ACP_eezs_filter <- merge (ACP_eezs_filter, ACP_eez_names_filter , all.x=T, all.y=T)
+
+
 ACP_eezs <- ACP_eezs_filter$eez_code
-ACP_eez_names <- ACP_eez_names_filter$eez_territory_iso3
+ACP_eez_names <- ACP_eezs_filter$eez_territory_iso3
 
 
 ACP_eez_combinations <- dw_effort_final %>%
-  filter(eez_code == ACP_eezs_filter$eez_code) %>%
-  distinct(eez_code = as.numeric(eez_code), eez_territory_iso3, flag) %>%
+  filter(eez_territory_iso3 %in% ACP_eezs_filter$eez_territory_iso3) %>%
+  distinct(eez_code = as.numeric(eez_code), flag, eez_territory_iso3) %>%
   arrange(eez_code)
+
 
 ACP_eez_mapping <- ACP_eez_combinations %>%
   left_join(centroid_coordinates_EEZ_edited, by = c("eez_code" = "eez_code")) %>%
@@ -1248,6 +1256,8 @@ ggsave(ACP_eez_map, filename = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i
 ### Step 2 - make heat maps
 
 # Pull data from GFW if necessary
+for(i in 1:length(ACP_eezs)){
+
  if(rerun_gfw == T){
     # What bin size do we want to use (degrees)?  
     bin_size <- 0.1
@@ -1293,7 +1303,7 @@ ggsave(ACP_eez_map, filename = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i
       lon_cen
     HAVING
       year = ", analysis_year, 
-      " AND eez_code = '", as.character(top_eezs[i]), "')
+      " AND eez_code = '", as.character(ACP_eezs[i]), "')
       
  SELECT
     year,
@@ -1343,7 +1353,7 @@ ggsave(ACP_eez_map, filename = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i
   # Load local data instead of rerunning global fishing watch pull 
   } else{
   
-  eez_effort <- read_csv(paste0(eez_dir, top_eezs[i], "_", top_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
+  eez_effort <- read_csv(paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
     
   }
 
@@ -1424,6 +1434,7 @@ caption4 <- textGrob(paste0("These maps show distant-water fishing effort (left,
 
 
 }
+
 ```
 
 
