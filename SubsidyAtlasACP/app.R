@@ -48,6 +48,13 @@ eez_codes <- unique(eez_fao$mrgid)
 
 world <- read_sf(dsn = "./data/world_happy_180/world_happy_180.shp", layer="world_happy_180") 
 
+### Widget choice values that depend on a dataset ------------------------------
+# Put this here so we only have to load datasets in one place 
+country_choices <- c(unique(ACP_codes$flag))
+names(country_choices) <- unique(ACP_codes$flag)
+### Widget choice values that are text heavy  ------------------------------
+# Put this here so it's easier to edit text throughout
+
 ### ----------
 ### Section 2: UI
 ### ----------
@@ -66,6 +73,12 @@ ui <- shinyUI(
                                 # Introduction                     
                                 menuItem("Background", 
                                          tabName = "background", 
+                                         icon = NULL,
+                                         selected = TRUE),
+                                
+                                # EEZ
+                                menuItem("EEZ",
+                                         tabName = "EEZ",
                                          icon = NULL,
                                          selected = TRUE),
                                 
@@ -123,6 +136,11 @@ ui <- shinyUI(
                introduction()
        ),
        
+       #EEZ Connectivity
+       tabItem(tabName = "EEZ",
+               EEZ()
+        ),
+       
        # Africa
        tabItem(tabName = "africa",
                africa()
@@ -151,7 +169,12 @@ ui <- shinyUI(
        # Pacific Islands
        tabItem(tabName = "pacific_islands",
                pacific()
-       )
+       )#,
+       
+       ## EEZ Connectivity maps
+      # tabitem(tabName = "EEZ_Conectivity",
+               #EEZConnectivity()
+      #)
        
      ) # close tabItems
    ) # close dashboardBody
@@ -170,6 +193,7 @@ server <- function(input, output) {
   ### Background ----------
   
   
+  ### EEZ Connectivity Maps ---------
   
   
   ### Africa ----------

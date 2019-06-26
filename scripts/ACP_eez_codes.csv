@@ -1,0 +1,81 @@
+﻿flag,eez_id,territory_iso3,region
+Angola ,8478,AGO,Africa
+Antigua and Barbuda,8414,ATG,Caribbean
+Bahamas,8404,BHS,Caribbean
+Barbados,8418,BRB,Caribbean
+Belize,8457,BLZ,Caribbean
+Benin,8393,BEN,Africa
+Bissau,N/A,N/A,N/A
+Botswana,N/A,N/A,N/A
+Burkina Faso,N/A,N/A,N/A
+Burundi,N/A,N/A,N/A
+Cameroon,8475,CMR,Africa
+Cape Verde,8362,CPV,Africa
+Central African Republic,N/A,N/A,N/A
+Chad,N/A,N/A,N/A
+Comoros,8334,COM,Africa
+Congo (Brazzaville),N/A,N/A,N/A
+Congo (Kinshasa),N/A,N/A,N/A
+Cook Islands,8446,COK,Pacific
+Cte d'Ivoire,8473,CIV,Africa
+Cuba,8406,CUB,Caribbean
+Djibouti,8352,DJI,Africa
+Dominica,8417,DMA,Caribbean
+Dominican Republic,8409,DOM,Caribbean
+Equatorial Guinea,8398,GNQ,Africa
+Eritrea,8351,ERI,Africa
+Ethiopia,N/A,N/A,N/A
+Fiji,8325,FJI,Pacific
+Gabon,8476,GAB,Africa
+Gambia,8370,GMB,Africa
+Ghana,8400,GHA,Africa
+Grenada,8419,GRD,Caribbean
+Guinea,8472,GIN,Africa
+Guyana,8460,GUY,Caribbean
+Haiti,8408,HTI,Caribbean
+Jamaica,8459,JAM,Caribbean
+Kenya,8349,KEN,Africa
+Kiribati,8441,KIR,Pacific
+Lesotho,N/A,N/A,N/A
+Liberia,8391,LBR,Africa
+Madagascar,8348,MDG,Africa
+Malawi,N/A,N/A,N/A
+Mali,N/A,N/A,N/A
+Marshall Islands,8318,MHL,Pacific
+Mauritania,8369,MRT,Africa
+Mauritius,N/A,N/A,N/A
+Micronesia,8316,FSM,Pacific
+Mozambique,8347,MOZ,Africa
+Namibia,8395,NAM,Africa
+Nauru,8317,NRU,Pacific
+Niger,N/A,N/A,N/A
+Nigeria,8474,NGA,Africa
+Niue,8447,NIU,Pacific
+Palau,8315,PLW,Pacific
+Papua New Guinea,8324,PNG,Pacific
+Republic of Guinea,N/A,N/A,N/A
+Rwanda,N/A,N/A,N/A
+Samoa,8445,WSM,Pacific
+Sao Tome and Principe,8397,STP,Africa
+Senegal,8371,SEN,Africa
+Seychelles,8337,SYC,Africa
+Sierra Leone,8390,SLE,Africa
+Solomon Islands,8314,SLB,Pacific
+Somalia,N/A,N/A,N/A
+South Africa,8396,ZAF,Africa
+St. Kitts and Nevis,8413,KNA,Caribbean
+St. Lucia,8416,LCA,Caribbean
+St. Vincent and the Grenadines,8421,VCT,Caribbean
+Sudan,8355,SDN,Africa
+Suriname,8461,SUR,Caribbean
+Swaziland,N/A,N/A,N/A
+Tanzania,8479,TZA,Africa
+Timor Leste,N/A,N/A,N/A
+Togo,8392,TGO,Africa
+Tonga,8448,TON,Pacific
+Trinidad and Tobago,8420,TTO,Caribbean
+Tuvalu,8326,TUV,Pacific
+Uganda,N/A,N/A,N/A
+Vanuatu,8313,VUT,Pacific
+Zambia,N/A,N/A,N/A
+Zimbabwe,N/A,N/A,N/A
