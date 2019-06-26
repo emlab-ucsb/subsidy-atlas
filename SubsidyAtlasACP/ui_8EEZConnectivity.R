@@ -7,7 +7,7 @@
 
 ### Section 2: Function
 
-EEZ = function()
+EEZ = function(country_choices)
   fluidPage(
     
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
@@ -23,7 +23,11 @@ EEZ = function()
                                    selected = NULL,
                                    width = "100%",
                                    options = list(placeholder = 'Select...'))
-             ))
+             )),
+    
+    column(12, style = "min-height: 50vh")
+    
+    
     
     
     

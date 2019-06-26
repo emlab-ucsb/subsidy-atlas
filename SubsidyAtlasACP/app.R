@@ -42,18 +42,19 @@ source)
 
 # Load csz of ACP eez's
 
-ACP_codes <- read_csv("ACP_eez_codes.csv")
+ACP_codes <- read_csv("./ACP_eez_codes.csv") %>%
+  na.omit()
 
 # Load shapefiles
 eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone))
 eez_codes <- unique(eez_fao$mrgid)
 
-world <- read_sf(dsn = "./data/world_happy_180/world_happy_180.shp", layer="world_happy_180") 
+world <- read_sf(dsn = "./data/world_happy_180/world_happy_180.shp", layer="world_happy_180")
 
 ### Widget choice values that depend on a dataset ------------------------------
-# Put this here so we only have to load datasets in one place 
-country_choices <- c(unique(ACP_codes$flag))
+# Put this here so we only have to load datasets in one place
+country_choices <- unique(ACP_codes$territory_iso3)
 names(country_choices) <- unique(ACP_codes$flag)
 ### Widget choice values that are text heavy  ------------------------------
 # Put this here so it's easier to edit text throughout
@@ -141,7 +142,7 @@ ui <- shinyUI(
        
        #EEZ Connectivity
        tabItem(tabName = "EEZ",
-               EEZ()
+               EEZ(country_choices)
         ),
        
        # Africa
@@ -197,6 +198,16 @@ server <- function(input, output) {
   
   
   ### EEZ Connectivity Maps ---------
+  
+  connectivity_plot <- renderPlot({
+    
+    # eez_data <- connectivity_data %>% # load this in up above
+    #   dplyr::filter(eez_code == input$country_for_profile)
+    
+    # ggplot
+    
+    
+  })
   
   
   ### Africa ----------

@@ -1228,6 +1228,7 @@ ACP_eez_dat <- ACP_eez_mapping_wlines %>%
 
 # Write ACP EEZ data
 write_csv(ACP_eez_dat, path = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i] , "_EEZ_dat.csv"))
+write_csv(ACP_eez_dat, path = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i] , "_EEZ_dat.csv"))
 
 #write_csv(eez_dat, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i] , "_EEZ_dat.csv"))
 
