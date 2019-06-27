@@ -17,7 +17,7 @@ EEZ = function(country_choices)
     
     fluidRow(style = "padding: 0px 25px 0px;",
              column(6, style = "padding: 0 5px 0 20px;",
-                    selectizeInput("country_for_profile",
+                    selectizeInput("EEZ_for_profile",
                                    label = "EEZ:",
                                    choices = country_choices,
                                    selected = NULL,
@@ -25,11 +25,16 @@ EEZ = function(country_choices)
                                    options = list(placeholder = 'Select...'))
              )),
     
-    column(12, style = "min-height: 50vh")
+    column(12, style = "min-height: 20vh"),
     
     
-    
+conditionalPanel(
+  condition = "input.EEZ_for_profile.length > 0", 
+  
+  column(12, style = "padding: 10px 25px 0px;",
+         plotOutput("connectivity_plot", width = "auto")
+  
+  ))
     
     
   ) # close fluidPage
-

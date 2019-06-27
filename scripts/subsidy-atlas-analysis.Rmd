@@ -61,6 +61,11 @@ if (dir.exists(ACP_dir) == F) {
   dir.create(ACP_dir, recursive = T)
 }
 
+ACP_app_dir <- here::here("SubsidyAtlasACP", "data" ,"ACP_EEZ_results/")
+if (dir.exists(ACP_app_dir) == F) {
+  dir.create(ACP_app_dir, recursive = T)
+}
+
 pdf_flag_dir <- here::here("results", "pdf_flag_results/")
 if (dir.exists(pdf_flag_dir) == F) {
   dir.create(pdf_flag_dir, recursive = T)
@@ -1217,6 +1222,8 @@ ACP_eez_mapping_wlines <- ACP_eez_mapping %>%
   sf::st_sf(crs = 4326) #%>% 
   #st_transform(flag_state_mapping, crs = '+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs')
 
+write_csv(ACP_eez_mapping_wlines, path = paste0(ACP_dir, "ACP_eez_mapping_wlines.csv"))
+write_csv(ACP_eez_mapping_wlines, path = paste0(ACP_app_dir, "ACP_eez_mapping_wlines.csv"))
 
 
 ## For loop to run top EEZs
@@ -1228,7 +1235,7 @@ ACP_eez_dat <- ACP_eez_mapping_wlines %>%
 
 # Write ACP EEZ data
 write_csv(ACP_eez_dat, path = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i] , "_EEZ_dat.csv"))
-write_csv(ACP_eez_dat, path = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i] , "_EEZ_dat.csv"))
+write_csv(ACP_eez_dat, path = paste0(ACP_app_dir, ACP_eezs[i], "_", ACP_eez_names[i] , "_EEZ_dat.csv")) #ACP App directory
 
 #write_csv(eez_dat, path = paste0(eez_dir, top_eezs[i], "_", top_eez_names[i] , "_EEZ_dat.csv"))
 
@@ -1248,6 +1255,8 @@ ACP_eez_map <- ggplot()+
 
 #plot_map pngs
 ggsave(ACP_eez_map, filename = paste0(ACP_dir, ACP_eezs[i], "_", ACP_eez_names[i], "_", "ACP_EEZ_connectivity_map.png"), width = 10, units = "in")
+
+ggsave(ACP_eez_map, filename = paste0(ACP_app_dir, ACP_eezs[i], "_", ACP_eez_names[i], "_", "ACP_EEZ_connectivity_map.png"), width = 10, units = "in") #ACP App directory
 
 } ### Remove this when adding in heat maps
 ```

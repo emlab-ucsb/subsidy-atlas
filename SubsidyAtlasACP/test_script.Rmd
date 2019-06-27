@@ -19,3 +19,18 @@ africa_eezs <- ACP_codes %>%
 
 ```
 
+```{r}
+
+EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+  st_transform(crs = 4326) 
+
+connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
+
+connectivity_data %>% # load this in up above
+       dplyr::filter(eez_code == input$country_for_profile)
+
+test_data <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_code == input$country_for_profile)
+
+```
+

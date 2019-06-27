@@ -45,12 +45,24 @@ source)
 ACP_codes <- read_csv("./ACP_eez_codes.csv") %>%
   na.omit()
 
+connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
+
 # Load shapefiles
 eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone))
 eez_codes <- unique(eez_fao$mrgid)
 
 world <- read_sf(dsn = "./data/world_happy_180/world_happy_180.shp", layer="world_happy_180")
+
+## Load maps
+
+# EEZ map
+EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+  st_transform(crs = 4326) 
+
+# Country map
+country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_180"), layer = "world_happy_180") %>%  
+  st_transform(crs = 4326) 
 
 ### Widget choice values that depend on a dataset ------------------------------
 # Put this here so we only have to load datasets in one place
@@ -199,12 +211,33 @@ server <- function(input, output) {
   
   ### EEZ Connectivity Maps ---------
   
-  connectivity_plot <- renderPlot({
+  output$connectivity_plot <- renderPlot({
     
-    # eez_data <- connectivity_data %>% # load this in up above
-    #   dplyr::filter(eez_code == input$country_for_profile)
+    #Require country selection
+    req(input$EEZ_for_profile)
     
-    # ggplot
+    #Data
+    connectivity_data %>% # load this in up above
+       dplyr::filter(eez_code == input$EEZ_for_profile)
+    
+    test_data <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_code == input$EEZ_for_profile)
+      
+    
+    
+    #map
+    ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+      geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
+      geom_sf(data = EEZ_map %>% dplyr::filter(ez_hs_c == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
+      geom_sf(data = test_data, col = "darkgoldenrod", size = 0.25) +
+      maptheme+
+      coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))
+    
+ ####Need to make countries and lines reactive   
     
     
   })
