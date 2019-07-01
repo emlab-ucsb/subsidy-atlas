@@ -34,7 +34,18 @@ conditionalPanel(
   column(12, style = "padding: 10px 25px 0px;",
          plotOutput("connectivity_plot", width = "auto")
   
-  ))
+  ))#,
+
+
+
+#conditionalPanel(  
+  #condition = "input.flag_for_profile > 0" ,
+  
+  #column(12, style = "padding:10px 25 px 0px;",
+         #plotOutput("connectivity_plot", width = "auto")
+         
+  #))
+  
     
     
   ) # close fluidPage

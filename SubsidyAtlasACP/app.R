@@ -47,6 +47,9 @@ ACP_codes <- read_csv("./ACP_eez_codes.csv") %>%
 
 connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
 
+
+
+
 # Load shapefiles
 eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone))
@@ -98,13 +101,19 @@ ui <- shinyUI(
                                          icon = NULL,
                                          selected = TRUE),
                                 
+                                # LEaflet EEZ
+                                # menuItem("leaflet_EEZ",
+                                #          tabname = "leaflet",
+                                #          icon = NULL,
+                                #          selected = TRUE),
+                                # 
                                 # Africa
                                 menuItem("Africa", 
                                          tabName = "africa", 
                                          icon = NULL,
                                          selected = TRUE),
                                 
-                                # Asia
+                                # Caribbean
                                 menuItem("Caribbean", 
                                          tabName = "caribbean", 
                                          icon = NULL,
@@ -156,6 +165,11 @@ ui <- shinyUI(
        tabItem(tabName = "EEZ",
                EEZ(country_choices)
         ),
+       
+       #Leaflet EEZ Connectivity
+       # tabItem(tabName = "leaflet_EEZ",
+       #         leaflet()
+       #  ),
        
        # Africa
        tabItem(tabName = "africa",
@@ -213,35 +227,100 @@ server <- function(input, output) {
   
   output$connectivity_plot <- renderPlot({
     
-    #Require country selection
+    #Require EEZ selection
     req(input$EEZ_for_profile)
     
-    #Data
-    connectivity_data %>% # load this in up above
-       dplyr::filter(eez_code == input$EEZ_for_profile)
+    #Require country selection for flag highlights
+    #req(input$flag_for_profile)
     
-    test_data <- connectivity_data %>% # load this in up above
-      dplyr::filter(eez_code == input$EEZ_for_profile)
-      
+    #Data
+    connectivity_data_filter <- connectivity_data %>% # load this in up above
+       dplyr::filter(eez_territory_iso3 == input$EEZ_for_profile)
+    
+    ACP_eez_dat <- connectivity_data %>%
+      dplyr::filter(eez_territory_iso3 == input$EEZ_for_profile)
+    
+    #connectivity_data_BRB <- connectivity_data %>% 
+      #dplyr::filter(eez_territory_iso3 == "BRB")
+    
+    #ACP_eez_dat <- ACP_eez_mapping_wlines %>%
+      #dplyr::filter(eez_code == ACP_eezs[i])
+    
+    #test_data <- connectivity_data %>% # load this in up above
+      #dplyr::filter(eez_code == input$EEZ_for_profile)
+    
+    
+    
+    #Data
+    
+   # iso3 %in% ACP_eez_dat$flag
+    
+    #iso3 %in% connectivity_data_AGO$flag
     
     
     #map
     ggplot()+
       geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
       geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-      geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
+      geom_sf(data = country_map %>% dplyr::filter(iso3 %in% connectivity_data_filter$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
       geom_sf(data = EEZ_map %>% dplyr::filter(ez_hs_c == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
-      geom_sf(data = test_data, col = "darkgoldenrod", size = 0.25) +
+      geom_sf(data = connectivity_data_filter, col = "darkgoldenrod", size = 0.25) +
       maptheme+
       coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))
+    
+    #%>% dplyr::filter(eez_codes == input$EEZ_for_profile)
     
  ####Need to make countries and lines reactive   
     
     
   })
   
+  
+  ### Leaflet Version of EEZ Connectivity Map
+  
+  # all_ACP <- ACP_codes %>% 
+  #   select(eez_id)
+  # 
+  # output$EEZ_map <- renderLeaflet({
+    
+    #filter data
+    
+    # all_ACP <- eez_fao %>% 
+    #   dplyr::filter(mrgid %in% all_ACP$eez_id)
+    
+    # leaflet('EEZ_map') %>% 
+    #   addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+    #   addPolygons(data = all_ACP, 
+    #               fillColor = "blue",
+    #               fillOpacity = 0.8,
+    #               color= "white",
+    #               weight = 0.3,
+    #               highlight = highlightOptions(weight = 5,
+    #                                            color = "#666",
+    #                                            fillOpacity = 1,
+    #                                            bringToFront = TRUE),
+    #               label = (paste0("<b>", all_ACP$geoname, "</b>") %>%
+    #                          lapply(htmltools::HTML)),
+    #               labelOptions = labelOptions(style = list("font-weight" = "normal",
+    #                                                        padding = "3px 8px"),
+    #                                           textsize = "13px",
+    #                                           direction = "auto")
+    #   ) %>%
+    #   setView(20,-2, zoom = 3)
+    # addLegend("bottomright", pal = pal_global,
+    #           values = log10(tot_subs$value),
+    #           labels = round(tot_subs$value, 0),
+    #           title = "Est. fisheries subsidies<br>(2018 $USD)",
+    #           opacity = 1,
+    #           labFormat = labelFormat(prefix = "$",
+    #                                   transform = function(x) 10^(x)
+    #           )
+    #)
+    
+  
+  #})
   
   ### Africa ----------
   

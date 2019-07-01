@@ -17,6 +17,12 @@ africa_eezs <- ACP_codes %>%
     dplyr::filter(region == "Africa") %>% 
     select(eez_id)
 
+country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_180"), layer = "world_happy_180") %>%  
+  st_transform(crs = 4326)
+
+EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+  st_transform(crs = 4326) 
+
 ```
 
 ```{r}
@@ -29,8 +35,32 @@ connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv
 connectivity_data %>% # load this in up above
        dplyr::filter(eez_code == input$country_for_profile)
 
-test_data <- connectivity_data %>% # load this in up above
+test_data2 <- connectivity_data %>% # load this in up above
       dplyr::filter(eez_code == input$country_for_profile)
+
+connectivity_data_AGO <- connectivity_data %>% 
+  dplyr::filter(eez_territory_iso3 == "AGO")
+
+country_map2 <- country_map %>% 
+  dplyr::filter(iso3 %in% connectivity_data_AGO$flag)
+
+country_map4 <- country_map %>% 
+  dplyr::filter(iso3 %in% connectivity_data$flag)
+
+connectivity_data_BRB <- connectivity_data %>% 
+      dplyr::filter(eez_territory_iso3 == "BRB")
+
+ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+      geom_sf(data = country_map %>% dplyr::filter(iso3 %in% connectivity_data_BRB$flag && eez_connectivity_BRB$eez_territory_iso3 == "BRB"), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
+      geom_sf(data = EEZ_map %>% dplyr::filter(ez_hs_c == "BRB"), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
+      geom_sf(data = connectivity_data_BRB, col = "darkgoldenrod", size = 0.25) +
+      maptheme+
+      coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))
+
 
 ```
 
