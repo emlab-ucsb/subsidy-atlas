@@ -47,8 +47,8 @@ country_map2 <- country_map %>%
 country_map4 <- country_map %>% 
   dplyr::filter(iso3 %in% connectivity_data$flag)
 
-connectivity_data_BRB <- connectivity_data %>% 
-      dplyr::filter(eez_territory_iso3 == "BRB")
+connectivity_data_VUT <- connectivity_data %>% 
+      dplyr::filter(eez_territory_iso3 == "VUT")
 
 ggplot()+
       geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
@@ -60,6 +60,12 @@ ggplot()+
       coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))
+
+connectivity_data_filter <- connectivity_data %>% # load this in up above
+       dplyr::filter(eez_territory_iso3 == "VUT")
+
+ACP_eez_dat_VUT <- connectivity_data %>%
+      dplyr::filter(eez_code == "8313")
 
 
 ```
