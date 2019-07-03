@@ -69,8 +69,8 @@ country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_
 
 ### Widget choice values that depend on a dataset ------------------------------
 # Put this here so we only have to load datasets in one place
-matt_choices <- unique(ACP_codes$territory_iso3)
-names(matt_choices) <- unique(ACP_codes$flag)
+country_choices <- unique(ACP_codes$territory_iso3)
+names(country_choices) <- unique(ACP_codes$flag)
 ### Widget choice values that are text heavy  ------------------------------
 # Put this here so it's easier to edit text throughout
 
@@ -185,7 +185,7 @@ ui <- shinyUI(
        
        #EEZ Connectivity
        tabItem(tabName = "EEZ",
-               EEZ(matt_choices)
+               EEZ(country_choices)
         ),
        
        #LEaflet EEZ

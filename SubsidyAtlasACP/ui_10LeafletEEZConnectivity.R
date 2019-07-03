@@ -7,8 +7,8 @@
 
 ### Section 1: Function
 
-# leaflet_EEZ = function(country_choices)
-#    fluidPage(
+ leaflet_EEZ = function(country_choices)
+   fluidPage(
 #      
 #       # Top header
 #       column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
@@ -31,6 +31,6 @@
 #       # )
 #       
 #      
-#    ) # close fluidPage
+    ) # close fluidPage
 
 
