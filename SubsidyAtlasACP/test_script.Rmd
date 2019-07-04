@@ -67,6 +67,20 @@ connectivity_data_filter <- connectivity_data %>% # load this in up above
 ACP_eez_dat_VUT <- connectivity_data %>%
       dplyr::filter(eez_code == "8313")
 
+eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
+  dplyr::filter(is.na(zone))
+
+ACP_codes <- eez_fao %>% 
+      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+
+
+    
+ACP_codes_filtered <- ACP_codes %>% 
+      dplyr::filter(eez_territory_iso3 == "VUT")
+
+ACP_codes_filtered <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_territory_iso3 == "VUT")
+
 
 ```
 

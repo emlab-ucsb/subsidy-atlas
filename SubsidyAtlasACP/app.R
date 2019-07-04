@@ -71,6 +71,9 @@ country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_
 # Put this here so we only have to load datasets in one place
 country_choices <- unique(ACP_codes$territory_iso3)
 names(country_choices) <- unique(ACP_codes$flag)
+
+ACP_choices <- unique(ACP_codes$territory_iso3)
+names(ACP_choices) <- unique(ACP_codes$flag)
 ### Widget choice values that are text heavy  ------------------------------
 # Put this here so it's easier to edit text throughout
 
@@ -109,15 +112,10 @@ ui <- shinyUI(
                                 
                                 #Leaflet
                                 menuItem("Leaflet EEZ",
-                                         tabName = 'Leaflet EEZ',
+                                         tabName = 'leaflet_EEZ',
                                          icon = NULL, 
                                          selected = TRUE),
                                 
-                                # # LEaflet EEZ
-                                # menuItem("leaflet_EEZ",
-                                #           tabname = "leaflet_EEZ",
-                                #           icon = NULL,
-                                #           selected = TRUE),
                                 
                                 # EEZ
                                 menuItem("EEZ",
@@ -183,15 +181,15 @@ ui <- shinyUI(
                introduction()
        ),
        
+       #Leaflet EEZ
+       tabItem(tabName = "leaflet_EEZ",
+               leaflet_EEZ(ACP_choices)
+       ),
+       
        #EEZ Connectivity
        tabItem(tabName = "EEZ",
                EEZ(country_choices)
         ),
-       
-       #LEaflet EEZ
-       tabItem(tabName = "Leaflet EEZ",
-               leaflet_EEZ()
-       ),
        
        
        # Africa
@@ -243,6 +241,84 @@ server <- function(input, output) {
   ### Background ----------
   
   
+  ### Leaflet Version of EEZ Connectivity Map
+  
+  
+  
+  ACP_codes %>% 
+    select(eez_id)
+  
+  output$leaflet_map <- renderLeaflet({
+    
+    #Require EEZ selection
+    req(input$ACP_for_profile)
+    
+    #filter data
+    
+    # ACP_codes_filtered <- connectivity_data %>% # load this in up above
+    #   dplyr::filter(eez_territory_iso3 == input$ACP_for_profile)
+    
+     ACP_codes <- eez_fao %>% 
+       dplyr::filter(mrgid %in% ACP_codes$eez_id)
+     
+     ACP_codes_filtered <- ACP_codes %>% 
+       dplyr::filter(ez_hs_c == input$ACP_for_profile)
+     
+     
+     country_map_filtered <- country_map %>% 
+       dplyr::filter(iso3 == input$ACP_for_profile)
+    
+    # connectivity_data_filter <- connectivity_data %>% # load this in up above
+    #   dplyr::filter(eez_territory_iso3 == input$EEZ_for_profile)
+    
+    leaflet('leaflet_map') %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = ACP_codes_filtered, 
+                  fillColor = "blue",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = (paste0("<b>", ACP_codes$geoname, "</b>") %>%
+                             lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
+      
+      addPolygons(data = country_map_filtered,
+                  fillColor = "red",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = (paste0("<b>", country_map$cntry_l, "</b>") %>%
+                             lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto"))
+    #setView(20,-2, zoom = 3)
+    #addLegend("bottomright", pal = pal_global,
+    #           values = log10(tot_subs$value),
+    #           labels = round(tot_subs$value, 0),
+    #           title = "Est. fisheries subsidies<br>(2018 $USD)",
+    #           opacity = 1,
+    #           labFormat = labelFormat(prefix = "$",
+    #                                   transform = function(x) 10^(x)
+    #           )
+    #)
+    
+    
+  })
+  
+  
   ### EEZ Connectivity Maps ---------
   
   output$connectivity_plot <- renderPlot({
@@ -257,7 +333,9 @@ server <- function(input, output) {
     connectivity_data_filter <- connectivity_data %>% # load this in up above
        dplyr::filter(eez_territory_iso3 == input$EEZ_for_profile)
     
-    ACP_lines <- connectivity_data_filter
+    # ACP_lines <- connectivity_data_filter %>% 
+    #     st_coordinates(st_cast(network_data_sf,"MULTILINESTRING")$geometry) %>% 
+    #     as_data_frame() 
     
     
     #Data
@@ -287,49 +365,7 @@ server <- function(input, output) {
   })
   
   
-  ### Leaflet Version of EEZ Connectivity Map
   
-   ACP_codes %>% 
-     select(eez_id)
-   
-   output$leaflet_EEZ <- renderLeaflet({
-    
-    #filter data
-    
-     ACP_codes <- eez_fao %>% 
-       dplyr::filter(mrgid %in% ACP_codes$eez_id)
-    
-     leaflet('leaflet_EEZ') %>% 
-       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
-       addPolygons(data = ACP_codes, 
-                   fillColor = "blue",
-                   fillOpacity = 0.8,
-                   color= "white",
-                   weight = 0.3,
-                   highlight = highlightOptions(weight = 5,
-                                                color = "#666",
-                                                fillOpacity = 1,
-                                                bringToFront = TRUE),
-                   label = (paste0("<b>", all_ACP$geoname, "</b>") %>%
-                              lapply(htmltools::HTML)),
-                   labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                            padding = "3px 8px"),
-                                               textsize = "13px",
-                                               direction = "auto")
-       ) #%>%
-       #setView(20,-2, zoom = 3)
-     #addLegend("bottomright", pal = pal_global,
-    #           values = log10(tot_subs$value),
-    #           labels = round(tot_subs$value, 0),
-    #           title = "Est. fisheries subsidies<br>(2018 $USD)",
-    #           opacity = 1,
-    #           labFormat = labelFormat(prefix = "$",
-    #                                   transform = function(x) 10^(x)
-    #           )
-    #)
-
-
-  })
   
   ### Africa ----------
   
