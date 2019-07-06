@@ -277,6 +277,8 @@ c_sovereign_pairings$flag_sovereign[c_sovereign_pairings$flag_sovereign == "HKG"
 sovereign_pairings_all <- sovereign_pairings %>%
   bind_rows(c_sovereign_pairings %>% dplyr::select(flag_sovereign, flag))
 
+#write_csv(sovereign_pairings_all, path = paste0(results_dir, "sovereign_pairings_all.csv"))
+
 # Add sovereign state to each vessel
 dw_effort <- dw_effort %>%
   left_join(sovereign_pairings_all, by = c("flag" = "flag"))
@@ -325,7 +327,7 @@ dw_effort_cleaned <- dw_effort_renamed %>%
   dplyr::filter(flag != eez_territory_iso3) %>%
   dplyr::filter(flag != eez_sovereign_iso3 | flag != eez_sovereign2_iso3 | flag != eez_sovereign3_iso3)
 
-#write_csv(dw_effort_cleaned, path = paste0(results_dir, "clean_dw_fishing_effort_by_eez.csv"))
+write_csv(dw_effort_cleaned, path = paste0(results_dir, "clean_dw_fishing_effort_by_eez.csv"))
 
 ```
 
