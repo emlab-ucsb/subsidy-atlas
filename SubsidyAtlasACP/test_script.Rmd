@@ -27,6 +27,15 @@ EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_comb
 
 ```{r}
 
+eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
+  dplyr::filter(is.na(zone))
+
+ACP_codes %>% 
+    select(eez_id)
+
+ACP_codes <- eez_fao %>% 
+       dplyr::filter(mrgid %in% ACP_codes$eez_id)
+
 EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326) 
 

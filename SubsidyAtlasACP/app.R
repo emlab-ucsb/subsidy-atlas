@@ -266,16 +266,20 @@ server <- function(input, output) {
        dplyr::filter(ez_hs_c == input$ACP_for_profile)
      
      
+     connectivity_data_filter_leaflet <- connectivity_data %>% # load this in up above
+       dplyr::filter(eez_territory_iso3 == input$ACP_for_profile)
+     
      country_map_filtered <- country_map %>% 
-       dplyr::filter(iso3 == input$ACP_for_profile)
-    
+       dplyr::filter(iso3 %in% connectivity_data_filter_leaflet$flag)
+     
+     
     # connectivity_data_filter <- connectivity_data %>% # load this in up above
     #   dplyr::filter(eez_territory_iso3 == input$EEZ_for_profile)
     
     leaflet('leaflet_map') %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = ACP_codes_filtered, 
-                  fillColor = "blue",
+                  fillColor = "slateblue",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -283,15 +287,16 @@ server <- function(input, output) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", ACP_codes$geoname, "</b>") %>%
+                  label = (paste0("<b>", ACP_codes_filtered$geoname, "</b>") %>%
                              lapply(htmltools::HTML)),
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
-                                              direction = "auto")) %>%
+                                              direction = "auto")) %>%  #,
+                  #setView()) %>%
       
       addPolygons(data = country_map_filtered,
-                  fillColor = "red",
+                  fillColor = "darkmagenta",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -299,12 +304,19 @@ server <- function(input, output) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", country_map$cntry_l, "</b>") %>%
+                  label = (paste0("<b>", country_map_filtered$cntry_l, "</b>") %>%
                              lapply(htmltools::HTML)),
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
-                                              direction = "auto"))
+                                              direction = "auto")) %>% 
+      addPolylines(data = connectivity_data_filter_leaflet,
+                   fillColor = "goldenrod",
+                   fillOpacity = 1,
+                   weight = 1,
+                   color = "darkgoldenrod") %>% 
+      setView(15,-36, zoom = 1.75)
+
     #setView(20,-2, zoom = 3)
     #addLegend("bottomright", pal = pal_global,
     #           values = log10(tot_subs$value),
@@ -479,8 +491,9 @@ server <- function(input, output) {
       dplyr::filter(mrgid %in% pacific_eezs$eez_id)
     
     # Map
-    leaflet('pacific_map') %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+    leaflet('pacific_map') %>%
+      #options = leafletOptions(worldCopyJump = TRUE) %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>%
       addPolygons(data = pacific_eezs, 
                   fillColor = "blue",
                   fillOpacity = 0.8,
@@ -497,7 +510,8 @@ server <- function(input, output) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(-75,20, zoom = 4)
+      setView(-170,17, zoom = 2) 
+      
     # addLegend("bottomright", pal = pal_global,
     #           values = log10(tot_subs$value),
     #           labels = round(tot_subs$value, 0),
