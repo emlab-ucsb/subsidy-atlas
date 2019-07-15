@@ -40,14 +40,15 @@ source)
 # ),
 # read_csv)
 
-# Load csz of ACP eez's
+# Load csv of ACP eez's
 
 ACP_codes <- read_csv("./ACP_eez_codes.csv") %>%
   na.omit()
 
-connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
+#connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
 
-
+concectivity_data <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
+  rename(eez_territory_iso3 = ez_tr_3) 
 
 
 # Load shapefiles
@@ -351,7 +352,7 @@ server <- function(input, output) {
       geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
       geom_sf(data = country_map %>% dplyr::filter(iso3 %in% connectivity_data_filter$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
       geom_sf(data = EEZ_map %>% dplyr::filter(ez_hs_c == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
-      #geom_sf(col = "darkgoldenrod", size = 0.25) +
+      geom_sf(col = "darkgoldenrod", size = 0.25) +
       maptheme+
       coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
       scale_x_continuous(expand = c(0,0))+

@@ -1226,6 +1226,7 @@ ACP_eez_mapping_wlines <- ACP_eez_mapping %>%
 
 write_csv(ACP_eez_mapping_wlines, path = paste0(ACP_dir, "ACP_eez_mapping_wlines.csv"))
 write_csv(ACP_eez_mapping_wlines, path = paste0(ACP_app_dir, "ACP_eez_mapping_wlines.csv"))
+st_write(ACP_eez_mapping_wlines, paste0(ACP_app_dir, "ACP_eez_mapping_wlines.shp"))
 
 
 ## For loop to run top EEZs

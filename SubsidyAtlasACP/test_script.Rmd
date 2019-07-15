@@ -30,7 +30,12 @@ EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_comb
 EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326) 
 
-connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
+conectivity_data_new <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
+  rename(eez_territory_iso3 = ez_tr_3)
+
+connectivity_data <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
+  rename(eez_territory_iso3 = ez_tr_3)
+  
 
 connectivity_data %>% # load this in up above
        dplyr::filter(eez_code == input$country_for_profile)
