@@ -861,15 +861,21 @@ top_eez_names <- EEZ_ranking_top$eez_territory_iso3
 top_eez_names_long <- EEZ_ranking_top$eez_name
 top_eez_names_long[which(top_eezs == "8389")] <- "Falkland Islands Exclusive Economic Zone: UK / Argentina"
 
+
+##EEZ combinations top 10
 eez_combinations <- dw_effort_final %>%
   dplyr::filter(eez_code %in% top_eezs) %>%
   distinct(eez_code = as.numeric(eez_code), eez_territory_iso3, flag) %>%
   arrange(eez_code)
+
+
 ```
 
 In order to make our connection plots, we again need the centroids of each EEZ and flag state, which we match to each of our top EEZs, as well as to all flag states from which vessels are fishing in each EEZ.
 
 ```{r}
+
+## eez mapping top 10
 eez_mapping <- eez_combinations %>%
   left_join(centroid_coordinates_EEZ_edited, by = c("eez_code" = "eez_code")) %>%
   left_join(centroid_coordinates_flag_edited, by = c("flag" = "flag")) 
@@ -912,6 +918,56 @@ eez_mapping_wlines <- eez_mapping %>%
   #st_transform(flag_state_mapping, crs = '+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs')
 
 ```
+
+
+```{r}
+## All EEZ connections
+
+##EEZ combinations all
+eez_combinations_all <-dw_effort_final %>% 
+  distinct(eez_code = as.numeric(eez_code), eez_territory_iso3, flag) %>%
+  arrange(eez_code)
+
+## eez mapping top 10
+eez_mapping_all <- eez_combinations_all %>%
+  left_join(centroid_coordinates_EEZ_edited, by = c("eez_code" = "eez_code")) %>%
+  left_join(centroid_coordinates_flag_edited, by = c("flag" = "flag")) 
+
+# There are some flag states for which we need to manually assign centroids (mostly small island states not included in the world map because they don't show up)
+# Tuvalu (TUV)
+eez_mapping_all$flag_lon[eez_mapping_all$flag == "TUV"] <- centroid_coordinates_EEZ_edited$eez_lon[centroid_coordinates_EEZ_edited$eez_code == 8326]
+eez_mapping_all$flag_lat[eez_mapping_all$flag == "TUV"] <- centroid_coordinates_EEZ_edited$eez_lat[centroid_coordinates_EEZ_edited$eez_code == 8326]
+
+# Réunion (REU)
+eez_mapping_all$flag_lon[eez_mapping_all$flag == "REU"] <- centroid_coordinates_EEZ_edited$eez_lon[centroid_coordinates_EEZ_edited$eez_code == 8338]
+eez_mapping_all$flag_lat[eez_mapping_all$flag == "REU"] <- centroid_coordinates_EEZ_edited$eez_lat[centroid_coordinates_EEZ_edited$eez_code == 8338]
+
+# Bonaire, Sint Eustatius and Saba (BES)
+eez_mapping_all$flag_lon[eez_mapping_all$flag == "BES"] <- centroid_coordinates_EEZ_edited$eez_lon[centroid_coordinates_EEZ_edited$eez_code == 26520]
+eez_mapping_all$flag_lat[eez_mapping_all$flag == "BES"] <- centroid_coordinates_EEZ_edited$eez_lat[centroid_coordinates_EEZ_edited$eez_code == 26520]
+
+# Guatemala - old code (GCA)
+eez_mapping_all$flag_lon[eez_mapping_all$flag == "GCA"] <- centroid_coordinates_flag_edited$flag_lon[centroid_coordinates_flag_edited$flag == "GTM"]
+eez_mapping_all$flag_lat[eez_mapping_all$flag == "GCA"] <- centroid_coordinates_flag_edited$flag_lat[centroid_coordinates_flag_edited$flag == "GTM"]
+
+# We then make our lines from each EEZ going to all of the countries fishing there. 
+eez_mapping_wlines_all <- eez_mapping_all %>%
+  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(eez_mapping_all) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
+  sf::st_sf(crs = 4326) #%>% 
+  #st_transform(flag_state_mapping, crs = '+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs')
+
+```
+
 
 ```{r}
 
@@ -1473,6 +1529,27 @@ eez_map <- ggplot()+
   coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
   scale_x_continuous(expand = c(0,0))+
   scale_y_continuous(expand = c(0,0))
+
+```
+
+```{r}
+## ALL CONNECTIONS MAP
+
+all_connections_map <- ggplot()+
+  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = EEZ_map %>% dplyr::filter(type != "High seas"), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_all, col = "darkgoldenrod", size = 0.25) +
+  maptheme+
+  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
+
+plot(all_connections_map)
+
+ggsave(all_connections_map, filename = paste0(ACP_app_dir, "all_connections_map.png"), width = 10, units = "in")
+
 
 ```
 
