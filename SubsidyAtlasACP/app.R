@@ -106,8 +106,8 @@ ui <- shinyUI(
                     sidebarMenu(id = "tabs",
                                 
                                 # Introduction                     
-                                menuItem("Background", 
-                                         tabName = "background", 
+                                menuItem("Introduction", 
+                                         tabName = "introduction", 
                                          icon = NULL,
                                          selected = TRUE),
                                 
@@ -115,32 +115,32 @@ ui <- shinyUI(
                                 menuItem("Leaflet EEZ",
                                          tabName = 'leaflet_EEZ',
                                          icon = NULL, 
-                                         selected = TRUE),
+                                         selected = NULL),
                                 
                                 
                                 # EEZ
                                 menuItem("EEZ",
                                          tabName = "EEZ",
                                          icon = NULL,
-                                         selected = TRUE),
+                                         selected = NULL),
                                                                  
                                 # Africa
                                 menuItem("Africa", 
                                          tabName = "africa", 
                                          icon = NULL,
-                                         selected = TRUE),
+                                         selected = NULL),
                                 
                                 # Caribbean
                                 menuItem("Caribbean", 
                                          tabName = "caribbean", 
                                          icon = NULL,
-                                         selected = TRUE),
+                                         selected = NULL),
                                 
                                 # Pacific Islands
                                 menuItem("Pacific Islands", 
                                          tabName = "pacific_islands", 
                                          icon = NULL,
-                                         selected = TRUE)
+                                         selected = NULL)
                                 
                                 # # Europe
                                 # menuItem("Europe", 
@@ -178,7 +178,7 @@ ui <- shinyUI(
      tabItems(
        
        # Background
-       tabItem(tabName = "background",
+       tabItem(tabName = "introduction",
                introduction()
        ),
        
@@ -383,7 +383,7 @@ server <- function(input, output) {
   ### Africa ----------
   
   africa_eezs <- ACP_codes %>% 
-    dplyr::filter(region == "Africa") %>% 
+    #dplyr::filter(region == "Africa") %>% 
     select(eez_id)
     
   
@@ -414,7 +414,7 @@ server <- function(input, output) {
                                               textsize = "13px",
                                               direction = "auto")
                   ) %>%
-      setView(20,-2, zoom = 3)
+      setView(15,-13, zoom = 1.45)
       # addLegend("bottomright", pal = pal_global,
       #           values = log10(tot_subs$value),
       #           labels = round(tot_subs$value, 0),
