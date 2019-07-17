@@ -23,8 +23,9 @@ library(leaflet)
 library(tidyverse)
 library(sf)
 
-### Source files and data
-# The content for each tab is stored in a separate file - Source all .R files in the current directory that start with "ui_":  
+### Source UI files ###
+
+# The user interface content for each tab is stored in a separate file - Source all .R files in the current directory that start with "ui_":  
 sapply(list.files(
   pattern = "^ui_.*\\.R$",
   path = ".",
@@ -32,41 +33,31 @@ sapply(list.files(
 ),
 source)
 
-# The data for each region was saved separately to try to make the file sizes smaller. Reach in each of those here. 
-# sapply(list.files(
-#   pattern = "[.]csv$",
-#   path = "./data/",
-#   full.names = TRUE
-# ),
-# read_csv)
+### Load data ###
 
-# Load csv of ACP eez's
-
-ACP_codes <- read_csv("./ACP_eez_codes.csv") %>%
+# Load csv of ACP EEZ and iso3 codes
+ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
   na.omit()
 
-#connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
-
+# Load spatial data frame with lines linking countries and EEZs
 connectivity_data <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
   rename(eez_territory_iso3 = ez_tr_3) 
 
+### Shapefiles ###
 
-# Load shapefiles
-eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
-  dplyr::filter(is.na(zone))
-eez_codes <- unique(eez_fao$mrgid)
-
-world <- read_sf(dsn = "./data/world_happy_180/world_happy_180.shp", layer="world_happy_180")
-
-## Load maps
-
-# EEZ map
-EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+# Simplified EEZ shapefile (with FAO regions for high seas)
+eez_map <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
+  dplyr::filter(is.na(zone)) %>%
   st_transform(crs = 4326) 
+eez_codes <- unique(eez_map$mrgid)
 
-# Country map
-country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_180"), layer = "world_happy_180") %>%  
-  st_transform(crs = 4326) 
+# Simplified land shapefile 
+land_map <- read_sf(dsn = "./data/world_happy_180", layer="world_happy_180") %>%
+  st_transform(crs = 4326)
+
+# Combined land/EEZ shapefile 
+land_eez_map <- read_sf(dsn = "./data/EEZ_land_union_v2_201410", layer = "EEZ_land_v2_201410")
+
 
 ### Widget choice values that depend on a dataset ------------------------------
 # Put this here so we only have to load datasets in one place
@@ -75,6 +66,7 @@ names(country_choices) <- unique(ACP_codes$flag)
 
 ACP_choices <- unique(ACP_codes$territory_iso3)
 names(ACP_choices) <- unique(ACP_codes$flag)
+
 ### Widget choice values that are text heavy  ------------------------------
 # Put this here so it's easier to edit text throughout
 
@@ -98,8 +90,18 @@ ui <- shinyUI(
                                 height = "40px"
                               ), style = "padding-top:10px; padding-bottom:10px;"
                             )
+                    ),
+                    # emLab logo
+                    tags$li(class = "dropdown",
+                            a(href = 'http://emlab.msi.ucsb.edu/',
+                              img(
+                                src = 'emlab-logo-white.png',
+                                title = "The Environmental Market Solutions Lab",
+                                height = "40px"
+                              ), style = "padding-top:10px; padding-bottom:10px;"
+                            )
                     )
-                    ), 
+    ), 
                     
    # Sidebar menu
    dashboardSidebar(width = "250px",
@@ -110,6 +112,12 @@ ui <- shinyUI(
                                          tabName = "introduction", 
                                          icon = NULL,
                                          selected = TRUE),
+                                
+                                # Regional Map
+                                menuItem("Select a region",
+                                         tabName = "selectregion",
+                                         icon = NULL,
+                                         selected = NULL),
                                 
                                 #Leaflet
                                 menuItem("Leaflet EEZ",
@@ -124,11 +132,7 @@ ui <- shinyUI(
                                          icon = NULL,
                                          selected = NULL),
                                 
-                                # Regional Map
-                                menuItem("Regional",
-                                         tabName = "Regional",
-                                         icon = NULL,
-                                         selected = NULL),
+
                                                                  
                                 # Africa
                                 menuItem("Africa", 
@@ -143,31 +147,10 @@ ui <- shinyUI(
                                          selected = NULL),
                                 
                                 # Pacific Islands
-                                menuItem("Pacific Islands", 
-                                         tabName = "pacific_islands", 
+                                menuItem("Pacific", 
+                                         tabName = "pacific", 
                                          icon = NULL,
                                          selected = NULL)
-                                
-                                # # Europe
-                                # menuItem("Europe", 
-                                #          tabName = "europe", 
-                                #          icon = NULL,
-                                #          selected = TRUE),
-                                # 
-                                # # North America and the Caribbean 
-                                # menuItem("North America &\n the Caribbean", 
-                                #          tabName = "north_america", 
-                                #          icon = NULL,
-                                #          selected = TRUE),
-                                # 
-                                # # South America
-                                # menuItem("South America", 
-                                #          tabName = "south_america", 
-                                #          icon = NULL,
-                                #          selected = TRUE),
-                                # 
-                                
-                                
                                 
                                 
                     ) # close sidebarMenu
@@ -188,6 +171,11 @@ ui <- shinyUI(
                introduction()
        ),
        
+       #Regional
+       tabItem(tabName = "selectregion",
+               selectregion()
+       ),
+       
        #Leaflet EEZ
        tabItem(tabName = "leaflet_EEZ",
                leaflet_EEZ(ACP_choices)
@@ -196,11 +184,6 @@ ui <- shinyUI(
        #EEZ Connectivity
        tabItem(tabName = "EEZ",
                EEZ(country_choices)
-        ),
-       
-       #Regional
-       tabItem(tabName = "Regional",
-               Regional()
         ),
        
        # Africa
@@ -215,25 +198,9 @@ ui <- shinyUI(
        ),
        
        # Pacific Islands
-       tabItem(tabName = "pacific_islands",
+       tabItem(tabName = "pacific",
                pacific()
-       )#,
-       
-       # # Asia
-       # tabItem(tabName = "asia"
-       #         #asia()
-       # ),
-       # 
-       # # Europe
-       # tabItem(tabName = "europe"
-       #         #europe()
-       # ),
-       
-       # # South America
-       # tabItem(tabName = "south_america"
-       #         #south_america()
-       # ),
-       # 
+       )
        
      ) # close tabItems
    ) # close dashboardBody
@@ -246,16 +213,144 @@ ui <- shinyUI(
 ### Section 3: Server
 ### ----------
 
-# Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- shinyServer(function(input, output, session) {
   
-  ### Background ----------
+  ### Introduction ----------
   
+  
+  
+  
+  ### Select a region -----------
+  
+  ### Regional ACP Map
+  
+  # ACP_codes_africa <- ACP_codes %>% 
+  #   filter(region == "Africa")
+  # 
+  # ACP_codes_caribbean <- ACP_codes %>% 
+  #   filter(region == "Caribbean")
+  # 
+  # ACP_codes_pacific <- ACP_codes %>% 
+  #   filter(region == "Pacific")
+  
+  # EEZ map
+  # eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+  #   st_transform(crs = 4326) 
+  
+  # eez_map_filterAfrica <- eez_map %>% 
+  #   filter(ez_hs_c %in% ACP_codes_africa$territory_iso3) %>% 
+  #   select(c("ez_hs_c"))
+  # 
+  # eez_map_filterCaribbean <- eez_map %>% 
+  #   filter(ez_hs_c %in% ACP_codes_caribbean$territory_iso3) %>% 
+  #   select(c("ez_hs_c"))
+  # 
+  # eez_map_filterPacific <- eez_map %>% 
+  #   filter(ez_hs_c %in% ACP_codes_pacific$territory_iso3) %>% 
+  #   select(c("ez_hs_c"))
+  # 
+  # # Country map
+  # # country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_180"), layer = "world_happy_180") %>%  
+  # #   st_transform(crs = 4326) 
+  # 
+  # country_map_filterAfrica <- land_map %>% 
+  #   dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
+  #   filter(region == "Africa") %>% 
+  #   select(c("iso3")) %>% 
+  #   rename(ez_hs_c = iso3)
+  # 
+  # country_map_filterCaribbean <- land_map %>% 
+  #   dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
+  #   filter(subregn == "Caribbean") %>% 
+  #   select(c("iso3")) %>% 
+  #   rename(ez_hs_c = iso3)
+  # 
+  # country_map_filterPacific <- land_map %>% 
+  #   dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
+  #   filter(region == "Oceania") %>% 
+  #   select(c("iso3")) %>% 
+  #   rename(ez_hs_c = iso3)
+  # 
+  # ### Bind Shapefiles
+  # 
+  # africa_bind <- rbind(EEZ_map_filterAfrica, country_map_filterAfrica)
+  # ab <- st_union(africa_bind)  
+  # 
+  # 
+  # caribbean_bind <- rbind(EEZ_map_filterCaribbean, country_map_filterCaribbean)
+  # cb <- st_union(caribbean_bind) 
+  # 
+  # 
+  # pacific_bind <- rbind(EEZ_map_filterPacific, country_map_filterPacific)
+  # pb <- st_union(pacific_bind) 
+  
+  ## Leaflet output: map of ACP countries aggregated by region
+  output$regional_map <- renderLeaflet({
+    
+    # Combine shapefile with ACP data
+    regional_dat <- land_eez_map %>%
+      right_join(ACP_codes %>% na.omit(), by = c("ISO_3digit" = "territory_iso3")) %>%
+      group_by(region) %>%
+      summarize(geometry = st_union(geometry))
+    
+    leaflet("regional_map") %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      
+      addPolygons(data = regional_dat %>% dplyr::filter(region == "Africa"), 
+                  fillColor = "slateblue",
+                  fillOpacity = 0.5,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = ("Africa"),
+                  group = "Africa") %>%
+      addPolygons(data = regional_dat %>% dplyr::filter(region == "Caribbean"), 
+                  fillColor = "seagreen",
+                  fillOpacity = 0.5,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = ("Caribbean"),
+                  group = "Caribbean") %>% 
+      addPolygons(data = regional_dat %>% dplyr::filter(region == "Pacific"), 
+                  fillColor = "coral",
+                  fillOpacity = 0.5,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = ("Pacific"),
+                  group = "Pacific") %>%
+      addLayersControl(
+        overlayGroups = c("Africa", "Caribbean", "Pacific"),
+        options = layersControlOptions(collapsed = FALSE)
+      ) %>%
+      setView(0,20, zoom = 2)
+      
+  })
+  
+  
+  ### Based on click on regional map, change tab
+  observeEvent(input$regional_map_shape_click, {
+    
+    tab_navigation <- switch(input$regional_map_shape_click$group,
+                             "Africa" = list("africa"),
+                             "Caribbean" = list("caribbean"),
+                             "Pacific" = list("pacific"))
+    
+    updateTabItems(session, "tabs", tab_navigation[[1]])
+    
+  })
   
   ### Leaflet Version of EEZ Connectivity Map
-  
-  
-  
   ACP_codes %>% 
     select(eez_id)
   
@@ -269,7 +364,7 @@ server <- function(input, output) {
     # ACP_codes_filtered <- connectivity_data %>% # load this in up above
     #   dplyr::filter(eez_territory_iso3 == input$ACP_for_profile)
     
-     ACP_codes <- eez_fao %>% 
+     ACP_codes <- eez_map %>% 
        dplyr::filter(mrgid %in% ACP_codes$eez_id)
      
      ACP_codes_filtered <- ACP_codes %>% 
@@ -279,7 +374,7 @@ server <- function(input, output) {
      connectivity_data_filter_leaflet <- connectivity_data %>% # load this in up above
        dplyr::filter(eez_territory_iso3 == input$ACP_for_profile)
      
-     country_map_filtered <- country_map %>% 
+     country_map_filtered <- land_map %>% 
        dplyr::filter(iso3 %in% connectivity_data_filter_leaflet$flag)
      
      
@@ -370,10 +465,10 @@ server <- function(input, output) {
     
     #map
     ggplot(connectivity_data_filter)+
-      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-      geom_sf(data = country_map %>% dplyr::filter(iso3 %in% connectivity_data_filter$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
-      geom_sf(data = EEZ_map %>% dplyr::filter(ez_hs_c == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
+      geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+      geom_sf(data = land_map %>% dplyr::filter(iso3 %in% connectivity_data_filter$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
+      geom_sf(data = eez_map %>% dplyr::filter(ez_hs_c == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
       geom_sf(col = "darkgoldenrod", size = 0.25) +
       maptheme+
       coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
@@ -387,119 +482,18 @@ server <- function(input, output) {
     
   })
   
-  ### Regional ACP Map
-  
-  ACP_codes_africa <- ACP_codes %>% 
-    filter(region == "Africa")
-  
-  ACP_codes_caribbean <- ACP_codes %>% 
-    filter(region == "Caribbean")
-  
-  ACP_codes_pacific <- ACP_codes %>% 
-    filter(region == "Pacific")
-  
-  # EEZ map
-  EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
-    st_transform(crs = 4326) 
-  
-  EEZ_map_filterAfrica <- EEZ_map %>% 
-    filter(ez_hs_c %in% ACP_codes_africa$territory_iso3) %>% 
-    select(c("ez_hs_c"))
-  
-  EEZ_map_filterCaribbean <- EEZ_map %>% 
-    filter(ez_hs_c %in% ACP_codes_caribbean$territory_iso3) %>% 
-    select(c("ez_hs_c"))
-  
-  EEZ_map_filterPacific <- EEZ_map %>% 
-    filter(ez_hs_c %in% ACP_codes_pacific$territory_iso3) %>% 
-    select(c("ez_hs_c"))
-  
-  # Country map
-  country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_180"), layer = "world_happy_180") %>%  
-    st_transform(crs = 4326) 
-  
-  country_map_filterAfrica <- country_map %>% 
-    dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
-    filter(region == "Africa") %>% 
-    select(c("iso3")) %>% 
-    rename(ez_hs_c = iso3)
-  
-  country_map_filterCaribbean <- country_map %>% 
-    dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
-    filter(subregn == "Caribbean") %>% 
-    select(c("iso3")) %>% 
-    rename(ez_hs_c = iso3)
-  
-  country_map_filterPacific <- country_map %>% 
-    dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
-    filter(region == "Oceania") %>% 
-    select(c("iso3")) %>% 
-    rename(ez_hs_c = iso3)
-  
-  ### Bind Shapefiles
-  
-  africa_bind <- rbind(EEZ_map_filterAfrica, country_map_filterAfrica)
-  ab <- st_union(africa_bind)  
-  
-  
-  caribbean_bind <- rbind(EEZ_map_filterCaribbean, country_map_filterCaribbean)
-  cb <- st_union(caribbean_bind) 
-  
-  
-  pacific_bind <- rbind(EEZ_map_filterPacific, country_map_filterPacific)
-  pb <- st_union(pacific_bind) 
-  
-  ## Leaflet Map
-  output$regional_map <- renderLeaflet({
-  
-  leaflet() %>% 
-    addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
-    addPolygons(data = ab, 
-                fillColor = "slateblue",
-                fillOpacity = 0.5,
-                color= "white",
-                weight = 0.3,
-                highlight = highlightOptions(weight = 5,
-                                             color = "#666",
-                                             fillOpacity = 1,
-                                             bringToFront = TRUE),
-                label = ("Africa")) %>%
-    addPolygons(data = cb, 
-                fillColor = "seagreen",
-                fillOpacity = 0.5,
-                color= "white",
-                weight = 0.3,
-                highlight = highlightOptions(weight = 5,
-                                             color = "#666",
-                                             fillOpacity = 1,
-                                             bringToFront = TRUE),
-                label = ("Caribbean")) %>% 
-    addPolygons(data = pb, 
-                fillColor = "coral",
-                fillOpacity = 0.5,
-                color= "white",
-                weight = 0.3,
-                highlight = highlightOptions(weight = 5,
-                                             color = "#666",
-                                             fillOpacity = 1,
-                                             bringToFront = TRUE),
-                label = ("Pacific")) %>% 
-      setView(0,20, zoom = 2)
-  })
-  
   ### Africa ----------
   
   africa_eezs <- ACP_codes %>% 
     dplyr::filter(region == "Africa") %>% 
     select(eez_id)
     
-  
-  
+
   ### Map of African countries/EEZs highlighted for which we have DW fishing effort
   output$africa_map <- renderLeaflet({
     
     # Filter data
-    africa_eezs <- eez_fao %>%
+    africa_eezs <- eez_map %>%
       dplyr::filter(mrgid %in% africa_eezs$eez_id)
     
     # Map
@@ -547,7 +541,7 @@ server <- function(input, output) {
   output$caribbean_map <- renderLeaflet({
     
     # Filter data
-    caribbean_eezs <- eez_fao %>%
+    caribbean_eezs <- eez_map %>%
       dplyr::filter(mrgid %in% caribbean_eezs$eez_id)
     
     # Map
@@ -594,7 +588,7 @@ server <- function(input, output) {
   output$pacific_map <- renderLeaflet({
     
     # Filter data
-    pacific_eezs <- eez_fao %>%
+    pacific_eezs <- eez_map %>%
       dplyr::filter(mrgid %in% pacific_eezs$eez_id)
     
     # Map
@@ -632,9 +626,7 @@ server <- function(input, output) {
   })
   
   
-  
-  
-}
+})
 
 ### ----------
 ### Section 4: Run application
