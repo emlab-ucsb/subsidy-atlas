@@ -85,6 +85,9 @@ ggplot()+
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))
 
+library(leaflet)
+library(RColorBrewer)
+
 
 leaflet() %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
@@ -99,7 +102,7 @@ leaflet() %>%
                                                bringToFront = TRUE),
                   label = ("Africa")) %>%
       addPolygons(data = cb, 
-                  fillColor = "slateblue",
+                  fillColor = "seagreen",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -109,7 +112,7 @@ leaflet() %>%
                                                bringToFront = TRUE),
                   label = ("Caribbean")) %>% 
     addPolygons(data = pb, 
-                  fillColor = "slateblue",
+                  fillColor = "coral",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -117,7 +120,21 @@ leaflet() %>%
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = ("Pacific")) 
+                  label = ("Pacific")) %>% 
+  observe({
+        click <- input$livemap_shape_click
+        if(is.null(click))
+            return()
+
+        ## use the click to access the zoom and set the view according to these
+        ## the click$id is now returned with the 'name' of the state
+        ## because we specified it in the LayerId argument
+        idx <- which(mapStates$name == click$id)
+        z <- mapStates$zoom[[idx]]
+
+        leafletProxy("livemap") %>% 
+            setView(lng = click$lng, lat = click$lat, zoom = z)
+    })
   
 
 

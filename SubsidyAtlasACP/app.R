@@ -123,6 +123,12 @@ ui <- shinyUI(
                                          tabName = "EEZ",
                                          icon = NULL,
                                          selected = NULL),
+                                
+                                # Regional Map
+                                menuItem("Regional",
+                                         tabName = "Regional",
+                                         icon = NULL,
+                                         selected = NULL),
                                                                  
                                 # Africa
                                 menuItem("Africa", 
@@ -192,6 +198,10 @@ ui <- shinyUI(
                EEZ(country_choices)
         ),
        
+       #Regional
+       tabItem(tabName = "Regional",
+               Regional()
+        ),
        
        # Africa
        tabItem(tabName = "africa",
@@ -377,13 +387,108 @@ server <- function(input, output) {
     
   })
   
+  ### Regional ACP Map
   
+  ACP_codes_africa <- ACP_codes %>% 
+    filter(region == "Africa")
   
+  ACP_codes_caribbean <- ACP_codes %>% 
+    filter(region == "Caribbean")
+  
+  ACP_codes_pacific <- ACP_codes %>% 
+    filter(region == "Pacific")
+  
+  # EEZ map
+  EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+    st_transform(crs = 4326) 
+  
+  EEZ_map_filterAfrica <- EEZ_map %>% 
+    filter(ez_hs_c %in% ACP_codes_africa$territory_iso3) %>% 
+    select(c("ez_hs_c"))
+  
+  EEZ_map_filterCaribbean <- EEZ_map %>% 
+    filter(ez_hs_c %in% ACP_codes_caribbean$territory_iso3) %>% 
+    select(c("ez_hs_c"))
+  
+  EEZ_map_filterPacific <- EEZ_map %>% 
+    filter(ez_hs_c %in% ACP_codes_pacific$territory_iso3) %>% 
+    select(c("ez_hs_c"))
+  
+  # Country map
+  country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_180"), layer = "world_happy_180") %>%  
+    st_transform(crs = 4326) 
+  
+  country_map_filterAfrica <- country_map %>% 
+    dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
+    filter(region == "Africa") %>% 
+    select(c("iso3")) %>% 
+    rename(ez_hs_c = iso3)
+  
+  country_map_filterCaribbean <- country_map %>% 
+    dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
+    filter(subregn == "Caribbean") %>% 
+    select(c("iso3")) %>% 
+    rename(ez_hs_c = iso3)
+  
+  country_map_filterPacific <- country_map %>% 
+    dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
+    filter(subregn == "Oceana") %>% 
+    select(c("iso3")) %>% 
+    rename(ez_hs_c = iso3)
+  
+  ### Bind Shapefiles
+  
+  africa_bind <- rbind(EEZ_map_filterAfrica, country_map_filterAfrica)
+  ab <- st_combine(africa_bind)
+  
+  caribbean_bind <- rbind(EEZ_map_filterCaribbean, country_map_filterCaribbean)
+  cb <- st_combine(caribbean_bind)
+  
+  pacific_bind <- rbind(EEZ_map_filterPacific, country_map_filterPacific)
+  pb <- st_combine(pacific_bind)
+  
+  ## Leaflet Map
+  output$regional_map <- renderLeaflet({
+  
+  leaflet() %>% 
+    addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+    addPolygons(data = ab, 
+                fillColor = "slateblue",
+                fillOpacity = 0.8,
+                color= "white",
+                weight = 0.3,
+                highlight = highlightOptions(weight = 5,
+                                             color = "#666",
+                                             fillOpacity = 1,
+                                             bringToFront = TRUE),
+                label = ("Africa")) %>%
+    addPolygons(data = cb, 
+                fillColor = "seagreen",
+                fillOpacity = 0.8,
+                color= "white",
+                weight = 0.3,
+                highlight = highlightOptions(weight = 5,
+                                             color = "#666",
+                                             fillOpacity = 1,
+                                             bringToFront = TRUE),
+                label = ("Caribbean")) %>% 
+    addPolygons(data = pb, 
+                fillColor = "coral",
+                fillOpacity = 0.8,
+                color= "white",
+                weight = 0.3,
+                highlight = highlightOptions(weight = 5,
+                                             color = "#666",
+                                             fillOpacity = 1,
+                                             bringToFront = TRUE),
+                label = ("Pacific")) %>% 
+      setView(0,20, zoom = 2)
+  })
   
   ### Africa ----------
   
   africa_eezs <- ACP_codes %>% 
-    #dplyr::filter(region == "Africa") %>% 
+    dplyr::filter(region == "Africa") %>% 
     select(eez_id)
     
   
@@ -414,7 +519,7 @@ server <- function(input, output) {
                                               textsize = "13px",
                                               direction = "auto")
                   ) %>%
-      setView(15,-13, zoom = 1.45)
+      setView(15,-13, zoom = 2)
       # addLegend("bottomright", pal = pal_global,
       #           values = log10(tot_subs$value),
       #           labels = round(tot_subs$value, 0),
