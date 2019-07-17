@@ -346,6 +346,17 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
+  ### Based on click on regional map, change tab
+  # observeEvent(c(input$regional_map_shape_click, 
+  #                #condition2
+  #                ) {
+  #   
+  #   filter connectivity dataset <- connectivity_dat %>%
+  #       dpply::filter (country = )
+  # 
+  #   
+  # })
+  
   ### Leaflet Version of EEZ Connectivity Map
   ACP_codes %>% 
     select(eez_id)

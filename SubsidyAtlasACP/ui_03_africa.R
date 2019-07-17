@@ -19,9 +19,9 @@ africa = function()
     
     column(6, stlye = "padding: 0px;",
            
-           leafletOutput("africa_map", width = "auto", height = "40vh"),
+           leafletOutput("africa_map", width = "auto", height = "40vh")
            
-           selectizeInput()
+           #selectizeInput()
            )
     
     
