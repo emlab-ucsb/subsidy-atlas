@@ -506,7 +506,7 @@ server <- function(input, output) {
     leaflet('africa_map') %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = africa_eezs, 
-                  fillColor = "blue",
+                  fillColor = "slateblue",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -554,7 +554,7 @@ server <- function(input, output) {
     leaflet('caribbean_map') %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = caribbean_eezs, 
-                  fillColor = "blue",
+                  fillColor = "seagreen",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -602,7 +602,7 @@ server <- function(input, output) {
       #options = leafletOptions(worldCopyJump = TRUE) %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>%
       addPolygons(data = pacific_eezs, 
-                  fillColor = "blue",
+                  fillColor = "coral",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
