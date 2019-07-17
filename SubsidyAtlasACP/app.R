@@ -119,21 +119,6 @@ ui <- shinyUI(
                                          icon = NULL,
                                          selected = NULL),
                                 
-                                #Leaflet
-                                menuItem("Leaflet EEZ",
-                                         tabName = 'leaflet_EEZ',
-                                         icon = NULL, 
-                                         selected = NULL),
-                                
-                                
-                                # EEZ
-                                menuItem("EEZ",
-                                         tabName = "EEZ",
-                                         icon = NULL,
-                                         selected = NULL),
-                                
-
-                                                                 
                                 # Africa
                                 menuItem("Africa", 
                                          tabName = "africa", 
@@ -150,9 +135,21 @@ ui <- shinyUI(
                                 menuItem("Pacific", 
                                          tabName = "pacific", 
                                          icon = NULL,
+                                         selected = NULL),
+                                
+                                #Leaflet
+                                menuItem("Leaflet EEZ",
+                                         tabName = 'leaflet_EEZ',
+                                         icon = NULL, 
+                                         selected = NULL),
+                                
+                                
+                                # EEZ
+                                menuItem("EEZ",
+                                         tabName = "EEZ",
+                                         icon = NULL,
                                          selected = NULL)
-                                
-                                
+
                     ) # close sidebarMenu
                     
    ), # close dashboardSidebar
@@ -166,14 +163,29 @@ ui <- shinyUI(
      # Tabs
      tabItems(
        
-       # Background
+       # Introduction
        tabItem(tabName = "introduction",
                introduction()
        ),
        
-       #Regional
+       # Select a region
        tabItem(tabName = "selectregion",
                selectregion()
+       ),
+       
+       # Africa
+       tabItem(tabName = "africa",
+               africa()
+       ),
+       
+       # Caribbean
+       tabItem(tabName = "caribbean",
+               caribbean()
+       ),
+       
+       # Pacific Islands
+       tabItem(tabName = "pacific",
+               pacific()
        ),
        
        #Leaflet EEZ
@@ -184,23 +196,7 @@ ui <- shinyUI(
        #EEZ Connectivity
        tabItem(tabName = "EEZ",
                EEZ(country_choices)
-        ),
-       
-       # Africa
-       tabItem(tabName = "africa",
-               africa()
-       ),
-       
-       # 
-       # North America
-       tabItem(tabName = "caribbean",
-               caribbean()
-       ),
-       
-       # Pacific Islands
-       tabItem(tabName = "pacific",
-               pacific()
-       )
+        )
        
      ) # close tabItems
    ) # close dashboardBody
@@ -349,6 +345,17 @@ server <- shinyServer(function(input, output, session) {
     updateTabItems(session, "tabs", tab_navigation[[1]])
     
   })
+  
+  ### Based on click on regional map, change tab
+  # observeEvent(c(input$regional_map_shape_click, 
+  #                #condition2
+  #                ) {
+  #   
+  #   filter connectivity dataset <- connectivity_dat %>%
+  #       dpply::filter (country = )
+  # 
+  #   
+  # })
   
   ### Leaflet Version of EEZ Connectivity Map
   ACP_codes %>% 
