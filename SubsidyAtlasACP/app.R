@@ -47,7 +47,7 @@ ACP_codes <- read_csv("./ACP_eez_codes.csv") %>%
 
 #connectivity_data <- read_csv("./data/ACP_eez_results/ACP_eez_mapping_wlines.csv")
 
-concectivity_data <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
+connectivity_data <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
   rename(eez_territory_iso3 = ez_tr_3) 
 
 
