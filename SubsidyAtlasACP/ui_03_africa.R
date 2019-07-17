@@ -5,14 +5,15 @@
 # 
 ### ------------------------------------
 
-### Section 1: Function
-
+### Function
 africa = function()
-  fluidPage(
+  fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
     
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
-           tags$h3(style = "color: #ffffff; padding: 0; margin: 0;", "Africa")
+           
+           tags$h3(style = "padding: 0; margin: 0;", "Africa")
+           
     ), 
     
     # Select an EEZ - map and dropdown
