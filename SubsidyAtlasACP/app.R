@@ -432,20 +432,22 @@ server <- function(input, output) {
   
   country_map_filterPacific <- country_map %>% 
     dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
-    filter(subregn == "Oceana") %>% 
+    filter(region == "Oceania") %>% 
     select(c("iso3")) %>% 
     rename(ez_hs_c = iso3)
   
   ### Bind Shapefiles
   
   africa_bind <- rbind(EEZ_map_filterAfrica, country_map_filterAfrica)
-  ab <- st_combine(africa_bind)
+  ab <- st_union(africa_bind)  
+  
   
   caribbean_bind <- rbind(EEZ_map_filterCaribbean, country_map_filterCaribbean)
-  cb <- st_combine(caribbean_bind)
+  cb <- st_union(caribbean_bind) 
+  
   
   pacific_bind <- rbind(EEZ_map_filterPacific, country_map_filterPacific)
-  pb <- st_combine(pacific_bind)
+  pb <- st_union(pacific_bind) 
   
   ## Leaflet Map
   output$regional_map <- renderLeaflet({
@@ -454,7 +456,7 @@ server <- function(input, output) {
     addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
     addPolygons(data = ab, 
                 fillColor = "slateblue",
-                fillOpacity = 0.8,
+                fillOpacity = 0.5,
                 color= "white",
                 weight = 0.3,
                 highlight = highlightOptions(weight = 5,
@@ -464,7 +466,7 @@ server <- function(input, output) {
                 label = ("Africa")) %>%
     addPolygons(data = cb, 
                 fillColor = "seagreen",
-                fillOpacity = 0.8,
+                fillOpacity = 0.5,
                 color= "white",
                 weight = 0.3,
                 highlight = highlightOptions(weight = 5,
@@ -474,7 +476,7 @@ server <- function(input, output) {
                 label = ("Caribbean")) %>% 
     addPolygons(data = pb, 
                 fillColor = "coral",
-                fillOpacity = 0.8,
+                fillOpacity = 0.5,
                 color= "white",
                 weight = 0.3,
                 highlight = highlightOptions(weight = 5,

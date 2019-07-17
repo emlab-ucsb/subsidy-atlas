@@ -57,20 +57,24 @@ country_map_filterCaribbean <- country_map %>%
 
 country_map_filterPacific <- country_map %>% 
   dplyr::filter(iso3 %in% ACP_codes$territory_iso3) %>% 
-  filter(subregn == "Oceana") %>% 
+  filter(region == "Oceania") %>% 
   select(c("iso3")) %>% 
   rename(ez_hs_c = iso3)
 
 ### Bind Shapefiles
 
+
 africa_bind <- rbind(EEZ_map_filterAfrica, country_map_filterAfrica)
-ab <- st_combine(africa_bind)
+ab <- st_union(africa_bind)  
+  
 
 caribbean_bind <- rbind(EEZ_map_filterCaribbean, country_map_filterCaribbean)
-cb <- st_combine(caribbean_bind)
+cb <- st_union(caribbean_bind) 
+  
 
 pacific_bind <- rbind(EEZ_map_filterPacific, country_map_filterPacific)
-pb <- st_combine(pacific_bind)
+pb <- st_union(pacific_bind)  
+  
 
 
 
@@ -79,7 +83,7 @@ ggplot()+
       geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
       #geom_sf(data = country_map_filterAfrica , fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
       #geom_sf(data = EEZ_map_filterAfrica , fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
-      geom_sf(data = ab, fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) +
+      geom_sf(data = country_map_filterPacific, fill = "slateblue", alpha = 1, color = NA, size = 0.1) +
       maptheme+
       coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
       scale_x_continuous(expand = c(0,0))+
@@ -103,7 +107,7 @@ leaflet() %>%
                   label = ("Africa")) %>%
       addPolygons(data = cb, 
                   fillColor = "seagreen",
-                  fillOpacity = 0.8,
+                  fillOpacity = 8,
                   color= "white",
                   weight = 0.3,
                   highlight = highlightOptions(weight = 5,
@@ -113,28 +117,28 @@ leaflet() %>%
                   label = ("Caribbean")) %>% 
     addPolygons(data = pb, 
                   fillColor = "coral",
-                  fillOpacity = 0.8,
+                  fillOpacity = 8,
                   color= "white",
                   weight = 0.3,
                   highlight = highlightOptions(weight = 5,
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = ("Pacific")) %>% 
-  observe({
-        click <- input$livemap_shape_click
-        if(is.null(click))
-            return()
-
-        ## use the click to access the zoom and set the view according to these
-        ## the click$id is now returned with the 'name' of the state
-        ## because we specified it in the LayerId argument
-        idx <- which(mapStates$name == click$id)
-        z <- mapStates$zoom[[idx]]
-
-        leafletProxy("livemap") %>% 
-            setView(lng = click$lng, lat = click$lat, zoom = z)
-    })
+                  label = ("Pacific")) #%>% 
+  # observe({
+  #       click <- input$livemap_shape_click
+  #       if(is.null(click))
+  #           return()
+  # 
+  #       ## use the click to access the zoom and set the view according to these
+  #       ## the click$id is now returned with the 'name' of the state
+  #       ## because we specified it in the LayerId argument
+  #       idx <- which(mapStates$name == click$id)
+  #       z <- mapStates$zoom[[idx]]
+  # 
+  #       leafletProxy("livemap") %>% 
+  #           setView(lng = click$lng, lat = click$lat, zoom = z)
+  #   })
   
 
 
