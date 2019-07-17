@@ -15,9 +15,13 @@ africa = function()
            tags$h3(style = "color: #ffffff; padding: 0; margin: 0;", "Africa")
     ), 
     
-    # Leaflet overview map
-    column(12, stlye = "padding: 0px;",
-           leafletOutput("africa_map", width = "auto", height = "80vh")
+    # Select an EEZ - map and dropdown
+    
+    column(6, stlye = "padding: 0px;",
+           
+           leafletOutput("africa_map", width = "auto", height = "40vh"),
+           
+           selectizeInput()
            )
     
     

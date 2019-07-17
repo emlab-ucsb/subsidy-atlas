@@ -15,7 +15,7 @@ selectregion = function()
     
     # Leaflet overview map
     column(12, stlye = "padding: 0px;",
-           leafletOutput("regional_map", width = "auto", height = "80vh")
+           leafletOutput("regional_map", width = "auto", height = "60vh")
     )
     
     
