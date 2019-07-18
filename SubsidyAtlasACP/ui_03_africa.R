@@ -5,16 +5,10 @@
 # 
 ### ------------------------------------
 
-<<<<<<< HEAD
-### Section 1: Function
-
-africa = function(ACP_choices)
-  fluidPage(
-=======
 ### Function
-africa = function()
+africa = function(eez_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
->>>>>>> b6a9295f5802cd49a25d6e667a0ecb9ca8c25ce0
+
     
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
@@ -23,26 +17,33 @@ africa = function()
            
     ), 
     
-    # Leaflet Map
-    
+    # Map and widget to select a country 
     column(6, stlye = "padding: 0px;",
            
-           leafletOutput("africa_map", width = "auto", height = "40vh")
-           
-           #selectizeInput()
+           column(12, style = "padding: 0 10px;",
+                  
+                  selectizeInput("africa_eez_select",
+                                 label = NULL,
+                                 choices = c("Select an EEZ...", eez_choices),
+                                 selected = "Select an EEZ...",
+                                 width = "100%",
+                                 options = list(placeholder = 'Select...'))
+                  
            ),
+           
+           column(12, style = "padding: 0",
+                  
+                  leafletOutput("africa_map", width = "auto", height = "40vh")
+                  
+           )
+           
+    )
     
-    ##Drop down menu
-    
-    fluidRow(style = "padding: 0px 25px 0px;",
-             column(6, style = "padding: 0 5px 0 20px;",
-                    selectizeInput("Africa_for_profile",
-                                   label = "EEZ:",
-                                   choices = ACP_choices,
-                                   selected = NULL,
-                                   width = "100%",
-                                   options = list(placeholder = 'Select...'))
-             ))
+
+    # fluidRow(style = "padding: 0px 25px 0px;",
+    #          column(6, style = "padding: 0 5px 0 20px;",
+    #                 
+    #          ))
     
     
   ) # close fluidPage
