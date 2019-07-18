@@ -5,16 +5,15 @@
 # 
 ### ------------------------------------
 
-<<<<<<< HEAD
+
 ### Section 1: Function
 
-africa = function(ACP_choices)
-  fluidPage(
-=======
+
+
 ### Function
-africa = function()
+africa = function(ACP_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
->>>>>>> b6a9295f5802cd49a25d6e667a0ecb9ca8c25ce0
+
     
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
