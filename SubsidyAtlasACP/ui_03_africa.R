@@ -7,7 +7,7 @@
 
 ### Section 1: Function
 
-africa = function()
+africa = function(ACP_choices)
   fluidPage(
     
     # Top header
@@ -15,14 +15,26 @@ africa = function()
            tags$h3(style = "color: #ffffff; padding: 0; margin: 0;", "Africa")
     ), 
     
-    # Select an EEZ - map and dropdown
+    # Leaflet Map
     
     column(6, stlye = "padding: 0px;",
            
            leafletOutput("africa_map", width = "auto", height = "40vh")
            
            #selectizeInput()
-           )
+           ),
+    
+    ##Drop down menu
+    
+    fluidRow(style = "padding: 0px 25px 0px;",
+             column(6, style = "padding: 0 5px 0 20px;",
+                    selectizeInput("Africa_for_profile",
+                                   label = "EEZ:",
+                                   choices = ACP_choices,
+                                   selected = NULL,
+                                   width = "100%",
+                                   options = list(placeholder = 'Select...'))
+             ))
     
     
   ) # close fluidPage

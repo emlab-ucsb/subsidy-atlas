@@ -23,7 +23,7 @@ introduction = function()
   
     ### Connectivity Map
     column(12, style = "padding: 0;",
-      img(src = "_ACP_connections_map.png", width = "120%", align = "center")
+      img(src = "_ACP_connections_map.png", width = "100%", align = "center")
     )
             
             

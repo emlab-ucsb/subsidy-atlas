@@ -39,6 +39,8 @@ source)
 ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
   na.omit()
 
+
+
 # Load spatial data frame with lines linking countries and EEZs
 connectivity_data <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
   rename(eez_territory_iso3 = ez_tr_3) 
@@ -64,8 +66,28 @@ land_eez_map <- read_sf(dsn = "./data/EEZ_land_union_v2_201410", layer = "EEZ_la
 country_choices <- unique(ACP_codes$territory_iso3)
 names(country_choices) <- unique(ACP_codes$flag)
 
-ACP_choices <- unique(ACP_codes$territory_iso3)
+ACP_choices <- unique(ACP_codes$territory_iso3)  
 names(ACP_choices) <- unique(ACP_codes$flag)
+
+# ACP_codes_africa <- ACP_codes %>%
+#   filter(region == "Africa")  
+  
+  
+# 
+# ACP_codes_caribbean <- ACP_codes %>%
+#      filter(region == "Caribbean")
+# 
+# ACP_codes_pacific <- ACP_codes %>%
+#      filter(region == "Pacific")
+# 
+ # Africa_choices <- unique(ACP_codes_africa$territory_iso3)
+ # names(Africa_choices) <- unique(ACP_codes_africa)
+# 
+# Caribbean_choices <- unique(ACP_codes_caribbean$territory_iso3)
+# names(Caribbean_choices) <- unique(ACP_codes_caribbean)
+# 
+# Pacific_choices <- unique(ACP_codes_pacific$territory_iso3)
+# names(Pacific_choices) <- unique(ACP_codes_pacific)
 
 ### Widget choice values that are text heavy  ------------------------------
 # Put this here so it's easier to edit text throughout
@@ -175,7 +197,7 @@ ui <- shinyUI(
        
        # Africa
        tabItem(tabName = "africa",
-               africa()
+               africa(ACP_choices)
        ),
        
        # Caribbean
@@ -498,6 +520,9 @@ server <- shinyServer(function(input, output, session) {
 
   ### Map of African countries/EEZs highlighted for which we have DW fishing effort
   output$africa_map <- renderLeaflet({
+    
+    #Require EEZ selection
+    #req(input$Africa_for_profile)
     
     # Filter data
     africa_eezs <- eez_map %>%
