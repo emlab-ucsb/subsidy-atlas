@@ -414,18 +414,17 @@ server <- shinyServer(function(input, output, session) {
     country_map_filtered_africa <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)
     
-    ##  Hover Text
-    # africa_subsidy_atlas_text <- paste0(
-    #   "<b>","State: ", "</b>", "</b>",
-    #   "<br/>", 
-    #   "<b>", "Est. fishery subsidies (2018 US$):", "</b>", " $", big.mark = ",", "</b>",
-    #   "</br>",
-    #   "<b>", "Matching subsidy type(s): ", "</b>",  "</b>",
-    #   "</br>", 
-    #   "<b>", "Capture production (2017, tonnes): ", "</b>", big.mark = ",","</b>",
-    #   "<br/>", "<b>", "Est. landed value (2018 US$):", "</b>", " $", big.mark = ",")
-    #  # %>%
-    #  #  lapply(htmltools::HTML)
+    #  Hover Text
+    flag_subsidy_atlas_text_africa <- paste0(
+      "<b>","State: ", country_map_filtered_africa$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: #####",
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ######", 
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
+       lapply(htmltools::HTML)
+    
     
     
     #Leaflet map
@@ -443,7 +442,6 @@ server <- shinyServer(function(input, output, session) {
                                                bringToFront = TRUE),
                   label = (paste0("<b>", ACP_codes_filtered_africa$geoname, "</b>") %>%
                              lapply(htmltools::HTML)),
-                  #label = africa_subsidy_atlas_text,
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -459,8 +457,9 @@ server <- shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", country_map_filtered_africa$cntry_l, "</b>") %>%
-                             lapply(htmltools::HTML)),
+                  label = flag_subsidy_atlas_text_africa,
+                  #label = (paste0("<b>", country_map_filtered_africa$cntry_l, "</b>") %>%
+                             #lapply(htmltools::HTML)),
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -471,7 +470,66 @@ server <- shinyServer(function(input, output, session) {
                    weight = 1,
                    color = "darkgoldenrod") %>% 
       setView(15, -13, zoom = 2)
+  
   })
+  
+  observe({
+    click <- input$africa_connection_map_shape_click
+    if(is.null(click))
+      return()
+  })
+  
+    
+    # output$africa_summary_text <- renderUI({
+    #   
+    #   req(input$africa_connection_map_shape_click)
+    #   
+    #   paste0("<b>","State: ",
+    #          "<br/>",
+    #          "<b>", "# of Vessels: #####",
+    #          "</br>",
+    #          "<b>", "Fishing hours per year in EEZ: ######",
+    #          "</br>",
+    #          "<b>", "Fishing kwhr in EEZ: ######")  %>%
+    #     lapply(htmltools::HTML)
+      
+      output$africa_summary_text <- renderUI({
+        if (is.null(click)) return()
+        paste0("<b>","State: ",
+                         "<br/>",
+                         "<b>", "# of Vessels: #####",
+                         "</br>",
+                         "<b>", "Fishing hours per year in EEZ: ######",
+                         "</br>",
+                         "<b>", "Fishing kwhr in EEZ: ######")  %>%
+                    lapply(htmltools::HTML)
+      })
+      
+      
+      
+      # textInput('fish',
+      #            label = "Fish",
+      #            value = click)
+      
+            
+      
+      
+    # })
+    
+  
+    # output$africa_summary_text <- renderText({
+    #   
+    #   ### Based on where the user clicks, produce summary stats at bottom
+    #   observeEvent(input$africa_connection_map_click, {
+    #     p <- input$africa_connection_map_click
+    #     renderText(p)
+    #   
+    # })
+  
+  
+  
+    
+   #close render leaflet
   
   
   ### Caribbean ----------
@@ -577,6 +635,17 @@ server <- shinyServer(function(input, output, session) {
     country_map_filtered_caribbean <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag)
     
+    #  Hover Text
+    flag_subsidy_atlas_text_caribbean <- paste0(
+      "<b>","State: ", country_map_filtered_caribbean$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: #####",
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ######", 
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
+      lapply(htmltools::HTML)
+    
     #Leaflet map
     
     leaflet('caribbean_connection_map') %>% 
@@ -607,8 +676,9 @@ server <- shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", country_map_filtered_caribbean$cntry_l, "</b>") %>%
-                             lapply(htmltools::HTML)),
+                  label = flag_subsidy_atlas_text_caribbean,
+                  # label = (paste0("<b>", country_map_filtered_caribbean$cntry_l, "</b>") %>%
+                  #            lapply(htmltools::HTML)),
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -876,6 +946,17 @@ server <- shinyServer(function(input, output, session) {
     country_map_filtered_pacific <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_pacific$flag)
     
+    #  Hover Text
+    flag_subsidy_atlas_text_pacific <- paste0(
+      "<b>","State: ", country_map_filtered_pacific$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: #####",
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ######", 
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
+      lapply(htmltools::HTML)
+    
     #Leaflet map
     
     leaflet('pacific_connection_map') %>% 
@@ -906,8 +987,9 @@ server <- shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", country_map_filtered_pacific$cntry_l, "</b>") %>%
-                             lapply(htmltools::HTML)),
+                  label = flag_subsidy_atlas_text_pacific,
+                  # label = (paste0("<b>", country_map_filtered_pacific$cntry_l, "</b>") %>%
+                  #            lapply(htmltools::HTML)),
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",

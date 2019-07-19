@@ -60,7 +60,17 @@ africa = function(eez_choices)
       column(12, stlye = "padding: 0px;",
              
              leafletOutput("africa_connection_map", width = "auto", height = "80vh")
-      )
+      ),
+    
+    fluidRow(verbatimTextOutput("africa_summary_text"))
+    
+    # column(12, style = "padding: 10px 25px",
+    #        
+    #        #Produce text after click on country
+    #        
+    #        
+    #        )
+
     
   ) #close fluid page
     
