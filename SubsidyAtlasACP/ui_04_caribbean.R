@@ -12,7 +12,12 @@ caribbean = function(caribbean_eez_choices)
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
            
-           tags$h3(style = "padding: 0; margin: 0;", "Caribbean")
+           tags$h3(style = "padding: 0; margin: 0;", "Caribbean"),
+           
+           br(),
+           
+           # Text
+           includeHTML("./text/04_caribbean_intro.html")
            
     ),
     
@@ -36,14 +41,20 @@ caribbean = function(caribbean_eez_choices)
                   
            )
            
-    ),
+    ), #close column
     
     #   ## Leaflet map of ACP EEZs
-    conditionalPanel(
-      condition = "input.caribbean_eez_select.length > 0",
-      #  
-      column(12, stlye = "padding: 0px;",
-             leafletOutput("caribbean_connection_map", width = "auto", height = "80vh")
-      ))
     
-  ) # close fluidPage
+    column(12, style = "padding: 10px 25px;",
+           
+           # Header and text
+           includeHTML("./text/04_caribbean_connectivity.html")
+           
+    ),
+    #  
+    column(12, stlye = "padding: 0px;",
+           
+           leafletOutput("caribbean_connection_map", width = "auto", height = "80vh")
+    )
+    
+  ) #close fluid page

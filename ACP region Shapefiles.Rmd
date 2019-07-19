@@ -14,6 +14,9 @@ knitr::opts_chunk$set(echo = TRUE)
 connectivity_data <- read_sf("SubsidyAtlasACP/data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
   rename(eez_territory_iso3 = ez_tr_3) 
 
+samoa <- connectivity_data %>% 
+  filter(eez_territory_iso3 == "WSM")
+
 ACP_codes_africa <- ACP_codes %>% 
   filter(region == "Africa")
 
