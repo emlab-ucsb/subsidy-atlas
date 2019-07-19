@@ -24,7 +24,7 @@ ACP_codes_pacific <- ACP_codes %>%
   filter(region == "Pacific")
 
 # EEZ map
-EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326) 
 
 EEZ_map_filterAfrica <- EEZ_map %>% 
@@ -141,6 +141,44 @@ leaflet() %>%
   #   })
   
 
+
+land_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "EEZ_land_union_v2_201410"), layer = "EEZ_land_v2_201410")
+
+leaflet() %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = land_eez_map, 
+                  fillColor = "slateblue",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE))
+                  
+
+
+```
+
+```{r}
+
+ACP_codes <- read_csv("SubsidyAtlasACP/data/ACP_eez_codes.csv") %>%
+  na.omit()
+
+ACP_codes %>% 
+    select(eez_id)
+
+ACP_codes <- eez_map %>% 
+      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+
+dominica <- dw_effort_final %>% 
+  filter(eez_territory_iso3 == "DMA")
+
+cuba <-dw_effort_final %>% 
+  filter(eez_territory_iso3 == "CUB")
+
+belize <- dw_effort_final %>% 
+  filter(eez_territory_iso3 == "BLZ")
 
 ```
 

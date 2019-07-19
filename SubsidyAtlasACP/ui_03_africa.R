@@ -8,7 +8,6 @@
 
 ### Function
 africa = function(eez_choices)
-
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
 
     
@@ -39,7 +38,15 @@ africa = function(eez_choices)
                   
            )
            
-    )
+    ),
+    
+    #   ## Leaflet map of ACP EEZs
+    conditionalPanel(
+      condition = "input.africa_eez_select.length > 0",
+      #  
+      column(12, stlye = "padding: 0px;",
+             leafletOutput("africa_connection_map", width = "auto", height = "80vh")
+      ))
     
 
     # fluidRow(style = "padding: 0px 25px 0px;",

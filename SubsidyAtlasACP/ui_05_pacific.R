@@ -7,19 +7,29 @@
 
 ### Section 2: Function
 
-pacific = function()
+pacific = function(eez_choices)
   fluidPage(
     
     # Top header
-    column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
-           tags$h3(style = "color: #ffffff; padding: 0; margin: 0;", "Pacific Islands")
-    ), 
-    
-    # Leaflet overview map
-    column(12, stlye = "padding: 0px;",
-           leafletOutput("pacific_map", width = "auto", height = "80vh")
+    column(6, stlye = "padding: 0px;",
+           
+           column(12, style = "padding: 0 10px;",
+                  
+                  selectizeInput("pacific_eez_select",
+                                 label = NULL,
+                                 choices = c("Select an EEZ...", eez_choices),
+                                 selected = "Select an EEZ...",
+                                 width = "100%",
+                                 options = list(placeholder = 'Select...'))
+                  
+           ),
+           
+           column(12, style = "padding: 0",
+                  
+                  leafletOutput("pacific_map", width = "auto", height = "40vh")
+                  
+           )
+           
     )
     
-    
   ) # close fluidPage
-

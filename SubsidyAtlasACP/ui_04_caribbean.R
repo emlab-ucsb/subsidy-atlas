@@ -5,20 +5,45 @@
 # 
 ### ------------------------------------
 
-### Section 2: Function
-
-caribbean = function()
-  fluidPage(
+### Function
+caribbean = function(caribbean_eez_choices)
+  fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
     
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
-           tags$h3(style = "color: #ffffff; padding: 0; margin: 0;", "Caribbean")
+           
+           tags$h3(style = "padding: 0; margin: 0;", "Caribbean")
+           
     ),
     
-    # Leaflet overview map
-    column(12, stlye = "padding: 0px;",
-           leafletOutput("caribbean_map", width = "auto", height = "60vh")
-    )
+    # Map and widget to select a country 
+    column(6, stlye = "padding: 0px;",
+           
+           column(12, style = "padding: 0 10px;",
+                  
+                  selectizeInput("caribbean_eez_select",
+                                 label = NULL,
+                                 choices = c("Select an EEZ...", caribbean_eez_choices),
+                                 selected = "Select an EEZ...",
+                                 width = "100%",
+                                 options = list(placeholder = 'Select...'))
+                  
+           ),
+           
+           column(12, style = "padding: 0",
+                  
+                  leafletOutput("caribbean_map", width = "auto", height = "40vh")
+                  
+           )
+           
+    ),
     
+    #   ## Leaflet map of ACP EEZs
+    conditionalPanel(
+      condition = "input.caribbean_eez_select.length > 0",
+      #  
+      column(12, stlye = "padding: 0px;",
+             leafletOutput("caribbean_connection_map", width = "auto", height = "80vh")
+      ))
     
   ) # close fluidPage
