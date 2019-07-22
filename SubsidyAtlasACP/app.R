@@ -411,6 +411,7 @@ server <- shinyServer(function(input, output, session) {
     connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
       dplyr::filter(eez_cod == input$africa_eez_select)
     
+    
     country_map_filtered_africa <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)
     
@@ -473,39 +474,81 @@ server <- shinyServer(function(input, output, session) {
   
   })
   
-  observe({
-    click <- input$africa_connection_map_shape_click
-    if(is.null(click))
-      return()
-  })
+  # observe({
+  #   click <- input$africa_connection_map_shape_click
+  #   if(is.null(click))
+  #     return()
+  # })
+  
+  # observe({
+  #   click <- input$africa_connection_map_shape_click
+  #   if(is.null(click))
+  #     return()
+  #   text <- paste0("Fish")
+  #   output$Click_text <- renderUI({
+  #     text
+  #   })
+  # })
   
     
-    # output$africa_summary_text <- renderUI({
+  output$africa_summary_text <- renderUI({
+    
+    connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$africa_eez_select)
+    
+    country_map_filtered_africa <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)  
+      
+    
+    req(input$africa_connection_map_shape_click)
+    
+    if (is.null(click)) return()
+    text2 <- paste0("<b>","State: ", input %in% country_map_filtered_africa$cntry_l,
+           "<br/>",
+           "<b>", "# of Vessels: #####",
+           "</br>",
+           "<b>", "Fishing hours per year in EEZ: ######",
+           "</br>",
+           "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      lapply(htmltools::HTML)
+  })
+  
+  
+  
+    
+      
+      # paste0("fish")  %>%
+      #   lapply(htmltools::HTML)
+
+
+    
+
+    
+  
+    
+    # output$africa_summary_text <- renderUI({ 
     #   
-    #   req(input$africa_connection_map_shape_click)
+    #   paste0("flag")
     #   
-    #   paste0("<b>","State: ",
-    #          "<br/>",
-    #          "<b>", "# of Vessels: #####",
-    #          "</br>",
-    #          "<b>", "Fishing hours per year in EEZ: ######",
-    #          "</br>",
-    #          "<b>", "Fishing kwhr in EEZ: ######")  %>%
-    #     lapply(htmltools::HTML)
+    # })
+    
+    
+
+
       
-      output$africa_summary_text <- renderUI({
-        if (is.null(click)) return()
-        paste0("<b>","State: ",
-                         "<br/>",
-                         "<b>", "# of Vessels: #####",
-                         "</br>",
-                         "<b>", "Fishing hours per year in EEZ: ######",
-                         "</br>",
-                         "<b>", "Fishing kwhr in EEZ: ######")  %>%
-                    lapply(htmltools::HTML)
-      })
+      # output$africa_summary_text <- renderUI({
+      #   if (is.null(click)) return("fish")
+      #   paste0("<b>","State: ",
+      #                    "<br/>",
+      #                    "<b>", "# of Vessels: #####",
+      #                    "</br>",
+      #                    "<b>", "Fishing hours per year in EEZ: ######",
+      #                    "</br>",
+      #                    "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      #               lapply(htmltools::HTML)
+      # })
       
-      
+
       
       # textInput('fish',
       #            label = "Fish",
@@ -517,14 +560,21 @@ server <- shinyServer(function(input, output, session) {
     # })
     
   
-    # output$africa_summary_text <- renderText({
-    #   
+    # output$africa_summary_text <- renderUI({
+    # 
     #   ### Based on where the user clicks, produce summary stats at bottom
-    #   observeEvent(input$africa_connection_map_click, {
+    #   observeEvent(input$africa_connection_map_shape_click, {
     #     p <- input$africa_connection_map_click
-    #     renderText(p)
-    #   
+    #     renderUI(p)
+    # 
     # })
+    #   
+      
+      
+      
+      
+      
+    
   
   
   
@@ -691,7 +741,27 @@ server <- shinyServer(function(input, output, session) {
       setView(-75,20, zoom = 1.75)
   })
   
-  
+  output$caribbean_summary_text <- renderUI({
+    
+    connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$caribbean_eez_select)
+    
+    country_map_filtered_caribbean <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag)  
+    
+    
+    req(input$caribbean_connection_map_shape_click)
+    
+    if (is.null(click)) return()
+    text2 <- paste0("<b>","State: ", input %in% country_map_filtered_caribbean$cntry_l,
+                    "<br/>",
+                    "<b>", "# of Vessels: #####",
+                    "</br>",
+                    "<b>", "Fishing hours per year in EEZ: ######",
+                    "</br>",
+                    "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      lapply(htmltools::HTML)
+  })
   
   
   ### Based on click on regional map, change tab
@@ -1002,6 +1072,43 @@ server <- shinyServer(function(input, output, session) {
       setView(-75,20, zoom = 1.75)
   })
   
+  output$pacific_summary_text <- renderUI({
+    
+    connectivity_data_filter_pacific <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$pacific_eez_select)
+    
+    country_map_filtered_pacific <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_pacific$flag) %>% 
+      filter(iso3 == input$pacific_eez_select)
+    
+    #  Click Text
+    flag_subsidy_atlas_text_pacific <- paste0(
+      "<b>","State: FISH", country_map_filtered_pacific$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: #####",
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ######", 
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
+      lapply(htmltools::HTML)
+    
+    
+    req(input$pacific_connection_map_shape_click)
+    
+    if (is.null(click)) return()
+    text2 <- flag_subsidy_atlas_text_pacific %>% 
+      lapply(htmltools::HTML)
+      
+      
+      # paste0("<b>","State: ",  pacific_connection_map_shape_click$country_map_filtered_pacific$cntry_l ,
+      #               "<br/>",
+      #               "<b>", "# of Vessels: #####",
+      #               "</br>",
+      #               "<b>", "Fishing hours per year in EEZ: ######",
+      #               "</br>",
+      #               "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      # lapply(htmltools::HTML)
+  })
   
     
   })

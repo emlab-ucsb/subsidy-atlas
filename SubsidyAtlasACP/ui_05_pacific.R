@@ -55,6 +55,12 @@ pacific = function(pacific_eez_choices)
     column(12, stlye = "padding: 0px;",
            
            leafletOutput("pacific_connection_map", width = "auto", height = "80vh")
+    ),
+    
+    fluidRow(uiOutput("pacific_summary_text")
+             
+             
+             
     )
     
   ) #close fluid page

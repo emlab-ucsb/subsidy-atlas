@@ -185,3 +185,18 @@ belize <- dw_effort_final %>%
 
 ```
 
+```{r}
+
+land_map <- read_sf(dsn = "SubsidyAtlasACP/data/world_happy_180", layer="world_happy_180") %>%
+  st_transform(crs = 4326)
+
+connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8478")
+    
+country_map_filtered_africa <- land_map %>% 
+  dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag) %>% 
+  filter(iso3 == "ESP")
+  
+
+```
+

@@ -55,6 +55,10 @@ caribbean = function(caribbean_eez_choices)
     column(12, stlye = "padding: 0px;",
            
            leafletOutput("caribbean_connection_map", width = "auto", height = "80vh")
+    ),
+    
+    fluidRow(uiOutput("caribbean_summary_text")
+             
     )
     
   ) #close fluid page
