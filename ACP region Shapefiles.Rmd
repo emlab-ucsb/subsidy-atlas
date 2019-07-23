@@ -196,6 +196,20 @@ connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
 country_map_filtered_africa <- land_map %>% 
   dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag) %>% 
   filter(iso3 == "ESP")
+
+connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == 8419)
+
+country_map_filtered_caribbean <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag) 
+
+dw_effort_final_caribbean <- dw_effort_final %>% 
+  filter(eez_code %in% ACP_codes_caribbean$eez_id) %>% 
+  select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
+  group_by(flag, eez_code, eez_territory_name) %>% 
+  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T),
+            number_vessels = n_distinct(ssvid))
   
 
 ```

@@ -689,11 +689,11 @@ server <- shinyServer(function(input, output, session) {
     flag_subsidy_atlas_text_caribbean <- paste0(
       "<b>","State: ", country_map_filtered_caribbean$cntry_l,
       "<br/>",
-      "<b>", "# of Vessels: #####",
+      "<b>", "# of Vessels: ", dw_effort_final_caribbean$number_vessels,
       "</br>",
-      "<b>", "Fishing hours per year in EEZ: ######", 
+      "<b>", "Fishing hours per year in EEZ: ", dw_effort_final_caribbean$fishing_hours, 
       "</br>",
-      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
+      "<b>", "Fishing kwhr in EEZ: ", dw_effort_final_caribbean$fishing_KWh)  %>% 
       lapply(htmltools::HTML)
     
     #Leaflet map
@@ -746,14 +746,17 @@ server <- shinyServer(function(input, output, session) {
     connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
       dplyr::filter(eez_cod == input$caribbean_eez_select)
     
+    
+    
     country_map_filtered_caribbean <- land_map %>% 
-      dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag)  
+      dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag) #%>% 
+      
     
     
     req(input$caribbean_connection_map_shape_click)
     
     if (is.null(click)) return()
-    text2 <- paste0("<b>","State: ", input %in% country_map_filtered_caribbean$cntry_l,
+    text <- paste0("<b>","State: " ,  #input$caribbean_connection_map_shape_click %in% country_map_filtered_caribbean$cntry_l,
                     "<br/>",
                     "<b>", "# of Vessels: #####",
                     "</br>",
