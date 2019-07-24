@@ -14,6 +14,9 @@ knitr::opts_chunk$set(echo = TRUE)
 connectivity_data <- read_sf("SubsidyAtlasACP/data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
   rename(eez_territory_iso3 = ez_tr_3) 
 
+samoa <- connectivity_data %>% 
+  filter(eez_territory_iso3 == "WSM")
+
 ACP_codes_africa <- ACP_codes %>% 
   filter(region == "Africa")
 
@@ -24,7 +27,7 @@ ACP_codes_pacific <- ACP_codes %>%
   filter(region == "Pacific")
 
 # EEZ map
-EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326) 
 
 EEZ_map_filterAfrica <- EEZ_map %>% 
@@ -141,6 +144,89 @@ leaflet() %>%
   #   })
   
 
+
+land_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "EEZ_land_union_v2_201410"), layer = "EEZ_land_v2_201410")
+
+leaflet() %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = land_eez_map, 
+                  fillColor = "slateblue",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE))
+                  
+
+
+```
+
+```{r}
+
+ACP_codes <- read_csv("SubsidyAtlasACP/data/ACP_eez_codes.csv") %>%
+  na.omit()
+
+ACP_codes %>% 
+    select(eez_id)
+
+ACP_codes <- eez_map %>% 
+      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+
+dominica <- dw_effort_final %>% 
+  filter(eez_territory_iso3 == "DMA")
+
+cuba <-dw_effort_final %>% 
+  filter(eez_territory_iso3 == "CUB")
+
+belize <- dw_effort_final %>% 
+  filter(eez_territory_iso3 == "BLZ")
+
+```
+
+```{r}
+
+land_map <- read_sf(dsn = "SubsidyAtlasACP/data/world_happy_180", layer="world_happy_180") %>%
+  st_transform(crs = 4326)
+
+connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8478")
+    
+country_map_filtered_africa <- land_map %>% 
+  dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag) %>% 
+  filter(iso3 == "ESP")
+
+connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == 8419)
+
+country_map_filtered_caribbean <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag) 
+
+dw_effort_final_caribbean <- dw_effort_final %>% 
+  filter(eez_code %in% ACP_codes_caribbean$eez_id) %>% 
+  select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
+  group_by(flag, eez_code, eez_territory_name) %>% 
+  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T),
+            number_vessels = n_distinct(ssvid))
+
+dw_effort_final_africa <- dw_effort_final %>% 
+  filter(eez_code %in% ACP_codes_africa$eez_id) %>% 
+  select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
+  group_by(flag, eez_code, eez_territory_name) %>% 
+  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T),
+            number_vessels = n_distinct(ssvid))
+
+dw_effort_final_pacific <- dw_effort_final %>% 
+  filter(eez_code %in% ACP_codes_pacific$eez_id) %>% 
+  select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
+  group_by(flag, eez_code, eez_territory_name) %>% 
+  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T),
+            number_vessels = n_distinct(ssvid))
+  
 
 ```
 

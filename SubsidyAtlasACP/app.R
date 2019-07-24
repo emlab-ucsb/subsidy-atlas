@@ -73,6 +73,9 @@ names(africa_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Africa"]
 caribbean_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Caribbean"]  
 names(caribbean_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Caribbean"]
 
+pacific_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Pacific"]
+names(pacific_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Pacific"]
+
 # ACP_codes_africa <- ACP_codes %>%
 #   filter(region == "Africa")  
   
@@ -211,7 +214,7 @@ ui <- shinyUI(
        
        # Pacific Islands
        tabItem(tabName = "pacific",
-               pacific()
+               pacific(pacific_eez_choices)
        ),
        
        #Leaflet EEZ
@@ -331,8 +334,8 @@ server <- shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", africa_eezs$geoname, "</b>") %>%
-                             lapply(htmltools::HTML)),
+                  label = africa_eezs$geoname,
+                  layerId = africa_eezs$mrgid, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -343,42 +346,241 @@ server <- shinyServer(function(input, output, session) {
   })
   
   
+  ### Register user clicks on map - change select input from widget
+  observeEvent(input$africa_map_shape_click, {
+    
+    updateSelectizeInput(session, "africa_eez_select",
+                         selected = input$africa_map_shape_click$id
+    )
+    
+  })
+  
   ### Leaflet proxy: when user selects country either from the dropdown widget or by clicking on the map, highlight EEZ and change zoom
   africa_proxy <- leafletProxy("africa_map")
   
   observeEvent(input$africa_eez_select, {
-
-      if(input$africa_eez_select == "Select an EEZ..."){
-        
-        # Remove any previously highlighted polygon
-        africa_proxy %>% clearGroup("highlighted_eez")  
-        
-        # Reset view to entire region
-        africa_proxy %>% setView(lng=15, lat=-13, zoom=2)
-          
-      }else{
-        
-        # Get code for selected EEZ
-        selected_eez <- subset(eez_map, eez_map$mrgid == input$africa_eez_select)
+    
+    if(input$africa_eez_select == "Select an EEZ..."){
       
-        # Remove any previously highlighted polygon
-        africa_proxy %>% clearGroup("highlighted_eez")
+      # Remove any previously highlighted polygon
+      africa_proxy %>% clearGroup("highlighted_eez")  
       
-        # Add a different colored polygon on top of map
-        africa_proxy %>% addPolygons(data = selected_eez,
-                                   fillColor = "darkred",
-                                   fillOpacity = 1,
-                                   color= "white",
-                                   weight = 0.3,
-                                   highlight = highlightOptions(weight = 5,
-                                                                color = "#666",
-                                                                fillOpacity = 1,
-                                                                bringToFront = TRUE),
-                                   group = "highlighted_eez") %>%
-        setView(lng=selected_eez$x_1,lat=selected_eez$y_1,zoom=4)
-      }
+      # Reset view to entire region
+      africa_proxy %>% setView(lng=-75, lat=20, zoom=3)
       
+    }else{
+      
+      # Get code for selected EEZ
+      selected_eez <- subset(eez_map, eez_map$mrgid == input$africa_eez_select)
+      
+      # Remove any previously highlighted polygon
+      africa_proxy %>% clearGroup("highlighted_eez")
+      
+      # Add a different colored polygon on top of map
+      africa_proxy %>% addPolygons(data = selected_eez,
+                                      fillColor = "darkred",
+                                      fillOpacity = 1,
+                                      color= "white",
+                                      weight = 0.3,
+                                      highlight = highlightOptions(weight = 5,
+                                                                   color = "#666",
+                                                                   fillOpacity = 1,
+                                                                   bringToFront = TRUE),
+                                      group = "highlighted_eez") %>%
+        setView(lng=selected_eez$x_1, lat=selected_eez$y_1, zoom=4)
+    }
+    
   })
+  
+  ### Africa Connection Map
+  
+  output$africa_connection_map <- renderLeaflet({
+    
+    #Require EEZ selection
+    req(input$africa_eez_select)
+    req(input$africa_eez_select != "Select an EEZ...")
+    
+    #Data filter
+    ACP_codes <- eez_map %>% 
+      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+    
+    ACP_codes_filtered_africa <- ACP_codes %>% 
+      dplyr::filter(mrgid == input$africa_eez_select)
+    
+    
+    connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$africa_eez_select)
+    
+    
+    country_map_filtered_africa <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)
+    
+    #  Hover Text
+    flag_subsidy_atlas_text_africa <- paste0(
+      "<b>","State: ", country_map_filtered_africa$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: ", format(round(dw_effort_final_africa$number_vessels, 0), big.mark = ","), # Not matching up
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ",  format(round(dw_effort_final_africa$fishing_hours, 0), big.mark = ","), # not matching up
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ", format(round(dw_effort_final_africa$fishing_KWh, 0), big.mark = ","))  %>% # not matching up
+      lapply(htmltools::HTML)
+    
+    
+    
+    #Leaflet map
+    
+    leaflet('africa_connection_map') %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = ACP_codes_filtered_africa, 
+                  fillColor = "slateblue",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = (paste0("<b>", ACP_codes_filtered_africa$geoname, "</b>") %>%
+                             lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%  #,
+      #setView()) %>%
+      
+      addPolygons(data = country_map_filtered_africa,
+                  fillColor = "darkmagenta",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = flag_subsidy_atlas_text_africa,
+                  #label = (paste0("<b>", country_map_filtered_africa$cntry_l, "</b>") %>%
+                             #lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>% 
+      addPolylines(data = connectivity_data_filter_africa,
+                   fillColor = "goldenrod",
+                   fillOpacity = 1,
+                   weight = 1,
+                   color = "darkgoldenrod") %>% 
+      setView(15, -13, zoom = 2)
+  
+  })
+  
+  # observe({
+  #   click <- input$africa_connection_map_shape_click
+  #   if(is.null(click))
+  #     return()
+  # })
+  
+  # observe({
+  #   click <- input$africa_connection_map_shape_click
+  #   if(is.null(click))
+  #     return()
+  #   text <- paste0("Fish")
+  #   output$Click_text <- renderUI({
+  #     text
+  #   })
+  # })
+  
+    
+  output$africa_summary_text <- renderUI({
+    
+    connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$africa_eez_select)
+    
+    country_map_filtered_africa <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)  
+      
+    
+    req(input$africa_connection_map_shape_click)
+    
+    if (is.null(click)) return()
+    text2 <- paste0("<b>","State: ", country_map_filtered_africa$cntry_l,
+           "<br/>",
+           "<b>", "# of Vessels: ", format(round(dw_effort_final_africa$number_vessels, 0), big.mark = ","),
+           "</br>",
+           "<b>", "Fishing hours per year in EEZ: ######",
+           "</br>",
+           "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      lapply(htmltools::HTML)
+  })
+  
+  
+  
+    
+      
+      # paste0("fish")  %>%
+      #   lapply(htmltools::HTML)
+
+
+    
+
+    
+  
+    
+    # output$africa_summary_text <- renderUI({ 
+    #   
+    #   paste0("flag")
+    #   
+    # })
+    
+    
+
+
+      
+      # output$africa_summary_text <- renderUI({
+      #   if (is.null(click)) return("fish")
+      #   paste0("<b>","State: ",
+      #                    "<br/>",
+      #                    "<b>", "# of Vessels: #####",
+      #                    "</br>",
+      #                    "<b>", "Fishing hours per year in EEZ: ######",
+      #                    "</br>",
+      #                    "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      #               lapply(htmltools::HTML)
+      # })
+      
+
+      
+      # textInput('fish',
+      #            label = "Fish",
+      #            value = click)
+      
+            
+      
+      
+    # })
+    
+  
+    # output$africa_summary_text <- renderUI({
+    # 
+    #   ### Based on where the user clicks, produce summary stats at bottom
+    #   observeEvent(input$africa_connection_map_shape_click, {
+    #     p <- input$africa_connection_map_click
+    #     renderUI(p)
+    # 
+    # })
+    #   
+      
+      
+      
+      
+      
+    
+  
+  
+  
+    
+   #close render leaflet
+  
   
   ### Caribbean ----------
   
@@ -410,7 +612,7 @@ server <- shinyServer(function(input, output, session) {
       ) %>%
       setView(-75,20, zoom = 3)
     
-  })
+  }) # Close render leaflet
   
   ### Register user clicks on map - change select input from widget
   observeEvent(input$caribbean_map_shape_click, {
@@ -419,7 +621,7 @@ server <- shinyServer(function(input, output, session) {
                           selected = input$caribbean_map_shape_click$id
     )
 
-  })
+  }) # Close observe event
   
   ### Leaflet proxy: when user selects country either from the dropdown widget or by clicking on the map, highlight EEZ and change zoom
   caribbean_proxy <- leafletProxy("caribbean_map")
@@ -456,9 +658,113 @@ server <- shinyServer(function(input, output, session) {
         setView(lng=selected_eez$x_1, lat=selected_eez$y_1, zoom=4)
     }
     
+  }) # Close observe event, final bracket for caribbean
+  
+  
+  ##Caribbean Connection Map
+  #ACP_codes %>% 
+    #select(eez_id)
+  
+  output$caribbean_connection_map <- renderLeaflet({
+    
+    #Require EEZ selection
+    req(input$caribbean_eez_select)
+    req(input$caribbean_eez_select != "Select an EEZ...")
+    
+    #Data filter
+    ACP_codes <- eez_map %>% 
+      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+    
+    ACP_codes_filtered_caribbean <- ACP_codes %>% 
+      dplyr::filter(mrgid == input$caribbean_eez_select)
+    
+    
+    connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$caribbean_eez_select)
+    
+    country_map_filtered_caribbean <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag)
+    
+    #  Hover Text
+    flag_subsidy_atlas_text_caribbean <- paste0(
+      "<b>","State: ", country_map_filtered_caribbean$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: ", format(round(dw_effort_final_caribbean$number_vessels, 0), big.mark = ","), # Not matching up
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ", format(round(dw_effort_final_caribbean$fishing_hours, 0), big.mark = ","), # not matching up
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ", format(round(dw_effort_final_caribbean$fishing_KWh, 0), big.mark = ","))  %>% # not matching up
+      lapply(htmltools::HTML)
+    
+    #Leaflet map
+    
+    leaflet('caribbean_connection_map') %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = ACP_codes_filtered_caribbean, 
+                  fillColor = "seagreen",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = (paste0("<b>", ACP_codes_filtered_caribbean$geoname, "</b>") %>%
+                             lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%  #,
+      #setView()) %>%
+      
+      addPolygons(data = country_map_filtered_caribbean,
+                  fillColor = "darkmagenta",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = flag_subsidy_atlas_text_caribbean,
+                  # label = (paste0("<b>", country_map_filtered_caribbean$cntry_l, "</b>") %>%
+                  #            lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>% 
+      addPolylines(data = connectivity_data_filter_caribbean,
+                   fillColor = "goldenrod",
+                   fillOpacity = 1,
+                   weight = 1,
+                   color = "darkgoldenrod") %>% 
+      setView(-75,20, zoom = 1.75)
   })
   
-  
+  output$caribbean_summary_text <- renderUI({
+    
+    connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$caribbean_eez_select)
+    
+    
+    
+    country_map_filtered_caribbean <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag) #%>% 
+      
+    
+    
+    req(input$caribbean_connection_map_shape_click)
+    
+    if (is.null(click)) return()
+    text <- paste0("<b>","State: " ,  input$caribbean_connection_map_shape_click %in% country_map_filtered_caribbean$cntry_l,
+                    "<br/>",
+                    "<b>", "# of Vessels: #####",
+                    "</br>",
+                    "<b>", "Fishing hours per year in EEZ: ######",
+                    "</br>",
+                    "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      lapply(htmltools::HTML)
+  })
   
   
   ### Based on click on regional map, change tab
@@ -611,17 +917,15 @@ server <- shinyServer(function(input, output, session) {
   
   ### Pacific Islands --------
   
-  pacific_eezs <- ACP_codes %>% 
-    dplyr::filter(region == "Pacific") %>% 
-    select(eez_id)
-  
   
   ### Map of Pacific countries/EEZs highlighted for which we have DW fishing effort
   output$pacific_map <- renderLeaflet({
     
     # Filter data
     pacific_eezs <- eez_map %>%
-      dplyr::filter(mrgid %in% pacific_eezs$eez_id)
+      right_join(ACP_codes %>% dplyr::filter(region == "Pacific"), by = c("mrgid" = "eez_id"))
+    
+    
     
     # Map
     leaflet('pacific_map') %>%
@@ -636,29 +940,188 @@ server <- shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", pacific_eezs$geoname, "</b>") %>%
-                             lapply(htmltools::HTML)),
+                  label = pacific_eezs$geoname, 
+                  layerId = pacific_eezs$mrgid, # need this to link to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
       setView(-170,17, zoom = 2) 
+    
+  }) # Close render leaflet
       
-    # addLegend("bottomright", pal = pal_global,
-    #           values = log10(tot_subs$value),
-    #           labels = round(tot_subs$value, 0),
-    #           title = "Est. fisheries subsidies<br>(2018 $USD)",
-    #           opacity = 1,
-    #           labFormat = labelFormat(prefix = "$",
-    #                                   transform = function(x) 10^(x)
-    #           )
-    #)
+  ### Register user clicks on map - change select input from widget
+  observeEvent(input$pacific_map_shape_click, {
+    
+    updateSelectizeInput(session, "pacific_eez_select",
+                         selected = input$pacific_map_shape_click$id
+    )
+    
+  })
+  
+  ### Leaflet proxy: when user selects country either from the dropdown widget or by clicking on the map, highlight EEZ and change zoom
+  pacific_proxy <- leafletProxy("pacific_map")
+  
+  observeEvent(input$pacific_eez_select, {
+    
+    if(input$pacific_eez_select == "Select an EEZ..."){
+      
+      # Remove any previously highlighted polygon
+      pacific_proxy %>% clearGroup("highlighted_eez")  
+      
+      # Reset view to entire region
+      pacific_proxy %>% setView(lng=-75, lat=20, zoom=3)
+      
+    }else{
+      
+      # Get code for selected EEZ
+      selected_eez <- subset(eez_map, eez_map$mrgid == input$pacific_eez_select)
+      
+      # Remove any previously highlighted polygon
+      pacific_proxy %>% clearGroup("highlighted_eez")
+      
+      # Add a different colored polygon on top of map
+      pacific_proxy %>% addPolygons(data = selected_eez,
+                                      fillColor = "darkred",
+                                      fillOpacity = 1,
+                                      color= "white",
+                                      weight = 0.3,
+                                      highlight = highlightOptions(weight = 5,
+                                                                   color = "#666",
+                                                                   fillOpacity = 1,
+                                                                   bringToFront = TRUE),
+                                      group = "highlighted_eez") %>%
+        setView(lng=selected_eez$x_1, lat=selected_eez$y_1, zoom=2)
+    }
+    
+  }) # Close observe event
+  
+  ## Pacific Connection Map
+  
+  output$pacific_connection_map <- renderLeaflet({
+    
+    crs4326 <-  leafletCRS(
+      crsClass = "L.CRS.EPSG3857")
+    
+    #Require EEZ selection
+    req(input$pacific_eez_select)
+    req(input$pacific_eez_select != "Select an EEZ...")
+    
+    #Data filter
+    ACP_codes <- eez_map %>% 
+      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+    
+    ACP_codes_filtered_pacific <- ACP_codes %>% 
+      dplyr::filter(mrgid == input$pacific_eez_select)
+    
+    
+    connectivity_data_filter_pacific <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$pacific_eez_select)
+    
+    country_map_filtered_pacific <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_pacific$flag)
+    
+    #  Hover Text
+    flag_subsidy_atlas_text_pacific <- paste0(
+      "<b>","State: ", country_map_filtered_pacific$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: ", format(round(dw_effort_final_pacific$number_vessels, 0), big.mark = ","), # Not matching up
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ", format(round(dw_effort_final_pacific$fishing_hours, 0), big.mark = ","), # not matching up
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ", format(round(dw_effort_final_pacific$fishing_KWh, 0), big.mark = ","))  %>% # not matching up
+      lapply(htmltools::HTML)
+    
+    #Leaflet map
+    
+    leaflet('pacific_connection_map') %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = ACP_codes_filtered_pacific, 
+                  fillColor = "coral",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = (paste0("<b>", ACP_codes_filtered_pacific$geoname, "</b>") %>%
+                             lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%  #,
+      #setView()) %>%
+      
+      addPolygons(data = country_map_filtered_pacific,
+                  fillColor = "darkmagenta",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = flag_subsidy_atlas_text_pacific,
+                  # label = (paste0("<b>", country_map_filtered_pacific$cntry_l, "</b>") %>%
+                  #            lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>% 
+      addPolylines(data = connectivity_data_filter_pacific,
+                   fillColor = "goldenrod",
+                   fillOpacity = 1,
+                   weight = 1,
+                   color = "darkgoldenrod") %>% 
+      setView(-75,20, zoom = 1.75)
+      #setView(lng = input$lng, lat = input$lat, zoom = 2)
+  })
+  
+  output$pacific_summary_text <- renderUI({
+    
+    connectivity_data_filter_pacific <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$pacific_eez_select)
+    
+    country_map_filtered_pacific <- land_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_pacific$flag) %>% 
+      filter(iso3 == input$pacific_eez_select)
+    
+    #  Click Text
+    flag_subsidy_atlas_text_pacific <- paste0(
+      "<b>","State: FISH", country_map_filtered_pacific$cntry_l,
+      "<br/>",
+      "<b>", "# of Vessels: #####",
+      "</br>",
+      "<b>", "Fishing hours per year in EEZ: ######", 
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
+      lapply(htmltools::HTML)
+    
+    
+    req(input$pacific_connection_map_shape_click)
+    
+    if (is.null(click)) return()
+    text2 <- flag_subsidy_atlas_text_pacific %>% 
+      lapply(htmltools::HTML)
+      
+      
+      # paste0("<b>","State: ",  pacific_connection_map_shape_click$country_map_filtered_pacific$cntry_l ,
+      #               "<br/>",
+      #               "<b>", "# of Vessels: #####",
+      #               "</br>",
+      #               "<b>", "Fishing hours per year in EEZ: ######",
+      #               "</br>",
+      #               "<b>", "Fishing kwhr in EEZ: ######")  %>%
+      # lapply(htmltools::HTML)
+  })
+  
     
   })
   
   
-})
+
 
 ### ----------
 ### Section 4: Run application

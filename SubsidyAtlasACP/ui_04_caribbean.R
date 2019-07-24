@@ -6,13 +6,18 @@
 ### ------------------------------------
 
 ### Function
-caribbean = function(eez_choices)
+caribbean = function(caribbean_eez_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
     
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
            
-           tags$h3(style = "padding: 0; margin: 0;", "Caribbean")
+           tags$h3(style = "padding: 0; margin: 0;", "Caribbean"),
+           
+           br(),
+           
+           # Text
+           includeHTML("./text/04_caribbean_intro.html")
            
     ),
     
@@ -23,7 +28,7 @@ caribbean = function(eez_choices)
                   
                   selectizeInput("caribbean_eez_select",
                                  label = NULL,
-                                 choices = c("Select an EEZ...", eez_choices),
+                                 choices = c("Select an EEZ...", caribbean_eez_choices),
                                  selected = "Select an EEZ...",
                                  width = "100%",
                                  options = list(placeholder = 'Select...'))
@@ -36,6 +41,24 @@ caribbean = function(eez_choices)
                   
            )
            
+    ), #close column
+    
+    #   ## Leaflet map of ACP EEZs
+    
+    column(12, style = "padding: 10px 25px;",
+           
+           # Header and text
+           includeHTML("./text/04_caribbean_connectivity.html")
+           
+    ),
+    #  
+    column(12, stlye = "padding: 0px;",
+           
+           leafletOutput("caribbean_connection_map", width = "auto", height = "80vh")
+    ),
+    
+    fluidRow(uiOutput("caribbean_summary_text")
+             
     )
     
-  ) # close fluidPage
+  ) #close fluid page

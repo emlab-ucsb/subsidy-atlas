@@ -6,16 +6,25 @@
 
 ### Function
 selectregion = function()
-  fluidPage(
+  fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
     
-    # Header and introductory text
+    ### Header and introductory text
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
-           tags$h3(style = "color: #ffffff; padding: 0; margin: 0;", "ACP Regions")
+           
+           # Title
+           tags$h3(style = "padding: 0; margin: 0;", "Select a region"),
+           
+           br(),
+           
+           # Text
+           includeHTML("./text/02_selectregion_intro.html")
     ), 
     
-    # Leaflet overview map
+    ### Leaflet regions map
     column(12, stlye = "padding: 0px;",
+           
            leafletOutput("regional_map", width = "auto", height = "60vh")
+           
     )
     
     
