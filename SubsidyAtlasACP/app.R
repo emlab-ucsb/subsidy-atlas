@@ -419,12 +419,12 @@ server <- shinyServer(function(input, output, session) {
     flag_subsidy_atlas_text_africa <- paste0(
       "<b>","State: ", country_map_filtered_africa$cntry_l,
       "<br/>",
-      "<b>", "# of Vessels: #####",
+      "<b>", "# of Vessels: ", format(round(dw_effort_final_africa$number_vessels, 0), big.mark = ","), # Not matching up
       "</br>",
-      "<b>", "Fishing hours per year in EEZ: ######", 
+      "<b>", "Fishing hours per year in EEZ: ",  format(round(dw_effort_final_africa$fishing_hours, 0), big.mark = ","), # not matching up
       "</br>",
-      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
-       lapply(htmltools::HTML)
+      "<b>", "Fishing kwhr in EEZ: ", format(round(dw_effort_final_africa$fishing_KWh, 0), big.mark = ","))  %>% # not matching up
+      lapply(htmltools::HTML)
     
     
     
@@ -503,9 +503,9 @@ server <- shinyServer(function(input, output, session) {
     req(input$africa_connection_map_shape_click)
     
     if (is.null(click)) return()
-    text2 <- paste0("<b>","State: ", input %in% country_map_filtered_africa$cntry_l,
+    text2 <- paste0("<b>","State: ", country_map_filtered_africa$cntry_l,
            "<br/>",
-           "<b>", "# of Vessels: #####",
+           "<b>", "# of Vessels: ", format(round(dw_effort_final_africa$number_vessels, 0), big.mark = ","),
            "</br>",
            "<b>", "Fishing hours per year in EEZ: ######",
            "</br>",
@@ -689,11 +689,11 @@ server <- shinyServer(function(input, output, session) {
     flag_subsidy_atlas_text_caribbean <- paste0(
       "<b>","State: ", country_map_filtered_caribbean$cntry_l,
       "<br/>",
-      "<b>", "# of Vessels: ", dw_effort_final_caribbean$number_vessels,
+      "<b>", "# of Vessels: ", format(round(dw_effort_final_caribbean$number_vessels, 0), big.mark = ","), # Not matching up
       "</br>",
-      "<b>", "Fishing hours per year in EEZ: ", dw_effort_final_caribbean$fishing_hours, 
+      "<b>", "Fishing hours per year in EEZ: ", format(round(dw_effort_final_caribbean$fishing_hours, 0), big.mark = ","), # not matching up
       "</br>",
-      "<b>", "Fishing kwhr in EEZ: ", dw_effort_final_caribbean$fishing_KWh)  %>% 
+      "<b>", "Fishing kwhr in EEZ: ", format(round(dw_effort_final_caribbean$fishing_KWh, 0), big.mark = ","))  %>% # not matching up
       lapply(htmltools::HTML)
     
     #Leaflet map
@@ -756,7 +756,7 @@ server <- shinyServer(function(input, output, session) {
     req(input$caribbean_connection_map_shape_click)
     
     if (is.null(click)) return()
-    text <- paste0("<b>","State: " ,  #input$caribbean_connection_map_shape_click %in% country_map_filtered_caribbean$cntry_l,
+    text <- paste0("<b>","State: " ,  input$caribbean_connection_map_shape_click %in% country_map_filtered_caribbean$cntry_l,
                     "<br/>",
                     "<b>", "# of Vessels: #####",
                     "</br>",
@@ -992,7 +992,7 @@ server <- shinyServer(function(input, output, session) {
                                                                    fillOpacity = 1,
                                                                    bringToFront = TRUE),
                                       group = "highlighted_eez") %>%
-        setView(lng=selected_eez$x_1, lat=selected_eez$y_1, zoom=4)
+        setView(lng=selected_eez$x_1, lat=selected_eez$y_1, zoom=2)
     }
     
   }) # Close observe event
@@ -1000,6 +1000,9 @@ server <- shinyServer(function(input, output, session) {
   ## Pacific Connection Map
   
   output$pacific_connection_map <- renderLeaflet({
+    
+    crs4326 <-  leafletCRS(
+      crsClass = "L.CRS.EPSG3857")
     
     #Require EEZ selection
     req(input$pacific_eez_select)
@@ -1023,11 +1026,11 @@ server <- shinyServer(function(input, output, session) {
     flag_subsidy_atlas_text_pacific <- paste0(
       "<b>","State: ", country_map_filtered_pacific$cntry_l,
       "<br/>",
-      "<b>", "# of Vessels: #####",
+      "<b>", "# of Vessels: ", format(round(dw_effort_final_pacific$number_vessels, 0), big.mark = ","), # Not matching up
       "</br>",
-      "<b>", "Fishing hours per year in EEZ: ######", 
+      "<b>", "Fishing hours per year in EEZ: ", format(round(dw_effort_final_pacific$fishing_hours, 0), big.mark = ","), # not matching up
       "</br>",
-      "<b>", "Fishing kwhr in EEZ: ######")  %>% 
+      "<b>", "Fishing kwhr in EEZ: ", format(round(dw_effort_final_pacific$fishing_KWh, 0), big.mark = ","))  %>% # not matching up
       lapply(htmltools::HTML)
     
     #Leaflet map
@@ -1073,6 +1076,7 @@ server <- shinyServer(function(input, output, session) {
                    weight = 1,
                    color = "darkgoldenrod") %>% 
       setView(-75,20, zoom = 1.75)
+      #setView(lng = input$lng, lat = input$lat, zoom = 2)
   })
   
   output$pacific_summary_text <- renderUI({

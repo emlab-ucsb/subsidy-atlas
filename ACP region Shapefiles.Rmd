@@ -210,6 +210,22 @@ dw_effort_final_caribbean <- dw_effort_final %>%
   summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
             fishing_KWh = sum(fishing_KWh, na.rm = T),
             number_vessels = n_distinct(ssvid))
+
+dw_effort_final_africa <- dw_effort_final %>% 
+  filter(eez_code %in% ACP_codes_africa$eez_id) %>% 
+  select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
+  group_by(flag, eez_code, eez_territory_name) %>% 
+  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T),
+            number_vessels = n_distinct(ssvid))
+
+dw_effort_final_pacific <- dw_effort_final %>% 
+  filter(eez_code %in% ACP_codes_pacific$eez_id) %>% 
+  select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
+  group_by(flag, eez_code, eez_territory_name) %>% 
+  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh, na.rm = T),
+            number_vessels = n_distinct(ssvid))
   
 
 ```

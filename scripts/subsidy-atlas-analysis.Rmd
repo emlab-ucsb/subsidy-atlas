@@ -625,6 +625,36 @@ centroid_coordinates_flag_edited <- centroid_coordinates_flag %>%
 
 ```
 
+```{r}
+### Simple Pacific centered EEZ's
+
+library(sf)
+library(rmapshaper)
+
+pacific_shapefile <- read_sf(dsn = here::here("data", "shapefiles", "World_EEZ_v9_20161021_HR_0_360"), layer = "World_EEZ_v9_2016_HR_0_360") %>%
+  ms_simplify() #%>% 
+  #st_transform(crs = 4326)
+    #dplyr::select(assessid, shp_source, geometry)
+
+
+
+leaflet() %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = pacific_lowres, 
+                  fillColor = "slateblue",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = ("Africa"))
+
+
+```
+
+
 We then match these centroids to each of our top flag states, as well as all EEZs in which DW vessels from these states fish. 
 
 ```{r}
