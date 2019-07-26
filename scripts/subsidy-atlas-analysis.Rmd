@@ -118,7 +118,7 @@ ucsb_project <-  "ucsb-gfw"
 #gfw_project <- "world-fishing-827"
 
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- T
+rerun_gfw <- F
 
 # Choose analysis year (2012 - 2018)
 analysis_year <- 2018
@@ -1121,7 +1121,7 @@ eezmaptheme <- theme_minimal()+
   # Load local data instead of rerunning global fishing watch pull 
   } else{
   
-  eez_effort <- read_csv(paste0(eez_dat_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
+  eez_effort <- read_csv(paste0(eez_results_app_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
     
   }
 

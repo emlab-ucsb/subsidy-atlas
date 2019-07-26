@@ -22,6 +22,7 @@ library(leaflet)
 
 library(tidyverse)
 library(sf)
+library(png)
 
 ### Source UI files ###
 
@@ -40,7 +41,7 @@ ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
   na.omit()
 
 # Load spatial data frame with lines linking countries and EEZs
-connectivity_data <- read_sf("./data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
+connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") %>% 
   rename(eez_territory_iso3 = ez_tr_3) 
 
 ### Shapefiles ###
@@ -415,15 +416,19 @@ server <- shinyServer(function(input, output, session) {
     country_map_filtered_africa <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)
     
+  
+    
     #  Hover Text
     flag_subsidy_atlas_text_africa <- paste0(
-      "<b>","State: ", country_map_filtered_africa$cntry_l,
+      "<b>","State: ",  country_map_filtered_africa$cntry_l,
       "<br/>",
-      "<b>", "# of Vessels: ", format(round(dw_effort_final_africa$number_vessels, 0), big.mark = ","), # Not matching up
+      "<b>", "# of Vessels: ", connectivity_data_filter_africa$vessels , #format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","), # Not matching up
       "</br>",
-      "<b>", "Fishing hours per year in EEZ: ",  format(round(dw_effort_final_africa$fishing_hours, 0), big.mark = ","), # not matching up
+      "<b>", "Capacity of fishing vessels: ",  format(round(connectivity_data_filter_africa$capacty, 0), big.mark = ","), # not matching up
       "</br>",
-      "<b>", "Fishing kwhr in EEZ: ", format(round(dw_effort_final_africa$fishing_KWh, 0), big.mark = ","))  %>% # not matching up
+      "<b>", "Fishing hours per year in EEZ: ",  format(round(connectivity_data_filter_africa$fshng_h, 0), big.mark = ","), # not matching up
+      "</br>",
+      "<b>", "Fishing kwhr in EEZ: ", format(round(connectivity_data_filter_africa$fshn_KW, 0), big.mark = ","))  %>% # not matching up
       lapply(htmltools::HTML)
     
     
@@ -474,6 +479,27 @@ server <- shinyServer(function(input, output, session) {
   
   })
   
+  output$africa_heat_map <- renderImage({
+
+    #Require EEZ selection
+    input <- req(input$africa_eez_select)
+    input <- req(input$africa_eez_select != "Select an EEZ...")
+    
+    
+
+    # Data
+    eez_subsidy_heatmap <- readPNG("SubsidyAtlasACP/data/eez_results/ACP/figures/8313_VUT_EEZ_connectivity_map.png")
+
+
+    # Generate the PNG
+    png(eez_subsidy_heatmap, width = 100, height = 100)
+    #hist(rnorm(input$obs), main = "Generated in renderImage()")
+    #dev.off()
+
+    #effort_map <- readPNG()
+
+  })
+  
   # observe({
   #   click <- input$africa_connection_map_shape_click
   #   if(is.null(click))
@@ -494,7 +520,7 @@ server <- shinyServer(function(input, output, session) {
   output$africa_summary_text <- renderUI({
     
     connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
-      dplyr::filter(eez_cod == input$africa_eez_select)
+      dplyr::filter(eez_cod == input$africa_eez_select) 
     
     country_map_filtered_africa <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)  
@@ -503,9 +529,9 @@ server <- shinyServer(function(input, output, session) {
     req(input$africa_connection_map_shape_click)
     
     if (is.null(click)) return()
-    text2 <- paste0("<b>","State: ", country_map_filtered_africa$cntry_l,
+    text2 <- paste0("<b>","State: ", #country_map_filtered_africa$cntry_l,
            "<br/>",
-           "<b>", "# of Vessels: ", format(round(dw_effort_final_africa$number_vessels, 0), big.mark = ","),
+           "<b>", "# of Vessels: ", #format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","),
            "</br>",
            "<b>", "Fishing hours per year in EEZ: ######",
            "</br>",
@@ -514,71 +540,6 @@ server <- shinyServer(function(input, output, session) {
   })
   
   
-  
-    
-      
-      # paste0("fish")  %>%
-      #   lapply(htmltools::HTML)
-
-
-    
-
-    
-  
-    
-    # output$africa_summary_text <- renderUI({ 
-    #   
-    #   paste0("flag")
-    #   
-    # })
-    
-    
-
-
-      
-      # output$africa_summary_text <- renderUI({
-      #   if (is.null(click)) return("fish")
-      #   paste0("<b>","State: ",
-      #                    "<br/>",
-      #                    "<b>", "# of Vessels: #####",
-      #                    "</br>",
-      #                    "<b>", "Fishing hours per year in EEZ: ######",
-      #                    "</br>",
-      #                    "<b>", "Fishing kwhr in EEZ: ######")  %>%
-      #               lapply(htmltools::HTML)
-      # })
-      
-
-      
-      # textInput('fish',
-      #            label = "Fish",
-      #            value = click)
-      
-            
-      
-      
-    # })
-    
-  
-    # output$africa_summary_text <- renderUI({
-    # 
-    #   ### Based on where the user clicks, produce summary stats at bottom
-    #   observeEvent(input$africa_connection_map_shape_click, {
-    #     p <- input$africa_connection_map_click
-    #     renderUI(p)
-    # 
-    # })
-    #   
-      
-      
-      
-      
-      
-    
-  
-  
-  
-    
    #close render leaflet
   
   
@@ -780,7 +741,7 @@ server <- shinyServer(function(input, output, session) {
   
   ### Leaflet Version of EEZ Connectivity Map
   ACP_codes %>% 
-    select(eez_id)
+    dplyr::select(eez_id)
   
   output$leaflet_map <- renderLeaflet({
     

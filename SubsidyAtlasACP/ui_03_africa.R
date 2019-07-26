@@ -57,18 +57,39 @@ africa = function(eez_choices)
            
            ),
       #  
-      column(12, stlye = "padding: 0px;",
+      column(12, style = "padding: 0px;",
              
              leafletOutput("africa_connection_map", width = "auto", height = "80vh")
       ),
     
+    conditionalPanel(
+      condition = "input.africa_eez_select.length > 0", 
+      
+      column(12, style = "padding: 10px 25px 0px;",
+             imageOutput("africa_heat_map", width = "auto")
+             
+      )),
+    
+    # column(12, style = "padding: 0px;",
+    # 
+    #        imageOutput("africa_heat_map", width = "100", height = "100")
+    # 
+    #        ),
+  
+    
+    
+    
     fluidRow(uiOutput("africa_summary_text")
+           
+           
              
              
              
     )
     
+    
+    
   
   
- ) # close fluidrow
+ ) # close fluidpage
 
