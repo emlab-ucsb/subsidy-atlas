@@ -57,6 +57,21 @@ caribbean = function(caribbean_eez_choices)
            leafletOutput("caribbean_connection_map", width = "auto", height = "80vh")
     ),
     
+    column(12, style = "padding: 15px 25px; background-color: #262626;",
+           
+           plotOutput("caribbean_subsidy_map", width = "100%")
+           
+    ),
+    
+    
+    column(12, style = "padding: 15px 25px; background-color: #262626;",
+           
+           plotOutput("caribbean_effort_map", width = "100%")
+           
+    ),
+    
+    
+    
     fluidRow(uiOutput("caribbean_summary_text")
              
     )

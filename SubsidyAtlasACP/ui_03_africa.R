@@ -72,13 +72,12 @@ africa = function(africa_eez_choices)
              
       ),
     
-    conditionalPanel(
-      condition = "input.africa_eez_select.length > 0", 
-      
-      column(12, style = "padding: 0px 25px;",
-             plotOutput("africa_effort_map", width = "auto")
+    
+      column(12, style = "padding: 15px 25px; background-color: #262626;",
              
-      )),
+             plotOutput("africa_effort_map", width = "100%")
+             
+      ),
     
     # column(12, style = "padding: 0px;",
     # 

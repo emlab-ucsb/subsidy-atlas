@@ -57,6 +57,21 @@ pacific = function(pacific_eez_choices)
            leafletOutput("pacific_connection_map", width = "auto", height = "80vh")
     ),
     
+    ##Heat Maps
+    
+    column(12, style = "padding: 15px 25px; background-color: #262626;",
+           
+           plotOutput("pacific_subsidy_map", width = "100%")
+           
+    ),
+    
+    
+    column(12, style = "padding: 15px 25px; background-color: #262626;",
+           
+           plotOutput("pacific_effort_map", width = "100%")
+           
+    ),
+    
     fluidRow(uiOutput("pacific_summary_text")
              
              
