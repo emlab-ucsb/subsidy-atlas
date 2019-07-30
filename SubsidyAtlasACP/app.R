@@ -71,6 +71,7 @@ names(ACP_choices) <- unique(ACP_codes$flag)
 africa_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Africa"]  
 names(africa_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Africa"]
 
+
 caribbean_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Caribbean"]  
 names(caribbean_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Caribbean"]
 
@@ -479,25 +480,123 @@ server <- shinyServer(function(input, output, session) {
   
   })
   
-  output$africa_heat_map <- renderImage({
+  ## Heat maps
+  
+  output$africa_subsidy_map <- renderPlot({
+    
+    #browser()
 
     #Require EEZ selection
-    input <- req(input$africa_eez_select)
-    input <- req(input$africa_eez_select != "Select an EEZ...")
+    req(input$africa_eez_select)
+    req(input$africa_eez_select != "Select an EEZ...")
     
     
 
     # Data
-    eez_subsidy_heatmap <- readPNG("SubsidyAtlasACP/data/eez_results/ACP/figures/8313_VUT_EEZ_connectivity_map.png")
+     #eez_effort_africa <- read_csv(paste0(eez_results_app_dir, input$africa_eez_select, "_", input$names(africa_eez_select), "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")  
+    #   as.data.frame()
+    
+     eez_effort_africa <- read_csv(paste0(eez_results_app_dir, "8396_ZAF_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")  
+       #as.data.frame()
+    
+     #eez_effort_africa <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ_effort_subs_by_flag.csv") 
+    
+    #a <- selectedData(read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ_effort_subs_by_flag.csv"))
+      
 
 
-    # Generate the PNG
-    png(eez_subsidy_heatmap, width = 100, height = 100)
-    #hist(rnorm(input$obs), main = "Generated in renderImage()")
-    #dev.off()
-
-    #effort_map <- readPNG()
-
+    # #Gemerate plot
+    # 
+    #  ### Make Plots 
+    #  # Get quantiles of data for scale limits
+       eez_effort_aggregated_africa <- eez_effort_africa %>%
+         group_by(year, eez_code, lon_cen, lat_cen) %>%
+         summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                   fishing_KWh = sum(fishing_KWh, na.rm = T),
+                   subs = sum(subs, na.rm = T)) %>%
+         mutate(subsidy_intensity = subs/fishing_KWh)
+    #  
+    # # # # Quantiles
+      intensity_quantile <- quantile(eez_effort_aggregated_africa$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+      scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+    #  
+    # # # # Set map limits for filtering global country map and eez map appropriately
+      x_lim <- c(min(eez_effort_aggregated_africa$lon_cen) - 0.5, max(eez_effort_aggregated_africa$lon_cen) + 0.5)
+      y_lim <- c(min(eez_effort_aggregated_africa$lat_cen) - 0.5, max(eez_effort_aggregated_africa$lat_cen) + 0.5)
+    #  
+    # # Map of subsidy intensity
+      ggplot(eez_effort_aggregated_africa)+
+        geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+        geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+         geom_tile(data = eez_effort_aggregated_africa, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
+         eezmaptheme +
+         scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+                              limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
+                              labels=scale_labels,
+                              breaks=scale_labels,
+                              oob=scales::squish)+
+         labs(x = "", y = "")+
+         coord_sf(xlim = x_lim, ylim = y_lim)+
+         guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+         scale_x_continuous(expand = c(0,0))+
+         scale_y_continuous(expand = c(0,0))
+    
+  
+  })
+  
+  output$africa_effort_map <- renderPlot({
+    
+    #browser()
+    
+    #Require EEZ selection
+    req(input$africa_eez_select)
+    req(input$africa_eez_select != "Select an EEZ...")
+    
+    
+    
+    # Data
+    #eez_effort_africa <- read_csv(paste0(eez_results_app_dir, input$africa_eez_select, "_", input$names(africa_eez_select), "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")  
+    #   as.data.frame()
+    
+    eez_effort_africa <- read_csv(paste0(eez_results_app_dir, "8396_ZAF_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")  
+    
+    
+    # #Gemerate plot
+    # 
+    #  ### Make Plots 
+    #  # Get quantiles of data for scale limits
+    eez_effort_aggregated_africa <- eez_effort_africa %>%
+      group_by(year, eez_code, lon_cen, lat_cen) %>%
+      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                fishing_KWh = sum(fishing_KWh, na.rm = T),
+                subs = sum(subs, na.rm = T)) %>%
+      mutate(subsidy_intensity = subs/fishing_KWh)
+    #  
+    # # # # Quantiles
+    intensity_quantile <- quantile(eez_effort_aggregated_africa$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+    #  
+    # # # # Set map limits for filtering global country map and eez map appropriately
+    x_lim <- c(min(eez_effort_aggregated_africa$lon_cen) - 0.5, max(eez_effort_aggregated_africa$lon_cen) + 0.5)
+    y_lim <- c(min(eez_effort_aggregated_africa$lat_cen) - 0.5, max(eez_effort_aggregated_africa$lat_cen) + 0.5)
+    #  
+    
+    # ## Map of effort intensity
+    
+    
+    # Labels for the log scale 
+    ggplot()+
+      geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      geom_tile(data = eez_effort_aggregated_africa, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
+      eezmaptheme +
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim) +
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))
+    
   })
   
   # observe({
@@ -859,7 +958,7 @@ server <- shinyServer(function(input, output, session) {
       geom_sf(data = land_map %>% dplyr::filter(iso3 %in% connectivity_data_filter$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
       geom_sf(data = eez_map %>% dplyr::filter(ez_hs_c == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
       geom_sf(col = "darkgoldenrod", size = 0.25) +
-      maptheme+
+      #maptheme+
       coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))

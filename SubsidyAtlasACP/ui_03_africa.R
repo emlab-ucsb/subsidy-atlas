@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-africa = function(eez_choices)
+africa = function(africa_eez_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
 
     # Top header
@@ -28,7 +28,7 @@ africa = function(eez_choices)
                   
                   selectizeInput("africa_eez_select",
                                  label = NULL,
-                                 choices = c("Select an EEZ...", eez_choices),
+                                 choices = c("Select an EEZ...", africa_eez_choices),
                                  selected = "Select an EEZ...",
                                  width = "100%",
                                  options = list(placeholder = 'Select...'))
@@ -62,11 +62,26 @@ africa = function(eez_choices)
              leafletOutput("africa_connection_map", width = "auto", height = "80vh")
       ),
     
+    
+      # column(12, style = "padding: 10px 25px 0px;",
+      #        
+      #        plotOutput("africa_heat_map", width = "auto")
+      #        
+      # ),
+    
     conditionalPanel(
       condition = "input.africa_eez_select.length > 0", 
       
-      column(12, style = "padding: 10px 25px 0px;",
-             imageOutput("africa_heat_map", width = "auto")
+      column(12, style = "padding: 0px 25px;",
+             plotOutput("africa_subsidy_map", width = "auto")
+             
+      )),
+    
+    conditionalPanel(
+      condition = "input.africa_eez_select.length > 0", 
+      
+      column(12, style = "padding: 0px 25px;",
+             plotOutput("africa_effort_map", width = "auto")
              
       )),
     

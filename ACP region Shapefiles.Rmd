@@ -11,11 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-connectivity_data <- read_sf("SubsidyAtlasACP/data/ACP_eez_results/ACP_eez_mapping_wlines.shp") %>% 
-  rename(eez_territory_iso3 = ez_tr_3) 
+connectivity_data <- read_sf("SubsidyAtlasACP/data/eez_results/ACP/eez_mapping_with_lines.shp")  
+  
+ACP_codes <- read_csv("SubsidyAtlasACP/data/ACP_eez_codes.csv")
 
-samoa <- connectivity_data %>% 
-  filter(eez_territory_iso3 == "WSM")
+africa_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Africa"]  
+names(africa_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Africa"]
+
+
 
 ACP_codes_africa <- ACP_codes %>% 
   filter(region == "Africa")
@@ -27,7 +30,7 @@ ACP_codes_pacific <- ACP_codes %>%
   filter(region == "Pacific")
 
 # EEZ map
-eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326) 
 
 EEZ_map_filterAfrica <- EEZ_map %>% 
@@ -96,38 +99,38 @@ library(leaflet)
 library(RColorBrewer)
 
 
-leaflet() %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
-      addPolygons(data = ab, 
-                  fillColor = "slateblue",
-                  fillOpacity = 0.8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = ("Africa")) %>%
-      addPolygons(data = cb, 
-                  fillColor = "seagreen",
-                  fillOpacity = 8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = ("Caribbean")) %>% 
-    addPolygons(data = pb, 
-                  fillColor = "coral",
-                  fillOpacity = 8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = ("Pacific")) #%>% 
+# leaflet() %>% 
+#       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+#       addPolygons(data = ab, 
+#                   fillColor = "slateblue",
+#                   fillOpacity = 0.8,
+#                   color= "white",
+#                   weight = 0.3,
+#                   highlight = highlightOptions(weight = 5,
+#                                                color = "#666",
+#                                                fillOpacity = 1,
+#                                                bringToFront = TRUE),
+#                   label = ("Africa")) %>%
+#       addPolygons(data = cb, 
+#                   fillColor = "seagreen",
+#                   fillOpacity = 8,
+#                   color= "white",
+#                   weight = 0.3,
+#                   highlight = highlightOptions(weight = 5,
+#                                                color = "#666",
+#                                                fillOpacity = 1,
+#                                                bringToFront = TRUE),
+#                   label = ("Caribbean")) %>% 
+#     addPolygons(data = pb, 
+#                   fillColor = "coral",
+#                   fillOpacity = 8,
+#                   color= "white",
+#                   weight = 0.3,
+#                   highlight = highlightOptions(weight = 5,
+#                                                color = "#666",
+#                                                fillOpacity = 1,
+#                                                bringToFront = TRUE),
+#                   label = ("Pacific")) #%>% 
   # observe({
   #       click <- input$livemap_shape_click
   #       if(is.null(click))
@@ -147,51 +150,31 @@ leaflet() %>%
 
 land_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "EEZ_land_union_v2_201410"), layer = "EEZ_land_v2_201410")
 
-leaflet() %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
-      addPolygons(data = land_eez_map, 
-                  fillColor = "slateblue",
-                  fillOpacity = 0.8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE))
-                  
+# leaflet() %>% 
+#       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+#       addPolygons(data = land_eez_map, 
+#                   fillColor = "slateblue",
+#                   fillOpacity = 0.8,
+#                   color= "white",
+#                   weight = 0.3,
+#                   highlight = highlightOptions(weight = 5,
+#                                                color = "#666",
+#                                                fillOpacity = 1,
+#                                                bringToFront = TRUE))
+#                   
 
 
 ```
 
-```{r}
 
-ACP_codes <- read_csv("SubsidyAtlasACP/data/ACP_eez_codes.csv") %>%
-  na.omit()
-
-ACP_codes %>% 
-    select(eez_id)
-
-ACP_codes <- eez_map %>% 
-      dplyr::filter(mrgid %in% ACP_codes$eez_id)
-
-dominica <- dw_effort_final %>% 
-  filter(eez_territory_iso3 == "DMA")
-
-cuba <-dw_effort_final %>% 
-  filter(eez_territory_iso3 == "CUB")
-
-belize <- dw_effort_final %>% 
-  filter(eez_territory_iso3 == "BLZ")
-
-```
 
 ```{r}
 
-land_map <- read_sf(dsn = "SubsidyAtlasACP/data/world_happy_180", layer="world_happy_180") %>%
+country_map <- read_sf(dsn = "SubsidyAtlasACP/data/world_happy_180", layer="world_happy_180") %>%
   st_transform(crs = 4326)
 
-connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
-      dplyr::filter(eez_cod == "8478")
+connectivity_data_filter_africa_2 <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8396")
     
 country_map_filtered_africa <- land_map %>% 
   dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag) %>% 
@@ -227,6 +210,167 @@ dw_effort_final_pacific <- dw_effort_final %>%
             fishing_KWh = sum(fishing_KWh, na.rm = T),
             number_vessels = n_distinct(ssvid))
   
+dw_effort_CPV <- dw_effort_final_africa %>% 
+  filter (eez_code == "8362")
+
+```
+
+```{r}
+
+## HEat maps
+
+eez_effort <- read_csv(paste0(eez_results_app_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
+
+eez_effort_VUT <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ_effort_subs_by_flag.csv")
+
+
+
+### Make Plots 
+  # Get quantiles of data for scale limits
+  eez_effort_aggregated_VUT <- eez_effort_VUT %>%
+    group_by(year, eez_code, lon_cen, lat_cen) %>%
+    summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+              fishing_KWh = sum(fishing_KWh, na.rm = T),
+              subs = sum(subs, na.rm = T)) %>%
+    mutate(subsidy_intensity = subs/fishing_KWh) %>% 
+    rename(lng = lon_cen) %>% 
+    rename(lat = lat_cen)
+  
+  # Quantiles
+  intensity_quantile <- quantile(eez_effort_aggregated_VUT$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+  scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+  
+  # Set map limits for filtering global country map and eez map appropriately
+  x_lim <- c(min(eez_effort_aggregated_VUT$lon_cen) - 0.5, max(eez_effort_aggregated_VUT$lon_cen) + 0.5)
+  y_lim <- c(min(eez_effort_aggregated_VUT$lat_cen) - 0.5, max(eez_effort_aggregated_VUT$lat_cen) + 0.5)
+  
+  # Map of subsidy intensity
+  eez_subsidy_plot_VUT <- ggplot()+
+    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_raster(data = eez_effort_aggregated_VUT, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
+    eezmaptheme +
+    scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+                         limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
+                         labels=scale_labels,
+                         breaks=scale_labels,
+                         oob=scales::squish)+
+    labs(x = "", y = "")+
+    coord_sf(xlim = x_lim, ylim = y_lim)+
+    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+    scale_x_continuous(expand = c(0,0))+
+    scale_y_continuous(expand = c(0,0))
+  
+eez_subsidy_plot_VUT
+  
+  ggsave(eez_subsidy_plot, filename = paste0(eez_figures_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_subsidy_map.png"), width = 10, units = "in")
+  
+  # Labels for the log scale 
+  eez_effort_plot <- ggplot()+
+    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_raster(data = eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
+    eezmaptheme +
+    scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+    labs(x = "", y = "")+
+    coord_sf(xlim = x_lim, ylim = y_lim) +
+    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+    scale_x_continuous(expand = c(0,0))+
+    scale_y_continuous(expand = c(0,0))
+  
+  ggsave(eez_effort_plot, filename = paste0(eez_figures_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_map.png"), width = 10, units = "in")
+
+
+
+```
+
+
+```{r}
+
+s = SpatialPixelsDataFrame(eez_effort_aggregated_VUT[,c('lon_cen', 'lat_cen')], data = eez_effort_aggregated_VUT)
+crs(s) = sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+
+# Quantiles
+  intensity_quantile <- quantile(eez_effort_aggregated_VUT$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+  scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+  
+  # Set map limits for filtering global country map and eez map appropriately
+  x_lim <- c(min(eez_effort_aggregated_VUT$lon_cen) - 0.5, max(eez_effort_aggregated_VUT$lon_cen) + 0.5)
+  y_lim <- c(min(eez_effort_aggregated_VUT$lat_cen) - 0.5, max(eez_effort_aggregated_VUT$lat_cen) + 0.5)
+
+val = as.numeric(c(eez_effort_aggregated_VUT$subsidy_intensity))  
+pal = colorNumeric(c("yellow", "orange", "red"), intensity_quantile,
+                na.color = "transparent")
+
+
+
+r <- raster(s)
+
+pal <- colorNumeric(
+  palette = "YlGnBu",
+  domain = eez_effort_aggregated_VUT$subsidy_intensity)
+
+leaflet(eez_effort_aggregated_VUT) %>% 
+  addProviderTiles("CartoDB.DarkMatterNoLabels") %>%
+  # addHeatmap(eez_effort_aggregated_VUT, lng = ~lng, lat = ~lat, intensity = ~subsidy_intensity,
+  #   layerId = NULL, group = NULL, minOpacity = 1, max = 1,
+  #   radius = 10, blur = 0, gradient = NULL, cellSize = NULL) %>% 
+  addHeatmap(lng = ~lng, lat = ~lat, intensity = ~subsidy_intensity, blur = 1, max = 10, radius = 10, cellSize = 1, gradient=  rev(RColorBrewer::brewer.pal(3,"YlGnBu")))
+  #addCSVHeatmap(eez_effort_aggregated_VUT, csv, csvParserOptions())
+  #addWebGLHeatmap(size=20, units = 'px')
+      #addRasterImage(r, colors = pal, opacity = 0.8) %>% 
+      #addLegend(pal = pal, values = val, title = "Subsidies")
+
+#data = eez_effort_aggregated_VUT, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity
+      
+    
+
+```
+
+```{r}
+
+eez_effort_africa <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ_effort_subs_by_flag.csv") %>% 
+      as.data.frame()
+
+
+    #Gemerate plot
+    
+     ### Make Plots 
+     # Get quantiles of data for scale limits
+     eez_effort_aggregated_africa <- eez_effort_africa %>%
+       group_by(year, eez_code, lon_cen, lat_cen) %>%
+       summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                 fishing_KWh = sum(fishing_KWh, na.rm = T),
+                 subs = sum(subs, na.rm = T)) %>%
+       mutate(subsidy_intensity = subs/fishing_KWh)
+     
+     
+     # # # Quantiles
+     intensity_quantile <- quantile(eez_effort_aggregated_africa$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+     scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+     
+    # # # Set map limits for filtering global country map and eez map appropriately
+     x_lim <- c(min(eez_effort_aggregated_africa$lon_cen) - 0.5, max(eez_effort_aggregated_africa$lon_cen) + 0.5)
+     y_lim <- c(min(eez_effort_aggregated_africa$lat_cen) - 0.5, max(eez_effort_aggregated_africa$lat_cen) + 0.5)
+     
+    # Map of subsidy intensity
+    Africa_eez_subsidy_plot <- ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      geom_raster(data = eez_effort_aggregated_africa, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
+      eezmaptheme +
+      scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+                           limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
+                           labels=scale_labels,
+                           breaks=scale_labels,
+                           oob=scales::squish)+
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim)+
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))
+    
+    plot(Africa_eez_subsidy_plot)
 
 ```
 
