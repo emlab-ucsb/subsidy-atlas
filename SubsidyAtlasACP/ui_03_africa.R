@@ -46,10 +46,6 @@ africa = function(africa_eez_choices)
           
     
     #   ## Leaflet map of ACP EEZs
-    
-    # conditionalPanel(
-    #   condition = "input.africa_eez_select.length > 0",
-    
     column(12, style = "padding: 10px 25px;",
            
            # Header and text
@@ -69,13 +65,12 @@ africa = function(africa_eez_choices)
       #        
       # ),
     
-    conditionalPanel(
-      condition = "input.africa_eez_select.length > 0", 
-      
-      column(12, style = "padding: 0px 25px;",
-             plotOutput("africa_subsidy_map", width = "auto")
+
+      column(12, style = "padding: 15px 25px; background-color: #262626;",
              
-      )),
+             plotOutput("africa_subsidy_map", width = "100%")
+             
+      ),
     
     conditionalPanel(
       condition = "input.africa_eez_select.length > 0", 
