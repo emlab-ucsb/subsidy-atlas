@@ -1,0 +1,95 @@
+---
+title: "Shapefile wrangling for the ACP app"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(sf)
+library(here)
+library(rmapshaper)
+library(mapview)
+library(tidyverse)
+library(countrycode)
+
+```
+
+## Introduction
+
+This script details the analysis/wrangling done to create shapefiles for use in the ACP tool.
+
+## EEZs 
+
+We use Version 10 of the World Maritime Boundaries (World EEZs - 2018) from Marineregions.org, last downloaded on July 31, 2019. 
+
+> Flanders Marine Institute (2018). Maritime Boundaries Geodatabase: Maritime Boundaries and Exclusive Economic Zones (200NM), version 10. Available online at http://www.marineregions.org/ https://doi.org/10.14284/312
+
+Unfortunately, since both the Pacific and Western Africa are regions of interest, there isn't a standard shapefile in which all of the EEZs we need are in one piece. We therefore made our own shapefile, by pulling from both the -180 to 180 degree and 0 to 360 degree representations of the World EEZ shapefiles. 
+
+```{r}
+# Load list of ACP states
+acp_states <- read_csv(here::here("SubsidyAtlasACP", "data", "ACP_eez_codes.csv")) %>%
+  mutate(territory_fixed = countrycode::countrycode(territory_iso3, "iso3c", "country.name"))
+
+# Deal with join regime areas and overlapping claims
+joint_180 <- c(21797) # Sao Tome and Principe/Nigeria
+joint_360 <- c(21792) # Jamaica/Colombia
+
+overlap_180 <- c(33176, # Kenya/Somalia
+                 26582, # Sudan/Egypt
+                 48945, # Madagascar/France
+                 48946, # Mauritius/France
+                 48944) # Comores/France
+overlap_360 <- c(48948, # New Caledonia/Vanuatu
+                 48982, # Puerto Rico/Dominican Republic
+                 48971, # Columbia/Dominican Republic
+                 33185, # Guyana/Trinidad and Tobago
+                 48951) # Haiti/USA/Jamaica
+
+keep_eezs_180 <- c(unique(acp_states$mrgid[acp_states$shp_to_use == 180]), joint_180, overlap_180)
+keep_eezs_360 <- c(unique(acp_states$mrgid[acp_states$shp_to_use == 360]), joint_360, overlap_360)
+
+# Load eez shapefile (-180 to 180 degrees) and filter
+eez_180 <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "World_EEZ_v10_20180221"), layer = "eez_v10")
+
+eez_180_simple <- eez_180 %>%
+  setNames(tolower(names(.))) %>%
+  dplyr::filter(mrgid %in% keep_eezs_180) %>%
+  rmapshaper::ms_simplify()
+
+# Load eez shapefile (0 to 360 degrees)
+eez_360 <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "World_EEZ_v10_20180221_HR_0_360"), layer = "World_EEZ_v10_2018_0_360")
+  
+eez_360_simple <- eez_360 %>%
+  setNames(tolower(names(.))) %>%
+  dplyr::filter(mrgid %in% keep_eezs_360) %>%
+  rmapshaper::ms_simplify() %>%
+  dplyr::select(-cat)
+
+# Combine and export
+eez_combine <- eez_180_simple %>%
+  rbind(eez_360_simple)
+
+st_write(eez_combine, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_custom_ACP"), layer = "World_EEZ_v10_custom_ACP", driver = "ESRI Shapefile", delete_layer = T)
+
+```
+
+
+<!-- ## Regional blocks -->
+
+<!-- We first wanted to create shapefiles delimiting the boundaries of our ACP states by region. For this map, we decided it would be best to use merged land/EEZ boundaries in order to show the full extent of each region. The raw shapefiles used to create these was sourced from Marineregions.org (Marine and land zones: the union of world country boundaries and EEZs, Version 2 - 2014). This shapefile was last downloaded on July 31, 2019.  -->
+
+<!-- There are a couple of problems with using this this shapefile in 2019 that need to be corrected for: - The Gilbert Islands are assigned to the United States Minor Outlying Islands (instead of Kiribati) -->
+<!-- - The Phoenix Islands are assigned to the United States Minor OUtlying Islands (instead of Kiribati) and are still connected to xxx -->
+
+<!-- These corrections were made using Version 10 of the World Maritime Boundaries (World EEZs - 2018) from Marineregions.org.  -->
+
+```{r}
+# land_eez_shp <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "EEZ_land_union_v2_201410"), layer = "EEZ_land_v2_201410")
+# 
+# right_join(ACP_codes %>% na.omit(), by = c("ISO_3digit" = "territory_iso3")) %>%
+#       group_by(region) %>%
+#       summarize(geometry = st_union(geometry))
+
+```
