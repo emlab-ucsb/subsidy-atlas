@@ -55,8 +55,8 @@ source)
 
 # Load csv of ACP EEZ and iso3 codes
 ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
-  mutate(flag = countrycode(territory, ))
-  na.omit()
+  mutate(flag = countrycode(territory_iso3, "iso3c", "country.name")) 
+  #na.omit()
 
 # Load spatial data frame with lines linking countries and EEZs
 connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") 
@@ -75,7 +75,7 @@ land_map <- read_sf(dsn = "./data/world_happy_180", layer="world_happy_180") %>%
   st_transform(crs = 4326)
 
 # Combined land/EEZ shapefile 
-land_eez_map <- read_sf(dsn = "./data/EEZ_land_union_v2_201410", layer = "EEZ_land_v2_201410")
+land_eez_map <- read_sf(dsn = "./data/shapefiles_raw/EEZ_land_union_v2_201410", layer = "EEZ_land_v2_201410")
 
 
 ### Widget choice values that depend on a dataset ------------------------------
@@ -86,15 +86,15 @@ names(country_choices) <- unique(ACP_codes$flag)
 ACP_choices <- unique(ACP_codes$territory_iso3)  
 names(ACP_choices) <- unique(ACP_codes$flag)
 
-africa_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Africa"]  
-names(africa_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Africa"]
+africa_eez_choices <- ACP_codes$mrgid[ACP_codes$region == "Africa" & !is.na(ACP_codes$mrgid)]  
+names(africa_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Africa" & !is.na(ACP_codes$mrgid)]
 
 
-caribbean_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Caribbean"]  
-names(caribbean_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Caribbean"]
+caribbean_eez_choices <- ACP_codes$mrgid[ACP_codes$region == "Caribbean" & !is.na(ACP_codes$mrgid)]  
+names(caribbean_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Caribbean" & !is.na(ACP_codes$mrgid)]
 
-pacific_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Pacific"]
-names(pacific_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Pacific"]
+pacific_eez_choices <- ACP_codes$mrgid[ACP_codes$region == "Pacific" & !is.na(ACP_codes$mrgid)]
+names(pacific_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Pacific" & !is.na(ACP_codes$mrgid)]
 
 # ACP_codes_africa <- ACP_codes %>%
 #   filter(region == "Africa")  
@@ -354,7 +354,7 @@ server <- shinyServer(function(input, output, session) {
     
     # Filter data
     africa_eezs <- eez_map %>%
-      right_join(ACP_codes %>% dplyr::filter(region == "Africa"), by = c("mrgid" = "eez_id"))
+      right_join(ACP_codes %>% dplyr::filter(region == "Africa"), by = c("mrgid"))
     
     # Map
     leaflet('africa_map') %>% 
@@ -437,7 +437,7 @@ server <- shinyServer(function(input, output, session) {
     
     #Data filter
     ACP_codes <- eez_map %>% 
-      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+      dplyr::filter(mrgid %in% ACP_codes$mrgid)
     
     ACP_codes_filtered_africa <- ACP_codes %>% 
       dplyr::filter(mrgid == input$africa_eez_select)
@@ -736,7 +736,7 @@ server <- shinyServer(function(input, output, session) {
     
     # Filter data
     caribbean_eezs <- eez_map %>%
-      right_join(ACP_codes %>% dplyr::filter(region == "Caribbean"), by = c("mrgid" = "eez_id"))
+      right_join(ACP_codes %>% dplyr::filter(region == "Caribbean"), by = c("mrgid"))
     
     # Map
     leaflet('caribbean_map') %>% 
@@ -820,7 +820,7 @@ server <- shinyServer(function(input, output, session) {
     
     #Data filter
     ACP_codes <- eez_map %>% 
-      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+      dplyr::filter(mrgid %in% ACP_codes$mrgid)
     
     ACP_codes_filtered_caribbean <- ACP_codes %>% 
       dplyr::filter(mrgid == input$caribbean_eez_select)
@@ -1044,7 +1044,7 @@ server <- shinyServer(function(input, output, session) {
   
   ### Leaflet Version of EEZ Connectivity Map
   ACP_codes %>% 
-    dplyr::select(eez_id)
+    dplyr::select(mrgid)
   
   output$leaflet_map <- renderLeaflet({
     
@@ -1057,7 +1057,7 @@ server <- shinyServer(function(input, output, session) {
     #   dplyr::filter(eez_territory_iso3 == input$ACP_for_profile)
     
      ACP_codes <- eez_map %>% 
-       dplyr::filter(mrgid %in% ACP_codes$eez_id)
+       dplyr::filter(mrgid %in% ACP_codes$mrgid)
      
      ACP_codes_filtered <- ACP_codes %>% 
        dplyr::filter(ez_hs_c == input$ACP_for_profile)
@@ -1187,7 +1187,7 @@ server <- shinyServer(function(input, output, session) {
     
     # Filter data
     pacific_eezs <- eez_map %>%
-      right_join(ACP_codes %>% dplyr::filter(region == "Pacific"), by = c("mrgid" = "eez_id"))
+      right_join(ACP_codes %>% dplyr::filter(region == "Pacific"), by = c("mrgid"))
     
     
     
@@ -1274,7 +1274,7 @@ server <- shinyServer(function(input, output, session) {
     
     #Data filter
     ACP_codes <- eez_map %>% 
-      dplyr::filter(mrgid %in% ACP_codes$eez_id)
+      dplyr::filter(mrgid %in% ACP_codes$mrgid)
     
     ACP_codes_filtered_pacific <- ACP_codes %>% 
       dplyr::filter(mrgid == input$pacific_eez_select)
