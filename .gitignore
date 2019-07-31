@@ -9,4 +9,6 @@
 /results/eez_results/*
 /results/flag_state_results/*
 
+
 /SubsidyAtlasACP/data/shapefiles_raw/*
+/SubsidyAtlasACP/data/eez_results/ACP/figures/*

@@ -21,7 +21,8 @@ names(africa_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Africa"]
 
 
 ACP_codes_africa <- ACP_codes %>% 
-  filter(region == "Africa")
+  filter(region == "Africa") %>% 
+  rename(iso3 = territory_iso3)
 
 ACP_codes_caribbean <- ACP_codes %>% 
   filter(region == "Caribbean")
@@ -173,15 +174,71 @@ land_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "EEZ_land_un
 country_map <- read_sf(dsn = "SubsidyAtlasACP/data/world_happy_180", layer="world_happy_180") %>%
   st_transform(crs = 4326)
 
-connectivity_data_filter_africa_2 <- connectivity_data %>% # load this in up above
-      dplyr::filter(eez_cod == "8396")
-    
-country_map_filtered_africa <- land_map %>% 
-  dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag) %>% 
-  filter(iso3 == "ESP")
+country_map_filtered_africa_ZAF <- country_map %>% 
+  dplyr::filter(iso3 %in% connectivity_data_filter_africa_ZAF$flag) %>% 
+  rename(flag = iso3) %>% 
+  arrange((cntry_l))
 
-connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
-      dplyr::filter(eez_cod == 8419)
+connectivity_data_filter_africa_ZAF <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8396") 
+
+
+
+connectivity_data_filter_africa_ZAF4 <- connectivity_data_filter_africa_ZAF %>% 
+  mutate(cntry_l = (country_map_filtered_africa_ZAF$cntry_l)) #%>% 
+  #arrange(desc(flag))
+      #st_join(select(country_map_filtered_africa_ZAF, cntry_l), by = unique("flag"))
+    
+    connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod %in% ACP_codes_africa$eez_id) %>% 
+      arrange(ez_tr_3) %>% 
+      rename(territory_iso3 = ez_tr_3)
+      #mutate(total_vessels = sum(vessels))
+    
+    total_stats_africa <- connectivity_data_filter_africa %>% 
+        as.data.frame() %>% 
+        select(c("eez_cod", "territory_iso3", "vessels", "capacty", "fshng_h", "fshn_KW")) %>% 
+        group_by(eez_cod, territory_iso3) %>%
+        summarize(vessels = sum(vessels, na.rm = T),
+                  capacty = sum(capacty, na.rm = T),
+                  fshng_h = sum(fshng_h, na.rm = T),
+                  fshn_KW = sum(fshn_KW, na.rm = T)) %>% 
+      arrange(territory_iso3)
+    
+    connectivity_data_filter_africa_test <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8396") 
+    
+    # Total stats by EEZ
+    
+    total_stats_africa_test <- connectivity_data_filter_africa_test %>% 
+      as.data.frame() %>% 
+      select(c("eez_cod", "ez_tr_3", "vessels", "capacty", "fshng_h", "fshn_KW")) %>% 
+      group_by(eez_cod, ez_tr_3) %>%
+      summarize(vessels = sum(vessels, na.rm = T),
+                capacty = sum(capacty, na.rm = T),
+                fshng_h = sum(fshng_h, na.rm = T),
+                fshn_KW = sum(fshn_KW, na.rm = T)) #%>% 
+      #arrange(ez_tr_3)
+            
+    
+    
+    country_map_filtered_africa11 <- country_map %>% 
+      dplyr::filter(iso3 %in% connectivity_data_filter_africa11$flag) %>% 
+      rename(flag = iso3) %>% 
+      arrange(flag)
+    
+    country_final <- country_map_filtered_africa11 %>% 
+      #mutate(cntry_l = (country_map_filtered_africa11$cntry_l)) %>% 
+      mutate(vessels = (connectivity_data_filter_africa11$vessels)) %>% 
+      mutate(capacty = (connectivity_data_filter_africa11$capacty)) %>% 
+      mutate(fshn_KW = (connectivity_data_filter_africa11$fshn_KW)) %>% 
+      mutate(fshng_h = (connectivity_data_filter_africa11$fshng_h))
+      
+
+connectivity_data_filter_africa_ZAF <- conn %>% left_join(select(TableB, id, x), by = "id")
+
+connectivity_data_filter_suriname <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == 8461)
 
 country_map_filtered_caribbean <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag) 
@@ -189,29 +246,39 @@ country_map_filtered_caribbean <- land_map %>%
 dw_effort_final_caribbean <- dw_effort_final %>% 
   filter(eez_code %in% ACP_codes_caribbean$eez_id) %>% 
   select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
-  group_by(flag, eez_code, eez_territory_name) %>% 
-  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T),
-            number_vessels = n_distinct(ssvid))
+  group_by(flag, eez_code) #%>% 
+  # summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+  #           fishing_KWh = sum(fishing_KWh, na.rm = T),
+  #           number_vessels = n_distinct(ssvid))
+
+unique(dw_effort_final_caribbean$eez_territory_iso3)
+
 
 dw_effort_final_africa <- dw_effort_final %>% 
   filter(eez_code %in% ACP_codes_africa$eez_id) %>% 
   select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
-  group_by(flag, eez_code, eez_territory_name) %>% 
-  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T),
-            number_vessels = n_distinct(ssvid))
+  group_by(flag, eez_code, eez_territory_name) #%>% 
+  # summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+  #           fishing_KWh = sum(fishing_KWh, na.rm = T),
+  #           number_vessels = n_distinct(ssvid))
+
+unique(dw_effort_final_africa$eez_territory_iso3)
 
 dw_effort_final_pacific <- dw_effort_final %>% 
   filter(eez_code %in% ACP_codes_pacific$eez_id) %>% 
   select(c("flag","flag_name","ssvid", "eez_code", "eez_territory_iso3","eez_territory_name", "fishing_hours_year_eez", "fishing_KWh")) %>% 
-  group_by(flag, eez_code, eez_territory_name) %>% 
-  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T),
-            number_vessels = n_distinct(ssvid))
+  group_by(flag, eez_code, eez_territory_name) #%>% 
+  # summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+  #           fishing_KWh = sum(fishing_KWh, na.rm = T),
+  #           number_vessels = n_distinct(ssvid))
+
+unique(dw_effort_final_pacific$eez_territory_iso3)
   
 dw_effort_CPV <- dw_effort_final_africa %>% 
   filter (eez_code == "8362")
+
+dw_effort_test <- dw_effort_final %>% 
+  filter(eez_territory_iso3 == "LCA")
 
 ```
 
