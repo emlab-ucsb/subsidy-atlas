@@ -38,6 +38,7 @@ library(scales) # scales for plotting
 library(ggpubr) # plot arranging
 library(gridExtra)
 library(grid)
+library(countrycode)
 
 
 ### Source UI files ###
@@ -54,6 +55,7 @@ source)
 
 # Load csv of ACP EEZ and iso3 codes
 ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
+  mutate(flag = countrycode(territory, ))
   na.omit()
 
 # Load spatial data frame with lines linking countries and EEZs
