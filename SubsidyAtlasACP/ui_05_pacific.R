@@ -21,27 +21,35 @@ pacific = function(pacific_eez_choices)
                    includeHTML("./text/05_pacific_intro.html")
     ),
     
-    # Map and widget to select a country 
-    column(6, stlye = "padding: 0px;",
-           
-           column(12, style = "padding: 0 10px;",
-                  
-                  selectizeInput("pacific_eez_select",
-                                 label = NULL,
-                                 choices = c("Select an EEZ...", pacific_eez_choices),
-                                 selected = "Select an EEZ...",
-                                 width = "100%",
-                                 options = list(placeholder = 'Select...'))
-                  
-           ),
-           
-           column(12, style = "padding: 0",
-                  
-                  leafletOutput("pacific_map", width = "auto", height = "40vh")
-                  
-           )
-           
-    ),
+    fluidRow(
+        # Map and widget to select a country 
+        column(6, style = "padding: 0px;",
+               
+               column(12, style = "padding: 0 10px;",
+                      
+                      selectizeInput("pacific_eez_select",
+                                     label = NULL,
+                                     choices = c("Select an EEZ...", pacific_eez_choices),
+                                     selected = "Select an EEZ...",
+                                     width = "100%",
+                                     options = list(placeholder = 'Select...'))
+                      
+               ),
+               
+               column(12, style = "padding: 0",
+                      
+                      leafletOutput("pacific_map", width = "auto", height = "40vh")
+                      
+               )
+          ), #close column 
+        
+        column(6, style = "padding: 0px",
+               
+               uiOutput("pacific_summary_text")
+               
+          ) #close column
+        
+        ), #close fluid row
     
     #   ## Leaflet map of ACP EEZs
     
@@ -52,30 +60,28 @@ pacific = function(pacific_eez_choices)
            
     ),
     #  
-    column(12, stlye = "padding: 0px;",
+    column(12, style = "padding: 0px;",
            
            leafletOutput("pacific_connection_map", width = "auto", height = "80vh")
     ),
     
     ##Heat Maps
     
-    column(12, style = "padding: 15px 25px; background-color: #262626;",
-           
-           plotOutput("pacific_subsidy_map", width = "100%")
-           
-    ),
+    fluidRow(
+    
+        column(6, style = "padding: 15px 25px; background-color: #262626;",
+               
+               plotOutput("pacific_subsidy_map", width = "100%")
+               
+        ),
+        
+        
+        column(6, style = "padding: 15px 25px; background-color: #262626;",
+               
+               plotOutput("pacific_effort_map", width = "100%")
+        )      
+        ) #close fluid row
     
     
-    column(12, style = "padding: 15px 25px; background-color: #262626;",
-           
-           plotOutput("pacific_effort_map", width = "100%")
-           
-    ),
-    
-    fluidRow(uiOutput("pacific_summary_text")
-             
-             
-             
-    )
     
   ) #close fluid page

@@ -20,9 +20,10 @@ africa = function(africa_eez_choices)
            includeHTML("./text/03_africa_intro.html")
            
     ), 
-    
+  
+  fluidRow(  
     # Map and widget to select a country 
-    column(6, stlye = "padding: 0px;",
+    column(6, style = "padding: 0px;",
            
            column(12, style = "padding: 0 10px;",
                   
@@ -43,7 +44,16 @@ africa = function(africa_eez_choices)
            
     ), # close column
     
-          
+    column(6, style = "padding: 0px",
+           
+           uiOutput("africa_summary_text")
+           
+           ) #close column
+    
+    
+  ), #close fluid row 
+  
+  fluidRow(
     
     #   ## Leaflet map of ACP EEZs
     column(12, style = "padding: 10px 25px;",
@@ -58,26 +68,34 @@ africa = function(africa_eez_choices)
              leafletOutput("africa_connection_map", width = "auto", height = "80vh")
       ),
     
+    column(12, style = "padding: 0px",
+           
+           uiOutput("africa_flag_summary_text")
+           
+    ) #close column
     
+  ), 
       # column(12, style = "padding: 10px 25px 0px;",
       #        
       #        plotOutput("africa_heat_map", width = "auto")
       #        
       # ),
     
-
-      column(12, style = "padding: 15px 25px; background-color: #262626;",
+    
+  fluidRow(
+      column(6, style = "padding: 15px 25px; background-color: #262626;",
              
-             plotOutput("africa_subsidy_map", width = "100%")
+             plotOutput("africa_subsidy_map", width = "auto")
              
       ),
     
     
-      column(12, style = "padding: 15px 25px; background-color: #262626;",
+      column(6, style = "padding: 15px 25px; background-color: #262626;",
              
-             plotOutput("africa_effort_map", width = "100%")
+             plotOutput("africa_effort_map", width = "auto")
+      )
              
-      ),
+      )#,
     
     # column(12, style = "padding: 0px;",
     # 
@@ -88,13 +106,13 @@ africa = function(africa_eez_choices)
     
     
     
-    fluidRow(uiOutput("africa_summary_text")
+    #fluidRow(uiOutput("africa_summary_text")
            
            
              
              
              
-    )
+    
     
     
     

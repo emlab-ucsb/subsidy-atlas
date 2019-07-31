@@ -57,8 +57,8 @@ ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
   na.omit()
 
 # Load spatial data frame with lines linking countries and EEZs
-connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") %>% 
-  rename(eez_territory_iso3 = ez_tr_3) 
+connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") 
+   
 
 ### Shapefiles ###
 
@@ -105,7 +105,7 @@ eezmaptheme <- theme_minimal()+
         panel.grid.major = element_line(colour = "grey27"),
         text = element_text(color = "white"),
         plot.title = element_text(hjust = 0.5),
-        panel.border = element_rect(color = "white", fill = NA),
+        panel.border = element_rect(color = "grey27", fill = NA),
         plot.margin = margin(t = 0, r = 0.1, b = 0, l = 0, unit = "cm"),
         legend.margin = margin(t = 0.1, r = 0, b = 0.1, l = 0, unit = "cm"),
         legend.position = "bottom",
@@ -418,6 +418,7 @@ server <- shinyServer(function(input, output, session) {
                                                                    color = "#666",
                                                                    fillOpacity = 1,
                                                                    bringToFront = TRUE),
+                                      #layerId = ACP_codes_filtered_africa$territory_iso3,
                                       group = "highlighted_eez") %>%
         setView(lng=selected_eez$x_1, lat=selected_eez$y_1, zoom=4)
     }
@@ -439,27 +440,40 @@ server <- shinyServer(function(input, output, session) {
     ACP_codes_filtered_africa <- ACP_codes %>% 
       dplyr::filter(mrgid == input$africa_eez_select)
     
-    
     connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
-      dplyr::filter(eez_cod == input$africa_eez_select)
-    
+      dplyr::filter(eez_cod == input$africa_eez_select) %>% 
+      arrange(flag)
     
     country_map_filtered_africa <- land_map %>% 
-      dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)
+      dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag) %>% 
+      rename(flag = iso3) %>% 
+      arrange(flag)
+    
+    # connectivity_final <- connectivity_data_filter_africa %>% 
+    #   mutate(cntry_l = (country_map_filtered_africa$cntry_l)) 
+    
+    country_final <- country_map_filtered_africa %>% 
+      #mutate(cntry_l = (country_map_filtered_africa11$cntry_l)) %>% 
+      mutate(vessels = (connectivity_data_filter_africa$vessels)) %>% 
+      mutate(capacty = (connectivity_data_filter_africa$capacty)) %>% 
+      mutate(fshn_KW = (connectivity_data_filter_africa$fshn_KW)) %>% 
+      mutate(fshng_h = (connectivity_data_filter_africa$fshng_h))
+      
+      
+      
     
   
-    
     #  Hover Text
     flag_subsidy_atlas_text_africa <- paste0(
-      "<b>","State: ",  country_map_filtered_africa$cntry_l,
+      "<b>","State: ",  country_final$cntry_l,
       "<br/>",
-      "<b>", "# of Vessels: ", connectivity_data_filter_africa$vessels , #format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","), # Not matching up
+      "<b>", "# of Vessels: ", country_final$vessels, #format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","), # Not matching up
       "</br>",
-      "<b>", "Capacity of fishing vessels: ",  format(round(connectivity_data_filter_africa$capacty, 0), big.mark = ","), # not matching up
+      "<b>", "Capacity of fishing vessels: ",  format(round(country_final$capacty, 0), big.mark = ","), # not matching up
       "</br>",
-      "<b>", "Fishing hours per year in EEZ: ",  format(round(connectivity_data_filter_africa$fshng_h, 0), big.mark = ","), # not matching up
+      "<b>", "Fishing hours per year in EEZ: ",  format(round(country_final$fshng_h, 0), big.mark = ","), # not matching up
       "</br>",
-      "<b>", "Fishing kwhr in EEZ: ", format(round(connectivity_data_filter_africa$fshn_KW, 0), big.mark = ","))  %>% # not matching up
+      "<b>", "Fishing kwhr in EEZ: ", format(round(country_final$fshn_KW, 0), big.mark = ","))  %>% # not matching up
       lapply(htmltools::HTML)
     
     
@@ -479,6 +493,7 @@ server <- shinyServer(function(input, output, session) {
                                                bringToFront = TRUE),
                   label = (paste0("<b>", ACP_codes_filtered_africa$geoname, "</b>") %>%
                              lapply(htmltools::HTML)),
+                  #layerId = ACP_codes_filtered_africa$territory_iso3,
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -495,6 +510,7 @@ server <- shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = flag_subsidy_atlas_text_africa,
+                  layerId = country_map_filtered_africa$flag,
                   #label = (paste0("<b>", country_map_filtered_africa$cntry_l, "</b>") %>%
                              #lapply(htmltools::HTML)),
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
@@ -508,6 +524,43 @@ server <- shinyServer(function(input, output, session) {
                    color = "darkgoldenrod") %>% 
       setView(15, -13, zoom = 2)
   
+  })
+  
+  output$africa_summary_text <- renderUI({
+    
+    #browser()
+    
+    req(input$africa_eez_select != "Select an EEZ...")
+    
+    connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == input$africa_eez_select) %>% 
+      rename(territory_iso3 = ez_tr_3)
+    
+    # Total stats by EEZ
+    
+    total_stats_africa <- connectivity_data_filter_africa %>% 
+      as.data.frame() %>% 
+      select(c("eez_cod", "territory_iso3", "eez_nam","vessels", "capacty", "fshng_h", "fshn_KW")) %>% 
+      group_by(eez_cod, territory_iso3, eez_nam) %>%
+      summarize(vessels = sum(vessels, na.rm = T),
+                capacty = sum(capacty, na.rm = T),
+                fshng_h = sum(fshng_h, na.rm = T),
+                fshn_KW = sum(fshn_KW, na.rm = T)) %>% 
+      arrange(territory_iso3)
+    
+    
+    ### Summary stats for EEZ 
+    #browser()
+    # if (is.null(click)) return()
+    paste0("<b>","EEZ: ", total_stats_africa$eez_nam,
+           "<br/>",
+           "<b>", "Total # of Vessels in EEZ: ", format(round(total_stats_africa$vessels, 0), big.mark = ","),
+           "</br>",
+           "<b>", "Total Fishing hours per year in EEZ: ", format(round(total_stats_africa$fshng_h, 0), big.mark = ","), 
+           "</br>",
+           "<b>", "Total Fishing kwhr in EEZ: ", format(round(total_stats_africa$fshn_KW, 0), big.mark = ",")) %>% 
+      lapply(htmltools::HTML)
+    
   })
   
   ## Heat maps
@@ -566,6 +619,9 @@ server <- shinyServer(function(input, output, session) {
   
   })
   
+  
+  
+  
   output$africa_effort_map <- renderPlot({
     
     #browser()
@@ -623,44 +679,49 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
-  # observe({
-  #   click <- input$africa_connection_map_shape_click
-  #   if(is.null(click))
-  #     return()
-  # })
   
-  # observe({
-  #   click <- input$africa_connection_map_shape_click
-  #   if(is.null(click))
-  #     return()
-  #   text <- paste0("Fish")
-  #   output$Click_text <- renderUI({
-  #     text
-  #   })
-  # })
   
     
-  output$africa_summary_text <- renderUI({
+  output$africa_flag_summary_text <- renderUI({
+    
+    req(input$africa_eez_select != "Select an EEZ...")
     
     connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
       dplyr::filter(eez_cod == input$africa_eez_select) 
     
-    country_map_filtered_africa <- land_map %>% 
-      dplyr::filter(iso3 %in% connectivity_data_filter_africa$flag)  
+   
+    
+    req(!is.null(input$africa_connection_map_shape_click$id))
+    
+    connectivity_data_filter_africa <-  connectivity_data_filter_africa %>%
+      dplyr::filter(flag == input$africa_connection_map_shape_click$id)
       
+   ### Summary stats for EEZ 
     
-    req(input$africa_connection_map_shape_click)
-    
-    if (is.null(click)) return()
-    text2 <- paste0("<b>","State: ", #country_map_filtered_africa$cntry_l,
+    # if (is.null(click)) return()
+    paste0("<b>","EEZ: ", #connectivity_data_filter_africa$territory_iso3,
            "<br/>",
-           "<b>", "# of Vessels: ", #format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","),
+           "<b>", "Total # of Vessels in EEZ: ", format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","),
            "</br>",
-           "<b>", "Fishing hours per year in EEZ: ######",
+           "<b>", "Total Fishing hours per year in EEZ: ", format(round(connectivity_data_filter_africa$fshng_h, 0), big.mark = ","), 
            "</br>",
-           "<b>", "Fishing kwhr in EEZ: ######")  %>%
+           "<b>", "Total Fishing kwhr in EEZ: ", format(round(connectivity_data_filter_africa$fshn_KW, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
+    
   })
+    
+  
+  #       # if (is.null(click)) return()
+  #  paste0("<b>","State: ", input$africa_connection_map_shape_click$id,
+  #          "<br/>",
+  #          "<b>", "# of Vessels: ", format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","),
+  #          "</br>",
+  #          "<b>", "Fishing hours per year in EEZ: ", format(round(connectivity_data_filter_africa$fshng_h, 0), big.mark = ","), 
+  #          "</br>",
+  #          "<b>", "Fishing kwhr in EEZ: ", format(round(connectivity_data_filter_africa$fshn_KW, 0), big.mark = ",")) %>% 
+  #     lapply(htmltools::HTML)
+  #   
+  # })
   
   
    #close render leaflet
@@ -769,11 +830,12 @@ server <- shinyServer(function(input, output, session) {
     country_map_filtered_caribbean <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_filter_caribbean$flag)
     
+    
     #  Hover Text
     flag_subsidy_atlas_text_caribbean <- paste0(
       "<b>","State: ",  country_map_filtered_caribbean$cntry_l,
       "<br/>",
-      "<b>", "# of Vessels: ", connectivity_data_filter_caribbean$vessels , #format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","), # Not matching up
+      "<b>", "# of Vessels: ", connectivity_data_filter_caribbean$vessels %in% country_map_filtered_caribbean$flag, #format(round(connectivity_data_filter_africa$vessels, 0), big.mark = ","), # Not matching up
       "</br>",
       "<b>", "Capacity of fishing vessels: ",  format(round(connectivity_data_filter_caribbean$capacty, 0), big.mark = ","), # not matching up
       "</br>",
