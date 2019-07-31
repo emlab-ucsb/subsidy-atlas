@@ -8,3 +8,5 @@
 /results/.DS_Store
 /results/eez_results/*
 /results/flag_state_results/*
+
+/SubsidyAtlasACP/data/shapefiles_raw/*

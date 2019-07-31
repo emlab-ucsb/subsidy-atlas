@@ -1,81 +1,82 @@
-flag,eez_id,territory_iso3,region
-Angola ,8478,AGO,Africa
-Antigua and Barbuda,8414,ATG,Caribbean
-Bahamas,8404,BHS,Caribbean
-Barbados,8418,BRB,Caribbean
-Belize,8457,BLZ,Caribbean
-Benin,8393,BEN,Africa
-Bissau,,,
-Botswana,,,
-Burkina Faso,,,
-Burundi,,,
-Cameroon,8475,CMR,Africa
-Cape Verde,8362,CPV,Africa
-Central African Republic,,,
-Chad,,,
-Comoros,8334,COM,Africa
-Congo (Brazzaville),,,
-Congo (Kinshasa),,,
-Cook Islands,8446,COK,Pacific
-Cte d'Ivoire,8473,CIV,Africa
-Cuba,8406,CUB,Caribbean
-Djibouti,8352,DJI,Africa
-Dominica,8417,DMA,Caribbean
-Dominican Republic,8409,DOM,Caribbean
-Equatorial Guinea,8398,GNQ,Africa
-Eritrea,8351,ERI,Africa
-Ethiopia,,,
-Fiji,8325,FJI,Pacific
-Gabon,8476,GAB,Africa
-Gambia,8370,GMB,Africa
-Ghana,8400,GHA,Africa
-Grenada,8419,GRD,Caribbean
-Guinea,8472,GIN,Africa
-Guyana,8460,GUY,Caribbean
-Haiti,8408,HTI,Caribbean
-Jamaica,8459,JAM,Caribbean
-Kenya,8349,KEN,Africa
-Kiribati,8441,KIR,Pacific
-Lesotho,,,
-Liberia,8391,LBR,Africa
-Madagascar,8348,MDG,Africa
-Malawi,,,
-Mali,,,
-Marshall Islands,8318,MHL,Pacific
-Mauritania,8369,MRT,Africa
-Mauritius,,,
-Micronesia,8316,FSM,Pacific
-Mozambique,8347,MOZ,Africa
-Namibia,8395,NAM,Africa
-Nauru,8317,NRU,Pacific
-Niger,,,
-Nigeria,8474,NGA,Africa
-Niue,8447,NIU,Pacific
-Palau,8315,PLW,Pacific
-Papua New Guinea,8324,PNG,Pacific
-Republic of Guinea,,,
-Rwanda,,,
-Samoa,8445,WSM,Pacific
-Sao Tome and Principe,8397,STP,Africa
-Senegal,8371,SEN,Africa
-Seychelles,8337,SYC,Africa
-Sierra Leone,8390,SLE,Africa
-Solomon Islands,8314,SLB,Pacific
-Somalia,,,
-South Africa,8396,ZAF,Africa
-St. Kitts and Nevis,8413,KNA,Caribbean
-St. Lucia,8416,LCA,Caribbean
-St. Vincent and the Grenadines,8421,VCT,Caribbean
-Sudan,8355,SDN,Africa
-Suriname,8461,SUR,Caribbean
-Swaziland,,,
-Tanzania,8479,TZA,Africa
-Timor Leste,,,
-Togo,8392,TGO,Africa
-Tonga,8448,TON,Pacific
-Trinidad and Tobago,8420,TTO,Caribbean
-Tuvalu,8326,TUV,Pacific
-Uganda,,,
-Vanuatu,8313,VUT,Pacific
-Zambia,,,
-Zimbabwe,,,
+territory,territory_iso3,mrgid,region,region_specific,shp_to_use
+Benin,BEN,8393,Africa,West African group,180
+Burkina Faso,BFA,,Africa,West African group,180
+Cabo Verde,CPV,8362,Africa,West African group,180
+Côte d'Ivoire,CIV,8473,Africa,West African group,180
+Gambia,GMB,8370,Africa,West African group,180
+Ghana,GHA,8400,Africa,West African group,180
+Guinea,GIN,8472,Africa,West African group,180
+Guinea-Bissau,GNB,8471,Africa,West African group,180
+Liberia,LBR,8391,Africa,West African group,180
+Mali,MLI,,Africa,West African group,180
+Mauritania,MRT,8369,Africa,West African group,180
+Niger,NER,,Africa,West African group,180
+Nigeria,NGA,8474,Africa,West African group,180
+Senegal,SEN,8371,Africa,West African group,180
+Sierra Leone,SLE,8390,Africa,West African group,180
+Togo,TGO,8392,Africa,West African group,180
+Cameroon,CMR,8475,Africa,Central African group,180
+Central African Republic,CAF,,Africa,Central African group,180
+Chad,TCD,,Africa,Central African group,180
+Congo (Kinshasa),COD,8477,Africa,Central African group,180
+Congo (Brazzaville),COG,8394,Africa,Central African group,180
+Equatorial Guinea,GNQ,8398,Africa,Central African group,180
+Gabon,GAB,8476,Africa,Central African group,180
+São Tomé and Príncipe,STP,8397,Africa,Central African group,180
+Burundi,BDI,,Africa,East African group,180
+Kenya,KEN,8349,Africa,East African group,180
+Rwanda,RWA,,Africa,East African group,180
+Tanzania,TZA,8479,Africa,East African group,180
+Uguanda,UGA,,Africa,East African group,180
+South Sudan,SSD,,Africa,East African group,180
+Comoros,COM,8334,Africa,East and South African group,180
+Djibouti,DJI,8352,Africa,East and South African group,180
+Eritrea,ERI,8351,Africa,East and South African group,180
+Ethiopia,ETH,,Africa,East and South African group,180
+Madagascar,MDG,8348,Africa,East and South African group,180
+Malawi,MWI,,Africa,East and South African group,180
+Mauritius,MUS,8343,Africa,East and South African group,180
+Seychelles,SYC,8337,Africa,East and South African group,180
+Somalia,SOM,8350,Africa,East and South African group,180
+Sudan,SDN,8355,Africa,East and South African group,180
+Zambia,ZMB,,Africa,East and South African group,180
+Zimbabwe,ZWE,,Africa,East and South African group,180
+Angola,AGO,8478,Africa,South African group,180
+Botswana,BWA,,Africa,South African group,180
+Lesotho,LSO,,Africa,South African group,180
+Mozambique,MOZ,8347,Africa,South African group,180
+Namibia,NAM,8395,Africa,South African group,180
+South Africa,ZAF,8396,Africa,South African group,180
+South Africa,ZAF,8384,Africa,South African group,180
+Eswatini,SWZ,,Africa,South African group,180
+Antigua and Barbuda,ATG,8414,Caribbean,Caribbean group,360
+Belize,BLZ,8457,Caribbean,Caribbean group,360
+Bahamas,BHS,8404,Caribbean,Caribbean group,360
+Barbados,BRB,8418,Caribbean,Caribbean group,360
+Cuba,CUB,8406,Caribbean,Caribbean group,360
+Dominica,DMA,8417,Caribbean,Caribbean group,360
+Dominican Republic,DOM,8409,Caribbean,Caribbean group,360
+Grenada,GRD,8419,Caribbean,Caribbean group,360
+Guyana,GUY,8460,Caribbean,Caribbean group,360
+Haiti,HTI,8408,Caribbean,Caribbean group,360
+Jamaica,JAM,8459,Caribbean,Caribbean group,360
+St. Kitts and Nevis,KNA,8413,Caribbean,Caribbean group,360
+St. Lucia,LCA,8416,Caribbean,Caribbean group,360
+St. Vincent and the Grenadines,VCT,8421,Caribbean,Caribbean group,360
+Suriname,SUR,8461,Caribbean,Caribbean group,360
+Trinidad and Tobago,TTO,8420,Caribbean,Caribbean group,360
+Cook Islands,COK,8446,Pacific,Pacific group,360
+Fiji,FJI,8325,Pacific,Pacific group,360
+Kiribati,KIR,8441,Pacific,Pacific group,360
+Kiribati,KIR,8450,Pacific,Pacific group,360
+Kiribati,KIR,8488,Pacific,Pacific group,360
+Marshall Islands,MHL,8318,Pacific,Pacific group,360
+Micronesia,FSM,8316,Pacific,Pacific group,360
+Nauru,NRU,8317,Pacific,Pacific group,360
+Niue,NIU,8447,Pacific,Pacific group,360
+Palau,PLW,8315,Pacific,Pacific group,360
+Solomon Islands,SLB,8314,Pacific,Pacific group,360
+Samoa,WSM,8445,Pacific,Pacific group,360
+Tonga,TON,8448,Pacific,Pacific group,360
+Tuvalu,TUV,8326,Pacific,Pacific group,360
+Vanuatu,VUT,8313,Pacific,Pacific group,360
