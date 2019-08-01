@@ -65,17 +65,17 @@ connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp"
 ### Shapefiles ###
 
 # Simplified EEZ shapefile (with FAO regions for high seas)
-eez_map <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
+eez_map <- read_sf(dsn = "./data/shapefiles_edit/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone)) %>%
   st_transform(crs = 4326) 
 eez_codes <- unique(eez_map$mrgid)
 
 # Simplified land shapefile 
-land_map <- read_sf(dsn = "./data/world_happy_180", layer="world_happy_180") %>%
+land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
   st_transform(crs = 4326)
 
 # Combined land/EEZ shapefile 
-land_eez_map <- read_sf(dsn = "./data/shapefiles_raw/EEZ_land_union_v2_201410", layer = "EEZ_land_v2_201410")
+land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_union_v2_201410", layer = "EEZ_land_v2_201410")
 
 
 ### Widget choice values that depend on a dataset ------------------------------
