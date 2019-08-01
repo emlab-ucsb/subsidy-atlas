@@ -25,7 +25,8 @@ We use Version 10 of the World Maritime Boundaries (World EEZs - 2018) from Mari
 
 > Flanders Marine Institute (2018). Maritime Boundaries Geodatabase: Maritime Boundaries and Exclusive Economic Zones (200NM), version 10. Available online at http://www.marineregions.org/ https://doi.org/10.14284/312
 
-Unfortunately, since both the Pacific and Western Africa are regions of interest, there isn't a standard shapefile in which all of the EEZs we need are in one piece. We therefore made our own shapefile, by pulling from both the -180 to 180 degree and 0 to 360 degree representations of the World EEZ shapefiles. 
+Unfortunately, since both the Pacific and Western Africa are regions of interest, there isn't a standard shapefile in which all of the EEZs we need are in one piece. We therefore made our own ACP shapefile, by pulling from both the -180 to 180 degree and 0 to 360 degree representations of the World EEZ shapefiles. 
+
 
 ```{r}
 # Load list of ACP states
@@ -76,20 +77,21 @@ st_write(eez_combine, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_ed
 ```
 
 
-<!-- ## Regional blocks -->
+## Regional blocks
 
-<!-- We first wanted to create shapefiles delimiting the boundaries of our ACP states by region. For this map, we decided it would be best to use merged land/EEZ boundaries in order to show the full extent of each region. The raw shapefiles used to create these was sourced from Marineregions.org (Marine and land zones: the union of world country boundaries and EEZs, Version 2 - 2014). This shapefile was last downloaded on July 31, 2019.  -->
+We also wanted to use the merged land/EEZ boundary shapefile to show the extent of our ACP states by region. The raw shapefiles used to create these was sourced from Marineregions.org (Marine and land zones: the union of world country boundaries and EEZs, Version 2 - 2014). This shapefile was last downloaded on July 31, 2019. We manually changed the extent of this shapefile in QGIS to be from -30 to 330 degrees so all of our ACP EEZs are intact. 
 
-<!-- There are a couple of problems with using this this shapefile in 2019 that need to be corrected for: - The Gilbert Islands are assigned to the United States Minor Outlying Islands (instead of Kiribati) -->
-<!-- - The Phoenix Islands are assigned to the United States Minor OUtlying Islands (instead of Kiribati) and are still connected to xxx -->
+There are a couple of problems with using this this shapefile that need to be corrected for: 
+- The Gilbert Islands are assigned to the United States Minor Outlying Islands (instead of Kiribati)
+- The Phoenix Islands are assigned to the United States Minor OUtlying Islands (instead of Kiribati) and are still connected to Howland and Baker. 
 
-<!-- These corrections were made using Version 10 of the World Maritime Boundaries (World EEZs - 2018) from Marineregions.org.  -->
+These corrections were made using Version 10 of the World Maritime Boundaries (World EEZs - 2018) from Marineregions.org.
 
 ```{r}
-# land_eez_shp <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "EEZ_land_union_v2_201410"), layer = "EEZ_land_v2_201410")
-# 
-# right_join(ACP_codes %>% na.omit(), by = c("ISO_3digit" = "territory_iso3")) %>%
-#       group_by(region) %>%
-#       summarize(geometry = st_union(geometry))
+land_eez_shp <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "EEZ_land_union_v2_201410"), layer = "EEZ_land_v2_201410")
+
+right_join(ACP_codes %>% na.omit(), by = c("ISO_3digit" = "territory_iso3")) %>%
+      group_by(region) %>%
+      summarize(geometry = st_union(geometry))
 
 ```
