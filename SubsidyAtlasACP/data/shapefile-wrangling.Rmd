@@ -88,10 +88,14 @@ There are a couple of problems with using this this shapefile that need to be co
 These corrections were made using Version 10 of the World Maritime Boundaries (World EEZs - 2018) from Marineregions.org.
 
 ```{r}
-land_eez_shp <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "EEZ_land_union_v2_201410"), layer = "EEZ_land_v2_201410")
+land_eez_shp <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "EEZ_land_union_v2_201410_-30_360_manualedits"), layer = "EEZ_land_union_v2_201410_-30_330_manualedits") %>%
+  setNames(tolower(names(.)))
 
-right_join(ACP_codes %>% na.omit(), by = c("ISO_3digit" = "territory_iso3")) %>%
-      group_by(region) %>%
+acp_land_eez_union <- land_eez_shp %>%
+  right_join(acp_states, by = c("iso_3digit" = "territory_iso3")) %>%
+      group_by(iso_3digit, region, region_specific) %>%
       summarize(geometry = st_union(geometry))
+
+st_write(acp_land_eez_union, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "EEZ_land_union_v2_custom_ACP"), layer = "EEZ_land_union_v2_custom_ACP", driver = "ESRI Shapefile", delete_layer = T)
 
 ```

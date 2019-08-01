@@ -77,7 +77,8 @@ land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world
   st_transform(crs = 4326)
 
 # Combined land/EEZ shapefile 
-land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_union_v2_201410", layer = "EEZ_land_v2_201410")
+land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_union_v2_custom_ACP", layer = "EEZ_land_union_v2_custom_ACP") %>%
+  st_transform(crs = 4326)
 
 
 ### Widget choice values that depend on a dataset ------------------------------
@@ -286,16 +287,15 @@ server <- shinyServer(function(input, output, session) {
   ## Leaflet output: map of ACP countries aggregated by region
   output$regional_map <- renderLeaflet({
     
-    # Combine shapefile with ACP data
     regional_dat <- land_eez_map %>%
-      right_join(ACP_codes %>% na.omit(), by = c("ISO_3digit" = "territory_iso3")) %>%
-      group_by(region) %>%
+      group_by(region, rgn_spc) %>%
       summarize(geometry = st_union(geometry))
+      
     
     leaflet("regional_map") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       
-      addPolygons(data = regional_dat %>% dplyr::filter(region == "Africa"), 
+      addPolygons(data = regional_dat, 
                   fillColor = "slateblue",
                   fillOpacity = 0.5,
                   color= "white",
@@ -304,35 +304,13 @@ server <- shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = ("Africa"),
-                  group = "Africa") %>%
-      addPolygons(data = regional_dat %>% dplyr::filter(region == "Caribbean"), 
-                  fillColor = "seagreen",
-                  fillOpacity = 0.5,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = ("Caribbean"),
-                  group = "Caribbean") %>% 
-      addPolygons(data = regional_dat %>% dplyr::filter(region == "Pacific"), 
-                  fillColor = "coral",
-                  fillOpacity = 0.5,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = ("Pacific"),
-                  group = "Pacific") %>%
+                  label = regional_dat$rgn_spc,
+                  group = regional_dat$region) %>%
       addLayersControl(
-        overlayGroups = c("Africa", "Caribbean", "Pacific"),
+        overlayGroups = regional_dat$rgn_spc,
         options = layersControlOptions(collapsed = FALSE)
       ) %>%
-      setView(0,20, zoom = 2)
+      setView(190,20, zoom = 1)
       
   })
   
