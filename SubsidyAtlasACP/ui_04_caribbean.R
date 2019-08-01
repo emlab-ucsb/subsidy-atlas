@@ -12,31 +12,27 @@ caribbean = function(caribbean_eez_choices)
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
            
-           tags$h3(style = "padding: 0; margin: 0;", "Caribbean"),
+           tags$h3(style = "padding: 0; margin: 0;", "Caribbean")
            
-           br(),
-           
-           # Text
-           includeHTML("./text/04_caribbean_intro.html")
+           # br(),
+           # 
+           # # Text
+           # includeHTML("./text/04_caribbean_intro.html")
            
     ),
     
     fluidRow( 
        # Map and widget to select a country 
-        column(6, style = "padding: 0px;",
+        column(6, style = "padding: 0 0 30px 0;",
                
-               column(12, style = "padding: 0 10px;",
+               column(12, style = "padding: 0 20px;",
                       
                       selectizeInput("caribbean_eez_select",
                                      label = NULL,
                                      choices = c("Select an EEZ...", caribbean_eez_choices),
                                      selected = "Select an EEZ...",
                                      width = "100%",
-                                     options = list(placeholder = 'Select...'))
-                      
-               ),
-               
-               column(12, style = "padding: 0",
+                                     options = list(placeholder = 'Select...')),
                       
                       leafletOutput("caribbean_map", width = "auto", height = "40vh")
                       
@@ -52,37 +48,42 @@ caribbean = function(caribbean_eez_choices)
         
     ),#close fluid row
     
-    #   ## Leaflet map of ACP EEZs
-    
-    column(12, style = "padding: 10px 25px;",
+    column(12, style = "margin: 0 25px;",
            
-           # Header and text
-           includeHTML("./text/04_caribbean_connectivity.html")
-           
-    ),
-    #  
-    column(12, stlye = "padding: 0px;",
-           
-           leafletOutput("caribbean_connection_map", width = "auto", height = "80vh")
-    ),
-    
-    
-    fluidRow(
-    
-        column(6, style = "padding: 15px 25px; background-color: #262626;",
-               
-               plotOutput("caribbean_subsidy_map", width = "auto")
-               
-        ),
-        
-        
-        column(6, style = "padding: 15px 25px; background-color: #262626;",
-               
-               plotOutput("caribbean_effort_map", width = "auto")
-        ) #close column     
-      ) #close fluid row
-    
-    
-    
+    # Panel with tabs containing the different tyeps of plots 
+    tabsetPanel(type = "tabs",
+                
+                tabPanel("Origins of distant water fishing vessels", 
+                         
+                         column(12, style = "padding: 15px 0;",
+                                
+                                leafletOutput("caribbean_connection_map", width = "95%", height = "50vh")
+                                
+                         )
+                        
+                ),
+                
+                tabPanel("Fishing effort and subsidy intensity of distant water vessels",
+                         
+                         fluidRow(
+                           
+                           column(6, style = "padding: 15px 25px; background-color: #262626;",
+                                
+                                plotOutput("caribbean_subsidy_map", width = "auto")
+                                
+                           ),
+                         
+                         
+                           column(6, style = "padding: 15px 25px; background-color: #262626;",
+                                
+                                plotOutput("caribbean_effort_map", width = "auto")
+                                
+                           )   
+                         
+                         )
+                )
+                
+    ) # /tabsetPanel
+    )
     
   ) #close fluid page

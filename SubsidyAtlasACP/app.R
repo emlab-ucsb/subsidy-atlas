@@ -64,11 +64,13 @@ connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp"
 
 ### Shapefiles ###
 
+# Custom EEZ shapefile
+eez_shp <- st_read(dsn = "./data/shapefiles_edit/World_EEZ_v10_custom_ACP", layer = "World_EEZ_v10_custom_ACP")
+  
 # Simplified EEZ shapefile (with FAO regions for high seas)
 eez_map <- read_sf(dsn = "./data/shapefiles_edit/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone)) %>%
   st_transform(crs = 4326) 
-eez_codes <- unique(eez_map$mrgid)
 
 # Simplified land shapefile 
 land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
@@ -353,7 +355,7 @@ server <- shinyServer(function(input, output, session) {
   output$africa_map <- renderLeaflet({
     
     # Filter data
-    africa_eezs <- eez_map %>%
+    africa_eezs <- eez_shp %>%
       right_join(ACP_codes %>% dplyr::filter(region == "Africa"), by = c("mrgid"))
     
     # Map
@@ -405,7 +407,7 @@ server <- shinyServer(function(input, output, session) {
     }else{
       
       # Get code for selected EEZ
-      selected_eez <- subset(eez_map, eez_map$mrgid == input$africa_eez_select)
+      selected_eez <- subset(eez_shp, eez_shp$mrgid == input$africa_eez_select)
       
       # Remove any previously highlighted polygon
       africa_proxy %>% clearGroup("highlighted_eez")
@@ -436,10 +438,10 @@ server <- shinyServer(function(input, output, session) {
     req(input$africa_eez_select != "Select an EEZ...")
     
     #Data filter
-    ACP_codes <- eez_map %>% 
-      dplyr::filter(mrgid %in% ACP_codes$mrgid)
+    # ACP_codes <- eez_map %>% 
+    #   dplyr::filter(mrgid %in% ACP_codes$mrgid)
     
-    ACP_codes_filtered_africa <- ACP_codes %>% 
+    ACP_codes_filtered_africa <- eez_shp %>% 
       dplyr::filter(mrgid == input$africa_eez_select)
     
     connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
@@ -735,7 +737,7 @@ server <- shinyServer(function(input, output, session) {
   output$caribbean_map <- renderLeaflet({
     
     # Filter data
-    caribbean_eezs <- eez_map %>%
+    caribbean_eezs <- eez_shp %>%
       right_join(ACP_codes %>% dplyr::filter(region == "Caribbean"), by = c("mrgid"))
     
     # Map
@@ -757,7 +759,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(-75,20, zoom = 3)
+      setView(290,20, zoom = 3)
     
   }) # Close render leaflet
   
@@ -781,12 +783,13 @@ server <- shinyServer(function(input, output, session) {
       caribbean_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      caribbean_proxy %>% setView(lng=-75, lat=20, zoom=3)
+      caribbean_proxy %>% setView(lng=290, lat=20, zoom=3)
       
     }else{
       
       # Get code for selected EEZ
-      selected_eez <- subset(eez_map, eez_map$mrgid == input$caribbean_eez_select)
+      selected_eez <- subset(eez_shp, eez_shp$mrgid == input$caribbean_eez_select) %>%
+        mutate(x_1 = ifelse(x_1 < 0, 360 + x_1, x_1))
       
       # Remove any previously highlighted polygon
       caribbean_proxy %>% clearGroup("highlighted_eez")
@@ -819,10 +822,10 @@ server <- shinyServer(function(input, output, session) {
     req(input$caribbean_eez_select != "Select an EEZ...")
     
     #Data filter
-    ACP_codes <- eez_map %>% 
-      dplyr::filter(mrgid %in% ACP_codes$mrgid)
-    
-    ACP_codes_filtered_caribbean <- ACP_codes %>% 
+    # ACP_codes <- eez_map %>% 
+    #   dplyr::filter(mrgid %in% ACP_codes$mrgid)
+    # 
+    ACP_codes_filtered_caribbean <- eez_shp %>% 
       dplyr::filter(mrgid == input$caribbean_eez_select)
     
     
@@ -1056,11 +1059,11 @@ server <- shinyServer(function(input, output, session) {
     # ACP_codes_filtered <- connectivity_data %>% # load this in up above
     #   dplyr::filter(eez_territory_iso3 == input$ACP_for_profile)
     
-     ACP_codes <- eez_map %>% 
-       dplyr::filter(mrgid %in% ACP_codes$mrgid)
+     # ACP_codes <- eez_map %>% 
+     #   dplyr::filter(mrgid %in% ACP_codes$mrgid)
      
-     ACP_codes_filtered <- ACP_codes %>% 
-       dplyr::filter(ez_hs_c == input$ACP_for_profile)
+     ACP_codes_filtered <- eez_shp %>% 
+       dplyr::filter(mrgid == input$ACP_for_profile)
      
      
      connectivity_data_filter_leaflet <- connectivity_data %>% # load this in up above
@@ -1160,7 +1163,7 @@ server <- shinyServer(function(input, output, session) {
       geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
       geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
       geom_sf(data = land_map %>% dplyr::filter(iso3 %in% connectivity_data_filter$flag), fill = "darkmagenta", alpha = 0.5, color = NA, size = 0.1) + # highlighted flag states (magenta)
-      geom_sf(data = eez_map %>% dplyr::filter(ez_hs_c == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
+      geom_sf(data = eez_shp %>% dplyr::filter(mrgid == input$EEZ_for_profile), fill = "slateblue", color = "grey40", size = 0.1) + # highlighted EEZ (slateblue, grey border lines)
       geom_sf(col = "darkgoldenrod", size = 0.25) +
       #maptheme+
       coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
@@ -1186,10 +1189,8 @@ server <- shinyServer(function(input, output, session) {
   output$pacific_map <- renderLeaflet({
     
     # Filter data
-    pacific_eezs <- eez_map %>%
+    pacific_eezs <- eez_shp %>%
       right_join(ACP_codes %>% dplyr::filter(region == "Pacific"), by = c("mrgid"))
-    
-    
     
     # Map
     leaflet('pacific_map') %>%
@@ -1211,7 +1212,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(-170,17, zoom = 2) 
+      setView(lng = 180, lat = 0, zoom = 2) 
     
   }) # Close render leaflet
       
@@ -1235,12 +1236,13 @@ server <- shinyServer(function(input, output, session) {
       pacific_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      pacific_proxy %>% setView(lng=-75, lat=20, zoom=3)
+      pacific_proxy %>% setView(lng=350, lat=17, zoom=3)
       
     }else{
       
       # Get code for selected EEZ
-      selected_eez <- subset(eez_map, eez_map$mrgid == input$pacific_eez_select)
+      selected_eez <- subset(eez_shp, eez_shp$mrgid == input$pacific_eez_select) %>%
+        mutate(x_1 = ifelse(x_1 < 0, 360 + x_1, x_1))
       
       # Remove any previously highlighted polygon
       pacific_proxy %>% clearGroup("highlighted_eez")
@@ -1273,10 +1275,10 @@ server <- shinyServer(function(input, output, session) {
     req(input$pacific_eez_select != "Select an EEZ...")
     
     #Data filter
-    ACP_codes <- eez_map %>% 
-      dplyr::filter(mrgid %in% ACP_codes$mrgid)
+    # ACP_codes <- eez_map %>% 
+    #   dplyr::filter(mrgid %in% ACP_codes$mrgid)
     
-    ACP_codes_filtered_pacific <- ACP_codes %>% 
+    ACP_codes_filtered_pacific <- eez_shp %>% 
       dplyr::filter(mrgid == input$pacific_eez_select)
     
     
