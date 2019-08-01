@@ -65,7 +65,8 @@ connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp"
 ### Shapefiles ###
 
 # Custom EEZ shapefile
-eez_shp <- st_read(dsn = "./data/shapefiles_edit/World_EEZ_v10_custom_ACP", layer = "World_EEZ_v10_custom_ACP")
+eez_shp <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_custom_ACP", layer = "World_EEZ_v10_custom_ACP") %>%
+  st_transform(crs = 4326)
   
 # Simplified EEZ shapefile (with FAO regions for high seas)
 eez_map <- read_sf(dsn = "./data/shapefiles_edit/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
@@ -334,7 +335,8 @@ server <- shinyServer(function(input, output, session) {
     
     # Filter data
     africa_eezs <- eez_shp %>%
-      right_join(ACP_codes %>% dplyr::filter(region == "Africa"), by = c("mrgid"))
+      right_join(ACP_codes %>% 
+                   dplyr::filter(region == "Africa"), by = c("mrgid"))
     
     # Map
     leaflet('africa_map') %>% 
@@ -510,8 +512,6 @@ server <- shinyServer(function(input, output, session) {
   
   output$africa_summary_text <- renderUI({
     
-    #browser()
-    
     req(input$africa_eez_select != "Select an EEZ...")
     
     connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
@@ -532,7 +532,6 @@ server <- shinyServer(function(input, output, session) {
     
     
     ### Summary stats for EEZ 
-    #browser()
     # if (is.null(click)) return()
     paste0("<b>","EEZ: ", total_stats_africa$eez_nam,
            "<br/>",
@@ -605,8 +604,6 @@ server <- shinyServer(function(input, output, session) {
   
   
   output$africa_effort_map <- renderPlot({
-    
-    #browser()
     
     #Require EEZ selection
     req(input$africa_eez_select)
@@ -929,8 +926,6 @@ server <- shinyServer(function(input, output, session) {
   })
   
   output$caribbean_effort_map <- renderPlot({
-    
-    #browser()
     
     #Require EEZ selection
     req(input$caribbean_eez_select)
@@ -1381,8 +1376,6 @@ server <- shinyServer(function(input, output, session) {
   })
   
   output$pacific_effort_map <- renderPlot({
-    
-    #browser()
     
     #Require EEZ selection
     req(input$pacific_eez_select)

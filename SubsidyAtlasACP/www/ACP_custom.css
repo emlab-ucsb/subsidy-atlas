@@ -91,4 +91,19 @@ header.main-header {
     padding: 0;
 }
 
+/* tabBox formatting */
+.nav-tabs {
+  background-color: #ffffff;
+  border: 1px solid black;
+}
+
+.nav-tabs li.active:hover a, .nav-tabs li.active a {
+     background-color: transparent;
+     border-color: transparent;
+}
+
+.nav-tabs li.active {
+     border-top-color: blue;
+     background-color: black;
+}
 

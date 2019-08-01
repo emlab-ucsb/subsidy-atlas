@@ -8,6 +8,17 @@
 ### Function
 caribbean = function(caribbean_eez_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
+            
+            tags$style("
+                                
+                                .nav-tabs-custom .nav-tabs li.active:hover a, .nav-tabs-custom .nav-tabs li.active a {
+                                background-color: transparent;
+                                border-color: transparent;
+                                }
+                                
+                                .nav-tabs-custom .nav-tabs li.active {
+                                border-top-color: #FFF;
+                                }"),
     
     # Top header
     column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
@@ -48,42 +59,41 @@ caribbean = function(caribbean_eez_choices)
         
     ),#close fluid row
     
-    column(12, style = "margin: 0 25px;",
+    ### Tab box with results
+    
+    tabBox(width = 12, id = "caribbean_tabs", 
            
-    # Panel with tabs containing the different tyeps of plots 
-    tabsetPanel(type = "tabs",
-                
-                tabPanel("Origins of distant water fishing vessels", 
+           # First tab - connectivity map
+           tabPanel("Origins of distant water fishing vessels", 
                          
-                         column(12, style = "padding: 15px 0;",
-                                
-                                leafletOutput("caribbean_connection_map", width = "95%", height = "50vh")
-                                
-                         )
-                        
-                ),
-                
-                tabPanel("Fishing effort and subsidy intensity of distant water vessels",
-                         
-                         fluidRow(
+                    column(12, style = "padding: 15px 0;",
                            
-                           column(6, style = "padding: 15px 25px; background-color: #262626;",
+                           leafletOutput("caribbean_connection_map",
+                                         width = "95%",
+                                         height = "50vh")
+                    )
+           ),
+             
+           # Second tab - heat maps   
+           tabPanel("Fishing effort and subsidy intensity of distant water vessels",
+                    fluidRow(
+                           
+                      column(6, style = "padding: 15px 25px; background-color: #262626;",
                                 
-                                plotOutput("caribbean_subsidy_map", width = "auto")
+                             plotOutput("caribbean_subsidy_map", 
+                                        width = "auto")
                                 
-                           ),
+                      ),
                          
-                         
-                           column(6, style = "padding: 15px 25px; background-color: #262626;",
+                      column(6, style = "padding: 15px 25px; background-color: #262626;",
                                 
-                                plotOutput("caribbean_effort_map", width = "auto")
+                             plotOutput("caribbean_effort_map",
+                                        width = "auto")
                                 
-                           )   
-                         
-                         )
-                )
+                      )   
+                    ) #/fluidRow
+           ) #/tabPanel #2
                 
-    ) # /tabsetPanel
-    )
+    ) # /tabBox
     
   ) #close fluid page
