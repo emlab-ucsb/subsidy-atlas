@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-caribbean = function(caribbean_eez_choices)
+caribbean = function(caribbean_eez_choices, flag_state_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
             
             # Tabs custom styling - for some reason this has to be here
@@ -122,6 +122,6 @@ border-right-color: transparent;}"
            ) #/tabPanel #2
                 
     ) # /tabBox
-    )
+  ) # /column (for tabBox)
     
   ) #close fluid page

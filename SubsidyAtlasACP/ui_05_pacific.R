@@ -6,20 +6,36 @@
 ### ------------------------------------
 
 ### Function
-pacific = function(pacific_eez_choices)
+pacific = function(pacific_eez_choices, flag_state_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
             
             
-            tags$style("
-                                
-                                .nav-tabs-custom .nav-tabs li.active:hover a, .nav-tabs-custom .nav-tabs li.active a {
-                                background-color: transparent;
-                                border-color: transparent;
-                                }
-                                
-                                .nav-tabs-custom .nav-tabs li.active {
-                                border-top-color: #FFF;
-                                }"),
+            # Tabs custom styling - for some reason this has to be here
+            tags$style(
+              ".nav-tabs {
+background: black;
+}
+
+.nav-tabs-custom .nav-tabs {
+border-bottom-color: transparent;
+}
+
+.nav-tabs-custom .nav-tabs li.active:hover a, .nav-tabs-custom .nav-tabs li.active a {
+color: #ffffff;
+background: #1A1B1D;
+}
+
+.nav-tabs-custom .nav-tabs li.active {
+border-top-color: #3c8dbc;
+}
+
+.nav-tabs-custom .nav-tabs li.active a {
+background: #1A1B1D;
+color: #ffffff;
+border-left-color: transparent;
+border-right-color: transparent;}"
+
+            ),
             
             # Top header
             column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
