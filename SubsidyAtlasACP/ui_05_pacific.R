@@ -5,20 +5,31 @@
 # 
 ### ------------------------------------
 
-### Section 2: Function
-
+### Function
 pacific = function(pacific_eez_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
+            
+            
+            tags$style("
+                                
+                                .nav-tabs-custom .nav-tabs li.active:hover a, .nav-tabs-custom .nav-tabs li.active a {
+                                background-color: transparent;
+                                border-color: transparent;
+                                }
+                                
+                                .nav-tabs-custom .nav-tabs li.active {
+                                border-top-color: #FFF;
+                                }"),
             
             # Top header
             column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
                    
-                   tags$h3(style = "padding: 0; margin: 0;", "Pacific"),
+                   tags$h3(style = "padding: 0; margin: 0;", "Pacific")
                    
-                   br(),
+                   #br(),
                    
                    # Text
-                   includeHTML("./text/05_pacific_intro.html")
+                   #includeHTML("./text/05_pacific_intro.html")
     ),
     
     fluidRow(
@@ -32,11 +43,7 @@ pacific = function(pacific_eez_choices)
                                      choices = c("Select an EEZ...", pacific_eez_choices),
                                      selected = "Select an EEZ...",
                                      width = "100%",
-                                     options = list(placeholder = 'Select...'))
-                      
-               ),
-               
-               column(12, style = "padding: 0",
+                                     options = list(placeholder = 'Select...')),
                       
                       leafletOutput("pacific_map", width = "auto", height = "40vh")
                       
@@ -51,37 +58,41 @@ pacific = function(pacific_eez_choices)
         
         ), #close fluid row
     
-    #   ## Leaflet map of ACP EEZs
+    ### Tab box with results
     
-    column(12, style = "padding: 10px 25px;",
+    tabBox(width = 12, id = "pacific_tabs", 
            
-           # Header and text
-           includeHTML("./text/05_pacific_connectivity.html")
+           # First tab - connectivity map
+           tabPanel("Origins of distant water fishing vessels", 
+                    
+                    column(12, style = "padding: 15px 0;",
+                           
+                           leafletOutput("pacific_connection_map",
+                                         width = "95%",
+                                         height = "50vh")
+                    )
+           ),
            
-    ),
-    #  
-    column(12, style = "padding: 0px;",
+           # Second tab - heat maps   
+           tabPanel("Fishing effort and subsidy intensity of distant water vessels",
+                    fluidRow(
+                      
+                      column(6, style = "padding: 15px 25px; background-color: #262626;",
+                             
+                             plotOutput("pacific_subsidy_map", 
+                                        width = "auto")
+                             
+                      ),
+                      
+                      column(6, style = "padding: 15px 25px; background-color: #262626;",
+                             
+                             plotOutput("pacific_effort_map",
+                                        width = "auto")
+                             
+                      )   
+                    ) #/fluidRow
+           ) #/tabPanel #2
            
-           leafletOutput("pacific_connection_map", width = "auto", height = "80vh")
-    ),
-    
-    ##Heat Maps
-    
-    fluidRow(
-    
-        column(6, style = "padding: 15px 25px; background-color: #262626;",
-               
-               plotOutput("pacific_subsidy_map", width = "100%")
-               
-        ),
-        
-        
-        column(6, style = "padding: 15px 25px; background-color: #262626;",
-               
-               plotOutput("pacific_effort_map", width = "100%")
-        )      
-        ) #close fluid row
-    
-    
+    ) # /tabBox
     
   ) #close fluid page

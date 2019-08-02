@@ -396,15 +396,20 @@ leaflet(eez_effort_aggregated_VUT) %>%
 
 ```{r}
 
-eez_effort_africa <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ_effort_subs_by_flag.csv") %>% 
+eez_effort_VUT <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ_effort_subs_by_flag.csv") %>% 
       as.data.frame()
+
+eez_effort_ZAF <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8396_ZAF_EEZ_effort_subs_by_flag.csv") %>% 
+      as.data.frame()
+
+
 
 
     #Gemerate plot
     
      ### Make Plots 
      # Get quantiles of data for scale limits
-     eez_effort_aggregated_africa <- eez_effort_africa %>%
+     eez_effort_aggregated_VUT <- eez_effort_VUT %>%
        group_by(year, eez_code, lon_cen, lat_cen) %>%
        summarize(fishing_hours = sum(fishing_hours, na.rm = T),
                  fishing_KWh = sum(fishing_KWh, na.rm = T),
@@ -413,18 +418,18 @@ eez_effort_africa <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ
      
      
      # # # Quantiles
-     intensity_quantile <- quantile(eez_effort_aggregated_africa$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+     intensity_quantile <- quantile(eez_effort_aggregated_VUT$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
      scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
      
     # # # Set map limits for filtering global country map and eez map appropriately
-     x_lim <- c(min(eez_effort_aggregated_africa$lon_cen) - 0.5, max(eez_effort_aggregated_africa$lon_cen) + 0.5)
-     y_lim <- c(min(eez_effort_aggregated_africa$lat_cen) - 0.5, max(eez_effort_aggregated_africa$lat_cen) + 0.5)
+     x_lim <- c(min(eez_effort_aggregated_VUT$lon_cen) - 0.5, max(eez_effort_aggregated_VUT$lon_cen) + 0.5)
+     y_lim <- c(min(eez_effort_aggregated_VUT$lat_cen) - 0.5, max(eez_effort_aggregated_VUT$lat_cen) + 0.5)
      
     # Map of subsidy intensity
-    Africa_eez_subsidy_plot <- ggplot()+
+    ggplot()+
       geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
       geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
-      geom_raster(data = eez_effort_aggregated_africa, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
+      geom_raster(data = eez_effort_aggregated_VUT, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
       eezmaptheme +
       scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
                            limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
@@ -437,7 +442,164 @@ eez_effort_africa <- read_csv("SubsidyAtlasACP/data/eez_results/ACP/8313_VUT_EEZ
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))
     
-    plot(Africa_eez_subsidy_plot)
+    
+    
+    ## Effort plot
+    
+    ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      geom_tile(data = eez_effort_aggregated_VUT, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
+      #eezmaptheme +
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim) +
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))+
+      eezmaptheme
+
+```
+
+
+```{r}
+
+eez_effort_ZAF_BLZ <- eez_effort_ZAF %>% 
+  filter(flag == "BLZ")
+
+
+#Generate plot
+    
+     ### Make Plots 
+     # Get quantiles of data for scale limits
+     eez_effort_aggregated_ZAF_BLZ <- eez_effort_ZAF_BLZ %>%
+       group_by(year, eez_code, lon_cen, lat_cen) %>%
+       summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                 fishing_KWh = sum(fishing_KWh, na.rm = T),
+                 subs = sum(subs, na.rm = T)) %>%
+       mutate(subsidy_intensity = subs/fishing_KWh)  
+       
+     
+     
+     # # # Quantiles
+     intensity_quantile <- quantile(eez_effort_aggregated_ZAF_BLZ$subs, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+     scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+     
+    # # # Set map limits for filtering global country map and eez map appropriately
+     x_lim <- c(min(eez_effort_aggregated_ZAF_BLZ$lon_cen) - 0.5, max(eez_effort_aggregated_ZAF_BLZ$lon_cen) + 0.5)
+     y_lim <- c(min(eez_effort_aggregated_ZAF_BLZ$lat_cen) - 0.5, max(eez_effort_aggregated_ZAF_BLZ$lat_cen) + 0.5)
+     
+    # Map of subsidy intensity
+    ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      geom_tile(data = eez_effort_aggregated_ZAF_BLZ, aes(x = lon_cen, y = lat_cen, fill = subs))+
+      eezmaptheme +
+      scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+                           limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
+                           labels=scale_labels,
+                           breaks=scale_labels,
+                           oob=scales::squish)+
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim)+
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))
+    
+    
+    
+    
+  # #Gemerate effort plot ZAF_BLZ
+    
+    # ## Map of effort intensity
+    
+    
+    # Labels for the log scale 
+    ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      geom_tile(data = eez_effort_aggregated_ZAF_BLZ, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
+      #eezmaptheme +
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim) +
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))+
+      eezmaptheme
+
+```
+
+
+
+```{r}
+
+eez_effort_ZAF_JPN <- eez_effort_ZAF %>% 
+  filter(flag == "JPN")
+
+
+#Generate subsidy plot
+    
+     ### Make Plots 
+     # Get quantiles of data for scale limits
+     eez_effort_aggregated_JPN <- eez_effort_ZAF_JPN %>%
+       group_by(year, eez_code, lon_cen, lat_cen) %>%
+       summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                 fishing_KWh = sum(fishing_KWh, na.rm = T),
+                 subs = sum(subs, na.rm = T)) %>%
+       mutate(subsidy_intensity = subs/fishing_KWh)  
+       
+     
+     
+     # # # Quantiles
+     intensity_quantile <- quantile(eez_effort_aggregated_JPN$subs, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+     scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+     
+    # # # Set map limits for filtering global country map and eez map appropriately
+     x_lim <- c(min(eez_effort_aggregated_JPN$lon_cen) - 0.5, max(eez_effort_aggregated_JPN$lon_cen) + 0.5)
+     y_lim <- c(min(eez_effort_aggregated_JPN$lat_cen) - 0.5, max(eez_effort_aggregated_JPN$lat_cen) + 0.5)
+     
+    # Map of subsidy intensity
+    ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      geom_tile(data = eez_effort_aggregated_JPN, aes(x = lon_cen, y = lat_cen, fill = subs))+
+      eezmaptheme +
+      scale_fill_viridis_c(na.value = NA, name = "Subsidy value \n(2018 $USD)", 
+                           limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
+                           labels=scale_labels,
+                           breaks=scale_labels,
+                           oob=scales::squish)+
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim)+
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))
+    
+    
+    
+    
+    
+    ### Effort plot JPN
+    
+    # #Gemerate effort plot
+    
+    # ## Map of effort intensity
+    
+    
+    # Labels for the log scale 
+    ggplot()+
+      geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      geom_tile(data = eez_effort_aggregated_JPN, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
+      #eezmaptheme +
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim) +
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))+
+      eezmaptheme
 
 ```
 
