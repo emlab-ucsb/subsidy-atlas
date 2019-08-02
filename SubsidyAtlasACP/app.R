@@ -706,7 +706,7 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
-<<<<<<< HEAD
+
   
   
     
@@ -886,11 +886,11 @@ server <- shinyServer(function(input, output, session) {
   ###------------
   ### Caribbean 
   ###-----------
-=======
+
 
   ### Caribbean ----------
   
->>>>>>> 075568e31a7e0fc24463805a3d91d0d6716c774a
+
   ### Map of Caribbean EEZs for which we have DW fishing effort
   output$caribbean_map <- renderLeaflet({
     
