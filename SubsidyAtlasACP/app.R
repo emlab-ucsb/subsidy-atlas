@@ -99,14 +99,15 @@ names(flag_state_choices)[is.na(names(flag_state_choices))] <- "Unknown flag"
 #Map theme
 
 eezmaptheme <- theme_minimal()+
-  theme(plot.background = element_rect(fill = "grey27", color = NA),
-        panel.background = element_rect(fill = "grey27", color = NA),
-        panel.grid.major = element_line(colour = "grey27"),
+  theme(strip.background = element_rect(fill = "#262626", color = NA),
+        plot.background = element_rect(fill = "#262626", color = NA),
+        panel.background = element_rect(fill = "#262626", color = NA),
+        panel.grid.major = element_line(colour = "#262626"),
         text = element_text(color = "white"),
         plot.title = element_text(hjust = 0.5),
-        panel.border = element_rect(color = "grey27", fill = NA),
-        plot.margin = margin(t = 0, r = 0.1, b = 0, l = 0, unit = "cm"),
-        legend.margin = margin(t = 0.1, r = 0, b = 0.1, l = 0, unit = "cm"),
+        panel.border = element_rect(color = "#262626", fill = NA),
+        plot.margin = margin(t = 0.2, r = 0.1, b = 0, l = 0, unit = "cm"),
+        legend.margin = margin(t = 0.1, r = 0, b = 0.2, l = 0, unit = "cm"),
         legend.position = "bottom",
         legend.box = "horizontal",
         axis.text = element_text(color = "white"))
@@ -596,7 +597,7 @@ server <- shinyServer(function(input, output, session) {
   ### Africa: subsidy heat map
   ### ------------------------
   
-  output$africa_subsidy_map <- renderPlot({
+  output$africa_subsidy_map <- renderPlot(bg = "#262626", {
     
     ### Get totals for data
     eez_totals <- africa_eez_data() %>%
@@ -655,7 +656,7 @@ server <- shinyServer(function(input, output, session) {
   ### Africa: effort heat map
   ### ------------------------
   
-  output$africa_effort_map <- renderPlot({
+  output$africa_effort_map <- renderPlot(bg = "#262626", {
     
     ### Get totals for data
     eez_totals <- africa_eez_data() %>%
@@ -705,6 +706,7 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
+<<<<<<< HEAD
   
   
     
@@ -884,6 +886,11 @@ server <- shinyServer(function(input, output, session) {
   ###------------
   ### Caribbean 
   ###-----------
+=======
+
+  ### Caribbean ----------
+  
+>>>>>>> 075568e31a7e0fc24463805a3d91d0d6716c774a
   ### Map of Caribbean EEZs for which we have DW fishing effort
   output$caribbean_map <- renderLeaflet({
     
