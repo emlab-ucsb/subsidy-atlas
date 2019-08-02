@@ -38,9 +38,9 @@ border-right-color: transparent;}"
             
 
     # Top header
-    column(12, style = "padding: 15px 2.5%; border-top: 4px solid #3c8dbc;",
+    column(12, style = "padding: 15px 0; border-top: 4px solid #3c8dbc;",
            
-           tags$h3(style = "padding: 0 2.5%; margin: 0;", "Africa")
+           tags$h3(style = "margin: 0 2.5%;", "Africa")
            
            #br(),
            
@@ -51,7 +51,7 @@ border-right-color: transparent;}"
   
   fluidRow(  
     # Map and widget to select a country 
-    column(6, style = "padding: 0px 2.5%;",
+    column(6, style = "padding: 0px 1vw;",
            
            column(12, style = "padding: 0 10px;",
                   
@@ -79,7 +79,7 @@ border-right-color: transparent;}"
   
   ### Tab box with results
   
-  column(12, style = "width: 95%; margin: 2.5%;",
+  column(12, style = "width: 96%; margin: 2%;",
          
          tabBox(width = 12, id = "africa_tabs", 
                 
@@ -98,8 +98,8 @@ border-right-color: transparent;}"
                 ),
                 
                 # Second tab - heat maps   
-                tabPanel("Fishing effort and subsidy intensity of distant water vessels",
-                         column(12, style = "padding: 15px 25px; 
+                tabPanel("Distant water fishing effort and subsidies",
+                         column(12, style = "padding: 15px 10px; 
                                 border-style: solid;
                                 border-width: 2px 1px 1px 1px;
                                 border-color: #1A1B1D;",
