@@ -115,18 +115,14 @@ border-right-color: transparent;}"
                                   column(6,
                                          
                                          plotOutput("africa_subsidy_map", 
-                                                    width = "auto"),
-                                         plotOutput("africa_flag_subsidy_map",
-                                                    width= "auto")
+                                                    width = "100%")
                                          
                                   ),
                                   
                                   column(6,
                                          
                                          plotOutput("africa_effort_map",
-                                                    width = "auto"),
-                                         plotOutput("africa_flag_effort_map",
-                                                    width= "auto")
+                                                    width = "100%")
                                          
                                   )   
                                 ) #/fluidRow
