@@ -1,7 +1,7 @@
 ### -----------------------------------
-# User interface - Africa
+# User interface - pacific
 #
-# This script controls the layout of the user interface for the Africa tab
+# This script controls the layout of the user interface for the pacific tab
 # 
 ### ------------------------------------
 
@@ -76,39 +76,61 @@ border-right-color: transparent;}"
     
     ### Tab box with results
     
-    tabBox(width = 12, id = "pacific_tabs", 
+    column(12, style = "width: 95%; margin: 2.5%;",
            
-           # First tab - connectivity map
-           tabPanel("Origins of distant water fishing vessels", 
-                    
-                    column(12, style = "padding: 15px 0;",
+           tabBox(width = 12, id = "pacific_tabs", 
+                  
+                  # First tab - connectivity map
+                  tabPanel("Origins of distant water fishing vessels", 
                            
-                           leafletOutput("pacific_connection_map",
-                                         width = "95%",
-                                         height = "50vh")
-                    )
-           ),
-           
-           # Second tab - heat maps   
-           tabPanel("Fishing effort and subsidy intensity of distant water vessels",
-                    fluidRow(
-                      
-                      column(6, style = "padding: 15px 25px; background-color: #262626;",
-                             
-                             plotOutput("pacific_subsidy_map", 
-                                        width = "auto")
-                             
-                      ),
-                      
-                      column(6, style = "padding: 15px 25px; background-color: #262626;",
-                             
-                             plotOutput("pacific_effort_map",
-                                        width = "auto")
-                             
-                      )   
-                    ) #/fluidRow
-           ) #/tabPanel #2
-           
-    ) # /tabBox
+                           column(12, style = "padding: 15px 0; 
+                                border-style: solid;
+                                border-width: 2px 1px 1px 1px;
+                                border-color: #1A1B1D;",
+                                  
+                                  leafletOutput("pacific_connection_map",
+                                                width = "100%",
+                                                height = "50vh")
+                           )
+                  ),
+                  
+                  # Second tab - heat maps   
+                  tabPanel("Fishing effort and subsidy intensity of distant water vessels",
+                           column(12, style = "padding: 15px 25px; 
+                                border-style: solid;
+                                border-width: 2px 1px 1px 1px;
+                                border-color: #1A1B1D;",
+                                  
+                                  selectizeInput("pacific_flag_state_select",
+                                                 label = "Filter fishing activity by flag state...",
+                                                 choices = c("All flag states", flag_state_choices),
+                                                 selected = "All flag states",
+                                                 width = "100%"),
+                                  
+                                  fluidRow(
+                                    
+                                    column(6,
+                                           
+                                           plotOutput("pacific_subsidy_map", 
+                                                      width = "auto"),
+                                           plotOutput("pacific_flag_subsidy_map",
+                                                      width= "auto")
+                                           
+                                    ),
+                                    
+                                    column(6,
+                                           
+                                           plotOutput("pacific_effort_map",
+                                                      width = "auto"),
+                                           plotOutput("pacific_flag_effort_map",
+                                                      width= "auto")
+                                           
+                                    )   
+                                  ) #/fluidRow
+                           )
+                  ) #/tabPanel #2
+                  
+           ) # /tabBox
+    ) # /column (for tabBox)
     
   ) #close fluid page
