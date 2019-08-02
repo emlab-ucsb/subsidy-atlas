@@ -394,7 +394,7 @@ server <- shinyServer(function(input, output, session) {
       
       # Add a different colored polygon on top of map
       africa_proxy %>% addPolygons(data = selected_eez,
-                                      fillColor = "darkred",
+                                      fillColor = "seagreen",
                                       fillOpacity = 1,
                                       color= "white",
                                       weight = 0.3,
@@ -488,7 +488,7 @@ server <- shinyServer(function(input, output, session) {
     leaflet('africa_connection_map') %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = selected_eez, 
-                  fillColor = "slateblue",
+                  fillColor = "seagreen",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -879,9 +879,9 @@ server <- shinyServer(function(input, output, session) {
   
    #close render leaflet
   
-  
-  ### Caribbean ----------
-  
+  ###------------
+  ### Caribbean 
+  ###-----------
   ### Map of Caribbean EEZs for which we have DW fishing effort
   output$caribbean_map <- renderLeaflet({
     
@@ -975,7 +975,7 @@ server <- shinyServer(function(input, output, session) {
   
   output$caribbean_summary_text <- renderUI({
     
-    req(input$africa_eez_select != "Select and EEZ...")
+    req(input$caribbean_eez_select != "Select an EEZ...")
     
     connectivity_data_filter_caribbean <- connectivity_data %>% # load this in up above
       dplyr::filter(eez_cod == input$caribbean_eez_select) %>% 
