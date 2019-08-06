@@ -603,3 +603,30 @@ eez_effort_ZAF_JPN <- eez_effort_ZAF %>%
 
 ```
 
+```{r}
+
+connectivity_data_for_selected_eez_MRT <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8614") %>% #input$africa_eez_select) %>% 
+      arrange(flag)
+
+#  Hover Text
+    flag_state_summary_ZAF <- connectivity_data_for_selected_eez_ZAF %>%
+      mutate(flag = ifelse(is.na(flag), "UNK", flag)) %>% 
+      mutate(name = countrycode(flag, "iso3c", "country.name"))
+    
+  dw_effort_MUS <- dw_effort_final %>% 
+    dplyr::filter(eez_code == "8343")
+  
+  dw_effort_GNB <- dw_effort_final %>% 
+    dplyr::filter(eez_code == "8471")
+  
+  connectivity_data_for_selected_eez_MUS <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8343") %>% #input$africa_eez_select) %>% 
+      arrange(flag)
+  
+  connectivity_data_for_selected_eez_GNB <- connectivity_data %>% # load this in up above
+      dplyr::filter(eez_cod == "8471") %>% #input$africa_eez_select) %>% 
+      arrange(flag)
+
+```
+

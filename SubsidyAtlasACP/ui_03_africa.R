@@ -98,7 +98,7 @@ border-right-color: transparent;}"
                 ),
                 
                 # Second tab - heat maps   
-                tabPanel("Distant water fishing effort and subsidies",
+                tabPanel("Fishing effort and subsidy intensity of distant water vessels",
                          column(12, style = "padding: 15px 10px; 
                                 border-style: solid;
                                 border-width: 2px 1px 1px 1px;

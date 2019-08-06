@@ -1,82 +1,82 @@
-territory,territory_iso3,mrgid,region,region_specific,shp_to_use
-Benin,BEN,8393,Africa,West African group,180
-Burkina Faso,BFA,,Africa,West African group,180
-Cabo Verde,CPV,8362,Africa,West African group,180
-Côte d'Ivoire,CIV,8473,Africa,West African group,180
-Gambia,GMB,8370,Africa,West African group,180
-Ghana,GHA,8400,Africa,West African group,180
-Guinea,GIN,8472,Africa,West African group,180
-Guinea-Bissau,GNB,8471,Africa,West African group,180
-Liberia,LBR,8391,Africa,West African group,180
-Mali,MLI,,Africa,West African group,180
-Mauritania,MRT,8369,Africa,West African group,180
-Niger,NER,,Africa,West African group,180
-Nigeria,NGA,8474,Africa,West African group,180
-Senegal,SEN,8371,Africa,West African group,180
-Sierra Leone,SLE,8390,Africa,West African group,180
-Togo,TGO,8392,Africa,West African group,180
-Cameroon,CMR,8475,Africa,Central African group,180
-Central African Republic,CAF,,Africa,Central African group,180
-Chad,TCD,,Africa,Central African group,180
-Congo (Kinshasa),COD,8477,Africa,Central African group,180
-Congo (Brazzaville),COG,8394,Africa,Central African group,180
-Equatorial Guinea,GNQ,8398,Africa,Central African group,180
-Gabon,GAB,8476,Africa,Central African group,180
-São Tomé and Príncipe,STP,8397,Africa,Central African group,180
-Burundi,BDI,,Africa,East African group,180
-Kenya,KEN,8349,Africa,East African group,180
-Rwanda,RWA,,Africa,East African group,180
-Tanzania,TZA,8479,Africa,East African group,180
-Uguanda,UGA,,Africa,East African group,180
-South Sudan,SSD,,Africa,East African group,180
-Comoros,COM,8334,Africa,East and South African group,180
-Djibouti,DJI,8352,Africa,East and South African group,180
-Eritrea,ERI,8351,Africa,East and South African group,180
-Ethiopia,ETH,,Africa,East and South African group,180
-Madagascar,MDG,8348,Africa,East and South African group,180
-Malawi,MWI,,Africa,East and South African group,180
-Mauritius,MUS,8343,Africa,East and South African group,180
-Seychelles,SYC,8337,Africa,East and South African group,180
-Somalia,SOM,8350,Africa,East and South African group,180
-Sudan,SDN,8355,Africa,East and South African group,180
-Zambia,ZMB,,Africa,East and South African group,180
-Zimbabwe,ZWE,,Africa,East and South African group,180
-Angola,AGO,8478,Africa,South African group,180
-Botswana,BWA,,Africa,South African group,180
-Lesotho,LSO,,Africa,South African group,180
-Mozambique,MOZ,8347,Africa,South African group,180
-Namibia,NAM,8395,Africa,South African group,180
-South Africa,ZAF,8396,Africa,South African group,180
-South Africa,ZAF,8384,Africa,South African group,180
-Eswatini,SWZ,,Africa,South African group,180
-Antigua and Barbuda,ATG,8414,Caribbean,Caribbean group,360
-Belize,BLZ,8457,Caribbean,Caribbean group,360
-Bahamas,BHS,8404,Caribbean,Caribbean group,360
-Barbados,BRB,8418,Caribbean,Caribbean group,360
-Cuba,CUB,8406,Caribbean,Caribbean group,360
-Dominica,DMA,8417,Caribbean,Caribbean group,360
-Dominican Republic,DOM,8409,Caribbean,Caribbean group,360
-Grenada,GRD,8419,Caribbean,Caribbean group,360
-Guyana,GUY,8460,Caribbean,Caribbean group,360
-Haiti,HTI,8408,Caribbean,Caribbean group,360
-Jamaica,JAM,8459,Caribbean,Caribbean group,360
-St. Kitts and Nevis,KNA,8413,Caribbean,Caribbean group,360
-St. Lucia,LCA,8416,Caribbean,Caribbean group,360
-St. Vincent and the Grenadines,VCT,8421,Caribbean,Caribbean group,360
-Suriname,SUR,8461,Caribbean,Caribbean group,360
-Trinidad and Tobago,TTO,8420,Caribbean,Caribbean group,360
-Cook Islands,COK,8446,Pacific,Pacific group,360
-Fiji,FJI,8325,Pacific,Pacific group,360
-Kiribati,KIR,8441,Pacific,Pacific group,360
-Kiribati,KIR,8450,Pacific,Pacific group,360
-Kiribati,KIR,8488,Pacific,Pacific group,360
-Marshall Islands,MHL,8318,Pacific,Pacific group,360
-Micronesia,FSM,8316,Pacific,Pacific group,360
-Nauru,NRU,8317,Pacific,Pacific group,360
-Niue,NIU,8447,Pacific,Pacific group,360
-Palau,PLW,8315,Pacific,Pacific group,360
-Solomon Islands,SLB,8314,Pacific,Pacific group,360
-Samoa,WSM,8445,Pacific,Pacific group,360
-Tonga,TON,8448,Pacific,Pacific group,360
-Tuvalu,TUV,8326,Pacific,Pacific group,360
-Vanuatu,VUT,8313,Pacific,Pacific group,360
+territory,territory_iso3,mrgid,region,region_specific,shp_to_use,fao_country_profile,country_profile,fao_memberships,fisheries_subsidies,treaties_conventions,internal_fishing_access_agreements
+Angola,AGO,8478,Africa,South African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=AGO&subj=6,http://www.seaaroundus.org/data/#/country/24,,http://www.seaaroundus.org/data/#/subsidy/6,http://www.fishbase.org/Country/CountryTreatyList.php?Country=24,http://www.seaaroundus.org/data/#/eez/24/internal-fishing-access/
+Antigua and Barbuda,ATG,8414,Caribbean,Caribbean group,360,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=ATG&subj=6,http://www.seaaroundus.org/data/#/country/28,,http://www.seaaroundus.org/data/#/subsidy/8,http://www.fishbase.org/Country/CountryTreatyList.php?Country=28,http://www.seaaroundus.org/data/#/eez/28/internal-fishing-access/
+Bahamas,BHS,8404,Caribbean,Caribbean group,360,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=BHS&subj=6,http://www.seaaroundus.org/data/#/country/44,,http://www.seaaroundus.org/data/#/subsidy/14,http://www.fishbase.org/Country/CountryTreatyList.php?Country=44,
+Barbados,BRB,8418,Caribbean,Caribbean group,360,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=BRB&subj=6,http://www.seaaroundus.org/data/#/country/52,,http://www.seaaroundus.org/data/#/subsidy/18,http://www.fishbase.org/Country/CountryTreatyList.php?Country=52,http://www.seaaroundus.org/data/#/eez/52/internal-fishing-access/
+Belize,BLZ,8457,Caribbean,Caribbean group,360,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=BLZ&subj=6,http://www.seaaroundus.org/data/#/country/84,,http://www.seaaroundus.org/data/#/subsidy/20,http://www.fishbase.org/Country/CountryTreatyList.php?Country=84,http://www.seaaroundus.org/data/#/eez/84/internal-fishing-access/
+Benin,BEN,8393,Africa,West African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=BEN&subj=6,http://www.seaaroundus.org/data/#/country/204,,http://www.seaaroundus.org/data/#/subsidy/21,http://www.fishbase.org/Country/CountryTreatyList.php?Country=204,http://www.seaaroundus.org/data/#/eez/204/internal-fishing-access/
+Botswana,BWA,,Africa,South African group,180,,,,,,
+Burkina Faso,BFA,,Africa,West African group,180,,,,,,
+Burundi,BDI,,Africa,East African group,180,,,,,,
+Cabo Verde,CPV,8362,Africa,West African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=CMR&subj=6,http://www.seaaroundus.org/data/#/country/120,,http://www.seaaroundus.org/data/#/subsidy/30,http://www.fishbase.org/Country/CountryTreatyList.php?Country=120,http://www.seaaroundus.org/data/#/eez/120/internal-fishing-access/
+Cameroon,CMR,8475,Africa,Central African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=CPV&subj=6,http://www.seaaroundus.org/data/#/country/132,,http://www.seaaroundus.org/data/#/subsidy/33,http://www.fishbase.org/Country/CountryTreatyList.php?Country=132,http://www.seaaroundus.org/data/#/eez/132/internal-fishing-access/
+Central African Republic,CAF,,Africa,Central African group,180,,,,,,
+Chad,TCD,,Africa,Central African group,180,,,,,,
+Comoros,COM,8334,Africa,East and South African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=COM&subj=6,http://www.seaaroundus.org/data/#/country/174,,http://www.seaaroundus.org/data/#/subsidy/42,http://www.fishbase.org/Country/CountryTreatyList.php?Country=174,http://www.seaaroundus.org/data/#/eez/174/internal-fishing-access/
+Congo (Brazzaville),COG,8394,Africa,Central African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=COG&subj=6,http://www.seaaroundus.org/data/#/country/178,,http://www.seaaroundus.org/data/#/subsidy/44,http://www.fishbase.org/Country/CountryTreatyList.php?Country=178,http://www.seaaroundus.org/data/#/eez/178/internal-fishing-access/
+Congo (Kinshasa),COD,8477,Africa,Central African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=COD&subj=6,http://www.seaaroundus.org/data/#/country/180,,http://www.seaaroundus.org/data/#/subsidy/43,http://www.fishbase.org/Country/CountryTreatyList.php?Country=180,http://www.seaaroundus.org/data/#/eez/180/internal-fishing-access/
+Cook Islands,COK,8446,Pacific,Pacific group,360,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=NZL&subj=6,http://www.seaaroundus.org/data/#/country/184,,http://www.seaaroundus.org/data/#/subsidy/45,http://www.fishbase.org/Country/CountryTreatyList.php?Country=184,http://www.seaaroundus.org/data/#/eez/184/internal-fishing-access/
+Côte d'Ivoire,CIV,8473,Africa,West African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=CIV&subj=6,http://www.seaaroundus.org/data/#/country/384,,http://www.seaaroundus.org/data/#/subsidy/47,http://www.fishbase.org/Country/CountryTreatyList.php?Country=384,http://www.seaaroundus.org/data/#/eez/384/internal-fishing-access/
+Cuba,CUB,8406,Caribbean,Caribbean group,360,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=CUB&subj=6,http://www.seaaroundus.org/data/#/country/192,,http://www.seaaroundus.org/data/#/subsidy/50,http://www.fishbase.org/Country/CountryTreatyList.php?Country=192,http://www.seaaroundus.org/data/#/eez/192/internal-fishing-access/
+Djibouti,DJI,8352,Africa,East and South African group,180,,,,,,
+Dominica,DMA,8417,Caribbean,Caribbean group,360,,,,,,
+Dominican Republic,DOM,8409,Caribbean,Caribbean group,360,,,,,,
+Equatorial Guinea,GNQ,8398,Africa,Central African group,180,,,,,,
+Eritrea,ERI,8351,Africa,East and South African group,180,,,,,,
+Eswatini,SWZ,,Africa,South African group,180,,,,,,
+Ethiopia,ETH,,Africa,East and South African group,180,,,,,,
+Fiji,FJI,8325,Pacific,Pacific group,360,,,,,,
+Gabon,GAB,8476,Africa,Central African group,180,,,,,,
+Gambia,GMB,8370,Africa,West African group,180,,,,,,
+Ghana,GHA,8400,Africa,West African group,180,,,,,,
+Grenada,GRD,8419,Caribbean,Caribbean group,360,,,,,,
+Guinea,GIN,8472,Africa,West African group,180,,,,,,
+Guinea-Bissau,GNB,8471,Africa,West African group,180,http://www.fao.org/countryprofiles/index.asp?lang=en&iso3=GNB&subj=6,http://www.seaaroundus.org/data/#/country/624,,http://www.seaaroundus.org/data/#/subsidy/87,http://www.fishbase.org/Country/CountryTreatyList.php?Country=624,http://www.seaaroundus.org/data/#/eez/624/internal-fishing-access/
+Guyana,GUY,8460,Caribbean,Caribbean group,360,,,,,,
+Haiti,HTI,8408,Caribbean,Caribbean group,360,,,,,,
+Jamaica,JAM,8459,Caribbean,Caribbean group,360,,,,,,
+Kenya,KEN,8349,Africa,East African group,180,,,,,,
+Kiribati,KIR,8441,Pacific,Pacific group,360,,,,,,
+Kiribati,KIR,8450,Pacific,Pacific group,360,,,,,,
+Kiribati,KIR,8488,Pacific,Pacific group,360,,,,,,
+Lesotho,LSO,,Africa,South African group,180,,,,,,
+Liberia,LBR,8391,Africa,West African group,180,,,,,,
+Madagascar,MDG,8348,Africa,East and South African group,180,,,,,,
+Malawi,MWI,,Africa,East and South African group,180,,,,,,
+Mali,MLI,,Africa,West African group,180,,,,,,
+Marshall Islands,MHL,8318,Pacific,Pacific group,360,,,,,,
+Mauritania,MRT,8369,Africa,West African group,180,,,,,,
+Mauritius,MUS,8343,Africa,East and South African group,180,,,,,,
+Micronesia,FSM,8316,Pacific,Pacific group,360,,,,,,
+Mozambique,MOZ,8347,Africa,South African group,180,,,,,,
+Namibia,NAM,8395,Africa,South African group,180,,,,,,
+Nauru,NRU,8317,Pacific,Pacific group,360,,,,,,
+Niger,NER,,Africa,West African group,180,,,,,,
+Nigeria,NGA,8474,Africa,West African group,180,,,,,,
+Niue,NIU,8447,Pacific,Pacific group,360,,,,,,
+Palau,PLW,8315,Pacific,Pacific group,360,,,,,,
+Rwanda,RWA,,Africa,East African group,180,,,,,,
+Samoa,WSM,8445,Pacific,Pacific group,360,,,,,,
+São Tomé and Príncipe,STP,8397,Africa,Central African group,180,,,,,,
+Senegal,SEN,8371,Africa,West African group,180,,,,,,
+Seychelles,SYC,8337,Africa,East and South African group,180,,,,,,
+Sierra Leone,SLE,8390,Africa,West African group,180,,,,,,
+Solomon Islands,SLB,8314,Pacific,Pacific group,360,,,,,,
+Somalia,SOM,8350,Africa,East and South African group,180,,,,,,
+South Africa,ZAF,8396,Africa,South African group,180,,,,,,
+South Africa,ZAF,8384,Africa,South African group,180,,,,,,
+South Sudan,SSD,,Africa,East African group,180,,,,,,
+St. Kitts and Nevis,KNA,8413,Caribbean,Caribbean group,360,,,,,,
+St. Lucia,LCA,8416,Caribbean,Caribbean group,360,,,,,,
+St. Vincent and the Grenadines,VCT,8421,Caribbean,Caribbean group,360,,,,,,
+Sudan,SDN,8355,Africa,East and South African group,180,,,,,,
+Suriname,SUR,8461,Caribbean,Caribbean group,360,,,,,,
+Tanzania,TZA,8479,Africa,East African group,180,,,,,,
+Togo,TGO,8392,Africa,West African group,180,,,,,,
+Tonga,TON,8448,Pacific,Pacific group,360,,,,,,
+Trinidad and Tobago,TTO,8420,Caribbean,Caribbean group,360,,,,,,
+Tuvalu,TUV,8326,Pacific,Pacific group,360,,,,,,
+Uguanda,UGA,,Africa,East African group,180,,,,,,
+Vanuatu,VUT,8313,Pacific,Pacific group,360,,,,,,
+Zambia,ZMB,,Africa,East and South African group,180,,,,,,
+Zimbabwe,ZWE,,Africa,East and South African group,180,,,,,,

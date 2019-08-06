@@ -452,6 +452,8 @@ server <- shinyServer(function(input, output, session) {
   
   output$africa_connection_map <- renderLeaflet({
     
+    #browser()
+    
     #Require EEZ selection
     req(input$africa_eez_select)
     req(input$africa_eez_select != "Select an EEZ...")
@@ -461,19 +463,28 @@ server <- shinyServer(function(input, output, session) {
     
     connectivity_data_for_selected_eez <- connectivity_data %>% # load this in up above
       dplyr::filter(eez_cod == input$africa_eez_select) %>% 
-      arrange(flag)
+      arrange(flag) 
+    
+    
     
     flag_states_for_selected_eez <- land_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
       arrange(flag)
     
+  #browser()
+  no_geometry <- connectivity_data_for_selected_eez
+  st_geometry(no_geometry) <- NULL
+   
     #  Hover Text
-    flag_state_summary <- connectivity_data_for_selected_eez %>% 
+    flag_state_summary <- flag_states_for_selected_eez %>% 
+      left_join(no_geometry, by = "flag") %>%
       mutate(name = countrycode(flag, "iso3c", "country.name"))
     
+    
+    
     flag_state_summary_text <- paste0(
-      "<b>", "Flag state: ", "</b>",  flag_state_summary$name,
+      "<b>", "Flag state: ", "</b>", flag_state_summary$name,
       "<br/>",
       "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
       "</br>",
@@ -484,10 +495,25 @@ server <- shinyServer(function(input, output, session) {
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fshn_KW, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
-    
+    #browser()
     # Leaflet map
     leaflet('africa_connection_map') %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = flag_states_for_selected_eez,
+                  fillColor = "darkmagenta",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = flag_state_summary_text,
+                  layerId = flag_states_for_selected_eez$flag,
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
       addPolygons(data = selected_eez, 
                   fillColor = "seagreen",
                   fillOpacity = 0.8,
@@ -504,21 +530,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")) %>%
       
-      addPolygons(data = flag_states_for_selected_eez,
-                  fillColor = "darkmagenta",
-                  fillOpacity = 0.8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = flag_state_summary_text,
-                  layerId = flag_states_for_selected_eez$flag,
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>% 
+       
       
       addPolylines(data = connectivity_data_for_selected_eez,
                    fillColor = "goldenrod",
@@ -529,6 +541,28 @@ server <- shinyServer(function(input, output, session) {
       setView(15, -13, zoom = 2)
   
   })
+  
+  ### -----------------------------------------------------------
+  ### Africa: filter flag state selectInput choices based on selected EEZ
+  ### -----------------------------------------------------------
+  
+  observeEvent(input$africa_eez_select, {
+    
+    req(input$africa_eez_select != "Select an EEZ...")
+    
+    connectivity_data_for_selected_eez <- connectivity_data %>%
+      dplyr::filter(eez_cod == input$africa_eez_select) %>% 
+      arrange(flag)
+    
+    flag_state_choices_africa <- connectivity_data_for_selected_eez$flag
+    names(flag_state_choices_africa) <- countrycode(flag_state_choices_africa, "iso3c", "country.name")
+    
+    updateSelectizeInput(session, "africa_flag_state_select",
+                         choices = c("All flag states", flag_state_choices_africa)
+    )
+    
+  })
+  
   
   ### --------------------------------------------------------------------------
   ### Africa: switch tab and update flag state selectInput based on click on map
@@ -1043,8 +1077,13 @@ server <- shinyServer(function(input, output, session) {
     
     #  Hover Text
     
+    #browser()
+    no_geometry <- connectivity_data_for_selected_eez
+    st_geometry(no_geometry) <- NULL
+    
     #  Hover Text
-    flag_state_summary <- connectivity_data_for_selected_eez %>% 
+    flag_state_summary <- flag_states_for_selected_eez %>% 
+      left_join(no_geometry, by = "flag") %>%
       mutate(name = countrycode(flag, "iso3c", "country.name"))
     
     flag_state_summary_text <- paste0(
@@ -1076,6 +1115,21 @@ server <- shinyServer(function(input, output, session) {
     
     leaflet('caribbean_connection_map') %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addPolygons(data = flag_states_for_selected_eez,
+                  fillColor = "darkmagenta",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = flag_state_summary_text,
+                  layerId = flag_states_for_selected_eez$flag,
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>% 
       addPolygons(data = selected_eez, 
                   fillColor = "seagreen",
                   fillOpacity = 0.8,
@@ -1093,21 +1147,7 @@ server <- shinyServer(function(input, output, session) {
                                               direction = "auto")) %>%  #,
       #setView()) %>%
       
-      addPolygons(data = flag_states_for_selected_eez,
-                  fillColor = "darkmagenta",
-                  fillOpacity = 0.8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = flag_state_summary_text,
-                  layerId = flag_states_for_selected_eez$flag,
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>% 
+      
       addPolylines(data = connectivity_data_for_selected_eez,
                    fillColor = "goldenrod",
                    fillOpacity = 1,
@@ -1593,9 +1633,13 @@ server <- shinyServer(function(input, output, session) {
       rename(flag = iso3) %>% 
       arrange(flag)
     
-    #  Hover Text
+    #browser()
+    no_geometry <- connectivity_data_for_selected_eez
+    st_geometry(no_geometry) <- NULL
     
-    flag_state_summary <- connectivity_data_for_selected_eez %>% 
+    #  Hover Text
+    flag_state_summary <- flag_states_for_selected_eez %>% 
+      left_join(no_geometry, by = "flag") %>%
       mutate(name = countrycode(flag, "iso3c", "country.name"))
     
     flag_state_summary_text <- paste0(
