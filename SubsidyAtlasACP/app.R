@@ -322,7 +322,9 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
+  ###------------
   ### Africa ----------
+  ###-----------------
   
   ### Map of African EEZs for which we have DW fishing effort
   output$africa_map <- renderLeaflet({
@@ -1212,46 +1214,97 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
+  ### ------------------------------
+  ### Caribbean: load eez specific data
+  ### ------------------------------
   
-  ## Heat maps
-  
-  output$caribbean_subsidy_map <- renderPlot({
+  caribbean_eez_data <- eventReactive(input$caribbean_eez_select, {
     
     # Require EEZ selection
-    req(input$caribbean_eez_select)
     req(input$caribbean_eez_select != "Select an EEZ...")
     
-    
-    # Find matching data file and load data
+    # Find matching data file and load
     all_data_files <- list.files(path = "./data/eez_results/ACP/", pattern = "*.csv")
     eez_numbers <- str_replace(all_data_files, "\\_.*", "")
     matching_file <- all_data_files[eez_numbers == input$caribbean_eez_select]
     
-    eez_effort_caribbean <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "iccnnnnn")  
+    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "iccnnnnn")
     
-    ### Generate plot
+    clean_out <- out %>%
+      dplyr::filter(year == 2018) %>%
+      mutate(flag = ifelse(is.na(flag), "UNK", flag)) %>%
+      mutate(name = countrycode(flag, "iso3c", "country.name")) %>%
+      dplyr::filter(name != names(caribbean_eez_choices[caribbean_eez_choices == input$caribbean_eez_select])) %>%
+      arrange(name)
     
-    # Filter data for selected flag state(s) and aggregate
-    eez_effort_aggregated_caribbean <- eez_effort_caribbean %>%
-      # dplyr::filter(flag == input.???) ### MATT - Add filtering option here
-      group_by(year, eez_code, lon_cen, lat_cen) %>%
+    clean_out$name[is.na(clean_out$name)] <- "Unknown flag"
+    
+    clean_out
+    
+  })
+  
+  ### -----------------------------------------------------------
+  ### caribbean: filter flag state selectInput choices based on selected EEZ
+  ### -----------------------------------------------------------
+  
+  observeEvent(input$caribbean_eez_select, {
+    
+    req(input$caribbean_eez_select != "Select an EEZ...")
+    
+    flag_state_choices_caribbean <- unique(caribbean_eez_data()$flag)
+    names(flag_state_choices_caribbean) <- unique(caribbean_eez_data()$name)
+    
+    updateSelectizeInput(session, "caribbean_flag_state_select",
+                         choices = c("All flag states", flag_state_choices_caribbean)
+    )
+    
+  })
+  
+  
+  
+  ### -------------------------
+  ### caribbean: subsidy heat map
+  ### ------------------------
+  
+  output$caribbean_subsidy_map <- renderPlot(bg = "#262626", {
+    
+    ### Get totals for data
+    eez_totals <- caribbean_eez_data() %>%
+      group_by(lon_cen, lat_cen) %>%
       summarize(fishing_hours = sum(fishing_hours, na.rm = T),
                 fishing_KWh = sum(fishing_KWh, na.rm = T),
                 subs = sum(subs, na.rm = T)) %>%
       mutate(subsidy_intensity = subs/fishing_KWh)
     
-    # Get data quntiles to set fil scale limit appropriately
-    intensity_quantile <- quantile(eez_effort_aggregated_caribbean$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
-    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+    ### Get limits for map area
+    x_lim <- c(min(eez_totals$lon_cen) - 0.5, max(eez_totals$lon_cen) + 0.5)
+    y_lim <- c(min(eez_totals$lat_cen) - 0.5, max(eez_totals$lat_cen) + 0.5)
     
-    # Set map limits appropriately
-    x_lim <- c(min(eez_effort_aggregated_caribbean$lon_cen) - 0.5, max(eez_effort_aggregated_caribbean$lon_cen) + 0.5)
-    y_lim <- c(min(eez_effort_aggregated_caribbean$lat_cen) - 0.5, max(eez_effort_aggregated_caribbean$lat_cen) + 0.5)
+    ### Filter data for selected flag state(s) and aggregate
+    if(input$caribbean_flag_state_select == "All flag states"){
+      
+      eez_plot_data <- eez_totals
+      
+    }else{
+      
+      eez_plot_data <- caribbean_eez_data() %>%
+        dplyr::filter(flag == input$caribbean_flag_state_select) %>%
+        group_by(lon_cen, lat_cen) %>%
+        summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                  fishing_KWh = sum(fishing_KWh, na.rm = T),
+                  subs = sum(subs, na.rm = T)) %>%
+        mutate(subsidy_intensity = subs/fishing_KWh)
+      
+    }
+    
+    # Get data quntiles to set fil scale limit appropriately
+    intensity_quantile <- quantile(eez_plot_data$subs/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
     
     # Map of subsidy intensity
     ggplot()+
-      geom_tile(data = eez_effort_aggregated_caribbean, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
-      scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = subs/1e3))+
+      scale_fill_viridis_c(na.value = NA, name = "Value of subsidies for fishing \n(2018 US$, thousands)", 
                            limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
                            labels=scale_labels,
                            breaks=scale_labels,
@@ -1265,56 +1318,54 @@ server <- shinyServer(function(input, output, session) {
       scale_y_continuous(expand = c(0,0))+
       eezmaptheme
     
-    
-    
   })
   
-  output$caribbean_effort_map <- renderPlot({
+  
+  ### -------------------------
+  ### caribbean: effort heat map
+  ### ------------------------
+  
+  output$caribbean_effort_map <- renderPlot(bg = "#262626", {
     
-    #Require EEZ selection
-    req(input$caribbean_eez_select)
-    req(input$caribbean_eez_select != "Select an EEZ...")
-    
-    
-    
-    # Find matching data file and load data
-    all_data_files <- list.files(path = "./data/eez_results/ACP/", pattern = "*.csv")
-    eez_numbers <- str_replace(all_data_files, "\\_.*", "")
-    matching_file <- all_data_files[eez_numbers == input$caribbean_eez_select]
-    
-    eez_effort_caribbean <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "iccnnnnn")   
-    
-    
-    # #Gemerate plot
-    # 
-    #  ### Make Plots 
-    #  # Get quantiles of data for scale limits
-    eez_effort_aggregated_caribbean <- eez_effort_caribbean %>%
-      group_by(year, eez_code, lon_cen, lat_cen) %>%
+    ### Get totals for data
+    eez_totals <- caribbean_eez_data() %>%
+      group_by(lon_cen, lat_cen) %>%
       summarize(fishing_hours = sum(fishing_hours, na.rm = T),
                 fishing_KWh = sum(fishing_KWh, na.rm = T),
                 subs = sum(subs, na.rm = T)) %>%
       mutate(subsidy_intensity = subs/fishing_KWh)
-    #  
-    # # # # Quantiles
-    intensity_quantile <- quantile(eez_effort_aggregated_caribbean$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+    
+    ### Get limits for map area
+    x_lim <- c(min(eez_totals$lon_cen) - 0.5, max(eez_totals$lon_cen) + 0.5)
+    y_lim <- c(min(eez_totals$lat_cen) - 0.5, max(eez_totals$lat_cen) + 0.5)
+    
+    ### Filter data for selected flag state(s) and aggregate
+    if(input$caribbean_flag_state_select == "All flag states"){
+      
+      eez_plot_data <- eez_totals
+      
+    }else{
+      
+      eez_plot_data <- caribbean_eez_data() %>%
+        dplyr::filter(flag == input$caribbean_flag_state_select) %>%
+        group_by(lon_cen, lat_cen) %>%
+        summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                  fishing_KWh = sum(fishing_KWh, na.rm = T),
+                  subs = sum(subs, na.rm = T)) %>%
+        mutate(subsidy_intensity = subs/fishing_KWh)
+      
+    }
+    
+    # Get data quntiles to set fil scale limit appropriately
+    intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
     scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
-    #  
-    # # # # Set map limits for filtering global country map and eez map appropriately
-    x_lim <- c(min(eez_effort_aggregated_caribbean$lon_cen) - 0.5, max(eez_effort_aggregated_caribbean$lon_cen) + 0.5)
-    y_lim <- c(min(eez_effort_aggregated_caribbean$lat_cen) - 0.5, max(eez_effort_aggregated_caribbean$lat_cen) + 0.5)
-    #  
     
-    # ## Map of effort intensity
-    
-    
-    # Labels for the log scale 
+    # Map of fishing effort
     ggplot()+
+      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = fishing_KWh))+
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
       geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
       geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
-      geom_tile(data = eez_effort_aggregated_caribbean, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
-      #eezmaptheme +
-      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
       labs(x = "", y = "")+
       coord_sf(xlim = x_lim, ylim = y_lim) +
       guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
@@ -1323,7 +1374,6 @@ server <- shinyServer(function(input, output, session) {
       eezmaptheme
     
   })
-  
   
   
   
@@ -1758,45 +1808,95 @@ server <- shinyServer(function(input, output, session) {
   
   
   
-  ## Heat maps
+  ### ------------------------------
+  ### Pacific: load eez specific data
+  ### ------------------------------
   
-  output$pacific_subsidy_map <- renderPlot({
+  pacific_eez_data <- eventReactive(input$pacific_eez_select, {
     
     # Require EEZ selection
-    req(input$pacific_eez_select)
     req(input$pacific_eez_select != "Select an EEZ...")
     
-    
-    # Find matching data file and load data
+    # Find matching data file and load
     all_data_files <- list.files(path = "./data/eez_results/ACP/", pattern = "*.csv")
     eez_numbers <- str_replace(all_data_files, "\\_.*", "")
     matching_file <- all_data_files[eez_numbers == input$pacific_eez_select]
     
-    eez_effort_pacific <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "iccnnnnn")  
+    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "iccnnnnn")
     
-    ### Generate plot
+    clean_out <- out %>%
+      dplyr::filter(year == 2018) %>%
+      mutate(flag = ifelse(is.na(flag), "UNK", flag)) %>%
+      mutate(name = countrycode(flag, "iso3c", "country.name")) %>%
+      dplyr::filter(name != names(pacific_eez_choices[pacific_eez_choices == input$pacific_eez_select])) %>%
+      arrange(name)
     
-    # Filter data for selected flag state(s) and aggregate
-    eez_effort_aggregated_pacific <- eez_effort_pacific %>%
-      # dplyr::filter(flag == input.???) ### MATT - Add filtering option here
-      group_by(year, eez_code, lon_cen, lat_cen) %>%
+    clean_out$name[is.na(clean_out$name)] <- "Unknown flag"
+    
+    clean_out
+    
+  })
+  
+  ### -----------------------------------------------------------
+  ### pacific: filter flag state selectInput choices based on selected EEZ
+  ### -----------------------------------------------------------
+  
+  observeEvent(input$pacific_eez_select, {
+    
+    req(input$pacific_eez_select != "Select an EEZ...")
+    
+    flag_state_choices_pacific <- unique(pacific_eez_data()$flag)
+    names(flag_state_choices_pacific) <- unique(pacific_eez_data()$name)
+    
+    updateSelectizeInput(session, "pacific_flag_state_select",
+                         choices = c("All flag states", flag_state_choices_pacific)
+    )
+    
+  })
+  
+  ### -------------------------
+  ### pacific: subsidy heat map
+  ### ------------------------
+  
+  output$pacific_subsidy_map <- renderPlot(bg = "#262626", {
+    
+    ### Get totals for data
+    eez_totals <- pacific_eez_data() %>%
+      group_by(lon_cen, lat_cen) %>%
       summarize(fishing_hours = sum(fishing_hours, na.rm = T),
                 fishing_KWh = sum(fishing_KWh, na.rm = T),
                 subs = sum(subs, na.rm = T)) %>%
       mutate(subsidy_intensity = subs/fishing_KWh)
     
-    # Get data quntiles to set fil scale limit appropriately
-    intensity_quantile <- quantile(eez_effort_aggregated_pacific$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
-    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+    ### Get limits for map area
+    x_lim <- c(min(eez_totals$lon_cen) - 0.5, max(eez_totals$lon_cen) + 0.5)
+    y_lim <- c(min(eez_totals$lat_cen) - 0.5, max(eez_totals$lat_cen) + 0.5)
     
-    # Set map limits appropriately
-    x_lim <- c(min(eez_effort_aggregated_pacific$lon_cen) - 0.5, max(eez_effort_aggregated_pacific$lon_cen) + 0.5)
-    y_lim <- c(min(eez_effort_aggregated_pacific$lat_cen) - 0.5, max(eez_effort_aggregated_pacific$lat_cen) + 0.5)
+    ### Filter data for selected flag state(s) and aggregate
+    if(input$pacific_flag_state_select == "All flag states"){
+      
+      eez_plot_data <- eez_totals
+      
+    }else{
+      
+      eez_plot_data <- pacific_eez_data() %>%
+        dplyr::filter(flag == input$pacific_flag_state_select) %>%
+        group_by(lon_cen, lat_cen) %>%
+        summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                  fishing_KWh = sum(fishing_KWh, na.rm = T),
+                  subs = sum(subs, na.rm = T)) %>%
+        mutate(subsidy_intensity = subs/fishing_KWh)
+      
+    }
+    
+    # Get data quntiles to set fil scale limit appropriately
+    intensity_quantile <- quantile(eez_plot_data$subs/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
     
     # Map of subsidy intensity
     ggplot()+
-      geom_tile(data = eez_effort_aggregated_pacific, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
-      scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = subs/1e3))+
+      scale_fill_viridis_c(na.value = NA, name = "Value of subsidies for fishing \n(2018 US$, thousands)", 
                            limits=c(round(intensity_quantile[1],1)-round(intensity_quantile[1],1)*0.01, round(intensity_quantile[4], 1) + round(intensity_quantile[4], 1)*0.01), 
                            labels=scale_labels,
                            breaks=scale_labels,
@@ -1810,56 +1910,55 @@ server <- shinyServer(function(input, output, session) {
       scale_y_continuous(expand = c(0,0))+
       eezmaptheme
     
-    
-    
   })
   
-  output$pacific_effort_map <- renderPlot({
+  
+  
+  ### -------------------------
+  ### pacific: effort heat map
+  ### ------------------------
+  
+  output$pacific_effort_map <- renderPlot(bg = "#262626", {
     
-    #Require EEZ selection
-    req(input$pacific_eez_select)
-    req(input$pacific_eez_select != "Select an EEZ...")
-    
-    
-    
-    # Find matching data file and load data
-    all_data_files <- list.files(path = "./data/eez_results/ACP/", pattern = "*.csv")
-    eez_numbers <- str_replace(all_data_files, "\\_.*", "")
-    matching_file <- all_data_files[eez_numbers == input$pacific_eez_select]
-    
-    eez_effort_pacific <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "iccnnnnn")   
-    
-    
-    # #Gemerate plot
-    # 
-    #  ### Make Plots 
-    #  # Get quantiles of data for scale limits
-    eez_effort_aggregated_pacific <- eez_effort_pacific %>%
-      group_by(year, eez_code, lon_cen, lat_cen) %>%
+    ### Get totals for data
+    eez_totals <- pacific_eez_data() %>%
+      group_by(lon_cen, lat_cen) %>%
       summarize(fishing_hours = sum(fishing_hours, na.rm = T),
                 fishing_KWh = sum(fishing_KWh, na.rm = T),
                 subs = sum(subs, na.rm = T)) %>%
       mutate(subsidy_intensity = subs/fishing_KWh)
-    #  
-    # # # # Quantiles
-    intensity_quantile <- quantile(eez_effort_aggregated_pacific$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+    
+    ### Get limits for map area
+    x_lim <- c(min(eez_totals$lon_cen) - 0.5, max(eez_totals$lon_cen) + 0.5)
+    y_lim <- c(min(eez_totals$lat_cen) - 0.5, max(eez_totals$lat_cen) + 0.5)
+    
+    ### Filter data for selected flag state(s) and aggregate
+    if(input$pacific_flag_state_select == "All flag states"){
+      
+      eez_plot_data <- eez_totals
+      
+    }else{
+      
+      eez_plot_data <- pacific_eez_data() %>%
+        dplyr::filter(flag == input$pacific_flag_state_select) %>%
+        group_by(lon_cen, lat_cen) %>%
+        summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                  fishing_KWh = sum(fishing_KWh, na.rm = T),
+                  subs = sum(subs, na.rm = T)) %>%
+        mutate(subsidy_intensity = subs/fishing_KWh)
+      
+    }
+    
+    # Get data quntiles to set fil scale limit appropriately
+    intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
     scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
-    #  
-    # # # # Set map limits for filtering global country map and eez map appropriately
-    x_lim <- c(min(eez_effort_aggregated_pacific$lon_cen) - 0.5, max(eez_effort_aggregated_pacific$lon_cen) + 0.5)
-    y_lim <- c(min(eez_effort_aggregated_pacific$lat_cen) - 0.5, max(eez_effort_aggregated_pacific$lat_cen) + 0.5)
-    #  
     
-    # ## Map of effort intensity
-    
-    
-    # Labels for the log scale 
+    # Map of fishing effort
     ggplot()+
+      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = fishing_KWh))+
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
       geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
       geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
-      geom_tile(data = eez_effort_aggregated_pacific, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
-      #eezmaptheme +
-      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
       labs(x = "", y = "")+
       coord_sf(xlim = x_lim, ylim = y_lim) +
       guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
@@ -1870,9 +1969,7 @@ server <- shinyServer(function(input, output, session) {
   })
   
   
-  
-    
-  })
+})
   
   
 
