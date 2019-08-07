@@ -70,9 +70,17 @@ border-right-color: transparent;}"
     
     column(6, style = "padding: 0px",
            
-           uiOutput("africa_summary_text")
+           uiOutput("africa_summary_text"),
            
-           ) #close column
+           uiOutput("africa_online_text")
+           
+           )#, #close column
+    
+    # column(6, style = "padding: 0px",
+    #        
+    #        uiOutput("africa_online_text")
+    #        
+    #        ) #close column
     
     
   ), #close fluid row 

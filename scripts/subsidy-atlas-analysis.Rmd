@@ -842,10 +842,10 @@ if(eez_purpose == "top_ranked"){
 }else if(eez_purpose == "ACP"){
   
   ACP_codes <- read_csv(here::here("scripts", "ACP_eez_codes.csv")) %>% 
-  filter(eez_id != "N/A")
+  filter(mrgid != "N/A")
   
   ACP_eez_filter <- EEZ_ranking %>%
-    dplyr::filter(eez_code %in% ACP_codes$eez_id)
+    dplyr::filter(eez_code %in% ACP_codes$mrgid)
   
   analysis_eezs <- ACP_eez_filter$eez_code
   analysis_eez_names <- ACP_eez_filter$eez_territory_iso3

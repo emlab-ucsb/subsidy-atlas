@@ -437,6 +437,12 @@ server <- shinyServer(function(input, output, session) {
       arrange(territory_iso3)
     
     
+    
+    
+    ACP_codes_links <- ACP_codes %>% 
+      dplyr::filter(mrgid == input$africa_eez_select)
+    
+    
     ### Summary stats for EEZ 
     paste0("<h4>", total_stats_africa$eez_nam, "</h4>",
            "<b>", "Total # of Vessels in EEZ: ", "</b>", format(round(total_stats_africa$vessels, 0), big.mark = ","),
@@ -446,6 +452,40 @@ server <- shinyServer(function(input, output, session) {
            "<b>", "Total Fishing kwhr in EEZ: ", "</b>", format(round(total_stats_africa$fshn_KW, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
+    
+    
+  })
+  
+  ###------------
+  ### Africa: Links to Online references
+  ###------------
+  
+  output$africa_online_text <- renderUI({
+
+    req(input$africa_eez_select != "Select an EEZ...")
+
+    ACP_codes_links <- ACP_codes %>%
+      dplyr::filter(mrgid == input$africa_eez_select)
+    
+    fao_country_profile <- a("FAO Country Profile", href = ACP_codes_links$fao_country_profile)
+    country_profile <- a("Country Profile", href = ACP_codes_links$country_profile)
+    fishery_organization <- a("Fishery Management Organization", href = ACP_codes_links$fishery_organization)
+    fao_memberships <- a("FAO Memberships", href = ACP_codes_links$fao_memberships)
+    #fisheries_subsidies <- a("Fishery Subsidy Information", href = ACP_codes_links$fisheries_subsidies)
+    treaties_conventions <- a("Treaties and Conventions", href = ACP_codes_links$treaties_conventions)
+    internal_fishing_acess_agreements <- a("Internal Fishing Access Agreements", href = ACP_codes_links$internal_fishing_access_agreements)
+    
+    tagList(fao_country_profile, 
+            country_profile, 
+            fao_memberships,
+            #fisheries_subsidies,
+            treaties_conventions,
+            internal_fishing_acess_agreements)
+    
+
+
+    #HTML(paste0("<a href='ACP_codes_links$fao_country_profile'"))
+
   })
   
   ### ------------------------
