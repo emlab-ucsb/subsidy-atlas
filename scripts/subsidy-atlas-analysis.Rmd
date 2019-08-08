@@ -12,14 +12,11 @@ fontsize: 11pt
 
 This script pulls information on fishing effort from Global Fishing Watch for distant water fishing vessels. The top countries with distant water fishing fleets and the top EEZs with the most distant water fishing activity are then identified.  
 
-
 ```{r setup, include=FALSE}
 # Chunk options
-
 knitr::opts_chunk$set(echo = TRUE)
 
-# Packages
-#library(maps)
+### Load packages ------
 library(sf) # spatial manipulation
 library(lwgeom) # needed for curved lines
 library(here) # path names
@@ -36,101 +33,93 @@ library(gridExtra)
 library(grid)
 library(png)
 
-# Set purpose of the flag state analysis ("top_ranked")
-flag_state_purpose <- "top_ranked"
-# Number of flag_states to include (if purpose is "top_ranked")
-number_of_top_countries_flag <- 10
+### Set run options -----
 
-# Set purpose of the EEZ anlysis ("ACP" or "top_ranked")
+# Run flag state analysis (T/F)?
+run_flag_state <- T
+# Set purpose of the flag state analysis (currently the only choice is "top_ranked")
+flag_state_purpose <- "top_ranked"
+# Number of flag_states to include (only necessary if purpose is "top_ranked", defaults to 10)
+number_of_top_countries_flag <- 20
+
+# Run EEZ analysis (T/F)?
+run_eez <- T
+# Set purpose of the EEZ anlysis (choices: "ACP" or "top_ranked", defaults to "top_ranked")
 eez_purpose <- "ACP"
-# Number of EEZs to include (if purpose is "top_ranked")
+# Number of EEZs to include (only necessary if purpose is "top_ranked", defaults to 10)
 number_of_top_countries_eez <- 10
 
-
-# Set general results directory
-results_dir <- here::here("results/")
-if (dir.exists(results_dir) == F) {
-  dir.create(results_dir, recursive = T)
-}
-
-# Set directories for flag state results 
-flag_state_results_dir <- paste0(results_dir, "flag_state_results/", flag_state_purpose, "/")
-if (dir.exists(flag_state_results_dir) == F) {
-  dir.create(flag_state_results_dir, recursive = T)
-}
-
-flag_state_tables_dir <- paste0(flag_state_results_dir, "tables/")
-if (dir.exists(flag_state_tables_dir) == F) {
-  dir.create(flag_state_tables_dir, recursive = T)
-}
-
-flag_state_country_dat_dir <- paste0(flag_state_results_dir, "country_dat/")
-if (dir.exists(flag_state_country_dat_dir) == F) {
-  dir.create(flag_state_country_dat_dir, recursive = T)
-}
-
-flag_state_figures_dir <- paste0(flag_state_results_dir, "figures/")
-if (dir.exists(flag_state_figures_dir) == F) {
-  dir.create(flag_state_figures_dir, recursive = T)
-}
-
-flag_state_pdf_dir <- paste0(flag_state_results_dir, "pdfs/")
-if (dir.exists(flag_state_pdf_dir) == F) {
-  dir.create(flag_state_pdf_dir, recursive = T)
-}
-
-# Set directory for EEZ results
-eez_results_dir <- paste0(results_dir, "eez_results/", eez_purpose, "/")
-if (dir.exists(eez_results_dir) == F) {
-  dir.create(eez_results_dir, recursive = T)
-}
-
-eez_tables_dir <- paste0(eez_results_dir, "tables/")
-if (dir.exists(eez_tables_dir) == F) {
-  dir.create(eez_tables_dir, recursive = T)
-}
-
-eez_dat_dir <- paste0(eez_results_dir, "dat/")
-if (dir.exists(eez_dat_dir) == F) {
-  dir.create(eez_dat_dir, recursive = T)
-}
-
-eez_figures_dir <- paste0(eez_results_dir, "figures/")
-if (dir.exists(eez_figures_dir) == F) {
-  dir.create(eez_figures_dir, recursive = T)
-}
-
-eez_pdf_dir <- paste0(eez_results_dir, "pdfs/")
-if (dir.exists(eez_pdf_dir) == F) {
-  dir.create(eez_pdf_dir, recursive = T)
-}
-
-# If EEZ purpose is "ACP", also create a results directory for the app
-if(eez_purpose == "ACP"){
-    eez_results_app_dir <- paste0(here::here("SubsidyAtlasACP/"), "data/eez_results/", eez_purpose, "/")
-    if (dir.exists(eez_results_app_dir) == F) {
-      dir.create(eez_results_app_dir, recursive = T)
-    }
-}
-
-# Connection to BigQuery
-ucsb_project <-  "ucsb-gfw"
-#gfw_project <- "world-fishing-827"
-
+# Connection to BigQuery - need a project for billing
+bq_project <-  "ucsb-gfw"
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- F
+rerun_gfw <- T
 
 # Choose analysis year (2012 - 2018)
 analysis_year <- 2018
+
 ```
 
-# Data pull from Global Fishing Watch
 
-This section describes the process of linking to the most recent version of the GFW data, and pulling information on all distant water fishing vessels represented in that dataset. This process was last performed on 5/23/2019.  
+```{r}
+### Create results directories -----
+# Shouldn't need to manually change anything in this section
+
+# If either the flag state or eez analyses should be run: 
+if(run_flag_state | run_eez){
+  
+  # Set general results directory
+  results_dir <- here::here("results/")
+  if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
+  
+  ## Create flag state results directories
+  if(run_flag_state){
+    
+    flag_state_results_dir <- paste0(results_dir, "flag_state_results/", flag_state_purpose, "/")
+    if (dir.exists(flag_state_results_dir) == F) { dir.create(flag_state_results_dir, recursive = T) }
+
+    flag_state_country_dat_dir <- paste0(flag_state_results_dir, "country_dat/")
+    if (dir.exists(flag_state_country_dat_dir) == F) { dir.create(flag_state_country_dat_dir, recursive = T) }
+
+    flag_state_figures_dir <- paste0(flag_state_results_dir, "figures/")
+    if (dir.exists(flag_state_figures_dir) == F) { dir.create(flag_state_figures_dir, recursive = T) }
+
+    flag_state_pdf_dir <- paste0(flag_state_results_dir, "pdfs/")
+    if (dir.exists(flag_state_pdf_dir) == F) { dir.create(flag_state_pdf_dir, recursive = T) }
+    
+  } # /flag state results
+  
+  ## Create eez results directories
+  if(run_eez){
+    
+    eez_results_dir <- paste0(results_dir, "eez_results/", eez_purpose, "/")
+    if (dir.exists(eez_results_dir) == F) { dir.create(eez_results_dir, recursive = T) }
+    
+    eez_dat_dir <- paste0(eez_results_dir, "dat/")
+    if (dir.exists(eez_dat_dir) == F) { dir.create(eez_dat_dir, recursive = T) }
+
+    eez_figures_dir <- paste0(eez_results_dir, "figures/")
+    if (dir.exists(eez_figures_dir) == F) { dir.create(eez_figures_dir, recursive = T) }
+
+    eez_pdf_dir <- paste0(eez_results_dir, "pdfs/")
+    if (dir.exists(eez_pdf_dir) == F) { dir.create(eez_pdf_dir, recursive = T) }
+    
+    
+    # If EEZ purpose is "ACP", also create a results directory for the app
+    if(eez_purpose == "ACP"){
+      eez_results_app_dir <- paste0(here::here("SubsidyAtlasACP/"), "data/eez_results/", eez_purpose, "/")
+      if (dir.exists(eez_results_app_dir) == F) { dir.create(eez_results_app_dir, recursive = T) }
+    }
+    
+  } # /eez results
+  
+} # /all results
+```
+
+# Pull total fishing effort from Global Fishing Watch
+
+This section describes the process of linking to the most recent version of the GFW data, and pulling information on fishing vessels represented in that dataset. This process was last performed on 8/8/2019.  
 
 We first extract total fishing hours (and fishing days) by year and EEZ for each vessel in the dataset. EEZs are defined by a numeric code, each cooresponding to a region in the World EEZ data set from Marineregions.org. The responsible territory for each region has been identified, as well as the sovereign country (or countries for disputed regions). We then match the best vessel characteristics identified by GFW to each vessel, and remove entries for all vessels that GFW does not consider to be fishing vessels. 
-
-In order to separate entries cooresponding to distant water fishing effort, we remove all entries for vessels fishing on the high seas, and all vessel/EEZ pairings where the the flag state of the vessel is the same as the EEZ state or sovereign. We also remove all entries for vessels fishing less than one hour in a given EEZ in a year. 
 
 ```{r}
 if(rerun_gfw == T){
@@ -191,6 +180,7 @@ SELECT
   eez_sovereign2_iso3,
   eez_sovereign3_iso3,
   fishing_hours_year_eez,
+  fishing_hours_year_eez*best.best_engine_power_kw fishing_KWh_year_eez,
   fishing_days_year_eez
 FROM
   fishing_info_by_eez
@@ -214,57 +204,127 @@ ORDER BY
   ssvid"
 
 # Store in bigquery - all_fishing_effort_by_eez (~700,000 rows - over 100MB)
-bq_table(project = ucsb_project, table = "all_fishing_effort_by_eez", dataset = "subsidy_atlas") %>% 
+bq_table(project = bq_project, table = "all_fishing_effort_by_eez", dataset = "subsidy_atlas") %>% 
   bq_table_delete()
-bq_project_query(ucsb_project, sql, destination_table = bq_table(project = ucsb_project, table = "all_fishing_effort_by_eez",dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE)
+bq_project_query(bq_project, sql, destination_table = bq_table(project = bq_project, table = "all_fishing_effort_by_eez",dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE)
 
-# Let's exclude all entries where a vessel had less than 1 fishing hour in any eez in a given year, entries from the high seas, and entries where the flag of the vessel is the same as the administering territory of that eez
+}
+```
+
+## Flag state fishing totals by year
+
+For the purposes of allocating subsidies to individual vessels, we need the total number of fishing hours for each flag state in a given year, as we assume that subsidies are allocated proportionally based on fishing effort. 
+
+```{r}
+if(rerun_gfw){
+  
 sql2 <- "
+SELECT
+  year,
+  flag,
+  COUNT(DISTINCT ssvid) AS vessels_total,
+  SUM(fishing_hours_year_eez) fishing_hours_total,
+  SUM(fishing_KWh_year_eez) fishing_KWh_total,
+  SUM(fishing_days_year_eez) fishing_days_total
+FROM
+  `ucsb-gfw.subsidy_atlas.all_fishing_effort_by_eez`
+GROUP BY
+  year,
+  flag
+ORDER BY
+  year DESC,
+  flag"
+
+  # Identify BQ table for this query
+  flag_totals_table <- bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas") 
+
+  # Check if that table already exists. If not, create it. Otherwise clear it. 
+  if(bq_table_exists(flag_totals_table) == FALSE){
+    bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas") %>%
+      bq_table_create()
+  }else{
+    bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas") %>%
+      bq_table_delete()
+  }
+
+  # Run query
+  flag_totals <- bq_project_query(bq_project, sql2, destination_table = bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+    bq_table_download(max_results = Inf)
+  
+  write_csv(flag_totals, path = paste0(results_dir, "fishing_effort_totals_by_flag.csv"))
+  
+}else{
+  
+  flag_totals <- read_csv(paste0(results_dir, "fishing_effort_totals_by_flag.csv"))
+  
+}
+
+```
+
+## Identify distant water fishing vessels
+
+Since the purpose of this analysis relates to distant water fishing effort, we need to separate out fishing effort considered to be "distant water" from the rest. This is done in a series of steps. 
+
+In the first step, the following is not considered to be "distant water fishing" and is therefore removed:
+- All fishing effort occuring on the high seas;
+- All fishing effort occuring in an EEZ when the flag state of the vessel is the same as the administering state of the EEZ in which it is fishing.
+
+Additionally, we remove all entries in which a vessel has spent less than 1 hour fishing in a given EEZ in a year. 
+
+```{r}
+if(rerun_gfw){
+  
+sql3 <- "
 SELECT
   *
 FROM
   `ucsb-gfw.subsidy_atlas.all_fishing_effort_by_eez`
 WHERE 
-fishing_hours_year_eez > 1 
+fishing_hours_year_eez > 1
 and eez_territory_iso3 != 'High Seas'
 and flag != eez_territory_iso3"
 
-# Store in bigquery - all_dw_fishing_effort_by_eez (~100,000 rows - ~25MB)
-bq_table(project = ucsb_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas") %>% 
-  bq_table_delete()
-
-# Download results
-all_dw_fishing_effort_by_eez <- bq_project_query(ucsb_project, sql2, destination_table = bq_table(project = ucsb_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+  # Identify BQ table for this query
+  all_dw_fishing_effort_by_eez_table <- bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas")
+  
+  # Check if that table already exists. If not, create it. Otherwise clear it. 
+  if(bq_table_exists(all_dw_fishing_effort_by_eez_table) == FALSE){
+    bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas") %>%
+      bq_table_create()
+  }else{
+    bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas") %>%
+      bq_table_delete()
+  }
+  
+  # Run query and download results (~100,000 rows: ~25MB)
+  all_dw_fishing_effort_by_eez <- bq_project_query(bq_project, sql3, destination_table = bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
   bq_table_download(max_results = Inf)
-
-# Make fishing_KWh and fishing_KW_day variables
-dw_effort_raw <- all_dw_fishing_effort_by_eez %>%
-  mutate(fishing_KWh = fishing_hours_year_eez*engine_power_kw,
-         fishing_KW_days = fishing_days_year_eez*engine_power_kw)
-dw_effort_raw[dw_effort_raw == "NA"] <- NA
-
-# Fix a couple of iso3 codes that are outdated
-dw_effort_raw$flag[dw_effort_raw$flag == "ROM"] <- "ROU"
-dw_effort_raw$flag[dw_effort_raw$flag == "GCA"] <- "GTM"
-dw_effort_raw$flag[is.na(dw_effort_raw$flag)] <- "UNK"
-
-# Save file
-write_csv(dw_effort_raw, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
-
+  
+  # Correct interpretation of NAs
+  dw_effort_raw <- all_dw_fishing_effort_by_eez
+  dw_effort_raw[dw_effort_raw == "NA"] <- NA
+  
+  # Fix a couple of iso3 codes that are outdated
+  dw_effort_raw$flag[dw_effort_raw$flag == "ROM"] <- "ROU"
+  dw_effort_raw$flag[dw_effort_raw$flag == "GCA"] <- "GTM"
+  dw_effort_raw$flag[is.na(dw_effort_raw$flag)] <- "UNK"
+    
+  # Save file locally
+  write_csv(dw_effort_raw, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
+  
 } else{
   
-# Pull local stored copy of the data 
-dw_effort_raw <- read_csv(paste0(results_dir, "RAW_dw_effort_by_eez.csv"), col_types = "icccnnncccccccccninn")
-
-#MW Pull local
-#dw_effort <- read_csv("~/GitHub/subsidy-atlas/results/RAW_dw_effort_by_eez.csv")
+  # Pull local stored copy of the data 
+  dw_effort_raw <- read_csv(paste0(results_dir, "RAW_dw_effort_by_eez.csv"), col_types = "icccnnncccccccccnni")
+  
+  #dw_effort <- read_csv("~/GitHub/subsidy-atlas/results/RAW_dw_effort_by_eez.csv")
 
 }
 ```
 
-# Determine the sovereign states of each flag state
+## Determine the sovereign states of each flag state
 
-GFW has done a lot of this work for us, therefore we use the sovereign states assigned to each eez iso3 for flag states as well. Let's find those.
+In order to further parse out distant water fishing effort, we will need to take sovereignty into consideration. GFW has done a lot of this work for us, therefore we use the sovereign states assigned to each eez iso3 for flag states as well. Let's create a table matching all of these up. 
 
 ```{r}
 # Get a list of sovereignty pairings from GFW eez data
@@ -285,6 +345,9 @@ c_sovereign_pairings <- tibble(iso3 = c("BLZ", "ARM", "AUT", "SRB", "CHE", "LIE"
 sovereign_pairings_all <- sovereign_pairings %>%
   bind_rows(c_sovereign_pairings %>% dplyr::select(sovereign_iso3, iso3)) %>%
   arrange(iso3)
+
+# Save for future reference just in case
+write_csv(sovereign_pairings_all, path = paste0(results_dir, "sovereign_pairings_all.csv"))
 ```
 
 We then assign these names to the flag states of vessels, as well as to the EEZ states and sovereigns in the GFW database by matching ISO-3 character codes of each entity. 
@@ -309,7 +372,7 @@ dw_effort <- dw_effort %>%
 
 ```
 
-# European Union vessels
+## European Union vessels
 
 Vessels flagged to EU member states have the right to fish in the EEZs of other EU member states, therefore we do not include these instances as "distant water fishing". In order to remove these from our dataset, we first need create a list of EU member states, as well as non-member states with with the EU has fishing agreements as part of the northern agreement (i.e. Norway and Iceland). 
 
@@ -343,7 +406,9 @@ dw_effort <- dw_effort %>%
 
 ```
  
-# Dealing with sovereignty
+For the purposes of this analysis, we do not consider "intra-EU fishing" to be distant-water fishing and it is therefore removed. 
+
+## Dealing with sovereignty
 
 If the sovereign flag state of a vessel is the same as the sovereign state of the EEZ in which it's fishing, this connection may still be considered to be distant water fishing (e.g. US vessel fishing in Palmyra Atoll), though this is generally not considered to be foreign distant water fishing. Let's add a field identifying effort in which this is the case. Though we aren't making any distinctions between foreign distant water fishing and distant water fishing right now, it might be helpful later on to have this distinction available. 
 
@@ -387,151 +452,146 @@ dw_effort <- dw_effort %>%
 
 ```
 
-# Distant water fishing
-
-For the purposes of this analysis, we define distant water fishing in the following way. We exclude all "intra-EU fishing", but include "sovereign fishing". All DW fishing that is not "sovereign fishing" is foreign DW fishing. 
+For the purposes of this analysis, we include both "sovereign distant water fishing" and "foreign distant water fishing" as distant water fishing. 
 
 ```{r}
-dw_effort_final <- dw_effort %>%
+dw_effort <- dw_effort %>%
   dplyr::filter(year == analysis_year)
-
-write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez_", analysis_year, ".csv"))
-
 ```
 
+## Allocate subsidies
 
-# Assign subsidies
+Now that we have our final subset of distant water fishing effort/vessels from our database, we want to allocate subsidies proportionally based on fishing effort to get an estimate of the total amount of subsidies each vessel recieves. 
+
+First we determine subsidy rates for each flag state based on total annual fishing effort contained in our dataset. 
+
 ```{r}
-# Now we need to get subsidy rates per fishing KWh for our DW vessels
-# Since Rashid has not provided a DW and/or large-scale breakdown of his subsidy estimates, we need to figure out how to do this.
+# Load subsidy data and do a little bit of wrangling to clean it up. 
 subsidy_dat <- read_csv(here::here("data", "subsidies", "Subsidies_update_Pew_final_May_10.csv")) %>%
   setNames(tolower(names(.))) %>%
   rename(value = `constant 2018 usd`,
          estimate_type = `data type`) %>%
-  mutate(iso3 = countrycode(country, "country.name", 'iso3c'))
-subsidy_dat$iso3[subsidy_dat$country == "Dominican Rp"] <- "DOM"
-subsidy_dat$iso3[subsidy_dat$country == "Micronesia"] <- "FSM"
-subsidy_dat$iso3[subsidy_dat$country == "Untd Arab Em"] <- "ARE"
+  mutate(iso3 = case_when(country == "Dominican Rp" ~ "DOM",
+                          country == "Micronesia" ~ "FSM",
+                          country == "Untd Arab Em" ~ "ARE", 
+                          TRUE ~ countrycode(country, "country.name", 'iso3c'))) %>%
+  mutate(type_code = case_when(type == "Fisheries mangt." ~ "A1",
+                               type == "Fishery R&D" ~ "A2",
+                               type == "MPAs" ~ "A3",
+                               type == "Boat constsruct. & renov." ~ "B1",
+                               type == "Fisheries dev. projects" ~ "B2",
+                               type == "Fishing port develop." ~ "B3",
+                               type == "Markt. & storage infrast." ~ "B4",
+                               type == "Tax exemption" ~ "B5",
+                               type == "Fishing access" ~ "B6",
+                               type == "Fuel subsidies" ~ "B7",
+                               type == "Fisher assistance" ~ "C1",
+                               type == "Vessel buyback" ~ "C2",
+                               type == "Rural fisher communities" ~ "C3",
+                               TRUE ~ "NA"))
 
-# Order factors for custom color scale
-subsidy_dat_factors <- subsidy_dat %>%
-  distinct(category, type)
-
-category_factor_order <- c(unique(subsidy_dat_factors$category))
-type_factor_order <- c(subsidy_dat_factors$type)
+subsidy_factors <- subsidy_dat %>%
+  distinct(type_code, type)
 
 subsidy_dat_ordered <- subsidy_dat %>%
-  mutate(type = factor(type, levels = type_factor_order, ordered = T),
-         category = factor(category, levels = category_factor_order, ordered = T))
+  mutate(type_code = factor(type_code, subsidy_factors$type_code),
+         type = factor(type, subsidy_factors$type))
 
-  # Get sums of subsidy data by category for each country
-subsidy_dat_summarized <- subsidy_dat_ordered %>%
-  group_by(iso3, category) %>%
-  summarize(value = sum(value, na.rm = T))
+# Adjust subsidy estimates to only represent subsides going to large-scale fisheries
+subsidy_distribution <- tibble(type_code = c("A1", "A2", "A3", "B7", "B3", "B1", "B4", "B5", "B2", "B6", "C2", "C1", "C3"),
+                               lsf_prop = c(0.743, 0.783, 0.779, 0.939, 0.791, 0.848, 0.931, 0.866, 0.742, 1, 0.998, 0.753, 0.159)) %>% mutate(type_code = factor(type_code, subsidy_factors$type_code))
 
-# Calculate effort totals by flag and then subsidy rates
-dw_subsidy_rates_flag <- dw_effort_final %>%
+subsidy_dat_edit <- subsidy_dat_ordered %>%
+  left_join(subsidy_distribution, by = "type_code") %>%
+  mutate(new_value = value * lsf_prop)
+
+# Filter our total fishing effort by flag state for the analysis year and join to the subsidy data
+dw_subsidy_rates_flag_all <- flag_totals %>%
+  dplyr::filter(year == analysis_year) %>%
+  left_join(subsidy_dat_edit, by = c("flag" = "iso3")) %>%
+  dplyr::filter(!is.na(category)) %>% # remove entries for which we don't have subsidy information
+  dplyr::filter(!is.na(fishing_hours_total)) %>% # remove entries for which we don't have fishing effort
+  mutate(subs_per_fishing_hour = new_value/fishing_hours_total,
+         subs_per_fishing_KWh = new_value/fishing_KWh_total,
+         subs_per_fishing_day = new_value/fishing_days_total)
+
+# Save subsidy rates by flag to Bigquery
+  subsidy_rates_table <- bq_table(project = bq_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas")
+
+  if(rerun_gfw){
+    
+     # Check if that table already exists. If not, create it. Otherwise clear it. 
+  if(bq_table_exists(subsidy_rates_table)){
+    
+    subsidy_rates_table %>%
+      bq_table_delete() 
+    
+    subsidy_rates_table %>%
+      bq_table_create() %>%
+      bq_table_upload(values = dw_subsidy_rates_flag_all, fields = dw_subsidy_rates_flag_all)
+    
+  }else{
+    subsidy_rates_table %>%
+      bq_table_create() %>%
+      bq_table_upload(values = dw_subsidy_rates_flag_all, fields = dw_subsidy_rates_flag_all)
+      
+  }
+  }
+  
+write_csv(dw_subsidy_rates_flag_all, paste0(results_dir, "subsidy_rates_flag.csv"))
+
+# Filter to only include certain subsidy type in the final totals and summarize total subsidy rates by flag state
+dw_subsidy_rates_flag <- dw_subsidy_rates_flag_all %>%
+  dplyr::filter(category == "Capacity-enhancing") %>%
   group_by(flag) %>%
-  summarize(fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_days = sum(fishing_days_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T),
-            fishing_KW_days = sum(fishing_KW_days, na.rm = T)) %>%
-  left_join(subsidy_dat_summarized %>% dplyr::filter(category == "Capacity-enhancing"), by = c("flag" = "iso3")) %>%
-  mutate(subs_per_fishing_hour = value/fishing_hours,
-         subs_per_fishing_day = value/fishing_days,
-         subs_per_fishing_KWh = value/fishing_KWh,
-         subs_per_fishing_KW_day = value/fishing_KW_days)
-dw_subsidy_rates_flag$category[is.na(dw_subsidy_rates_flag$category)] <- "Capacity-enhancing"
-dw_subsidy_rates_flag$value[is.na(dw_subsidy_rates_flag$value)] <- 0
-dw_subsidy_rates_flag$subs_per_fishing_hour[is.na(dw_subsidy_rates_flag$subs_per_fishing_hour)] <- 0
-dw_subsidy_rates_flag$subs_per_fishing_KWh[is.na(dw_subsidy_rates_flag$subs_per_fishing_KWh)] <- 0
-dw_subsidy_rates_flag$subs_per_fishing_day[is.na(dw_subsidy_rates_flag$subs_per_fishing_day)] <- 0
-dw_subsidy_rates_flag$subs_per_fishing_KW_day[is.na(dw_subsidy_rates_flag$subs_per_fishing_KW_day)] <- 0
+  summarize(subs_per_fishing_KWh = sum(subs_per_fishing_KWh, na.rm = T))
 
+# Allocate subsidies by flag, and then by sovereign if needed...
+dw_effort_final <- dw_effort %>%
+  left_join(dw_subsidy_rates_flag, by = c("flag" = "flag")) %>%
+  rename(flag_subs_fishing_KWh = subs_per_fishing_KWh) %>%
+  left_join(dw_subsidy_rates_flag, by = c("sovereign_iso3" = "flag")) %>%
+  rename(sovereign_subs_fishing_KWh = subs_per_fishing_KWh) %>%
+  mutate(subs_per_fishing_KWh = case_when(!is.na(flag_subs_fishing_KWh) ~ flag_subs_fishing_KWh,
+                                          TRUE ~ sovereign_subs_fishing_KWh)) %>%
+  dplyr::select(-flag_subs_fishing_KWh, -sovereign_subs_fishing_KWh)
+dw_effort_final$subs_per_fishing_KWh[is.na(dw_effort_final$subs_per_fishing_KWh)] <- 0
+
+
+# Save
+if(rerun_gfw){
+  
+  dw_effort_final_table <- bq_table(project = bq_project, table = paste0("FINAL_dw_effort_by_eez_", analysis_year), dataset = "subsidy_atlas")
+  
+     # Check if that table already exists. If not, create it. Otherwise clear it. 
+  if(bq_table_exists(dw_effort_final_table)){
+    
+      dw_effort_final_table %>%
+      bq_table_delete()
+    
+      dw_effort_final_table %>%
+      bq_table_create() %>%
+      bq_table_upload(values = dw_effort_final, fields = dw_effort_final)
+    
+  }else{
+    
+      dw_effort_final_table %>%
+      bq_table_create() %>%
+      bq_table_upload(values = dw_effort_final, fields = dw_effort_final)
+
+  }
+
+}
+write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez_", analysis_year, ".csv"))
 ```
 
-# Identify top DW fishing fleets by flag state
+## Flag state and EEZ centroids 
 
-We identify the top `r number_of_top_countries_flag` flag states with DW fishing fleets. We consider the following metrics:
-- Number of fishing vessels partaking in DW fishing
-- Total capacity of fishing vessels partaking of DW fishing
-- Total number of DW fishing hours
-- Total number of DW fishing KWh 
-
-```{r cars}
-# Mutate totals by flag state
-flag_state_ranking <- dw_effort_final %>% 
-  group_by(flag, ssvid) %>%
-  summarize(engine_power_kw = unique(engine_power_kw),
-            fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
-  ungroup() %>%
-  group_by(flag) %>%
-  summarize(total_vessels = n_distinct(ssvid),
-            total_capacity = sum(engine_power_kw, na.rm = T),
-            total_fishing_hours = sum(fishing_hours, na.rm = T),
-            total_fishing_KWh = sum(fishing_KWh, na.rm = T)) %>% 
-  arrange(desc(total_vessels)) %>%
-  ungroup() %>%
-  mutate(vessel_rank = dense_rank(desc(total_vessels)),
-         capacity_rank = dense_rank(desc(total_capacity)),
-         fishing_hours_rank = dense_rank(desc(total_fishing_hours)),
-         fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
-  mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
-
-# Identify top flag states based on average ranking
-flag_state_ranking_top <- flag_state_ranking %>%
- top_n(-number_of_top_countries_flag, wt = avg_rank)
-
-# Save top flag states by average ranking
-write_csv(flag_state_ranking_top, paste0(flag_state_tables_dir, "top_", number_of_top_countries_flag, "_flag_states_avg_", analysis_year, ".csv"))
-
-# Let's also make top lists for each category as well
-# Vessels
-write_csv(flag_state_ranking %>%
-            top_n(-number_of_top_countries_flag, wt = vessel_rank), 
-          paste0(flag_state_tables_dir, "top_", number_of_top_countries_flag, "_flag_states_vessels_", analysis_year, ".csv"))
-
-# Total capacity
-write_csv(flag_state_ranking %>%
-            top_n(-number_of_top_countries_flag, wt = capacity_rank), 
-          paste0(flag_state_tables_dir, "top_", number_of_top_countries_flag, "_flag_states_capacity_", analysis_year, ".csv"))
-
-# Fishing hours
-write_csv(flag_state_ranking %>%
-            top_n(-number_of_top_countries_flag, wt = fishing_hours_rank), 
-          paste0(flag_state_tables_dir, "top_", number_of_top_countries_flag, "_flag_states_fishing_hours_", analysis_year, ".csv"))
-
-# Fishing KWh
-write_csv(flag_state_ranking %>%
-            top_n(-number_of_top_countries_flag, wt = fishing_KWh_rank), 
-          paste0(flag_state_tables_dir, "top_", number_of_top_countries_flag, "_flag_states_fishing_KWh_", analysis_year, ".csv"))
-
-```
-
-For each of our top flag states, we identify all EEZs in which DW vessels flagged to that state fish. 
+In order to make our connection plots, we need to find the centroids of each EEZ and flag state before we go too much further. 
 
 ```{r}
-top_flag_states <- flag_state_ranking_top$flag
-
-top_flag_states_names <- (tibble(flag = top_flag_states) %>%
-  mutate(name = countrycode::countrycode(flag, "iso3c", "country.name")))$name
-
-flag_state_combinations <- dw_effort_final %>%
-  dplyr::filter(flag %in% top_flag_states) %>%
-  group_by(flag, eez_code = as.numeric(eez_code)) %>%
-  summarize(vessels = n_distinct(ssvid),
-            capacity = sum(engine_power_kw, na.rm = T),
-            fishing_h = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
-  arrange(flag) %>%
-  ungroup()
-```
-
-In order to make our connection plots, we find the centroids of each EEZ and flag state. 
-
-```{r}
-### EEZs -----
+if(run_flag_state | run_eez){
+  
 # Get centroids of each eez
 EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326)
@@ -583,11 +643,119 @@ centroid_coordinates_flag_edited <- centroid_coordinates_flag %>%
   mutate(flag_lat = ifelse(!is.na(flag_lat_edit), flag_lat_edit, flag_lat)) %>%
   dplyr::select(-flag_lon_edit, -flag_lat_edit)
 
+}
 ```
 
-We then match these centroids to each of our top flag states, as well as all EEZs in which DW vessels from these states fish. 
+We also need to do some setup for our figures. 
 
 ```{r}
+if(run_flag_state | run_eez){
+  
+  # Custom theme for map
+  maptheme <- theme_minimal() +
+    theme(panel.background = element_rect(fill = "grey27", colour = NA),
+          panel.grid.major = element_line(colour = "grey27"),
+          panel.border = element_blank(),
+          plot.margin = unit(c(0, 0, 0, 0), "mm"),
+          plot.background = element_blank(),
+          axis.title = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks.length = unit(0, "pt"))
+
+}
+if(run_flag_state){
+  
+  # Custom color palette for Sumaila subsidy types
+  goodColors <- rev(brewer.pal(3, "Blues"))
+  names(goodColors) <- levels(subsidy_dat_edit$type)[1:3]
+  
+  badColors <- rev(brewer.pal(7, "Reds"))
+  names(badColors) <- levels(subsidy_dat_edit$type)[4:10]
+  
+  ambigColors <- c("purple", "mediumorchid", "violet")
+  names(ambigColors) <- levels(subsidy_dat_edit$type)[11:13]
+  
+  myColors <- c(goodColors, badColors, ambigColors)
+
+}
+```
+
+## Part 1: Identify top DW fishing fleets by flag state
+
+Currently, the only option for this part of the analysis is to look at distant water fishing fleets by flag state, ranked according to total distant water fishing effort. 
+
+We first rank flag states with DW fishing fleets based on the following metrics:
+- Number of fishing vessels partaking in DW fishing
+- Total capacity of fishing vessels partaking of DW fishing
+- Total number of DW fishing hours
+- Total number of DW fishing KWh 
+
+```{r}
+if(run_flag_state){
+
+# Mutate totals by flag state for all
+flag_state_ranking <- dw_effort_final %>% 
+  group_by(flag, ssvid) %>%
+  summarize(engine_power_kw = unique(engine_power_kw),
+            fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
+            fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
+  ungroup() %>%
+  group_by(flag) %>%
+  summarize(total_vessels = n_distinct(ssvid),
+            total_capacity = sum(engine_power_kw, na.rm = T),
+            total_fishing_hours = sum(fishing_hours, na.rm = T),
+            total_fishing_KWh = sum(fishing_KWh, na.rm = T)) %>% 
+  arrange(desc(total_vessels)) %>%
+  ungroup() %>%
+  mutate(vessel_rank = dense_rank(desc(total_vessels)),
+         capacity_rank = dense_rank(desc(total_capacity)),
+         fishing_hours_rank = dense_rank(desc(total_fishing_hours)),
+         fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
+  mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
+
+# Save flag states by average ranking
+write_csv(flag_state_ranking, paste0(flag_state_results_dir, "flag_state_ranking_", analysis_year, ".csv"))
+
+}
+```
+
+We then identify the top `r number_of_top_countries_flag` flag states. For each of our top flag states, we also identify all EEZs in which DW vessels flagged to that state fish.
+
+```{r}
+if(run_flag_state){
+  
+  # Set defaults in case option isn't correctly specified above
+  if(is.na(number_of_top_countries_flag) | !is.numeric(number_of_top_countries_flag)){
+    number_of_top_countries_flag <- 10
+  }
+
+  flag_state_ranking_top <- flag_state_ranking %>%
+    top_n(-number_of_top_countries_flag, wt = avg_rank)
+  
+  # Get iso3 codes for selected flag states 
+  top_flag_states <- flag_state_ranking_top$flag
+
+  top_flag_states_names <- (tibble(flag = top_flag_states) %>%
+    mutate(name = countrycode::countrycode(flag, "iso3c", "country.name")))$name
+
+  flag_state_combinations <- dw_effort_final %>%
+    dplyr::filter(flag %in% top_flag_states) %>%
+    group_by(flag, eez_code = as.numeric(eez_code)) %>%
+    summarize(vessels = n_distinct(ssvid),
+              capacity = sum(engine_power_kw, na.rm = T),
+              fishing_h = sum(fishing_hours_year_eez, na.rm = T),
+              fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
+    arrange(flag) %>%
+    ungroup()
+
+}
+```
+
+We then match the previously obtained centroids to each of our top flag states, as well as all EEZs in which DW vessels from these states fish. 
+
+```{r}
+if(run_flag_state){
+  
 flag_state_mapping <- flag_state_combinations %>%
   left_join(centroid_coordinates_flag_edited, by = c("flag" = "flag")) %>%
   left_join(centroid_coordinates_EEZ_edited, by = c("eez_code" = "eez_code"))
@@ -607,40 +775,15 @@ flag_state_mapping_wlines <- flag_state_mapping %>%
   sf::st_sf(crs = 4326) %>%
   mutate(fishing_KWh = round(fishing_KWh, digits = 4))
 
-st_write(flag_state_mapping_wlines, dsn = paste0(flag_state_tables_dir, "flag_state_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
-```
-Do some setup for making our figures
+st_write(flag_state_mapping_wlines, dsn = paste0(flag_state_results_dir, "flag_state_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
 
-```{r flagmaps}
-# Custom theme for map
-maptheme <- theme_minimal()+
-  theme(panel.background = element_rect(fill = "grey27", colour = NA),
-        panel.grid.major = element_line(colour = "grey27"),
-        panel.border = element_blank(),
-        plot.margin = unit(c(0,0,0,0),"mm"),
-        plot.background = element_blank(),
-        axis.title = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks.length = unit(0, "pt"))
-
-# Custom color palette for Sumaila subsidy types
-goodColors <- rev(brewer.pal(3,"Blues"))
-names(goodColors) <- levels(subsidy_dat_ordered$type)[1:3]
-
-badColors <- rev(brewer.pal(7, "Reds"))
-names(badColors) <- levels(subsidy_dat_ordered$type)[4:10]
-
-ambigColors <- c("purple", "mediumorchid", "violet")
-names(ambigColors) <- levels(subsidy_dat_ordered$type)[11:13]
-
-myColors <- c(goodColors, badColors, ambigColors)
-
+}
 ```
 
-If we're running the flag state analysis for a top number of countries... (only option currently)
+We then make our connectivity maps and subsidy plots for each of our top ranked flag states. 
 
 ```{r}
-if(flag_state_purpose == "top_ranked"){
+if(run_flag_state){
   
 ## For loop to run top X countries
 for(i in 1:length(top_flag_states)){
@@ -766,7 +909,7 @@ ggsave(out2, filename = paste0(flag_state_pdf_dir, top_flag_states[i], "_info_pa
 ```
 
 
-# Identify top DW fishing fleets by EEZ
+## Part 2: Identify top locations of DW fishing by EEZ
 
 If the purpose of the eez analysis is to identify the top `r number_of_top_countries_eez` EEZs in which DW fleets fish, we consider the following metrics:
 - Number of fishing vessels partaking in DW fishing
@@ -774,12 +917,13 @@ If the purpose of the eez analysis is to identify the top `r number_of_top_count
 - Total number of DW fishing KWh
 
 ```{r}
+if(run_eez){
 # Mutate totals by EEZ
 EEZ_ranking <- dw_effort_final %>% 
   group_by(eez_code, eez_name, eez_territory_iso3, eez_sovereign_iso3, ssvid) %>%
   summarize(engine_power_kw = unique(engine_power_kw),
             fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
+            fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
   ungroup() %>%
   group_by(eez_code, eez_name, eez_territory_iso3, eez_sovereign_iso3) %>%
   summarize(total_vessels = n_distinct(ssvid),
@@ -794,62 +938,39 @@ EEZ_ranking <- dw_effort_final %>%
          fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
   mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
 
-# If purpose of EEZ analysis is to do it for the top-ranked eezs... 
-if(eez_purpose == "top_ranked"){
-  
-# Identify top flag states based on average ranking
-EEZ_ranking_top <- EEZ_ranking %>%
- top_n(-number_of_top_countries_eez, wt = avg_rank)
-
-write_csv(EEZ_ranking_top, paste0(eez_tables_dir, "top_", number_of_top_countries_eez, "_EEZs_avg_", analysis_year, ".csv"))
-
-# Just in case - let's make top lists for each category as well
-# Vessels
-write_csv(EEZ_ranking %>%
-            top_n(-number_of_top_countries_eez, wt = vessel_rank), 
-          paste0(eez_tables_dir, "top_", number_of_top_countries_eez, "_EEZs_vessels_", analysis_year, ".csv"))
-
-# Total capacity
-write_csv(EEZ_ranking %>%
-            top_n(-number_of_top_countries_eez, wt = capacity_rank), 
-          paste0(eez_tables_dir, "top_", number_of_top_countries_eez, "_EEZs_capacity_", analysis_year, ".csv"))
-
-# Fishing hours
-write_csv(EEZ_ranking %>%
-            top_n(-number_of_top_countries_eez, wt = fishing_hours_rank), 
-          paste0(eez_tables_dir, "top_", number_of_top_countries_eez, "_EEZs_fishing_hours_", analysis_year, ".csv"))
-
-# Fishing KWh
-write_csv(EEZ_ranking %>%
-            top_n(-number_of_top_countries_eez, wt = fishing_KWh_rank), 
-          paste0(eez_tables_dir, "top_", number_of_top_countries_eez, "_EEZs_fishing_KWh_", analysis_year, ".csv"))
+  # Save
+  write_csv(EEZ_ranking, paste0(eez_results_dir, "EEZ_ranking_avg_", analysis_year, ".csv"))
 
 }
-
 ```
 
 Alternatively, we may want to run the EEZ analysis for all ACP countries.
 
 ```{r}
+if(run_eez){
+  
 # Get codes/name to run anlysis for 
 if(eez_purpose == "top_ranked"){
   
+  EEZ_ranking_top <- EEZ_ranking %>%
+    top_n(-number_of_top_countries_eez, wt = avg_rank)
+
   analysis_eezs <- EEZ_ranking_top$eez_code
-  analysis_eez_names <- EEZ_ranking_top$eez_territory_iso3
-  analysis_eez_names_long <- EEZ_ranking_top$eez_name
-  analysis_eez_names_long[which(top_eezs == "8389")] <- "Falkland Islands Exclusive Economic Zone: UK / Argentina"
+  analysis_eez_territory_iso3 <- EEZ_ranking_top$eez_territory_iso3
+  analysis_eez_territory_name <- countrycode(analysis_eez_territory_iso3, "iso3c", "country.name")
 
 }else if(eez_purpose == "ACP"){
   
-  ACP_codes <- read_csv(here::here("scripts", "ACP_eez_codes.csv")) %>% 
-  filter(mrgid != "N/A")
+  ACP_codes <- read_csv(here::here("SubsidyAtlasACP", "data", "ACP_eez_codes.csv")) %>% 
+    dplyr::select(territory, territory_iso3, mrgid) %>%
+    dplyr::filter(!is.na(mrgid))
   
   ACP_eez_filter <- EEZ_ranking %>%
     dplyr::filter(eez_code %in% ACP_codes$mrgid)
   
   analysis_eezs <- ACP_eez_filter$eez_code
-  analysis_eez_names <- ACP_eez_filter$eez_territory_iso3
-  analysis_eez_names_long <- ACP_eez_filter$eez_name
+  analysis_eez_territory_iso3 <- ACP_eez_filter$eez_territory_iso3
+  analysis_eez_territory_name <- countrycode(analysis_eez_territory_iso3, "iso3c", "country.name")
 
 }
 
@@ -860,15 +981,18 @@ eez_combinations <- dw_effort_final %>%
   summarize(vessels = n_distinct(ssvid),
             capacity = sum(engine_power_kw, na.rm = T),
             fishing_h = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
+            fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
   arrange(eez_code) %>%
   ungroup()
+}
 
 ```
 
 In order to make our connection plots, we again need the centroids of each EEZ and flag state, which we match to each of our top EEZs, as well as to all flag states from which vessels are fishing in each EEZ.
 
 ```{r}
+if(run_eez){
+  
 ## eez mapping top 10
 eez_mapping <- eez_combinations %>%
   left_join(centroid_coordinates_EEZ_edited, by = c("eez_code" = "eez_code")) %>%
@@ -887,10 +1011,13 @@ eez_mapping$flag_lat[eez_mapping$flag == "REU"] <- centroid_coordinates_EEZ_edit
 eez_mapping$flag_lon[eez_mapping$flag == "BES"] <- centroid_coordinates_EEZ_edited$eez_lon[centroid_coordinates_EEZ_edited$eez_code == 26520]
 eez_mapping$flag_lat[eez_mapping$flag == "BES"] <- centroid_coordinates_EEZ_edited$eez_lat[centroid_coordinates_EEZ_edited$eez_code == 26520]
 
+}
 ```
 
 
 ```{r}
+if(run_eez){
+  
 # We then make our lines from each EEZ going to all of the countries fishing there. 
 eez_mapping_wlines <- eez_mapping %>%
   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
@@ -907,79 +1034,38 @@ eez_mapping_wlines <- eez_mapping %>%
   sf::st_sf(crs = 4326) 
 
 
-st_write(eez_mapping_wlines, dsn = paste0(eez_tables_dir, "eez_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
+st_write(eez_mapping_wlines, dsn = paste0(eez_results_dir, "eez_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
 
 st_write(eez_mapping_wlines, dsn = paste0(eez_results_app_dir, "eez_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
 
+}
 ```
 
+We first need to make the connectivity maps... 
 
 ```{r}
-# ## All EEZ connections
-# ##EEZ combinations all
-# eez_combinations_all <-dw_effort_final %>% 
-#   distinct(eez_code = as.numeric(eez_code), eez_territory_iso3, flag) %>%
-#   arrange(eez_code)
-# 
-# ## eez mapping top 10
-# eez_mapping_all <- eez_combinations_all %>%
-#   left_join(centroid_coordinates_EEZ_edited, by = c("eez_code" = "eez_code")) %>%
-#   left_join(centroid_coordinates_flag_edited, by = c("flag" = "flag")) 
-# 
-# # There are some flag states for which we need to manually assign centroids (mostly small island states not included in the world map because they don't show up)
-# # Tuvalu (TUV)
-# eez_mapping_all$flag_lon[eez_mapping_all$flag == "TUV"] <- centroid_coordinates_EEZ_edited$eez_lon[centroid_coordinates_EEZ_edited$eez_code == 8326]
-# eez_mapping_all$flag_lat[eez_mapping_all$flag == "TUV"] <- centroid_coordinates_EEZ_edited$eez_lat[centroid_coordinates_EEZ_edited$eez_code == 8326]
-# 
-# # Réunion (REU)
-# eez_mapping_all$flag_lon[eez_mapping_all$flag == "REU"] <- centroid_coordinates_EEZ_edited$eez_lon[centroid_coordinates_EEZ_edited$eez_code == 8338]
-# eez_mapping_all$flag_lat[eez_mapping_all$flag == "REU"] <- centroid_coordinates_EEZ_edited$eez_lat[centroid_coordinates_EEZ_edited$eez_code == 8338]
-# 
-# # Bonaire, Sint Eustatius and Saba (BES)
-# eez_mapping_all$flag_lon[eez_mapping_all$flag == "BES"] <- centroid_coordinates_EEZ_edited$eez_lon[centroid_coordinates_EEZ_edited$eez_code == 26520]
-# eez_mapping_all$flag_lat[eez_mapping_all$flag == "BES"] <- centroid_coordinates_EEZ_edited$eez_lat[centroid_coordinates_EEZ_edited$eez_code == 26520]
-# 
-# # Guatemala - old code (GCA)
-# eez_mapping_all$flag_lon[eez_mapping_all$flag == "GCA"] <- centroid_coordinates_flag_edited$flag_lon[centroid_coordinates_flag_edited$flag == "GTM"]
-# eez_mapping_all$flag_lat[eez_mapping_all$flag == "GCA"] <- centroid_coordinates_flag_edited$flag_lat[centroid_coordinates_flag_edited$flag == "GTM"]
-# 
-# # We then make our lines from each EEZ going to all of the countries fishing there. 
-# eez_mapping_wlines_all <- eez_mapping_all %>%
-#   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
-#   purrr::transpose() %>% 
-#   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
-#   purrr::map(st_linestring) %>%
-#   st_sfc(crs = 4326) %>%
-#   st_sf(geometry = .) %>% 
-#   bind_cols(eez_mapping_all) %>%
-#   select(everything(), geometry) %>% 
-#   st_segmentize(units::set_units(100,km)) %>% 
-#   mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
-#   st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
-#   sf::st_sf(crs = 4326) #%>% 
-#   #st_transform(flag_state_mapping, crs = '+proj=robin +lon_0=180 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs')
-
-```
-
-Run analysis
-
-```{r}
+if(run_eez){
+  
+  eez_loop_iso3 <- unique(analysis_eez_territory_iso3)
+  eez_loop_names <- unique(analysis_eez_territory_name)
 
 ## For loop to run top EEZs
-for(i in 1:length(analysis_eezs)){
+for(i in 55:length(eez_loop_iso3)){
+  
+run_eez_codes <- analysis_eezs[which(analysis_eez_territory_iso3 == eez_loop_iso3[i])]
 
 eez_dat <- eez_mapping_wlines %>%
-  dplyr::filter(eez_code == analysis_eezs[i]) 
+  dplyr::filter(eez_territory_iso3 == eez_loop_iso3[i]) 
 
 # Write EEZ data
-write_csv(eez_dat, path = paste0(eez_dat_dir, analysis_eezs[i], "_", analysis_eez_names[i] , "_EEZ_dat.csv"))
+write_csv(eez_dat, path = paste0(eez_dat_dir, eez_loop_iso3[i], "_EEZ_dat.csv"))
 
 # Make EEZ connection plot
 eez_map <- ggplot()+
   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
   geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid == analysis_eezs[i]), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% run_eez_codes), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) +
   maptheme+
   coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
@@ -987,12 +1073,12 @@ eez_map <- ggplot()+
   scale_y_continuous(expand = c(0,0))
 
 #plot_map pngs
-ggsave(eez_map, filename = paste0(eez_figures_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
+ggsave(eez_map, filename = paste0(eez_figures_dir, eez_loop_iso3[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
 
 # Combine map into a one page pdf
-title3 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", analysis_eez_names_long[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
+title3 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", eez_loop_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
 
-caption3 <- textGrob(paste0("This map shows the global origins of distant-water vessels fishing in the ", analysis_eez_names_long[i], ". Lines connect the EEZ (blue) \nwith all foreign countries (pink) from which vessels fishing in that EEZ in 2018 are flagged. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
+caption3 <- textGrob(paste0("This map shows the global origins of distant-water vessels fishing in the EEZ of", eez_loop_names[i], ". Lines connect the EEZ (blue) \nwith all foreign countries (pink) from which vessels fishing in that EEZ in 2018 are flagged. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
 lay3 <- rbind(c(1,4),
               c(2,2),
@@ -1008,7 +1094,7 @@ out3 <- cowplot::ggdraw(eez_page) +
   theme(plot.background = element_rect(fill="grey27", color = NA))
 
 # Save connectivity map
-ggsave(out3, filename = paste0(eez_pdf_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_map_page.pdf"), width = 11, height = 8.5, units = "in")
+ggsave(out3, filename = paste0(eez_pdf_dir, eez_loop_iso3[i], "_map_page.pdf"), width = 11, height = 8.5, units = "in")
 
 ### Step 2 - make heat maps
 eezmaptheme <- theme_minimal()+
@@ -1026,22 +1112,37 @@ eezmaptheme <- theme_minimal()+
 
 # Pull data from GFW if necessary
  if(rerun_gfw == T){
+   
     # What bin size do we want to use (degrees)?  
     bin_size <- 0.1
-
-  sql3 <- paste0(
+    
+    # Voodoo to deal with some territories having multiple EEZs
+    if(length(run_eez_codes) > 1){
+      run_eez_codes_string <- toString(sprintf("'%s'", run_eez_codes))
+      run_eez_text <- paste0("eez_code IN (", run_eez_codes_string, ")")
+    }else {
+      run_eez_codes_string <- run_eez_codes
+      run_eez_text <- paste0("eez_code = '", run_eez_codes_string, "'")
+      
+    }
+    
+sql4 <- paste0(
   "WITH
+  eez_lookup AS (
+    SELECT
+      CAST(eez_id AS string) eez_code,
+      territory1_iso3 eez_territory_iso3
+    FROM
+      `world-fishing-827.gfw_research.eez_info`),
+
   selected_vi AS (
     SELECT
        year,
        ssvid,
-       best.best_engine_power_kw AS engine_power_kw,
-       best.best_flag AS flag
+       engine_power_kw,
+       flag
     FROM
-       `world-fishing-827.gfw_research.vi_ssvid_byyear_v20190430`
-    WHERE
-       on_fishing_list_best
-       AND activity.offsetting IS FALSE),
+       `ucsb-gfw.subsidy_atlas.FINAL_dw_effort_by_eez_", analysis_year, "`),
    
   eez_info AS (
      SELECT
@@ -1070,11 +1171,12 @@ eezmaptheme <- theme_minimal()+
       lon_cen
     HAVING
       year = ", analysis_year, 
-      " AND eez_code = '", as.character(analysis_eezs[i]), "')
+      " AND ", run_eez_text, ")
       
  SELECT
-    year,
+    a.year,
     eez_code,
+    eez_territory_iso3,
     flag,
     lat_cen,
     lon_cen,
@@ -1083,7 +1185,7 @@ eezmaptheme <- theme_minimal()+
     SUM(a.fishing_hours * b.engine_power_kw * c.subs_per_fishing_KWh) as subs
   FROM
     eez_info a
-  LEFT JOIN
+  RIGHT JOIN
     selected_vi b
   USING
     (year,
@@ -1092,9 +1194,14 @@ eezmaptheme <- theme_minimal()+
     `ucsb-gfw.subsidy_atlas.subsidy_rates_flag` c
   USING
     (flag)
+  LEFT JOIN
+    eez_lookup
+  USING
+    (eez_code)
   GROUP BY
     year,
     eez_code,
+    eez_territory_iso3,
     flag,
     lat_cen,
     lon_cen
@@ -1102,47 +1209,66 @@ eezmaptheme <- theme_minimal()+
     fishing_hours > 1"
   )
 
-  eez_table <- bq_table(project = ucsb_project, table = paste0("fishing_effort_", analysis_eezs[i]), dataset = "subsidy_atlas") 
+  eez_table <- bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") 
 
   if(bq_table_exists(eez_table) == FALSE){
-    bq_table(project = ucsb_project, table = paste0("fishing_effort_", analysis_eezs[i]), dataset = "subsidy_atlas") %>%
+    bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
       bq_table_create()
   }else{
-    bq_table(project = ucsb_project, table = paste0("fishing_effort_", analysis_eezs[i]), dataset = "subsidy_atlas") %>%
+    bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
       bq_table_delete()
   }
 
-  eez_effort <- bq_project_query(ucsb_project, sql3, destination_table = bq_table(project = ucsb_project, table = paste0("fishing_effort_", analysis_eezs[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+  eez_effort <- bq_project_query(bq_project, sql4, destination_table = bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
     bq_table_download(max_results = Inf)
 
-  write_csv(eez_effort, path = paste0(eez_dat_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_subs_by_flag.csv"))
-  write_csv(eez_effort, path = paste0(eez_results_app_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_subs_by_flag.csv"))
+  write_csv(eez_effort, path = paste0(eez_dat_dir, eez_loop_iso3[i], "_EEZ_effort_subs_by_flag.csv"))
+  
+  write_csv(eez_effort, path = paste0(eez_results_app_dir, eez_loop_iso3[i], "_EEZ_effort_subs_by_flag.csv"))
 
   # Load local data instead of rerunning global fishing watch pull 
   } else{
   
-  eez_effort <- read_csv(paste0(eez_results_app_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
+  eez_effort <- read_csv(paste0(eez_results_app_dir, eez_loop_iso3[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnn")
     
   }
 
   ### Make Plots 
   # Get quantiles of data for scale limits
   eez_effort_aggregated <- eez_effort %>%
-    group_by(year, eez_code, lon_cen, lat_cen) %>%
+    group_by(year, eez_territory_iso3, lon_cen, lat_cen) %>%
     summarize(fishing_hours = sum(fishing_hours, na.rm = T),
               fishing_KWh = sum(fishing_KWh, na.rm = T),
               subs = sum(subs, na.rm = T)) %>%
     mutate(subsidy_intensity = subs/fishing_KWh)
   
-  # Quantiles
-  intensity_quantile <- quantile(eez_effort_aggregated$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
-  scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
-  
-  # Set map limits for filtering global country map and eez map appropriately
+    # Set map limits for filtering global country map and eez map appropriately
   x_lim <- c(min(eez_effort_aggregated$lon_cen) - 0.5, max(eez_effort_aggregated$lon_cen) + 0.5)
   y_lim <- c(min(eez_effort_aggregated$lat_cen) - 0.5, max(eez_effort_aggregated$lat_cen) + 0.5)
   
+  # Quantiles
+  if(length(unique(eez_effort_aggregated$subsidy_intensity)) <= 1){
+    
   # Map of subsidy intensity
+  eez_subsidy_plot <- ggplot()+
+    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_raster(data = eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
+    eezmaptheme +
+    scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
+                         oob=scales::squish)+
+    labs(x = "", y = "")+
+    coord_sf(xlim = x_lim, ylim = y_lim)+
+    guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+    scale_x_continuous(expand = c(0,0))+
+    scale_y_continuous(expand = c(0,0))
+    
+  }else{
+    
+    intensity_quantile <- quantile(eez_effort_aggregated$subsidy_intensity, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+  scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+  
+   # Map of subsidy intensity
   eez_subsidy_plot <- ggplot()+
     geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
     geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
@@ -1158,8 +1284,10 @@ eezmaptheme <- theme_minimal()+
     guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
     scale_x_continuous(expand = c(0,0))+
     scale_y_continuous(expand = c(0,0))
+    
+  }
   
-  ggsave(eez_subsidy_plot, filename = paste0(eez_figures_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_subsidy_map.png"), width = 10, units = "in")
+  ggsave(eez_subsidy_plot, filename = paste0(eez_figures_dir, eez_loop_iso3[i], "_EEZ_subsidy_map.png"), width = 10, units = "in")
   
   # Labels for the log scale 
   eez_effort_plot <- ggplot()+
@@ -1174,16 +1302,16 @@ eezmaptheme <- theme_minimal()+
     scale_x_continuous(expand = c(0,0))+
     scale_y_continuous(expand = c(0,0))
   
-  ggsave(eez_effort_plot, filename = paste0(eez_figures_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_EEZ_effort_map.png"), width = 10, units = "in")
+  ggsave(eez_effort_plot, filename = paste0(eez_figures_dir, eez_loop_iso3[i], "_EEZ_effort_map.png"), width = 10, units = "in")
 
   # Combined plot  
   logo_white2 <- rasterGrob(sfg_logo_white, interpolate=TRUE, vjust = 0.8, hjust = 0.3)
   
-title4 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", analysis_eez_names_long[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
+title4 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", eez_loop_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
 
-caption4 <- textGrob(paste0("These maps show distant-water fishing effort (left, KWh) and subsidy intensity (right, 2018 $USD/KWh) in the ", analysis_eez_names_long[i], ". \nBoth fishing effort and subsidy intensity are aggregated by 0.1 degree latitude/longitude. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
+caption4 <- textGrob(paste0("These maps show distant-water fishing effort (left, KWh) and subsidy intensity (right, 2018 $USD/KWh) in the EEZ of ", eez_loop_names[i], ". \nBoth fishing effort and subsidy intensity are aggregated by 0.1 degree latitude/longitude. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
 
-  if(analysis_eez_names[i] == "RUS"){
+  if(eez_loop_iso3[i] == "RUS"){
     
     lay4 <- rbind(c(1,1,1,5),
               c(NA,NA,NA,NA),
@@ -1211,60 +1339,13 @@ out4 <- cowplot::ggdraw(page4) +
   theme(plot.background = element_rect(fill="grey27", color = NA))
 
 # Save connectivity map
-ggsave(out4, filename = paste0(eez_pdf_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_effort_page.pdf"), width = 11, height = 8.5, units = "in")
+ggsave(out4, filename = paste0(eez_pdf_dir, eez_loop_iso3[i], "_effort_page.pdf"), width = 11, height = 8.5, units = "in")
 
 # Save both plots into one pdf
   out_eez <- marrangeGrob(grobs = list(out3, out4), nrow = 1, ncol = 1, top = NULL)
   
-  ggsave(out_eez, filename = paste0(eez_pdf_dir, analysis_eezs[i], "_", analysis_eez_names[i], "_combined.pdf"), width = 11, height = 8.5, units = "in")
+  ggsave(out_eez, filename = paste0(eez_pdf_dir, eez_loop_iso3[i], "_combined.pdf"), width = 11, height = 8.5, units = "in")
 
 }
+}
 ```
-
-# Make connectivity maps for all selected EEZs
-
-```{r}
-
-## ACP CONNECTIONS MAP
-
-# ACP_connections_map <- ggplot()+
-#   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-#   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-#   geom_sf(data = country_map %>% dplyr::filter(iso3 %in% ACP_eez_mapping_wlines$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
-#   geom_sf(data = EEZ_map %>% dplyr::filter(ez_hs_c %in% ACP_eez_names_filter$eez_territory_iso3 ), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-#   geom_sf(data = ACP_eez_mapping_wlines, col = "darkgoldenrod", size = 0.25) +
-#   maptheme+
-#   coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
-#   scale_x_continuous(expand = c(0,0))+
-#   scale_y_continuous(expand = c(0,0))
-# 
-# plot(ACP_connections_map)
-# 
-# ggsave(ACP_connections_map, filename = paste0(ACP_app_dir, "_ACP_connections_map.png"), width = 10, units = "in")
-# 
-
-```
-
-
-```{r}
-## ALL CONNECTIONS MAP
-
-# all_connections_map <- ggplot()+
-#   geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-#   geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-#   geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_all$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
-#   geom_sf(data = EEZ_map %>% dplyr::filter(type != "High seas" ), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-#   geom_sf(data = eez_mapping_wlines_all, col = "darkgoldenrod", size = 0.25) +
-#   maptheme+
-#   coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
-#   scale_x_continuous(expand = c(0,0))+
-#   scale_y_continuous(expand = c(0,0))
-# 
-# plot(all_connections_map)
-# 
-# ggsave(all_connections_map, filename = paste0(ACP_app_dir, "_all_connections_map.png"), width = 10, units = "in")
-# 
-
-
-```
-
