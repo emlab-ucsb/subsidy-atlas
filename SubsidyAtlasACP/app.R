@@ -467,7 +467,8 @@ server <- shinyServer(function(input, output, session) {
   output$africa_online_text <- renderUI({
 
     req(input$africa_eez_select != "Select an EEZ...")
-
+    
+    
     
     ACP_codes_links <- ACP_codes %>%
       dplyr::filter(mrgid == input$africa_eez_select)
@@ -481,31 +482,52 @@ server <- shinyServer(function(input, output, session) {
     
     #browser()
     
-    fao_country_profile <- a(href = ACP_codes_links$fao_country_profile)
-    country_profile <- a(href = ACP_codes_links$country_profile)
-    fishery_organization <- a(href = ACP_codes_links$fishery_org)
-    #fao_memberships <- a("FAO Memberships:", (RFMO_links_eez$rfmo_name), href = RFMO_links_eez$link)
-    #fisheries_subsidies <- a("Fishery Subsidy Information", href = ACP_codes_links$fisheries_subsidies)
-    treaties_conventions <- a(href = ACP_codes_links$treaties_conventions)
-    internal_fishing_acess_agreements <- a(href = ACP_codes_links$internal_fishing_access_agreements)
+    #fao_memberships <- RFMO_links_eez$rfmo_name
     
-    EEZ_RFMO_info <- paste0(
+    EEZ_info <- paste0(
       "<b>", a("FAO Country Profile" , href = ACP_codes_links$fao_country_profile),
       "</br>",
-      "<b>", a("Country Profile", href = ACP_codes_links$country_profile),
+      "<b>", "Fishery Organization: ", a(ACP_codes_links$fishery_org, href = ACP_codes_links$fishery_org_link ), 
        "</br>",
-      "<b>", a("Fishery Organization:", ACP_codes_links$fishery_org, href = ACP_codes_links$fishery_org_link ), 
-       "</br>",
-       # "<b>", a("FAO Memberships", (RFMO_links_eez_rfmo_name), href = RFMO_links_eez$link), 
-       # "</br>",
-       "<b>", a("Treaties and Conventions", href = ACP_codes_links$treaties_conventions),
+        "<b>", a("Treaties and Conventions", href = ACP_codes_links$treaties_conventions),
       "</br>",
       "<b>", a("Internal Fishing Access Agreements", href = ACP_codes_links$internal_fishing_access_agreements)) %>% 
+      # "</br>",
+      # "<b>", "FAO Memberships: ",
+      # "</br>",
+      # "<b>", "<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$link,"</a>") %>% 
+       #"<b>", (a(RFMO_links_eez$rfmo_name, href = ,RFMO_links_eez$link,))) %>%  #RFMO_links_eez$rfmo_name, href = RFMO_links_eez$link), 
       lapply(htmltools::HTML)
     
     
+     
+  })
+  
+  ###------------
+  ### Africa: Links to Online references RFMOs
+  ###------------
+  
+  output$africa_RFMO_text <- renderUI({
+    
+    req(input$africa_eez_select != "Select an EEZ...")
+    
+    ACP_codes_links <- ACP_codes %>%
+      dplyr::filter(mrgid == input$africa_eez_select)
+    
+    ACP_fao_membership <- ACP_codes_links %>% 
+      separate_rows(fao_memberships, sep = ",")
+    
+    
+    RFMO_links_eez <- RFMO_links %>%
+      dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
+    
+    EEZ_RFMO_info <- paste0(
+      #"<b>", (a(href =  ,RFMO_links_eez$link,  target = "_blank" ))) %>% 
+      "<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>") %>% 
+      lapply(htmltools::HTML)
     
   })
+    
   
   ### ------------------------
   ### Africa: connectivity Map
@@ -1158,6 +1180,31 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
+  ###------------
+  ### Caribbean: Links to Online references RFMOs
+  ###------------
+  
+  output$caribbean_RFMO_text <- renderUI({
+    
+    req(input$caribbean_eez_select != "Select an EEZ...")
+    
+    ACP_codes_links <- ACP_codes %>%
+      dplyr::filter(mrgid == input$caribbean_eez_select)
+    
+    ACP_fao_membership <- ACP_codes_links %>% 
+      separate_rows(fao_memberships, sep = ",")
+    
+    
+    RFMO_links_eez <- RFMO_links %>%
+      dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
+    
+    EEZ_RFMO_info <- paste0(
+      #"<b>", (a(href =  ,RFMO_links_eez$link,  target = "_blank" ))) %>% 
+      "<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>") %>% 
+      lapply(htmltools::HTML)
+    
+  })
+  
   
   ###---------------------
   ##Caribbean: Connectivity map
@@ -1804,6 +1851,33 @@ server <- shinyServer(function(input, output, session) {
     
     
   })
+  
+  
+  ###------------
+  ### pacific: Links to Online references RFMOs
+  ###------------
+  
+  output$pacific_RFMO_text <- renderUI({
+    
+    req(input$pacific_eez_select != "Select an EEZ...")
+    
+    ACP_codes_links <- ACP_codes %>%
+      dplyr::filter(mrgid == input$pacific_eez_select)
+    
+    ACP_fao_membership <- ACP_codes_links %>% 
+      separate_rows(fao_memberships, sep = ",")
+    
+    
+    RFMO_links_eez <- RFMO_links %>%
+      dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
+    
+    EEZ_RFMO_info <- paste0(
+      #"<b>", (a(href =  ,RFMO_links_eez$link,  target = "_blank" ))) %>% 
+      "<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>") %>% 
+      lapply(htmltools::HTML)
+    
+  })
+  
   
     
   ###--------------
