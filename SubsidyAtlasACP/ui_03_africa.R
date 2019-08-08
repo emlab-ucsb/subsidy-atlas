@@ -70,7 +70,15 @@ border-right-color: transparent;}"
     
     column(6, style = "padding: 0px",
            
+           # Title
+           tags$h3(style = "padding: 0; margin: 0;", "EEZ Summary Statistics"),
+           
            uiOutput("africa_summary_text"),
+           
+           br(),
+           
+           # Title
+           tags$h3(style = "padding: 0x; margin: 0;", "EEZ FAO Memberships and Information"),
            
            uiOutput("africa_online_text")
            

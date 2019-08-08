@@ -58,6 +58,10 @@ ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
   mutate(flag = countrycode(territory_iso3, "iso3c", "country.name")) 
   #na.omit()
 
+# Load csv of FAO RFMO codes and links
+RFMO_links <- read_csv("./data/RMFO_links.csv")
+
+
 # Load spatial data frame with lines linking countries and EEZs
 connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") 
    
@@ -464,28 +468,43 @@ server <- shinyServer(function(input, output, session) {
 
     req(input$africa_eez_select != "Select an EEZ...")
 
+    
     ACP_codes_links <- ACP_codes %>%
       dplyr::filter(mrgid == input$africa_eez_select)
     
-    fao_country_profile <- a("FAO Country Profile", href = ACP_codes_links$fao_country_profile)
-    country_profile <- a("Country Profile", href = ACP_codes_links$country_profile)
-    fishery_organization <- a("Fishery Management Organization", href = ACP_codes_links$fishery_organization)
-    fao_memberships <- a("FAO Memberships", href = ACP_codes_links$fao_memberships)
+    ACP_fao_membership <- ACP_codes_links %>% 
+      separate_rows(fao_memberships, sep = ",")
+      
+    
+    RFMO_links_eez <- RFMO_links %>%
+      dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
+    
+    #browser()
+    
+    fao_country_profile <- a(href = ACP_codes_links$fao_country_profile)
+    country_profile <- a(href = ACP_codes_links$country_profile)
+    fishery_organization <- a(href = ACP_codes_links$fishery_org)
+    #fao_memberships <- a("FAO Memberships:", (RFMO_links_eez$rfmo_name), href = RFMO_links_eez$link)
     #fisheries_subsidies <- a("Fishery Subsidy Information", href = ACP_codes_links$fisheries_subsidies)
-    treaties_conventions <- a("Treaties and Conventions", href = ACP_codes_links$treaties_conventions)
-    internal_fishing_acess_agreements <- a("Internal Fishing Access Agreements", href = ACP_codes_links$internal_fishing_access_agreements)
+    treaties_conventions <- a(href = ACP_codes_links$treaties_conventions)
+    internal_fishing_acess_agreements <- a(href = ACP_codes_links$internal_fishing_access_agreements)
     
-    tagList(fao_country_profile, 
-            country_profile, 
-            fao_memberships,
-            #fisheries_subsidies,
-            treaties_conventions,
-            internal_fishing_acess_agreements)
+    EEZ_RFMO_info <- paste0(
+      "<b>", a("FAO Country Profile" , href = ACP_codes_links$fao_country_profile),
+      "</br>",
+      "<b>", a("Country Profile", href = ACP_codes_links$country_profile),
+       "</br>",
+      "<b>", a("Fishery Organization:", ACP_codes_links$fishery_org, href = ACP_codes_links$fishery_org_link ), 
+       "</br>",
+       # "<b>", a("FAO Memberships", (RFMO_links_eez_rfmo_name), href = RFMO_links_eez$link), 
+       # "</br>",
+       "<b>", a("Treaties and Conventions", href = ACP_codes_links$treaties_conventions),
+      "</br>",
+      "<b>", a("Internal Fishing Access Agreements", href = ACP_codes_links$internal_fishing_access_agreements)) %>% 
+      lapply(htmltools::HTML)
     
-
-
-    #HTML(paste0("<a href='ACP_codes_links$fao_country_profile'"))
-
+    
+    
   })
   
   ### ------------------------
@@ -1092,6 +1111,54 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
+  ###------------
+  ### Caribbean: Links to Online references
+  ###------------
+  
+  output$caribbean_online_text <- renderUI({
+    
+    req(input$caribbean_eez_select != "Select an EEZ...")
+    
+    
+    ACP_codes_links <- ACP_codes %>%
+      dplyr::filter(mrgid == input$caribbean_eez_select)
+    
+    ACP_fao_membership <- ACP_codes_links %>% 
+      separate_rows(fao_memberships, sep = ",")
+    
+    
+    RFMO_links_eez <- RFMO_links %>%
+      dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
+    
+    #browser()
+    
+    fao_country_profile <- a(href = ACP_codes_links$fao_country_profile)
+    country_profile <- a(href = ACP_codes_links$country_profile)
+    fishery_organization <- a(href = ACP_codes_links$fishery_org)
+    #fao_memberships <- a("FAO Memberships:", (RFMO_links_eez$rfmo_name), href = RFMO_links_eez$link)
+    #fisheries_subsidies <- a("Fishery Subsidy Information", href = ACP_codes_links$fisheries_subsidies)
+    treaties_conventions <- a(href = ACP_codes_links$treaties_conventions)
+    internal_fishing_acess_agreements <- a(href = ACP_codes_links$internal_fishing_access_agreements)
+    
+    EEZ_RFMO_info <- paste0(
+      "<b>", a("FAO Country Profile" , href = ACP_codes_links$fao_country_profile),
+      "</br>",
+      "<b>", a("Country Profile", href = ACP_codes_links$country_profile),
+      "</br>",
+      "<b>", a("Fishery Organization:", ACP_codes_links$fishery_org, href = ACP_codes_links$fishery_org_link ), 
+      "</br>",
+      # "<b>", a("FAO Memberships", (RFMO_links_eez_rfmo_name), href = RFMO_links_eez$link), 
+      # "</br>",
+      "<b>", a("Treaties and Conventions", href = ACP_codes_links$treaties_conventions),
+      "</br>",
+      "<b>", a("Internal Fishing Access Agreements", href = ACP_codes_links$internal_fishing_access_agreements)) %>% 
+      lapply(htmltools::HTML)
+    
+    
+    
+  })
+  
+  
   ###---------------------
   ##Caribbean: Connectivity map
   ###---------------------
@@ -1688,6 +1755,53 @@ server <- shinyServer(function(input, output, session) {
            "</br>",
            "<b>", "Total Fishing kwhr in EEZ: ", "</b>", format(round(total_stats_pacific$fshn_KW, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
+    
+  })
+  
+  ###------------
+  ### Pacific: Links to Online references
+  ###------------
+  
+  output$pacific_online_text <- renderUI({
+    
+    req(input$pacific_eez_select != "Select an EEZ...")
+    
+    
+    ACP_codes_links <- ACP_codes %>%
+      dplyr::filter(mrgid == input$pacific_eez_select)
+    
+    ACP_fao_membership <- ACP_codes_links %>% 
+      separate_rows(fao_memberships, sep = ",")
+    
+    
+    RFMO_links_eez <- RFMO_links %>%
+      dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
+    
+    #browser()
+    
+    fao_country_profile <- a(href = ACP_codes_links$fao_country_profile)
+    country_profile <- a(href = ACP_codes_links$country_profile)
+    fishery_organization <- a(href = ACP_codes_links$fishery_org)
+    #fao_memberships <- a("FAO Memberships:", (RFMO_links_eez$rfmo_name), href = RFMO_links_eez$link)
+    #fisheries_subsidies <- a("Fishery Subsidy Information", href = ACP_codes_links$fisheries_subsidies)
+    treaties_conventions <- a(href = ACP_codes_links$treaties_conventions)
+    internal_fishing_acess_agreements <- a(href = ACP_codes_links$internal_fishing_access_agreements)
+    
+    EEZ_RFMO_info <- paste0(
+      "<b>", a("FAO Country Profile" , href = ACP_codes_links$fao_country_profile),
+      "</br>",
+      "<b>", a("Country Profile", href = ACP_codes_links$country_profile),
+      "</br>",
+      "<b>", a("Fishery Organization:", ACP_codes_links$fishery_org, href = ACP_codes_links$fishery_org_link ), 
+      "</br>",
+      # "<b>", a("FAO Memberships", (RFMO_links_eez_rfmo_name), href = RFMO_links_eez$link), 
+      # "</br>",
+      "<b>", a("Treaties and Conventions", href = ACP_codes_links$treaties_conventions),
+      "</br>",
+      "<b>", a("Internal Fishing Access Agreements", href = ACP_codes_links$internal_fishing_access_agreements)) %>% 
+      lapply(htmltools::HTML)
+    
+    
     
   })
   
