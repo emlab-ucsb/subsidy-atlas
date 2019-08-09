@@ -641,6 +641,9 @@ server <- shinyServer(function(input, output, session) {
   
   output$africa_subsidy_map <- renderPlot(bg = "#262626", {
     
+    req(input$africa_eez_select != "Select a coastal state...")
+    req(nrow(africa_eez_data()) > 0)
+    
     ### Get totals for data
     eez_totals <- africa_eez_data() %>%
       group_by(lon_cen, lat_cen) %>%
