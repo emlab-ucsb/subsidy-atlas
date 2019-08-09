@@ -56,10 +56,9 @@ border-right-color: transparent;}"
                       
                       selectizeInput("caribbean_eez_select",
                                      label = NULL,
-                                     choices = c("Select an EEZ...", caribbean_eez_choices),
-                                     selected = "Select an EEZ...",
-                                     width = "100%",
-                                     options = list(placeholder = 'Select...')),
+                                     choices = c("Select a coastal state...", caribbean_eez_choices),
+                                     selected = "Select a coastal state...",
+                                     width = "100%"),
                       
                       leafletOutput("caribbean_map", width = "auto", height = "40vh")
                       

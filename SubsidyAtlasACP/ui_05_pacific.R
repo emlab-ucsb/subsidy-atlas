@@ -56,10 +56,9 @@ border-right-color: transparent;}"
                       
                       selectizeInput("pacific_eez_select",
                                      label = NULL,
-                                     choices = c("Select an EEZ...", pacific_eez_choices),
-                                     selected = "Select an EEZ...",
-                                     width = "100%",
-                                     options = list(placeholder = 'Select...')),
+                                     choices = c("Select a coastal state...", pacific_eez_choices),
+                                     selected = "Select a coastal state...",
+                                     width = "100%"),
                       
                       leafletOutput("pacific_map", width = "auto", height = "40vh")
                       
