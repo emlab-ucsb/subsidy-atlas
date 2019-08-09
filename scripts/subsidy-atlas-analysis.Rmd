@@ -52,7 +52,7 @@ number_of_top_countries_eez <- 10
 # Connection to BigQuery - need a project for billing
 bq_project <-  "ucsb-gfw"
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- T
+rerun_gfw <- F
 
 # Choose analysis year (2012 - 2018)
 analysis_year <- 2018

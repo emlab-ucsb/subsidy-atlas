@@ -72,21 +72,21 @@ border-right-color: transparent;}"
            # Title
            tags$h3(style = "padding: 0; margin: 0;", "EEZ Summary Statistics"),
            
-           #uiOutput("africa_summary_text"),
+           uiOutput("africa_summary_text"),
            
            br(),
            
            # Title
            tags$h3(style = "padding: 0x; margin: 0;", "EEZ Information"),
            
-           #uiOutput("africa_online_text"),
+           uiOutput("africa_online_text"),
            
            br(),
            
            # Title
-           tags$h3(style = "padding: 0x; margin: 0;", "EEZ FAO Memberships")
+           tags$h3(style = "padding: 0x; margin: 0;", "EEZ FAO Memberships"),
            
-           #uiOutput("africa_RFMO_text")
+           uiOutput("africa_RFMO_text")
            
            )#, #close column
     
