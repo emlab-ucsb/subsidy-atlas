@@ -883,7 +883,7 @@ server <- shinyServer(function(input, output, session) {
         tags$div( 
           
           tags$h3("EEZ Summary Statistics"),
-          tags$h4("No data on distant water fishing in the", input$caribbean_eez_select),
+          tags$h4("Text about no data asdkfas;dfkjaskd", input$caribbean_eez_select), # need to add full EEZ name, currently just iso3 code
           tags$h3("EEZ Information"),
           tags$a(href = unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "FAO Country Profile"),
           tags$br(),
