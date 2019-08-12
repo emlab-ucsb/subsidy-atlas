@@ -69,23 +69,10 @@ border-right-color: transparent;}"
         column(6, style = "padding: 0px",
                
                # Title
-               tags$h3(style = "padding: 0; margin: 0;", "EEZ Summary Statistics"),
+               tags$h3(style = "padding: 0x; margin: 0;"),
                
-               uiOutput("caribbean_summary_text"),
+               uiOutput("caribbean_online_text")
                
-               br(),
-               
-               # Title
-               tags$h3(style = "padding: 0x; margin: 0;", "EEZ Information"),
-               
-               uiOutput("caribbean_online_text"),
-               
-               br(),
-               
-               # Title
-               tags$h3(style = "padding: 0x; margin: 0;", "EEZ FAO Memberships"),
-               
-               uiOutput("caribbean_RFMO_text")
                
         ) #close column
         
@@ -104,6 +91,8 @@ border-right-color: transparent;}"
                                border-style: solid;
                                border-width: 2px 1px 1px 1px;
                                border-color: #1A1B1D;",
+                               
+                               verbatimTextOutput("no_data_map"),
                                
                                leafletOutput("caribbean_connection_map",
                                              width = "100%",

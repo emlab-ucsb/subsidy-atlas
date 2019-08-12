@@ -67,24 +67,12 @@ border-right-color: transparent;}"
         
         column(6, style = "padding: 0px",
                
-               # Title
-               tags$h3(style = "padding: 0; margin: 0;", "EEZ Summary Statistics"),
+              # Title
+               tags$h3(style = "padding: 0x; margin: 0;"),
                
-               uiOutput("pacific_summary_text"),
+               uiOutput("pacific_online_text")
                
-               br(),
                
-               # Title
-               tags$h3(style = "padding: 0x; margin: 0;", "EEZ Information"),
-               
-               uiOutput("pacific_online_text"),
-               
-               br(),
-               
-               # Title
-               tags$h3(style = "padding: 0x; margin: 0;", "EEZ FAO Memberships"),
-               
-               uiOutput("pacific_RFMO_text")
                
           ) #close column
         
