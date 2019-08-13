@@ -432,7 +432,7 @@ server <- shinyServer(function(input, output, session) {
       tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
       tags$hr(),
       tags$h4("Fishery organization: "),
-      tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "Fishery Organization"),
+      tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
       tags$hr(),
       tags$h3("FAO Membership Information"),
       paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>") %>%
@@ -892,7 +892,7 @@ server <- shinyServer(function(input, output, session) {
           tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
           tags$hr(),
           tags$h4("Fishery organization: "),
-          tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "Fishery Organization"),
+          tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
           tags$hr(),
           tags$h3("FAO Membership Information"),
           paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>") %>%
@@ -917,7 +917,7 @@ server <- shinyServer(function(input, output, session) {
             tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
             tags$hr(),
             tags$h4("Fishery organization: "),
-            tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "Fishery Organization"),
+            tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
             tags$hr(),
             tags$h3("FAO Membership Information"),
             paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>") %>%
@@ -1428,7 +1428,7 @@ server <- shinyServer(function(input, output, session) {
       tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
       tags$hr(),
       tags$h4("Fishery organization: "),
-      tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "Fishery Organization"),
+      tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
       tags$hr(),
       tags$h3("FAO Membership Information"),
       paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>") %>%
