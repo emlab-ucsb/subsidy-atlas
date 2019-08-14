@@ -592,14 +592,18 @@ In order to make our connection plots, we need to find the centroids of each EEZ
 ```{r}
 if(run_flag_state | run_eez){
   
-# Get centroids of each eez
+# Get centroids of each eez for africa
 EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326)
+
+
 
 EEZ_map_centroids <- EEZ_map %>%
   dplyr::filter(is.na(zone)) %>%
   st_centroid() %>%
   dplyr::select(eez_code = mrgid, eez_name = geoname, geometry)
+
+
 
 centroid_coordinates_EEZ <- tibble(eez_code = EEZ_map_centroids$eez_code,
                                    eez_name = EEZ_map_centroids$eez_name) %>% 
@@ -608,6 +612,31 @@ centroid_coordinates_EEZ <- tibble(eez_code = EEZ_map_centroids$eez_code,
   arrange(eez_code)
 
 manual_coordinates_EEZ <- read_csv(paste0(results_dir, "corrected_EEZ_centroids.csv"))
+
+#### ACP Cetroids
+
+acp_map <- read_sf(dsn = here::here("data", "shapefiles", "World_EEZ_v10_custom_ACP"), layer = "World_EEZ_v10_custom_ACP") %>% 
+  st_transform(crs = 4326)
+
+acp_map_centroids <- acp_map %>% 
+  #dplyr::filter(is.na(zone)) %>%
+  st_centroid() %>%
+  dplyr::select(eez_code = mrgid, eez_name = geoname, geometry)
+
+centroid_coordinates_EEZ_acp <- tibble(eez_code = acp_map_centroids$eez_code,
+                                   eez_name = acp_map_centroids$eez_name) %>% 
+  bind_cols(do.call(rbind, st_geometry(acp_map_centroids)) %>% 
+    as_tibble() %>% setNames(c("eez_lon","eez_lat"))) %>%
+  arrange(eez_code)
+
+centroid_coordinates_EEZ_acp_edited <- centroid_coordinates_EEZ_acp %>% 
+  left_join(manual_coordinates_EEZ, by = c("eez_code")) %>% 
+  mutate(eez_lon = ifelse(!is.na(eez_lon_edit), eez_lon_edit, eez_lon)) %>% 
+  mutate(eez_lat = ifelse(!is.na(eez_lat_edit), eez_lat_edit, eez_lat)) %>%
+  dplyr::select(-eez, -eez_lat_edit, -eez_lon_edit)
+
+
+#########
 
 #MW load
 #manual_coordinates_EEZ <- read_csv("~/GitHub/subsidy-atlas/results/corrected_EEZ_centroids.csv")

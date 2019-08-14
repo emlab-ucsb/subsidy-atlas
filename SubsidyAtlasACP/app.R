@@ -19,6 +19,7 @@ library(shiny)
 library(shinyjs)
 library(shinydashboard)
 library(leaflet)
+library(shinyBS)
 
 library(tidyverse)
 library(sf)
@@ -71,11 +72,14 @@ connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp"
 eez_shp <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_custom_ACP", layer = "World_EEZ_v10_custom_ACP") %>%
   st_transform(crs = 4326) %>%
   dplyr::filter(pol_type == "200NM")
+
+ 
   
 # Simplified EEZ shapefile (with FAO regions for high seas)
 eez_map <- read_sf(dsn = "./data/shapefiles_edit/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone)) %>%
   st_transform(crs = 4326) 
+
 
 # Simplified land shapefile 
 land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
@@ -83,7 +87,8 @@ land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world
 
 # Combined land/EEZ shapefile 
 land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_union_v2_custom_ACP", layer = "EEZ_land_union_v2_custom_ACP") %>%
-  st_transform(crs = 4326)
+  st_transform(crs = 4326) %>% 
+  rename(iso3 = is_3dgt)
 
 
 ### Widget choice values that depend on a dataset ------------------------------
@@ -154,17 +159,17 @@ ui <- shinyUI(
    dashboardSidebar(width = "250px",
                     sidebarMenu(id = "tabs",
                                 
-                                # Introduction                     
-                                menuItem("Introduction", 
-                                         tabName = "introduction", 
-                                         icon = NULL,
-                                         selected = TRUE),
+                                # # Introduction                     
+                                # menuItem("Introduction", 
+                                #          tabName = "introduction", 
+                                #          icon = NULL,
+                                #          selected = TRUE),
                                 
                                 # Regional Map
                                 menuItem("Select a region",
                                          tabName = "selectregion",
                                          icon = NULL,
-                                         selected = NULL),
+                                         selected = TRUE),
                                 
                                 # Africa
                                 menuItem("Africa", 
@@ -264,11 +269,11 @@ server <- shinyServer(function(input, output, session) {
                                                bringToFront = TRUE),
                   label = regional_dat$rgn_spc,
                   group = regional_dat$region) %>%
-      addLayersControl(
-        overlayGroups = regional_dat$rgn_spc,
-        options = layersControlOptions(collapsed = FALSE)
-      ) %>%
-      setView(190,20, zoom = 1)
+      # addLayersControl(
+      #   overlayGroups = regional_dat$rgn_spc,
+      #   options = layersControlOptions(collapsed = FALSE)
+      # ) %>%
+      setView(145,20, zoom = 1.5)
       
   })
   
@@ -973,7 +978,7 @@ server <- shinyServer(function(input, output, session) {
       as.data.frame()
     
     #### If not data do not draw map
-    
+    #browser()
     if(nrow(connectivity_data_edit) == 0) {
       
       
@@ -1060,7 +1065,7 @@ server <- shinyServer(function(input, output, session) {
     } #close if statement
   })
   
-  
+  #browser()
   
   
   ### -----------------------------------------------------------
@@ -1312,8 +1317,8 @@ server <- shinyServer(function(input, output, session) {
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")
-      )
-      #setView(290,20, zoom = 3)
+      ) %>% 
+      setView(175,3, zoom = 2)
     
   }) # Close render leaflet
   
@@ -1535,7 +1540,8 @@ server <- shinyServer(function(input, output, session) {
                    fillOpacity = 1,
                    weight = 1,
                    color = "darkgoldenrod") %>% 
-      setView(-75,20, zoom = 1.75)
+      #setView(-75,20, zoom = 1.75) %>% 
+      setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=2)
   })
   
   ### -----------------------------------------------------------
