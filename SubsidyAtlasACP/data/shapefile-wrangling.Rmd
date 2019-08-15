@@ -60,7 +60,7 @@ eez_180_simple <- eez_180 %>%
   rmapshaper::ms_simplify()
 
 # Load eez shapefile (0 to 360 degrees)
-eez_360 <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "World_EEZ_v10_20180221_HR_0_360"), layer = "World_EEZ_v10_2018_0_360")
+eez_360 <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_20180221_HR_0_360"), layer = "World_EEZ_v10_2018_0_360")
   
 eez_360_simple <- eez_360 %>%
   setNames(tolower(names(.))) %>%

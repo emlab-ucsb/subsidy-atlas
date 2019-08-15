@@ -11,9 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-connectivity_data <- read_sf("SubsidyAtlasACP/data/eez_results/ACP/eez_mapping_with_lines.shp")  
+connectivity_data <- read_sf("SubsidyAtlasACP/data/eez_results/ACP/eez_mapping_with_lines.shp", )  
   
-ACP_codes <- read_csv("SubsidyAtlasACP/data/ACP_eez_codes.csv")
+ACP_codes <- read_csv("SubsidyAtlasACP/data/ACP_eez_codes.csv", locale = locale(encoding = "UTF-8")) #%>% 
+  #colnames(ACP_codes) <- character
+
 
 africa_eez_choices <- ACP_codes$eez_id[ACP_codes$region == "Africa"]  
 names(africa_eez_choices) <- ACP_codes$flag[ACP_codes$region == "Africa"]
@@ -627,6 +629,18 @@ connectivity_data_for_selected_eez_MRT <- connectivity_data %>% # load this in u
   connectivity_data_for_selected_eez_GNB <- connectivity_data %>% # load this in up above
       dplyr::filter(eez_cod == "8471") %>% #input$africa_eez_select) %>% 
       arrange(flag)
+
+```
+
+```{r}
+#Check to see if any gfw data in EEZ
+
+dw_effort_test <- dw_effort_final %>% 
+  dplyr::filter(eez_territory_iso3 == "MRT")
+
+connectivity_data_test <- connectivity_data %>% 
+  dplyr::filter(ez_tr_3 == "MRT")
+
 
 ```
 

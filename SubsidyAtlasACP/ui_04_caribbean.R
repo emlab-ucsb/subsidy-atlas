@@ -37,16 +37,28 @@ border-right-color: transparent;}"
             ),
     
     # Top header
-    column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
-           
-           tags$h3(style = "padding: 0; margin: 0;", "Caribbean")
-           
-           # br(),
-           # 
-           # # Text
-           # includeHTML("./text/04_caribbean_intro.html")
-           
-    ),
+
+fluidRow(
+  column(6, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
+         
+         
+         tags$h3(style = "padding: 0; margin: 0 2.5%;", "Caribbean")),
+  
+  
+  
+  column(6, style = "padding: 10px 100px 10px 0px;",
+         
+         # Navigation buttons
+         tags$span(class = "text-block",
+                   # Fisheries subsidies today
+                   style = "padding: 75px 25px 25px 25px;",
+                   actionButton("caribbean_return_to_region", "Return to Regional Map",
+                                style="color: #fff; background-color: #3c8dbc; border-color: #2e6da4; padding: 15px 10px; width:100%; font-size: 20px")
+         ))
+  
+  
+  
+), 
     
     fluidRow( 
        # Map and widget to select a country 
@@ -69,23 +81,10 @@ border-right-color: transparent;}"
         column(6, style = "padding: 0px",
                
                # Title
-               tags$h3(style = "padding: 0; margin: 0;", "EEZ Summary Statistics"),
+               tags$h3(style = "padding: 0x; margin: 0;"),
                
-               uiOutput("caribbean_summary_text"),
+               uiOutput("caribbean_online_text")
                
-               br(),
-               
-               # Title
-               tags$h3(style = "padding: 0x; margin: 0;", "EEZ Information"),
-               
-               uiOutput("caribbean_online_text"),
-               
-               br(),
-               
-               # Title
-               tags$h3(style = "padding: 0x; margin: 0;", "EEZ FAO Memberships"),
-               
-               uiOutput("caribbean_RFMO_text")
                
         ) #close column
         
@@ -104,6 +103,8 @@ border-right-color: transparent;}"
                                border-style: solid;
                                border-width: 2px 1px 1px 1px;
                                border-color: #1A1B1D;",
+                               
+                               verbatimTextOutput("no_data_map"),
                                
                                leafletOutput("caribbean_connection_map",
                                              width = "100%",
