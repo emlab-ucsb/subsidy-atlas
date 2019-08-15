@@ -130,7 +130,7 @@ ui <- shinyUI(
   dashboardPage(
     
     # Header bar
-    dashboardHeader(title = "Global Atlas of Distant Water Fishing",
+    dashboardHeader(title = "ACP Atlas of Distant Water Fishing",
                     titleWidth = "350px",
                     
                     # SFG logo
@@ -157,6 +157,7 @@ ui <- shinyUI(
                     
    # Sidebar menu
    dashboardSidebar(width = "250px",
+                    collapsed = TRUE,
                     sidebarMenu(id = "tabs",
                                 
                                 # # Introduction                     
@@ -253,10 +254,55 @@ server <- shinyServer(function(input, output, session) {
     regional_dat <- land_eez_map %>%
       group_by(region, rgn_spc) %>%
       summarize(geometry = st_union(geometry))
+    
+    tag.map.title <- tags$style(HTML("
+  .leaflet-control.map-title { 
+    transform: translate(-50%,20%);
+    position: fixed !important;
+    left: 50%;
+    text-align: center;
+    padding-left: 10px; 
+    padding-right: 10px; 
+    background: rgba(255,255,255,0.75);
+    font-weight: bold;
+    font-size: 28px;
+    color:black;
+  }
+"))
+    
+    map_title <- tags$div(
+      tag.map.title, HTML("Select an ACP region to move to the corresponding section of the atlas")
+    )  
+    
+    # map_title <- tags$div(
+    #   tags$h3("ACP Atlas")
+    # )
       
     
     leaflet("regional_map") %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addProviderTiles("Esri.WorldTopoMap") %>% 
+      # addMarkers(
+      #   lng = 138, lat = 36,
+      #   label = "ACP Atlas",
+      #   labelOptions = labelOptions(noHide = T, textsize = "18px")) %>%
+      # addMarkers(
+      #   lng = 138, lat = 36,
+      #   label = "Label w/ custom CSS style",
+      #   labelOptions = labelOptions(noHide = T, textOnly = FALSE,
+      #                               style = list(
+      #                                 "color" = "red",
+      #                                 "font-family" = "serif",
+      #                                 "font-style" = "italic",
+      #                                 "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
+      #                                 "font-size" = "12px",
+      #                                 "border-color" = "rgba(0,0,0,0.5)"
+      #                               ))) %>% 
+      # addRectangles(
+      #   lng1 = 130, lat1 = 30,
+      #   lng2 = 138, lat2 = 32,
+      #   fillColor = "transparent",
+      #   label = "ACP ATLAS") %>% 
+    addControl(map_title, position = "topleft", className = "map-title") %>% 
       
       addPolygons(data = regional_dat, 
                   fillColor = "slateblue",
@@ -273,7 +319,7 @@ server <- shinyServer(function(input, output, session) {
       #   overlayGroups = regional_dat$rgn_spc,
       #   options = layersControlOptions(collapsed = FALSE)
       # ) %>%
-      setView(145,20, zoom = 1.5)
+      setView(145, 0, zoom = 1.5)
       
   })
   
@@ -306,9 +352,29 @@ server <- shinyServer(function(input, output, session) {
       group_by(territory_iso3, geoname) %>%
       summarize(geometry = st_union(geometry))
    
+#    tag.map.title <- tags$style(HTML("
+#   .leaflet-control.map-title-africa { 
+#     transform: translate(-50%,20%);
+#     position: fixed !important;
+#     left: 50%;
+#     text-align: right;
+#     padding-left: 10px; 
+#     padding-right: 10px; 
+#     background: rgba(255,255,255,0.75);
+#     font-weight: bold;
+#     font-size: 16px;
+#     color:black;
+#   }
+# "))
+#    
+#    map_title_africa <- tags$div(
+#      tag.map.title, HTML("Click on an EEZ to begin")
+#    )  
+   
     # Map
     leaflet('africa_map') %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addProviderTiles("Esri.WorldTopoMap") %>%
+      #addControl(map_title_africa, position = "topright", className = "map-title-africa") %>%
       addPolygons(data = africa_eezs_merged, 
                   fillColor = "slateblue",
                   fillOpacity = 0.8,
@@ -760,7 +826,7 @@ server <- shinyServer(function(input, output, session) {
     
     # Map
     leaflet('caribbean_map') %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addProviderTiles("Esri.WorldTopoMap") %>% 
       addPolygons(data = caribbean_eezs_merged, 
                   fillColor = "seagreen",
                   fillOpacity = 0.8,
@@ -983,7 +1049,7 @@ server <- shinyServer(function(input, output, session) {
       
       
       caribbean_connection_map <-  leaflet() %>% 
-        addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+        addProviderTiles("Esri.WorldTopoMap") %>% 
         addPolygons(data = selected_eez, 
                     fillColor = "seagreen",
                     fillOpacity = 0.8,
@@ -1301,7 +1367,7 @@ server <- shinyServer(function(input, output, session) {
     
     # Map
     leaflet('pacific_map') %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addProviderTiles("Esri.WorldTopoMap") %>% 
       addPolygons(data = pacific_eezs_merged, 
                   fillColor = "coral",
                   fillOpacity = 0.8,
@@ -1351,7 +1417,7 @@ server <- shinyServer(function(input, output, session) {
       pacific_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      pacific_proxy %>% setView(lng=290, lat=20, zoom=3)
+      pacific_proxy %>% setView(lng=175, lat=3, zoom=2)
       
     }else{
       
@@ -1758,6 +1824,22 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
+  ### -------------------
+  ### Navigation buttons
+  ### -------------------
+  
+  # return to regional map buttons
+  observeEvent(input$africa_return_to_region, {
+    updateTabItems(session, "tabs", "selectregion")
+  })
+  
+  observeEvent(input$caribbean_return_to_region, {
+    updateTabItems(session, "tabs", "selectregion")
+  })
+  
+  observeEvent(input$pacific_return_to_region, {
+    updateTabItems(session, "tabs", "selectregion")
+  })
   
 })
 
