@@ -41,28 +41,20 @@ border-right-color: transparent;}"
               column(6, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
                      
                      
-                     tags$h3(style = "padding: 0; margin: 0 2.5%;", "Pacific")),
+                     tags$h3(style = "padding: 0; margin: 0 2.5%;", "Pacific"))
               
               
               
-              column(6, style = "padding: 10px 100px 10px 0px;",
-                     
-                     # Navigation buttons
-                     tags$span(class = "text-block",
-                               # Fisheries subsidies today
-                               style = "padding: 75px 25px 25px 25px;",
-                               actionButton("pacific_return_to_region", "Return to Regional Map",
-                                            style="color: #fff; background-color: #3c8dbc; border-color: #2e6da4; padding: 15px 10px; width:100%; font-size: 20px")
-                     ))
+              
               
               
             ), 
     
     fluidRow(
         # Map and widget to select a country 
-        column(6, style = "padding: 0px;",
+        column(6, style = "padding: 0 0 30px 0;",
                
-               column(12, style = "padding: 0 10px;",
+               column(12, style = "padding: 0 20px;",
                       
                       selectizeInput("pacific_eez_select",
                                      label = NULL,
@@ -70,7 +62,17 @@ border-right-color: transparent;}"
                                      selected = "Select a coastal state...",
                                      width = "100%"),
                       
-                      leafletOutput("pacific_map", width = "auto", height = "40vh")
+                      leafletOutput("pacific_map", width = "auto", height = "40vh")),
+                      
+                column(12, style = "padding: 10px 100px 10px 0px;",
+                       
+                       # Navigation buttons
+                       tags$span(class = "text-block",
+                                 # Fisheries subsidies today
+                                 style = "padding: 75px 25px 25px 25px;",
+                                 actionButton("pacific_return_to_region", "Return to Regional Map",
+                                              style="color: #fff; background-color: #3c8dbc; border-color: #2e6da4; padding: 15px 10px; width:100%; font-size: 20px")
+                       )
                       
                )
           ), #close column 

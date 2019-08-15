@@ -252,7 +252,7 @@ server <- shinyServer(function(input, output, session) {
   output$regional_map <- renderLeaflet({
     
     regional_dat <- land_eez_map %>%
-      group_by(region, rgn_spc) %>%
+      group_by(region) %>%
       summarize(geometry = st_union(geometry))
     
     tag.map.title <- tags$style(HTML("
@@ -302,7 +302,8 @@ server <- shinyServer(function(input, output, session) {
       #   lng2 = 138, lat2 = 32,
       #   fillColor = "transparent",
       #   label = "ACP ATLAS") %>% 
-    addControl(map_title, position = "topleft", className = "map-title") %>% 
+      addControl(map_title, position = "topleft", className = "map-title") %>%
+       
       
       addPolygons(data = regional_dat, 
                   fillColor = "slateblue",
@@ -804,7 +805,7 @@ server <- shinyServer(function(input, output, session) {
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))+
       eezmaptheme
-    
+    browser()
   })
   
 
@@ -843,7 +844,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(290,20, zoom = 3)
+      setView(290,17, zoom = 3.5)
     
   }) # Close render leaflet
   
@@ -1384,7 +1385,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>% 
-      setView(175,3, zoom = 2)
+      setView(175,0, zoom = 2.45)
     
   }) # Close render leaflet
   
@@ -1804,7 +1805,7 @@ server <- shinyServer(function(input, output, session) {
         mutate(subsidy_intensity = subs/fishing_KWh)
       
     }
-    
+    browser()
     # Get data quntiles to set fil scale limit appropriately
     intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
     scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
