@@ -35,6 +35,7 @@ library(countrycode) # country names
 library(tidyverse) # data manipulation
 library(ggalt) # transform to robinson projection
 library(RColorBrewer) # custom color palettes
+library(colorRamps)
 library(scales) # scales for plotting
 library(ggpubr) # plot arranging
 library(gridExtra)
@@ -255,6 +256,17 @@ server <- shinyServer(function(input, output, session) {
       group_by(region) %>%
       summarize(geometry = st_union(geometry))
     
+    pal <- colorFactor(
+      palette = "Set2",
+      #fill_(regional_dat$region))
+      domain = regional_dat$region)
+    
+    #brewer.pal(3, "Set2")
+    
+    
+    
+    #browser()
+    
     tag.map.title <- tags$style(HTML("
   .leaflet-control.map-title { 
     transform: translate(-50%,20%);
@@ -279,49 +291,33 @@ server <- shinyServer(function(input, output, session) {
     # )
       
     
-    leaflet("regional_map") %>% 
+    #leaflet("regional_map") %>% 
+    leaflet("regional_map", options = leafletOptions(zoomControl = FALSE)) %>%
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("Esri.WorldTopoMap") %>% 
-      # addMarkers(
-      #   lng = 138, lat = 36,
-      #   label = "ACP Atlas",
-      #   labelOptions = labelOptions(noHide = T, textsize = "18px")) %>%
-      # addMarkers(
-      #   lng = 138, lat = 36,
-      #   label = "Label w/ custom CSS style",
-      #   labelOptions = labelOptions(noHide = T, textOnly = FALSE,
-      #                               style = list(
-      #                                 "color" = "red",
-      #                                 "font-family" = "serif",
-      #                                 "font-style" = "italic",
-      #                                 "box-shadow" = "3px 3px rgba(0,0,0,0.25)",
-      #                                 "font-size" = "12px",
-      #                                 "border-color" = "rgba(0,0,0,0.5)"
-      #                               ))) %>% 
-      # addRectangles(
-      #   lng1 = 130, lat1 = 30,
-      #   lng2 = 138, lat2 = 32,
-      #   fillColor = "transparent",
-      #   label = "ACP ATLAS") %>% 
       addControl(map_title, position = "topleft", className = "map-title") %>%
        
       
       addPolygons(data = regional_dat, 
-                  fillColor = "slateblue",
-                  fillOpacity = 0.5,
+                  fillColor = ~pal(region),
+                  fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
                   highlight = highlightOptions(weight = 5,
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = regional_dat$rgn_spc,
+                  label = regional_dat$region,
                   group = regional_dat$region) %>%
       # addLayersControl(
       #   overlayGroups = regional_dat$rgn_spc,
       #   options = layersControlOptions(collapsed = FALSE)
       # ) %>%
-      setView(145, 0, zoom = 1.5)
-      
+      #zoomControlPosition('bottomright') %>% 
+      setView(145, 0, zoom = 1.5)  
+      #options = (zoomControl = FALSE)
+      #browser()
   })
   
   
@@ -373,11 +369,13 @@ server <- shinyServer(function(input, output, session) {
 #    )  
    
     # Map
-    leaflet('africa_map') %>% 
+    leaflet('africa_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       addProviderTiles("Esri.WorldTopoMap") %>%
       #addControl(map_title_africa, position = "topright", className = "map-title-africa") %>%
       addPolygons(data = africa_eezs_merged, 
-                  fillColor = "slateblue",
+                  fillColor = "#66C2A5",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -436,7 +434,7 @@ server <- shinyServer(function(input, output, session) {
       
       # Add a different colored polygon on top of map
       africa_proxy %>% addPolygons(data = selected_eez,
-                                      fillColor = "seagreen",
+                                      fillColor = "mediumseagreen",
                                       fillOpacity = 1,
                                       color= "white",
                                       weight = 0.3,
@@ -569,11 +567,13 @@ server <- shinyServer(function(input, output, session) {
       "</br>",
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fshn_KW, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
-    
+    #browser()
     
     
     # Leaflet map
-    leaflet('africa_connection_map') %>% 
+    leaflet('africa_connection_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = flag_states_for_selected_eez,
                   fillColor = "darkmagenta",
@@ -591,7 +591,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")) %>%
       addPolygons(data = selected_eez, 
-                  fillColor = "seagreen",
+                  fillColor = "mediumseagreen",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -767,7 +767,7 @@ server <- shinyServer(function(input, output, session) {
                 fishing_KWh = sum(fishing_KWh, na.rm = T),
                 subs = sum(subs, na.rm = T)) %>%
       mutate(subsidy_intensity = subs/fishing_KWh)
-    
+    #browser()
     ### Get limits for map area
     x_lim <- c(min(eez_totals$lon_cen) - 0.5, max(eez_totals$lon_cen) + 0.5)
     y_lim <- c(min(eez_totals$lat_cen) - 0.5, max(eez_totals$lat_cen) + 0.5)
@@ -805,7 +805,7 @@ server <- shinyServer(function(input, output, session) {
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))+
       eezmaptheme
-    browser()
+    #browser()
   })
   
 
@@ -826,10 +826,12 @@ server <- shinyServer(function(input, output, session) {
       summarize(geometry = st_union(geometry))
     
     # Map
-    leaflet('caribbean_map') %>% 
+    leaflet('caribbean_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("Esri.WorldTopoMap") %>% 
       addPolygons(data = caribbean_eezs_merged, 
-                  fillColor = "seagreen",
+                  fillColor = "#FC8D62",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -890,7 +892,7 @@ server <- shinyServer(function(input, output, session) {
       
       # Add a different colored polygon on top of map
       caribbean_proxy %>% addPolygons(data = selected_eez,
-                                   fillColor = "darkred",
+                                   fillColor = "tomato",
                                    fillOpacity = 1,
                                    color= "white",
                                    weight = 0.3,
@@ -955,7 +957,9 @@ server <- shinyServer(function(input, output, session) {
         tags$div( 
           
           tags$h3("EEZ Summary Statistics"),
-          tags$h4("Text about no data asdkfas;dfkjaskd", input$caribbean_eez_select), # need to add full EEZ name, currently just iso3 code
+          tags$h4("**There is either, no distant water fishing data available for", ACP_codes_links$territory, "or the fishing effort did not meet the minimum thresholds of our analysis."), #"Text about no data asdkfas;dfkjaskd",  %in% input$caribbean_eez_select), # need to add full EEZ name, currently just iso3 code
+          tags$h5("For more information about how we conducted our analysis please click here:"),
+          tags$hr(),
           tags$h3("EEZ Information"),
           tags$a(href = unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "FAO Country Profile"),
           tags$br(),
@@ -963,7 +967,7 @@ server <- shinyServer(function(input, output, session) {
           tags$br(),
           tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
           tags$hr(),
-          tags$h4("Fishery organization: "),
+          tags$h3("Fishery organization: "),
           tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
           tags$hr(),
           tags$h3("FAO Membership Information"),
@@ -988,7 +992,7 @@ server <- shinyServer(function(input, output, session) {
             tags$br(),
             tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
             tags$hr(),
-            tags$h4("Fishery organization: "),
+            tags$h3("Fishery organization: "),
             tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
             tags$hr(),
             tags$h3("FAO Membership Information"),
@@ -1029,6 +1033,8 @@ server <- shinyServer(function(input, output, session) {
     connectivity_data_edit <- connectivity_data_for_selected_eez %>%
       dplyr::filter(flag %in% flag_states_for_selected_eez$flag) 
     
+    #browser()
+    
     # Connectivity stats with no geometry
     no_geometry <- connectivity_data_edit %>%
       group_by(ez_tr_3, flag) %>%
@@ -1049,10 +1055,12 @@ server <- shinyServer(function(input, output, session) {
     if(nrow(connectivity_data_edit) == 0) {
       
       
-      caribbean_connection_map <-  leaflet() %>% 
+      caribbean_connection_map <-  leaflet(options = leafletOptions(zoomControl = FALSE)) %>% 
+        htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
         addProviderTiles("Esri.WorldTopoMap") %>% 
         addPolygons(data = selected_eez, 
-                    fillColor = "seagreen",
+                    fillColor = "tomato",
                     fillOpacity = 0.8,
                     color= "white",
                     weight = 0.3,
@@ -1089,7 +1097,9 @@ server <- shinyServer(function(input, output, session) {
     #Leaflet map
     
     
-   caribbean_connection_map <-  leaflet() %>% 
+   caribbean_connection_map <-  leaflet(options = leafletOptions(zoomControl = FALSE)) %>% 
+     htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = flag_states_for_selected_eez,
                   fillColor = "darkmagenta",
@@ -1107,7 +1117,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")) %>% 
       addPolygons(data = selected_eez, 
-                  fillColor = "seagreen",
+                  fillColor = "tomato",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -1247,6 +1257,8 @@ server <- shinyServer(function(input, output, session) {
                 subs = sum(subs, na.rm = T)) %>%
       mutate(subsidy_intensity = subs/fishing_KWh)
     
+    
+    
     ### Get limits for map area
     x_lim <- c(min(eez_totals$lon_cen) - 0.5, max(eez_totals$lon_cen) + 0.5)
     y_lim <- c(min(eez_totals$lat_cen) - 0.5, max(eez_totals$lat_cen) + 0.5)
@@ -1266,7 +1278,10 @@ server <- shinyServer(function(input, output, session) {
                   subs = sum(subs, na.rm = T)) %>%
         mutate(subsidy_intensity = subs/fishing_KWh)
       
+      #browser()
+      
     }
+    #browser()
     
     # Get data quntiles to set fil scale limit appropriately
     intensity_quantile <- quantile(eez_plot_data$subs/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
@@ -1367,10 +1382,12 @@ server <- shinyServer(function(input, output, session) {
       summarize(geometry = st_union(geometry))
     
     # Map
-    leaflet('pacific_map') %>% 
+    leaflet('pacific_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("Esri.WorldTopoMap") %>% 
       addPolygons(data = pacific_eezs_merged, 
-                  fillColor = "coral",
+                  fillColor = "#8DA0CB",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -1431,7 +1448,7 @@ server <- shinyServer(function(input, output, session) {
       
       # Add a different colored polygon on top of map
       pacific_proxy %>% addPolygons(data = selected_eez,
-                                      fillColor = "darkred",
+                                      fillColor = "mediumpurple",
                                       fillOpacity = 1,
                                       color= "white",
                                       weight = 0.3,
@@ -1569,7 +1586,9 @@ server <- shinyServer(function(input, output, session) {
     
     #Leaflet map
     
-    leaflet('pacific_connection_map') %>% 
+    leaflet('pacific_connection_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = flag_states_for_selected_eez,
                   fillColor = "darkmagenta",
@@ -1587,7 +1606,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")) %>% 
       addPolygons(data = selected_eez, 
-                  fillColor = "seagreen",
+                  fillColor = "mediumpurple",
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -1805,7 +1824,7 @@ server <- shinyServer(function(input, output, session) {
         mutate(subsidy_intensity = subs/fishing_KWh)
       
     }
-    browser()
+    #browser()
     # Get data quntiles to set fil scale limit appropriately
     intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
     scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)

@@ -39,7 +39,7 @@ border-right-color: transparent;}"
     # Top header
 
 fluidRow(
-  column(6, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
+  column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
          
          
          tags$h3(style = "padding: 0; margin: 0 2.5%;", "Caribbean"))
@@ -57,13 +57,25 @@ fluidRow(
                
                column(12, style = "padding: 0 20px;",
                       
-                      selectizeInput("caribbean_eez_select",
-                                     label = NULL,
-                                     choices = c("Select a coastal state...", caribbean_eez_choices),
-                                     selected = "Select a coastal state...",
-                                     width = "100%"),
+                      # selectizeInput("caribbean_eez_select",
+                      #                label = NULL,
+                      #                choices = c("Select a coastal state...", caribbean_eez_choices),
+                      #                selected = "Select a coastal state...",
+                      #                width = "100%"),
                       
-                      leafletOutput("caribbean_map", width = "auto", height = "40vh")),
+                      leafletOutput("caribbean_map", width = "auto", height = "40vh"),
+               
+                       absolutePanel(top = 10, left = 140, width = "50%", fixed = FALSE,
+                                     
+                                     selectizeInput("caribbean_eez_select",
+                                                    label = NULL,
+                                                    choices = c("Select a coastal state...", caribbean_eez_choices),
+                                                    selected = "Select a coastal state...",
+                                                    width = "100%")
+                                     
+                                     
+                       )
+               ),
                
                column(12, style = "padding: 10px 100px 10px 0px;",
                       
