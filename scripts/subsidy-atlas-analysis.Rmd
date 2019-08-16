@@ -36,7 +36,7 @@ library(png)
 ### Set run options -----
 
 # Run flag state analysis (T/F)?
-run_flag_state <- T
+run_flag_state <- F
 # Set purpose of the flag state analysis (currently the only choice is "top_ranked")
 flag_state_purpose <- "top_ranked"
 # Number of flag_states to include (only necessary if purpose is "top_ranked", defaults to 10)
@@ -52,7 +52,7 @@ number_of_top_countries_eez <- 10
 # Connection to BigQuery - need a project for billing
 bq_project <-  "ucsb-gfw"
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- F
+rerun_gfw <- T
 
 # Choose analysis year (2012 - 2018)
 analysis_year <- 2018
@@ -122,7 +122,7 @@ This section describes the process of linking to the most recent version of the 
 We first extract total fishing hours (and fishing days) by year and EEZ for each vessel in the dataset. EEZs are defined by a numeric code, each cooresponding to a region in the World EEZ data set from Marineregions.org. The responsible territory for each region has been identified, as well as the sovereign country (or countries for disputed regions). We then match the best vessel characteristics identified by GFW to each vessel, and remove entries for all vessels that GFW does not consider to be fishing vessels. 
 
 ```{r}
-if(rerun_gfw == T){
+if(run_flag_state | run_eez & rerun_gfw){
 
 # Query to pull fishing effort by vessel, by EEZ
 sql <- "
@@ -216,7 +216,7 @@ bq_project_query(bq_project, sql, destination_table = bq_table(project = bq_proj
 For the purposes of allocating subsidies to individual vessels, we need the total number of fishing hours for each flag state in a given year, as we assume that subsidies are allocated proportionally based on fishing effort. 
 
 ```{r}
-if(rerun_gfw){
+if(run_flag_state | run_eez & rerun_gfw){
   
 sql2 <- "
 SELECT
@@ -272,7 +272,7 @@ In the first step, the following is not considered to be "distant water fishing"
 Additionally, we remove all entries in which a vessel has spent less than 1 hour fishing in a given EEZ in a year. 
 
 ```{r}
-if(rerun_gfw){
+if(run_flag_state | run_eez & rerun_gfw){
   
 sql3 <- "
 SELECT
@@ -327,6 +327,8 @@ and flag != eez_territory_iso3"
 In order to further parse out distant water fishing effort, we will need to take sovereignty into consideration. GFW has done a lot of this work for us, therefore we use the sovereign states assigned to each eez iso3 for flag states as well. Let's create a table matching all of these up. 
 
 ```{r}
+if(run_flag_state | run_eez){
+  
 # Get a list of sovereignty pairings from GFW eez data
 sovereign_pairings <- dw_effort_raw %>%
   distinct(eez_sovereign_iso3, eez_territory_iso3) %>%
@@ -348,11 +350,13 @@ sovereign_pairings_all <- sovereign_pairings %>%
 
 # Save for future reference just in case
 write_csv(sovereign_pairings_all, path = paste0(results_dir, "sovereign_pairings_all.csv"))
+}
 ```
 
 We then assign these names to the flag states of vessels, as well as to the EEZ states and sovereigns in the GFW database by matching ISO-3 character codes of each entity. 
 
 ```{r}
+if(run_flag_state | run_eez){
 # Add sovereign state to each vessel in GFW
 dw_effort <- dw_effort_raw %>%
   left_join(sovereign_pairings_all, by = c("flag" = "iso3"))
@@ -370,6 +374,7 @@ dw_effort <- dw_effort %>%
          eez_sovereign2_name = countrycode::countrycode(eez_sovereign2_iso3, "iso3c", "country.name"),
          eez_sovereign3_name = countrycode::countrycode(eez_sovereign3_iso3, "iso3c", "country.name"))
 
+}
 ```
 
 ## European Union vessels
@@ -384,6 +389,7 @@ We do not consider the following to be "intra-EU fishing":
 1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing belongs to a territory or distant region of an EU member state (e.g. a French-flagged vessel fishing in the EEZ of French Polynesia). 
 
 ```{r}
+if(run_flag_state | run_eez){
 # EU member states
 # Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden, United Kingdom
 eu_states <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
@@ -403,7 +409,7 @@ dw_effort <- dw_effort %>%
                       TRUE, 
                       FALSE)) %>%
   dplyr::filter(!is_EU)
-
+}
 ```
  
 For the purposes of this analysis, we do not consider "intra-EU fishing" to be distant-water fishing and it is therefore removed. 
@@ -418,6 +424,7 @@ We descibe "sovereign fishing" as fishing activity that meets one of the followi
 
 
 ```{r}
+if(run_flag_state | run_eez){
 # 4,922 connections are not foreign
 dw_effort <- dw_effort %>%
   mutate(is_foreign = case_when(flag == eez_sovereign_iso3 | 
@@ -427,11 +434,13 @@ dw_effort <- dw_effort %>%
                                     sovereign_iso3 == eez_sovereign2_iso3 |
                                     sovereign_iso3 == eez_sovereign3_iso3 ~ FALSE,
                                   TRUE ~ TRUE))
+}
 ```
 
 There are some cases in which there may be connections that are not foreign and that because of their particular situation should not be considered distant water. An example of this are disputed and joint regime EEZ.  These are listed and removed here:
 
 ```{r}
+if(run_flag_state | run_eez){
 sovereign_connections <- dw_effort %>%
   filter(!is_foreign) %>%
   distinct(flag_name, sovereign_name, eez_code, eez_name, eez_type, eez_territory_name , eez_sovereign_name, eez_sovereign2_name, eez_sovereign3_name) %>%
@@ -449,14 +458,16 @@ non_distant_water_connections <- sovereign_connections %>%
 
 dw_effort <- dw_effort %>%
   anti_join(non_distant_water_connections)
-
+}
 ```
 
 For the purposes of this analysis, we include both "sovereign distant water fishing" and "foreign distant water fishing" as distant water fishing. 
 
 ```{r}
+if(run_flag_state | run_eez){
 dw_effort <- dw_effort %>%
   dplyr::filter(year == analysis_year)
+}
 ```
 
 ## Allocate subsidies
@@ -466,6 +477,7 @@ Now that we have our final subset of distant water fishing effort/vessels from o
 First we determine subsidy rates for each flag state based on total annual fishing effort contained in our dataset. 
 
 ```{r}
+if(run_flag_state | run_eez){
 # Load subsidy data and do a little bit of wrangling to clean it up. 
 subsidy_dat <- read_csv(here::here("data", "subsidies", "Subsidies_update_Pew_final_May_10.csv")) %>%
   setNames(tolower(names(.))) %>%
@@ -583,6 +595,7 @@ if(rerun_gfw){
 
 }
 write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez_", analysis_year, ".csv"))
+}
 ```
 
 ## Flag state and EEZ centroids 
@@ -595,7 +608,6 @@ if(run_flag_state | run_eez){
 # Get centroids of each eez for africa
 EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326)
-
 
 
 EEZ_map_centroids <- EEZ_map %>%
