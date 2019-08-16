@@ -10,6 +10,27 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+### Example of how to clip the -360 to 360 degree land/eez merged shapefile
+
+library(sf)
+library(mapview)
+library(tidyverse)
+
+# Load map
+full_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "test"), layer = "test") %>%
+    st_transform(crs = 4326) 
+
+# Filter full map by regional bounding boxes
+pacific_map <- st_crop(full_eez_map, c(xmin=0, xmax=360, ymin=-90, ymax=90))
+africa_map <- st_crop(full_eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
+caribbean_map <- st_crop(full_eez_map, c(xmin=-260, xmax=100, ymin=-90, ymax=90))
+
+ggplot(caribbean_map)+
+  geom_sf()
+
+```
+
+```{r}
 
 ACP_codes <- read_csv("ACP_eez_codes.csv")
 
@@ -22,10 +43,6 @@ country_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "world_happy_
 
 EEZ_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
   st_transform(crs = 4326) 
-
-```
-
-```{r}
 
 eez_fao <- read_sf(dsn = "./data/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
   dplyr::filter(is.na(zone))
