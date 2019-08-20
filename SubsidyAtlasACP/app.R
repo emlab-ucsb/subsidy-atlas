@@ -265,18 +265,14 @@ server <- shinyServer(function(input, output, session) {
     padding-right: 10px; 
     background: rgba(255,255,255,0.75);
     font-weight: bold;
-    font-size: 28px;
+    font-size: 16px;
     color:black;
   }
 "))
     
     map_title <- tags$div(
-      tag.map.title, HTML("Select an ACP region to move to the corresponding section of the atlas")
+      tag.map.title, HTML("Select a region to view more information about distant water fishing by country in that region")
     )  
-    
-    # map_title <- tags$div(
-    #   tags$h3("ACP Atlas")
-    # )
       
     
     leaflet("regional_map") %>% 
@@ -316,10 +312,6 @@ server <- shinyServer(function(input, output, session) {
                                                bringToFront = TRUE),
                   label = regional_dat$rgn_spc,
                   group = regional_dat$region) %>%
-      # addLayersControl(
-      #   overlayGroups = regional_dat$rgn_spc,
-      #   options = layersControlOptions(collapsed = FALSE)
-      # ) %>%
       setView(145, 0, zoom = 1.5)
       
   })

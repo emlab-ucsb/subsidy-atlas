@@ -603,25 +603,149 @@ write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez_", analys
 In order to make our connection plots, we need to find the centroids of each EEZ and flag state before we go too much further. 
 
 ```{r}
+# For the flag state analysis and the eez analysis for the top ranked EEZs we're going to use the standard -180 to 180 degree world view
+if((run_flag_state & flag_state_purpose == "top_ranked") | (run_eez & eez_purpose == "top_ranked")){
+  
+  # EEZs for location of fishing activity -----
+  eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_20180221_LR_-360_360"), layer = "World_EEZ_v10_2018021_LR_-360_360") %>%
+    st_transform(crs = 4326) %>%
+    setNames(tolower(names(.))) %>%
+    dplyr::select(id = cat,
+                  mrgid,
+                  geoname,
+                  pol_type,
+                  territory1,
+                  iso3_ter1 = iso_ter1,
+                  sovereign1,
+                  territory2,
+                  iso3_ter2 = iso_ter2,
+                  sovereign2,
+                  territory3,
+                  iso3_ter3 = iso_ter3,
+                  sovereign3)
+  
+  eez_map <- st_crop(eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
+  
+  eez_map_centroids <- eez_map %>%
+    st_centroid() %>%
+    dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
+    mutate(region = "All")
+  
+  # Put centroids in lon/lat columns
+  eez_map_centroid_coordinates <- tibble(eez_code = eez_map_centroids$eez_code,
+                                         eez_name = eez_map_centroids$eez_name,
+                                         region = eez_map_centroids$region) %>% 
+    bind_cols(do.call(rbind, st_geometry(eez_map_centroids)) %>%
+                as_tibble() %>%
+                setNames(c("eez_lon", "eez_lat"))) %>%
+    arrange(eez_code)
+  
+  # ggplot(eez_map) +
+  #   geom_sf() +
+  #   geom_point(data = eez_map_centroid_coordinates, aes(x = eez_lon, y = eez_lat))
+  
+  # Manually correct certain EEZ centroids 
+  # NEED TO DO THIS
+  
+  # Combined land/EEZs for flag states -----
+  land_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "EEZ_land_v2_201410_-360_360"), layer = "EEZ_land_v2_201410_-360_360") %>%
+    st_transform(crs = 4326) %>%
+    setNames(tolower(names(.))) %>%
+    dplyr::select(id = objectid,
+                  iso3 = iso_3digit,
+                  country)
+  
+  land_eez_map <- st_crop(land_eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
+  
+  
+
+  
+  
+}
+
+# For the ACP analysis, things get a little more complicated as we want to use three different world views for the three different regions
+# For Africa, we're going to use the standard -180 to 180 degree world view
+# For the Pacific, we're going to use a 0 to 360 degree world view
+# For the Caribbean, we're going to use a -260 to 100 degree world view
+if(run_eez & eez_purpose == "ACP"){
+  
+  eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_20180221_LR_-360_360"), layer = "World_EEZ_v10_2018021_LR_-360_360") %>%
+    st_transform(crs = 4326) %>%
+    setNames(tolower(names(.))) %>%
+    dplyr::select(id = cat,
+                  mrgid,
+                  geoname,
+                  pol_type,
+                  territory1,
+                  iso3_ter1 = iso_ter1,
+                  sovereign1,
+                  territory2,
+                  iso3_ter2 = iso_ter2,
+                  sovereign2,
+                  territory3,
+                  iso3_ter3 = iso_ter3,
+                  sovereign3)
+  
+  # Pacific
+  pacific_eez_map <- st_crop(eez_map, c(xmin=0, xmax=360, ymin=-90, ymax=90))
+  pacific_eez_map_centroids <- pacific_eez_map %>%
+    st_centroid() %>%
+    dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
+    mutate(region = "Pacific")
+  
+  # Africa
+  africa_eez_map <- st_crop(eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
+  africa_eez_map_centroids <- africa_eez_map %>%
+    st_centroid() %>%
+    dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
+    mutate(region = "Africa")
+  
+  # Caribbean
+  caribbean_eez_map <- st_crop(eez_map, c(xmin=-260, xmax=100, ymin=-90, ymax=90))
+  caribbean_eez_map_centroids <- caribbean_eez_map %>%
+    st_centroid() %>%
+    dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
+    mutate(region = "Caribbean")
+  
+  # Bind together 
+  eez_map_centroids <- pacific_eez_map_centroids %>%
+    rbind(africa_eez_map_centroids) %>%
+    rbind(caribbean_eez_map_centroids)
+  
+  # Put centroids in lon/lat columns
+  eez_map_centroid_coordinates <- tibble(eez_code = eez_map_centroids$eez_code,
+                                         eez_name = eez_map_centroids$eez_name,
+                                         region = eez_map_centroids$region) %>% 
+    bind_cols(do.call(rbind, st_geometry(eez_map_centroids)) %>%
+                as_tibble() %>%
+                setNames(c("eez_lon", "eez_lat"))) %>%
+    arrange(eez_code)
+  
+  # Manually correct certain centroids 
+  # NEED TO DO THIS
+  
+}
+
+
+
 if(run_flag_state | run_eez){
   
 # Get centroids of each eez for africa
-EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
-  st_transform(crs = 4326)
-
-
-EEZ_map_centroids <- EEZ_map %>%
-  dplyr::filter(is.na(zone)) %>%
-  st_centroid() %>%
-  dplyr::select(eez_code = mrgid, eez_name = geoname, geometry)
-
-
-
-centroid_coordinates_EEZ <- tibble(eez_code = EEZ_map_centroids$eez_code,
-                                   eez_name = EEZ_map_centroids$eez_name) %>% 
-  bind_cols(do.call(rbind, st_geometry(EEZ_map_centroids)) %>% 
-    as_tibble() %>% setNames(c("eez_lon","eez_lat"))) %>%
-  arrange(eez_code)
+# EEZ_map <- read_sf(dsn = here::here("data", "shapefiles", "eez_v10_fao_combined_simple"), layer = "eez_v10_fao_combined_simple") %>% 
+#   st_transform(crs = 4326)
+# 
+# 
+# EEZ_map_centroids <- EEZ_map %>%
+#   dplyr::filter(is.na(zone)) %>%
+#   st_centroid() %>%
+#   dplyr::select(eez_code = mrgid, eez_name = geoname, geometry)
+# 
+# 
+# centroid_coordinates_EEZ <- tibble(eez_code = EEZ_map_centroids$eez_code,
+#                                    eez_name = EEZ_map_centroids$eez_name) %>% 
+#   bind_cols(do.call(rbind, st_geometry(EEZ_map_centroids)) %>% 
+#     as_tibble() %>% setNames(c("eez_lon","eez_lat"))) %>%
+#   arrange(eez_code)
 
 manual_coordinates_EEZ <- read_csv(paste0(results_dir, "corrected_EEZ_centroids.csv"))
 
