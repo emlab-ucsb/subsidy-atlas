@@ -70,27 +70,28 @@ connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp"
 ### Shapefiles ###
 
 # Custom EEZ shapefile
-eez_shp <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_custom_ACP", layer = "World_EEZ_v10_custom_ACP") %>%
-  st_transform(crs = 4326) %>%
-  dplyr::filter(pol_type == "200NM")
+# eez_shp <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_custom_ACP", layer = "World_EEZ_v10_custom_ACP") %>%
+#   st_transform(crs = 4326) %>%
+#   dplyr::filter(pol_type == "200NM")
 
  
-  
-# Simplified EEZ shapefile (with FAO regions for high seas)
-eez_map <- read_sf(dsn = "./data/shapefiles_edit/eez_v10_fao_combined_simple", layer="eez_v10_fao_combined_simple") %>%
-  dplyr::filter(is.na(zone)) %>%
-  st_transform(crs = 4326) 
+### 1. Simplified EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
+eez_map <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_20180221_LR_-360_360", layer = "World_EEZ_v10_2018021_LR_-360_360") %>%
+  setNames(tolower(names(.))) %>%
+  st_transform(crs = 4326)
 
-
-# Simplified land shapefile 
+### 2. Simplified land shapefile 
 land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
   st_transform(crs = 4326)
 
-# Combined land/EEZ shapefile 
-land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_union_v2_custom_ACP", layer = "EEZ_land_union_v2_custom_ACP") %>%
+### 3. Simplified combined land/EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
+land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_360", layer = "EEZ_land_v2_201410_-360_360") %>%
+  setNames(tolower(names(.))) %>%
   st_transform(crs = 4326) %>% 
-  rename(iso3 = is_3dgt)
-
+  dplyr::select(iso3 = iso_3digit,
+                country,
+                geometry) %>%
+  dplyr::filter(!is.na(iso3))
 
 ### Widget choice values that depend on a dataset ------------------------------
 
@@ -242,31 +243,28 @@ ui <- shinyUI(
 
 server <- shinyServer(function(input, output, session) {
   
-  ### Introduction ----------
+  ### Introduction / Select a region -----------
   
-  
-  
-  
-  ### Select a region -----------
+  region_pal <- colorFactor(
+    palette = "Set2",
+    domain = ACP_codes$region
+  )
   
   ## Leaflet output: map of ACP countries aggregated by region
   output$regional_map <- renderLeaflet({
     
+    # Make aggregated regional map data
+    regions <- ACP_codes %>%
+      distinct(territory_iso3, region)
+    
     regional_dat <- land_eez_map %>%
+      st_crop(c(xmin=-30, xmax=330, ymin=-90, ymax=90)) %>%
+      st_collection_extract(type = c("POLYGON")) %>%
+      inner_join(regions, by = c("iso3" = "territory_iso3")) %>%
       group_by(region) %>%
       summarize(geometry = st_union(geometry))
     
-    pal <- colorFactor(
-      palette = "Set2",
-      #fill_(regional_dat$region))
-      domain = regional_dat$region)
-    
-    #brewer.pal(3, "Set2")
-    
-    
-    
-    #browser()
-    
+    # Formatting for semi-transparent title box over map
     tag.map.title <- tags$style(HTML("
   .leaflet-control.map-title { 
     transform: translate(-50%,20%);
@@ -282,12 +280,12 @@ server <- shinyServer(function(input, output, session) {
   }
 "))
     
+    # Text for semi-transparent title box over map
     map_title <- tags$div(
       tag.map.title, HTML("Select a region to view more information about distant water fishing by country in that region")
     )  
       
-    
-    #leaflet("regional_map") %>% 
+    # Leaflet map
     leaflet("regional_map", options = leafletOptions(zoomControl = FALSE)) %>%
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
@@ -296,7 +294,7 @@ server <- shinyServer(function(input, output, session) {
        
       
       addPolygons(data = regional_dat, 
-                  fillColor = ~pal(region),
+                  fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -331,12 +329,15 @@ server <- shinyServer(function(input, output, session) {
   output$africa_map <- renderLeaflet({
     
     # Filter data
-    africa_eezs <- eez_shp %>%
+    africa_eezs <- eez_map %>%
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
+      st_collection_extract(type = c("POLYGON")) %>%
       inner_join(ACP_codes %>% dplyr::filter(region == "Africa"), by = c("mrgid")) %>%
       mutate(geoname = str_replace(geoname, " \\(.*\\)", ""))
     
+   # Deal with multiple EEZs for the same coastal state
    africa_eezs_merged <- africa_eezs %>%
-      group_by(territory_iso3, geoname) %>%
+      group_by(territory_iso3, geoname, region) %>%
       summarize(geometry = st_union(geometry))
    
 #    tag.map.title <- tags$style(HTML("
@@ -365,7 +366,7 @@ server <- shinyServer(function(input, output, session) {
       addProviderTiles("Esri.WorldTopoMap") %>%
       #addControl(map_title_africa, position = "topright", className = "map-title-africa") %>%
       addPolygons(data = africa_eezs_merged, 
-                  fillColor = "#66C2A5",
+                  fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -380,7 +381,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(15,-13, zoom = 2)
+      setView(lng = 15, lat = -13, zoom = 2)
   
   })
   
@@ -417,7 +418,7 @@ server <- shinyServer(function(input, output, session) {
     }else{
       
       # Get code for selected EEZ
-      selected_eez <- subset(eez_shp, eez_shp$iso_ter1 == input$africa_eez_select)
+      selected_eez <- subset(eez_map, eez_map$iso_ter1 == input$africa_eez_select)
       
       # Remove any previously highlighted polygon
       africa_proxy %>% clearGroup("highlighted_eez")
@@ -445,7 +446,6 @@ server <- shinyServer(function(input, output, session) {
   # ###------------
 
   output$africa_online_text <- renderUI({
-
 
     req(input$africa_eez_select != "Select a coastal state...")
     
@@ -499,11 +499,7 @@ server <- shinyServer(function(input, output, session) {
         lapply(htmltools::HTML),
       tags$br()
       
-      
-        
     )
-
-
 
   })
 
@@ -517,28 +513,35 @@ server <- shinyServer(function(input, output, session) {
     #Require coastal state selection
     req(input$africa_eez_select != "Select a coastal state...")
     
-    selected_eez <- eez_shp %>% 
-      dplyr::filter(iso_ter1 == input$africa_eez_select)
+    selected_eez <- eez_map %>% 
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
+      st_collection_extract(type = c("POLYGON")) %>%
+      dplyr::filter(iso_ter1 == input$africa_eez_select) %>%
+      rename(territory_iso3 = iso_ter1)
     
     connectivity_data_for_selected_eez <- connectivity_data %>% # load this in up above
       dplyr::filter(ez_tr_3 == input$africa_eez_select) %>% 
+      rename(territory_iso3 = ez_tr_3) %>%
       arrange(flag) 
     
-    flag_states_for_selected_eez <- land_map %>% 
+    flag_states_for_selected_eez <- land_eez_map %>% 
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
+      st_collection_extract(type = c("POLYGON")) %>%
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
       arrange(flag)
     
+    # Should be able to remove this step eventually. Ideally we need a land/eez map with all flag states represented. 
     connectivity_data_edit <- connectivity_data_for_selected_eez %>%
       dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
    
   # Connectivity stats with no geometry
   no_geometry <- connectivity_data_edit %>%
-    group_by(ez_tr_3, flag) %>%
+    group_by(territory_iso3, flag) %>%
     summarize(vessels = sum(vessels, na.rm = T),
-              capacty = sum(capacty, na.rm = T),
-              fshng_h = sum(fshng_h, na.rm = T),
-              fshn_KW = sum(fshn_KW, na.rm = T))
+              capacity = sum(capacty, na.rm = T),
+              fishing_h = sum(fshng_h, na.rm = T),
+              fishing_KWh = sum(fshn_KW, na.rm = T))
   st_geometry(no_geometry) <- NULL
    
     #  Hover Text
@@ -551,11 +554,11 @@ server <- shinyServer(function(input, output, session) {
       "<br/>",
       "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
       "</br>",
-      "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary$capacty, 0), big.mark = ","), 
+      "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary$capacity, 0), big.mark = ","), 
       "</br>",
-      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fshng_h, 0), big.mark = ","), 
+      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_h, 0), big.mark = ","), 
       "</br>",
-      "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fshn_KW, 0), big.mark = ",")) %>% 
+      "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     #browser()
     
@@ -621,8 +624,6 @@ server <- shinyServer(function(input, output, session) {
       arrange(flag) %>%
       dplyr::filter(flag != "BES") %>% 
       dplyr::filter(flag != "UNK")
-    
-    #browser()
     
     flag_state_choices_africa <- unique(connectivity_data_for_selected_eez$flag)
     names(flag_state_choices_africa) <- unique(countrycode(flag_state_choices_africa, "iso3c", "country.name"))
@@ -729,7 +730,7 @@ server <- shinyServer(function(input, output, session) {
                               labels=scale_labels,
                               breaks=scale_labels,
                               oob=scales::squish)+
-          geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+          geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
           geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
          labs(x = "", y = "")+
          coord_sf(xlim = x_lim, ylim = y_lim)+
@@ -787,7 +788,7 @@ server <- shinyServer(function(input, output, session) {
     ggplot()+
       geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = fishing_KWh))+
       scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
-      geom_sf(data = eez_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
       geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
       labs(x = "", y = "")+
       coord_sf(xlim = x_lim, ylim = y_lim) +
