@@ -66,7 +66,7 @@ RFMO_links <- read_csv("./data/RMFO_links.csv")
 
 # Load spatial data frame with lines linking countries and EEZs
 connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") 
-   
+   #browser()
 ### Shapefiles ###
 
 # Custom EEZ shapefile
@@ -881,6 +881,8 @@ server <- shinyServer(function(input, output, session) {
       selected_eez <- subset(eez_map, eez_map$iso_ter1 == input$caribbean_eez_select) %>%
         mutate(x_1 = ifelse(x_1 > 100, -180 - (180 - x_1), x_1))
       
+      
+      
       # Remove any previously highlighted polygon
       caribbean_proxy %>% clearGroup("highlighted_eez")
       
@@ -1431,7 +1433,7 @@ server <- shinyServer(function(input, output, session) {
       # Get code for selected EEZ
       selected_eez <- subset(eez_map, eez_map$iso_ter1 == input$pacific_eez_select) %>%
         mutate(x_1 = ifelse(x_1 < 0, 360 + x_1, x_1))
-      
+      #browser()
       # Remove any previously highlighted polygon
       pacific_proxy %>% clearGroup("highlighted_eez")
       
