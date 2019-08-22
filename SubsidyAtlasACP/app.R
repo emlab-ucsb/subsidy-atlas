@@ -265,34 +265,46 @@ server <- shinyServer(function(input, output, session) {
       summarize(geometry = st_union(geometry))
     
     # Formatting for semi-transparent title box over map
-    tag.map.title <- tags$style(HTML("
-  .leaflet-control.map-title { 
-    transform: translate(-50%,20%);
+    intro_overlay_formatting <- tags$style(HTML("
+  .leaflet-control.map-title {
+
+    transform: translate(-50%, 20%);
     position: fixed !important;
     left: 50%;
     text-align: center;
-    padding-left: 10px; 
-    padding-right: 10px; 
-    background: rgba(255,255,255,0.75);
-    font-weight: bold;
-    font-size: 16px;
+    padding: 20px;
+    background: rgba(255,255,255,0.6);
+    font-size: 14px;
     color:black;
+
+    -webkit-box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
   }
 "))
     
     # Text for semi-transparent title box over map
-    map_title <- tags$div(
-      tag.map.title, HTML("Select a region to view more information about distant water fishing by country in that region")
+    intro_overlay <- tags$div(
+      intro_overlay_formatting, 
+      HTML("<b>", "Select a region to view more information about distant water fishing by country in that region", "</b>",
+           "<br>",
+           "Text",
+           "<br>",
+           "Text")
     )  
       
     # Leaflet map
-    leaflet("regional_map", options = leafletOptions(zoomControl = FALSE)) %>%
-      htmlwidgets::onRender("function(el, x) {
-        L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
-      addProviderTiles("Esri.WorldTopoMap") %>% 
-      addControl(map_title, position = "topleft", className = "map-title") %>%
-       
+    leaflet("regional_map", 
+            options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>%
       
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+      
+      addProviderTiles("Esri.OceanBasemap") %>% 
+      
+      addControl(intro_overlay, 
+                 position = "topleft", 
+                 className = "map-title") %>%
+       
       addPolygons(data = regional_dat, 
                   fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
@@ -304,7 +316,8 @@ server <- shinyServer(function(input, output, session) {
                                                bringToFront = TRUE),
                   label = regional_dat$region,
                   group = regional_dat$region) %>%
-      setView(145, 0, zoom = 1.5)
+      setView(145, 0, zoom = 2) %>%
+      setMaxBounds(lng1 = -30, lat1 = -90, lng2 = 360, lat2 = 90)
       
   })
   
@@ -361,8 +374,10 @@ server <- shinyServer(function(input, output, session) {
    
     # Map
     leaflet('africa_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+      
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+      
       addProviderTiles("Esri.WorldTopoMap") %>%
       #addControl(map_title_africa, position = "topright", className = "map-title-africa") %>%
       addPolygons(data = africa_eezs_merged, 
@@ -475,31 +490,72 @@ server <- shinyServer(function(input, output, session) {
     RFMO_links_eez <- RFMO_links %>%
       dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
 
-    #browser()
+    browser()
+    
+    EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(africa_eez_choices[africa_eez_choices == input$africa_eez_select]), "</h3>",
+                       "Fisheries management agency:  ", 
+                       "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
+                       unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), "</a>",
+                       "<br>",
+                       
+                       "Country profile: ",
+                       "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
+                       "FAO", "</a>",
+                       " | ",
+                       "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
+                       "World Bank", "</a>",
+                       
+                       "<br>",
+                       
+                       "Treaties and conventions: ",
+                       "<a href='", unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]), "'>", 
+                       "Fishbase", "</a>",
+                       "<br>",
+                       
+                       "Foreign access agreements: ",
+                       "<a href='", unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "'>", 
+                       "Sea Around Us", "</a>",
+                       "<br>",
+                       
+                       "FAO Regional Fisheries Body Memberships: ",
+                       paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>"),
+                       "<br>",
 
-    EEZ_info <- tags$div(
-      tags$h3("EEZ Summary Statistics"),
-      tags$h4(total_stats_africa$eez_nam),
-      tags$h5("Total Number of Vessels in EEZ: ", format(round(total_stats_africa$vessels, 0), big.mark = ",")),
-      tags$h5("Total Fishing hours per year in EEZ: ", format(round(total_stats_africa$fshng_h, 0), big.mark = ",")),
-      tags$h5("Total Fishing kwhr in EEZ: ", format(round(total_stats_africa$fshn_KW, 0), big.mark = ",")),
-      tags$hr(),
-      tags$h3("EEZ Information"),
-      tags$a(href = unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "FAO Country Profile"),
-      tags$br(),
-      tags$a(href = unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]), "Treaties and Conventions"),
-      tags$br(),
-      tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
-      tags$hr(),
-      tags$h4("Fishery organization: "),
-      tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
-      tags$hr(),
-      tags$h3("FAO Membership Information"),
-      paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>") %>%
-        lapply(htmltools::HTML),
-      tags$br()
-      
-    )
+                       "<hr>",
+                       "<b>", "Distant water fishing in the ", total_stats_africa$eez_nam, "</b>",
+                       "<br>",
+                       "Vessels: ", format(round(total_stats_africa$vessels, 0), big.mark = ","),
+                       "<br>",
+                       "Fishing effort (hours): ", format(round(total_stats_africa$fshng_h, 0), big.mark = ","),
+                       "<br>",
+                       "Fishing effort (KWh): ", format(round(total_stats_africa$fshn_KW, 0), big.mark = ",")) %>%
+      lapply(htmltools::HTML)
+
+    # EEZ_info <- tags$div(
+    #   tags$h4(total_stats_africa$eez_nam),
+    #   tags$h5("Total Number of Vessels in EEZ: ", format(round(total_stats_africa$vessels, 0), big.mark = ",")),
+    #   tags$h5("Total Fishing hours per year in EEZ: ", format(round(total_stats_africa$fshng_h, 0), big.mark = ",")),
+    #   tags$h5("Total Fishing kwhr in EEZ: ", format(round(total_stats_africa$fshn_KW, 0), big.mark = ",")),
+    #   tags$hr(),
+    #   tags$h3("EEZ Information"),
+    #   tags$a(href = unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "FAO Country Profile"),
+    #   tags$br(),
+    #   tags$a(href = unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]), "Treaties and Conventions"),
+    #   tags$br(),
+    #   tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
+    #   tags$hr(),
+    #   tags$h4("Fishery organization: "),
+    #   tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
+    #   tags$hr(),
+    #   tags$h3("FAO Membership Information"),
+    #   paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>") %>%
+    #     lapply(htmltools::HTML),
+    #   tags$br()
+    #   
+    # )
+    
+    # Return
+    EEZ_info
 
   })
 
