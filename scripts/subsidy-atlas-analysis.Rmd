@@ -52,7 +52,7 @@ number_of_top_countries_eez <- 10
 # Connection to BigQuery - need a project for billing
 bq_project <-  "ucsb-gfw"
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- T
+rerun_gfw <- F
 
 # Choose analysis year (2012 - 2018)
 analysis_year <- 2018
@@ -712,6 +712,8 @@ if(run_flag_state | run_eez){
     rbind(africa_land_eez_map_centroids) %>%
     rbind(caribbean_land_eez_map_centroids)
   
+  
+  
   # Put centroids in lon/lat columns
   land_eez_map_centroid_coordinates <- tibble(flag = land_eez_map_centroids$flag,
                                               flag_name = land_eez_map_centroids$flag_name,
@@ -722,14 +724,15 @@ if(run_flag_state | run_eez){
     arrange(flag) %>%
     na.omit()
   
-   # Manually correct certain centroids 
-   # NEED TO DO THIS
-   # manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
-   # land_eez_map_centroid_coordinates_edited <- centroid_coordinates_flag %>% 
-   #   left_join(manual_coordinates_flags, by = c("flag")) %>% 
+   #Manually correct certain centroids
+   #NEED TO DO THIS
+   manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
+   
+   # land_eez_map_centroid_coordinates_edited <- land_eez_map_centroid_coordinates %>%
+   #   left_join(manual_coordinates_flags, by = c("flag", "region")) %>%
    #   mutate(flag_lon = ifelse(!is.na(flag_lon_edit), flag_lon_edit, flag_lon),
    #          flag_lat = ifelse(!is.na(flag_lat_edit), flag_lat_edit, flag_lat)) %>%
-   #   dplyr::select(-flag_lon_edit, -flag_lat_edit)
+   #   dplyr::select(-flag_lon_edit, -flag_lat_edit) 
 
 }
 ```
@@ -1154,13 +1157,13 @@ eez_mapping_wlines <- eez_mapping %>%
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
   purrr::map(st_linestring) %>%
   st_sfc(crs = 4326) %>%
-  st_sf(geometry = .) %>% 
+  st_sf(geometry = .) %>%
   bind_cols(eez_mapping) %>%
-  select(everything(), geometry) %>% 
-  st_segmentize(units::set_units(100,km)) %>% 
-  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
-  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
-  sf::st_sf(crs = 4326) 
+  select(everything(), geometry) %>%
+  st_segmentize(units::set_units(100,km)) %>%
+  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>%
+  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>%
+  sf::st_sf(crs = 4326)
 
 st_write(eez_mapping_wlines, dsn = paste0(eez_results_dir, "eez_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
 

@@ -490,7 +490,7 @@ server <- shinyServer(function(input, output, session) {
     RFMO_links_eez <- RFMO_links %>%
       dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
 
-    browser()
+    #browser()
     
     EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(africa_eez_choices[africa_eez_choices == input$africa_eez_select]), "</h3>",
                        "Fisheries management agency:  ", 
