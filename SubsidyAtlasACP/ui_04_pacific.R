@@ -1,7 +1,7 @@
 ### -----------------------------------
-# User interface - pacific
 #
-# This script controls the layout of the user interface for the pacific tab
+# ACP Atlas of Distant Water Fishing
+# UI - Tab 4: Pacific
 # 
 ### ------------------------------------
 
@@ -9,8 +9,7 @@
 pacific = function(pacific_eez_choices, flag_state_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
             
-            
-            # Tabs custom styling - for some reason this has to be here
+            # Custom styling for the tabs on this page
             tags$style(
               ".nav-tabs {
 background: black;
@@ -37,70 +36,57 @@ border-right-color: transparent;}"
 
             ),
             
+            # Top header
             fluidRow(
-              column(12, style = "padding: 15px 25px; border-top: 4px solid #3c8dbc;",
+              column(12, style = "padding: 15px 25px 0px; border-top: 4px solid #3c8dbc;",
                      
+                     column(6,
+                            # Return to regional map
+                            actionButton("pacific_return_to_region", "Return to regional map",
+                                         style="color: #fff; 
+                                         background-color: #3c8dbc; 
+                                         border-color: #2e6da4; 
+                                         width:100%; 
+                                         font-size: 14px")
+                            )
                      
-                     tags$h3(style = "padding: 0; margin: 0 2.5%;", "Pacific"))
-              
-              
-              
-              
-              
-              
-            ), 
+                            )
+                     ),
     
-    fluidRow(
-        # Map and widget to select a country 
-        column(6, style = "padding: 0 0 30px 0;",
-               
-               column(12, style = "padding: 0 20px;",
-                      
-                      # selectizeInput("pacific_eez_select",
-                      #                label = NULL,
-                      #                choices = c("Select a coastal state...", pacific_eez_choices),
-                      #                selected = "Select a coastal state...",
-                      #                width = "100%"),
-                      
-                      leafletOutput("pacific_map", width = "auto", height = "40vh"),
-                      
-                      absolutePanel(top = 10, left = 140, width = "50%", fixed = FALSE,
-                                    
-                                    selectizeInput("pacific_eez_select",
-                                                   label = NULL,
-                                                   choices = c("Select a coastal state...", pacific_eez_choices),
-                                                   selected = "Select a coastal state...",
-                                                   width = "100%")
-                                    
-                                    
-                      )
-               ),
-                      
-                column(12, style = "padding: 10px 100px 10px 0px;",
-                       
-                       # Navigation buttons
-                       tags$span(class = "text-block",
-                                 # Fisheries subsidies today
-                                 style = "padding: 75px 25px 25px 25px;",
-                                 actionButton("pacific_return_to_region", "Return to Regional Map",
-                                              style="color: #fff; background-color: #3c8dbc; border-color: #2e6da4; padding: 15px 10px; width:100%; font-size: 20px")
-                       )
-                      
-               )
-          ), #close column 
-        
-        column(6, style = "padding: 0px",
-               
-              # Title
-               tags$h3(style = "padding: 0x; margin: 0;"),
-               
-               uiOutput("pacific_online_text")
-               
-               
-               
-          ) #close column
-        
-        ), #close fluid row
+            ### Map with controls to select an EEZ as well as stats for the selected EEZ 
+            fluidRow( 
+              
+              column(12, style = "padding: 15px 25px;",
+                     
+                     # Left column: Map and dropdown widget
+                     column(6, 
+                            
+                            # Africa map with selectable EEZs
+                            leafletOutput("pacific_map", width = "auto", height = "50vh"), 
+                            
+                            
+                            # Panel for dropdown widget 
+                            absolutePanel(top = 10, left = 140, width = "50%", fixed = FALSE,
+                                          
+                                          selectizeInput("pacific_eez_select",
+                                                         label = NULL,
+                                                         choices = c("Select a coastal state...", pacific_eez_choices),
+                                                         selected = "Select a coastal state...",
+                                                         width = "100%")
+                            )
+                     ), # /left column
+                     
+                     
+                     # Right column: Stats for selected EEZ
+                     column(6, style = "padding: 0 0 0 25px;",
+                            
+                            # Interactive text
+                            uiOutput("pacific_country_profile")
+                            
+                     ) # /right column
+              )
+              
+            ),
     
     ### Tab box with results
     

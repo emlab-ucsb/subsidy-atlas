@@ -82,7 +82,7 @@ border-right-color: transparent;}"
              column(6, style = "padding: 0 0 0 25px;",
              
                     # Interactive text
-                    uiOutput("africa_online_text")
+                    uiOutput("africa_country_profile")
              
              ) # /right column
       )
