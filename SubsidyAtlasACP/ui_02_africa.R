@@ -1,7 +1,7 @@
 ### -----------------------------------
-# User interface - Africa
 #
-# This script controls the layout of the user interface for the Africa tab
+# ACP Atlas of Distant Water Fishing
+# UI - Tab 2: Africa
 # 
 ### ------------------------------------
 
@@ -9,7 +9,7 @@
 africa = function(africa_eez_choices, flag_state_choices)
   fluidPage(style = "color: #ffffff; padding-bottom: 40px;",
             
-            # Custom formatting for the navigation tabs
+            # Custom styling for the tabs on this page
             tags$style(
               ".nav-tabs {
 background: black;

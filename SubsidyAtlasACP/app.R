@@ -11,10 +11,8 @@
 rm(list = ls())
 set.seed(123)
 
-##install
+### Load packages -----
 
-
-### Load packages
 library(shiny)
 library(shinyjs)
 library(shinydashboard)
@@ -43,7 +41,7 @@ library(grid)
 library(countrycode)
 
 
-### Source UI files ###
+### Source UI files -----
 
 # The user interface content for each tab is stored in a separate file - Source all .R files in the current directory that start with "ui_":  
 sapply(list.files(
@@ -53,36 +51,36 @@ sapply(list.files(
 ),
 source)
 
-### Load data ###
+### Data -----
 
 # Load csv of ACP EEZ and iso3 codes
 ACP_codes <- read_csv("./data/ACP_eez_codes.csv") %>%
   mutate(flag = countrycode(territory_iso3, "iso3c", "country.name")) 
-  #na.omit()
-#Encoding <- (ACP_codes, "UTF-8") 
+
+eez_regions <- ACP_codes %>%
+  distinct(mrgid, region)
+
+flag_regions <- ACP_codes %>%
+  distinct(territory_iso3, region)
 
 # Load csv of FAO RFMO codes and links
 RFMO_links <- read_csv("./data/RMFO_links.csv")
 
 # Load spatial data frame with lines linking countries and EEZs
 connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") 
-   #browser()
-### Shapefiles ###
 
-# Custom EEZ shapefile
-# eez_shp <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_custom_ACP", layer = "World_EEZ_v10_custom_ACP") %>%
-#   st_transform(crs = 4326) %>%
-#   dplyr::filter(pol_type == "200NM")
+### Shapefiles -----
 
- 
 ### 1. Simplified EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
 eez_map <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_20180221_LR_-360_360", layer = "World_EEZ_v10_2018021_LR_-360_360") %>%
   setNames(tolower(names(.))) %>%
-  st_transform(crs = 4326)
+  st_transform(crs = 4326) %>%
+  left_join(eez_regions, by = "mrgid")
 
 ### 2. Simplified land shapefile 
 land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
-  st_transform(crs = 4326)
+  st_transform(crs = 4326) %>%
+  left_join(flag_regions, by = c("iso3" = "territory_iso3"))
 
 ### 3. Simplified combined land/EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
 land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_360", layer = "EEZ_land_v2_201410_-360_360") %>%
@@ -91,11 +89,12 @@ land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_36
   dplyr::select(iso3 = iso_3digit,
                 country,
                 geometry) %>%
-  dplyr::filter(!is.na(iso3))
+  dplyr::filter(!is.na(iso3)) %>%
+  left_join(flag_regions, by = c("iso3" = "territory_iso3"))
 
-### Widget choice values that depend on a dataset ------------------------------
+### Widget choice values that depend on a dataset -----
 
-# Put this here so we only have to load datasets in one place
+# Define EEZ and flag state choices
 africa_eez_choices <- unique(ACP_codes$territory_iso3[ACP_codes$region == "Africa" & !is.na(ACP_codes$mrgid)])
 names(africa_eez_choices) <- unique(ACP_codes$flag[ACP_codes$region == "Africa" & !is.na(ACP_codes$mrgid)])
 
@@ -109,7 +108,9 @@ flag_state_choices <- unique(connectivity_data$flag)
 names(flag_state_choices) <- countrycode(flag_state_choices, "iso3c", "country.name")
 names(flag_state_choices)[is.na(names(flag_state_choices))] <- "Unknown flag"
   
-#Map theme
+### Themes -----
+
+# Standard map ggplot theme
 eezmaptheme <- theme_minimal()+
   theme(strip.background = element_rect(fill = "#262626", color = NA),
         plot.background = element_rect(fill = "#262626", color = NA),
@@ -162,13 +163,7 @@ ui <- shinyUI(
                     collapsed = TRUE,
                     sidebarMenu(id = "tabs",
                                 
-                                # # Introduction                     
-                                # menuItem("Introduction", 
-                                #          tabName = "introduction", 
-                                #          icon = NULL,
-                                #          selected = TRUE),
-                                
-                                # Regional Map
+                                # Introduction/select a region
                                 menuItem("Select a region",
                                          tabName = "selectregion",
                                          icon = NULL,
@@ -186,7 +181,7 @@ ui <- shinyUI(
                                          icon = NULL,
                                          selected = NULL),
                                 
-                                # Pacific Islands
+                                # Pacific 
                                 menuItem("Pacific", 
                                          tabName = "pacific", 
                                          icon = NULL,
@@ -204,11 +199,6 @@ ui <- shinyUI(
      
      # Tabs
      tabItems(
-       
-       # Introduction
-       tabItem(tabName = "introduction",
-               introduction()
-       ),
        
        # Select a region
        tabItem(tabName = "selectregion",
@@ -246,6 +236,10 @@ server <- shinyServer(function(input, output, session) {
   ### Introduction / Select a region -----------
   
   region_pal <- colorFactor(
+    palette = "Dark2",
+    domain = ACP_codes$region
+  )
+  region_pal_light <- colorFactor(
     palette = "Set2",
     domain = ACP_codes$region
   )
@@ -254,13 +248,10 @@ server <- shinyServer(function(input, output, session) {
   output$regional_map <- renderLeaflet({
     
     # Make aggregated regional map data
-    regions <- ACP_codes %>%
-      distinct(territory_iso3, region)
-    
     regional_dat <- land_eez_map %>%
       st_crop(c(xmin=-30, xmax=330, ymin=-90, ymax=90)) %>%
       st_collection_extract(type = c("POLYGON")) %>%
-      inner_join(regions, by = c("iso3" = "territory_iso3")) %>%
+      dplyr::filter(!is.na(region)) %>%
       group_by(region) %>%
       summarize(geometry = st_union(geometry))
     
@@ -274,7 +265,6 @@ server <- shinyServer(function(input, output, session) {
     text-align: center;
     padding: 20px;
     background: rgba(255,255,255,0.6);
-    font-size: 14px;
     color:black;
 
     -webkit-box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
@@ -282,15 +272,13 @@ server <- shinyServer(function(input, output, session) {
   }
 "))
     
-    # Text for semi-transparent title box over map
+    # Load text for title box
+    intro_top_overlay_text <- includeHTML("./text/01_intro_overlay.html")
+    
+    # Combine formatting and text for semi-transparent title box over map
     intro_overlay <- tags$div(
       intro_overlay_formatting, 
-      HTML("<b>", "Select a region to view more information about distant water fishing by country in that region", "</b>",
-           "<br>",
-           "Text",
-           "<br>",
-           "Text")
-    )  
+      intro_top_overlay_text)
       
     # Leaflet map
     leaflet("regional_map", 
@@ -301,9 +289,13 @@ server <- shinyServer(function(input, output, session) {
       
       addProviderTiles("Esri.OceanBasemap") %>% 
       
+      # Title box
       addControl(intro_overlay, 
                  position = "topleft", 
                  className = "map-title") %>%
+      # Bottom left box
+      # addControl(intro_overlay, 
+      #            position = "topleft") %>%
        
       addPolygons(data = regional_dat, 
                   fillColor = ~region_pal(region),
@@ -343,34 +335,15 @@ server <- shinyServer(function(input, output, session) {
     
     # Filter data
     africa_eezs <- eez_map %>%
-      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
-      st_collection_extract(type = c("POLYGON")) %>%
-      inner_join(ACP_codes %>% dplyr::filter(region == "Africa"), by = c("mrgid")) %>%
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
+      st_collection_extract(type = c("POLYGON"), warn = FALSE) %>%
+      dplyr::filter(region == "Africa") %>%
       mutate(geoname = str_replace(geoname, " \\(.*\\)", ""))
     
    # Deal with multiple EEZs for the same coastal state
    africa_eezs_merged <- africa_eezs %>%
-      group_by(territory_iso3, geoname, region) %>%
+      group_by(iso_ter1, geoname, region) %>%
       summarize(geometry = st_union(geometry))
-   
-#    tag.map.title <- tags$style(HTML("
-#   .leaflet-control.map-title-africa { 
-#     transform: translate(-50%,20%);
-#     position: fixed !important;
-#     left: 50%;
-#     text-align: right;
-#     padding-left: 10px; 
-#     padding-right: 10px; 
-#     background: rgba(255,255,255,0.75);
-#     font-weight: bold;
-#     font-size: 16px;
-#     color:black;
-#   }
-# "))
-#    
-#    map_title_africa <- tags$div(
-#      tag.map.title, HTML("Click on an EEZ to begin")
-#    )  
    
     # Map
     leaflet('africa_map', options = leafletOptions(zoomControl = FALSE)) %>% 
@@ -379,7 +352,6 @@ server <- shinyServer(function(input, output, session) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldTopoMap") %>%
-      #addControl(map_title_africa, position = "topright", className = "map-title-africa") %>%
       addPolygons(data = africa_eezs_merged, 
                   fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
@@ -390,7 +362,7 @@ server <- shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = africa_eezs_merged$geoname,
-                  layerId = africa_eezs_merged$territory_iso3, #need this to select input below
+                  layerId = africa_eezs_merged$iso_ter1, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -440,10 +412,10 @@ server <- shinyServer(function(input, output, session) {
       
       # Add a different colored polygon on top of map
       africa_proxy %>% addPolygons(data = selected_eez,
-                                      fillColor = "mediumseagreen",
+                                      fillColor = ~region_pal_light(region),
                                       fillOpacity = 1,
                                       color= "white",
-                                      weight = 0.3,
+                                      weight = 2,
                                       highlight = highlightOptions(weight = 5,
                                                                    color = "#666",
                                                                    fillOpacity = 1,
@@ -469,18 +441,17 @@ server <- shinyServer(function(input, output, session) {
       rename(territory_iso3 = ez_tr_3) %>%
       mutate(eez_nam = str_replace(eez_nam, " \\(.*\\)", ""))
     
-    # Total stats by coastal state
+    # Distant water fishing summary
     total_stats_africa <- connectivity_data_filter_africa %>%
       as.data.frame() %>%
-      select(c("eez_cod", "territory_iso3", "eez_nam","vessels", "capacty", "fshng_h", "fshn_KW")) %>%
       group_by(territory_iso3, eez_nam) %>%
       summarize(vessels = sum(vessels, na.rm = T),
-                capacty = sum(capacty, na.rm = T),
-                fshng_h = sum(fshng_h, na.rm = T),
-                fshn_KW = sum(fshn_KW, na.rm = T)) %>%
+                capacity = sum(capacty, na.rm = T),
+                fishing_h = sum(fshng_h, na.rm = T),
+                fishing_KWh = sum(fshn_KW, na.rm = T)) %>%
       arrange(territory_iso3)
     
-    
+    # Filter and format Country profile data
     ACP_codes_links <- ACP_codes %>%
       dplyr::filter(territory_iso3 == input$africa_eez_select)
     
@@ -490,8 +461,35 @@ server <- shinyServer(function(input, output, session) {
     RFMO_links_eez <- RFMO_links %>%
       dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
 
-    #browser()
+    # Treaties and Conventions
+    treaties_conventions <- paste0(
+      "<a href= '",
+      unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]),
+      "'>",
+      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$treaties_conventions)]),
+      "</a>",
+      collapse = " | "
+    )
     
+    # Foreign access agreements by EEZ sector
+    foreign_access_agreements <- paste0(
+      "<a href= '", 
+      unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
+      "'>", 
+      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
+      "</a>", 
+      collapse = " | ")
+    
+    # FAO Regional Fisheries Body Memberships
+    regional_body_memberships <- paste0(
+      "<a href= '", 
+      unique(RFMO_links_eez$link[!is.na(RFMO_links_eez$link)]),
+      "'>",
+      unique(RFMO_links_eez$rfmo_name[!is.na(RFMO_links_eez$link)]),
+      "</a>",
+      collapse = " | ")
+    
+    # Combine and format for country profile/summary
     EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(africa_eez_choices[africa_eez_choices == input$africa_eez_select]), "</h3>",
                        "Fisheries management agency:  ", 
                        "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
@@ -508,52 +506,29 @@ server <- shinyServer(function(input, output, session) {
                        "<br>",
                        
                        "Treaties and conventions: ",
-                       "<a href='", unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]), "'>", 
-                       "Fishbase", "</a>",
+                       treaties_conventions,
                        "<br>",
                        
                        "Foreign access agreements: ",
-                       "<a href='", unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "'>", 
-                       "Sea Around Us", "</a>",
+                       foreign_access_agreements,
                        "<br>",
                        
                        "FAO Regional Fisheries Body Memberships: ",
-                       paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>"),
+                       regional_body_memberships,
                        "<br>",
 
                        "<hr>",
-                       "<b>", "Distant water fishing in the ", total_stats_africa$eez_nam, "</b>",
+                       "<b>", "Distant water fishing in the ", total_stats_africa$eez_nam, " (2018)", "</b>",
                        "<br>",
                        "Vessels: ", format(round(total_stats_africa$vessels, 0), big.mark = ","),
                        "<br>",
-                       "Fishing effort (hours): ", format(round(total_stats_africa$fshng_h, 0), big.mark = ","),
+                       "Total engine capacity (KW): ", format(round(total_stats_africa$capacity, 0), big.mark = ","),
                        "<br>",
-                       "Fishing effort (KWh): ", format(round(total_stats_africa$fshn_KW, 0), big.mark = ",")) %>%
+                       "Fishing effort (hours): ", format(round(total_stats_africa$fishing_h, 0), big.mark = ","),
+                       "<br>",
+                       "Fishing effort (KWh): ", format(round(total_stats_africa$fishing_KWh, 0), big.mark = ",")) %>%
       lapply(htmltools::HTML)
 
-    # EEZ_info <- tags$div(
-    #   tags$h4(total_stats_africa$eez_nam),
-    #   tags$h5("Total Number of Vessels in EEZ: ", format(round(total_stats_africa$vessels, 0), big.mark = ",")),
-    #   tags$h5("Total Fishing hours per year in EEZ: ", format(round(total_stats_africa$fshng_h, 0), big.mark = ",")),
-    #   tags$h5("Total Fishing kwhr in EEZ: ", format(round(total_stats_africa$fshn_KW, 0), big.mark = ",")),
-    #   tags$hr(),
-    #   tags$h3("EEZ Information"),
-    #   tags$a(href = unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "FAO Country Profile"),
-    #   tags$br(),
-    #   tags$a(href = unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]), "Treaties and Conventions"),
-    #   tags$br(),
-    #   tags$a(href = unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), "Internal Fishing Access Agreements"),
-    #   tags$hr(),
-    #   tags$h4("Fishery organization: "),
-    #   tags$a(unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), href = unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])),
-    #   tags$hr(),
-    #   tags$h3("FAO Membership Information"),
-    #   paste0("<a href='", RFMO_links_eez$link,"' target='_blank'>", RFMO_links_eez$rfmo_name,"</a>", "</br>") %>%
-    #     lapply(htmltools::HTML),
-    #   tags$br()
-    #   
-    # )
-    
     # Return
     EEZ_info
 
