@@ -109,35 +109,73 @@ border-right-color: transparent;}"
                   ),
                   
                   # Second tab - heat maps   
-                  tabPanel("Fishing effort and subsidy intensity of distant water vessels",
+                  tabPanel("Distant water fishing effort",
                            column(12, style = "padding: 15px 25px; 
                                 border-style: solid;
                                 border-width: 2px 1px 1px 1px;
                                 border-color: #1A1B1D;",
                                   
-                                  selectizeInput("pacific_flag_state_select",
-                                                 label = "Filter fishing activity by flag state...",
-                                                 choices = c("All flag states", flag_state_choices),
-                                                 selected = "All flag states",
-                                                 width = "100%"),
+                                  # selectizeInput("pacific_flag_state_select",
+                                  #                label = "Filter fishing activity by flag state...",
+                                  #                choices = c("All flag states", flag_state_choices),
+                                  #                selected = "All flag states",
+                                  #                width = "100%"),
                                   
                                   fluidRow(
                                     
-                                    column(6,
+                                    column(6, align = "center",
                                            
-                                           plotOutput("pacific_subsidy_map", 
-                                                      width = "auto"),
-                                           plotOutput("pacific_flag_subsidy_map",
-                                                      width= "auto")
+                                           h4("All flag states"),
+                                           
+                                           plotOutput("pacific_effort_map_all", 
+                                                      width = "auto")
                                            
                                     ),
                                     
-                                    column(6,
+                                    column(6, align = "center",
+                                           
+                                           selectizeInput("pacific_flag_state_select_effort",
+                                                          label = "Filter fishing activity by flag state...",
+                                                          choices = c("Select a flag state...", flag_state_choices),
+                                                          selected = "Select a flag state...",
+                                                          width = "100%"),
                                            
                                            plotOutput("pacific_effort_map",
-                                                      width = "auto"),
-                                           plotOutput("pacific_flag_effort_map",
-                                                      width= "auto")
+                                                      width = "auto")
+                                           
+                                    )   
+                                  ) #/fluidRow
+                           )
+                  ), #/tabPanel #2
+                  
+                  # Third tab - Subsidy head maps   
+                  tabPanel("Subsidy intensity of distant water vessels",
+                           column(12, style = "padding: 15px 25px; 
+                                  border-style: solid;
+                                  border-width: 2px 1px 1px 1px;
+                                  border-color: #1A1B1D;",
+                                  
+                                  fluidRow(
+                                    
+                                    column(6, align = "center",
+                                           
+                                           h4("All flag states"),
+                                           
+                                           plotOutput("pacific_subsidy_map_all", 
+                                                      width = "auto")
+                                           
+                                    ),
+                                    
+                                    column(6, align = "center",
+                                           
+                                           selectizeInput("pacific_flag_state_select_subsidy",
+                                                          label = "Filter fishing activity by flag state...",
+                                                          choices = c("Select a flag state...", flag_state_choices),
+                                                          selected = "Select a flag state...",
+                                                          width = "100%"),
+                                           
+                                           plotOutput("pacific_subsidy_map",
+                                                      width = "auto")
                                            
                                     )   
                                   ) #/fluidRow
