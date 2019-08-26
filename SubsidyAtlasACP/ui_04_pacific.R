@@ -97,6 +97,24 @@ border-right-color: transparent;}"
                   # First tab - connectivity map
                   tabPanel("Origins of distant water fishing vessels", 
                            
+                           ### Title and introductory text 
+                           column(12, style = "padding: 15px 25px; color: #ffffff;",
+                                  
+                                  # Header with info button
+                                  tags$h3(style = "padding: 0; margin: 0;", 
+                                          tagList("Global Connectivity Map",
+                                                  tags$button(id = "pacific_distant_water_info",
+                                                              class = "btn action-button info-button",
+                                                              icon("info"),
+                                                              style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")),
+                                          
+                                          
+                                          
+                                          # Text
+                                          includeHTML("./text/05_pacific_flag_info.html")
+                                          )       
+                                  ), #close column
+                           
                            column(12, style = "padding: 15px 0; 
                                 border-style: solid;
                                 border-width: 2px 1px 1px 1px;
@@ -135,7 +153,14 @@ border-right-color: transparent;}"
                                     column(6, align = "center",
                                            
                                            selectizeInput("pacific_flag_state_select_effort",
-                                                          label = "Filter fishing activity by flag state...",
+                                                          label = tagList(tags$b("Filter fishing activity by flag state..."),
+                                                                          
+                                                                          # Info button: subsidy types
+                                                                          tags$button(id = "pacific_effort_info",
+                                                                                      class = "btn action-button info-button",
+                                                                                      icon("info"),
+                                                                                      style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")),
+                                                          
                                                           choices = c("Select a flag state...", flag_state_choices),
                                                           selected = "Select a flag state...",
                                                           width = "100%"),
@@ -169,7 +194,14 @@ border-right-color: transparent;}"
                                     column(6, align = "center",
                                            
                                            selectizeInput("pacific_flag_state_select_subsidy",
-                                                          label = "Filter fishing activity by flag state...",
+                                                          label = tagList(tags$b("Filter fishing activity by flag state..."),
+                                                                          
+                                                                          # Info button: subsidy types
+                                                                          tags$button(id = "pacific_subsidy_info",
+                                                                                      class = "btn action-button info-button",
+                                                                                      icon("info"),
+                                                                                      style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")),
+                                                          
                                                           choices = c("Select a flag state...", flag_state_choices),
                                                           selected = "Select a flag state...",
                                                           width = "100%"),

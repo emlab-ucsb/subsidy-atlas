@@ -500,8 +500,11 @@ server <- shinyServer(function(input, output, session) {
                        "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
                        "FAO", "</a>",
                        " | ",
-                       "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
+                       "<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
                        "World Bank", "</a>",
+                       " | ",
+                       "<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>",
+                       "United Nations", "</a>",
                        
                        "<br>",
                        
@@ -674,9 +677,13 @@ server <- shinyServer(function(input, output, session) {
     
     req(input$africa_connection_map_shape_click$id != input$africa_eez_select)
     
-    updateTabItems(session, "africa_tabs", "Fishing effort and subsidy intensity of distant water vessels")
+    updateTabItems(session, "africa_tabs", "Distant water fishing effort")
     
-    updateSelectizeInput(session, "africa_flag_state_select",
+    updateSelectizeInput(session, "africa_flag_state_select_effort",
+                         selected = input$africa_connection_map_shape_click$id
+    )
+    
+    updateSelectizeInput(session, "africa_flag_state_select_subsidy",
                          selected = input$africa_connection_map_shape_click$id
     )
     
@@ -1141,8 +1148,11 @@ server <- shinyServer(function(input, output, session) {
                          "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
                          "FAO", "</a>",
                          " | ",
-                         "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
+                         "<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
                          "World Bank", "</a>",
+                         " | ",
+                         "<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>",
+                         "United Nations", "</a>",
                          
                          "<br>",
                          
@@ -1338,9 +1348,13 @@ server <- shinyServer(function(input, output, session) {
     
     req(input$caribbean_connection_map_shape_click$id != input$caribbean_eez_select)
     
-    updateTabItems(session, "caribbean_tabs", "Fishing effort and subsidy intensity of distant water vessels")
+    updateTabItems(session, "caribbean_tabs", "Distant water fishing effort")
     
-    updateSelectizeInput(session, "caribbean_flag_state_select",
+    updateSelectizeInput(session, "caribbean_flag_state_select_effort",
+                         selected = input$caribbean_connection_map_shape_click$id
+    )
+    
+    updateSelectizeInput(session, "caribbean_flag_state_select_subsidy",
                          selected = input$caribbean_connection_map_shape_click$id
     )
     
@@ -1808,8 +1822,11 @@ server <- shinyServer(function(input, output, session) {
                        "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
                        "FAO", "</a>",
                        " | ",
-                       "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
+                       "<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
                        "World Bank", "</a>",
+                       " | ",
+                       "<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>",
+                       "United Nations", "</a>",
                        
                        "<br>",
                        
@@ -1976,9 +1993,13 @@ server <- shinyServer(function(input, output, session) {
     
     req(input$pacific_connection_map_shape_click$id != input$pacific_eez_select)
     
-    updateTabItems(session, "pacific_tabs", "Fishing effort and subsidy intensity of distant water vessels")
+    updateTabItems(session, "pacific_tabs", "Distant water fishing effort")
     
-    updateSelectizeInput(session, "pacific_flag_state_select",
+    updateSelectizeInput(session, "pacific_flag_state_select_effort",
+                         selected = input$pacific_connection_map_shape_click$id
+    )
+    
+    updateSelectizeInput(session, "pacific_flag_state_select_subsidy",
                          selected = input$pacific_connection_map_shape_click$id
     )
     
@@ -2282,6 +2303,112 @@ server <- shinyServer(function(input, output, session) {
   observeEvent(input$pacific_return_to_region, {
     updateTabItems(session, "tabs", "selectregion")
   })
+  
+  ### ------------------
+  ### Info buttons
+  ### ------------------
+  
+  # Pretty much every widget has an info button next to it now - this section controls all of the pop-up boxes cooresponding to those info buttons. 
+  
+  # Africa Connectivity map: info
+  observeEvent(input$africa_distant_water_info, {
+    showModal(modalDialog(
+      includeHTML("./text/03_distant_water_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Caribbean Connectivity map: info
+  observeEvent(input$caribbean_distant_water_info, {
+    showModal(modalDialog(
+      includeHTML("./text/03_distant_water_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Pacific Connectivity map: info
+  observeEvent(input$pacific_distant_water_info, {
+    showModal(modalDialog(
+      includeHTML("./text/03_distant_water_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Africa Effort map: info
+  observeEvent(input$africa_effort_info, {
+    showModal(modalDialog(
+      includeHTML("./text/03_africa_effort_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Africa Subsidy map: info
+  observeEvent(input$africa_subsidy_info, {
+    showModal(modalDialog(
+      includeHTML("./text/03_africa_subsidy_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Caribbean Effort map: info
+  observeEvent(input$caribbean_effort_info, {
+    showModal(modalDialog(
+      includeHTML("./text/04_caribbean_effort_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Caribbean Subsidy map: info
+  observeEvent(input$caribbean_subsidy_info, {
+    showModal(modalDialog(
+      includeHTML("./text/04_caribbean_subsidy_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Pacific Effort map: info
+  observeEvent(input$pacific_effort_info, {
+    showModal(modalDialog(
+      includeHTML("./text/05_pacific_effort_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # Pacific Subsidy map: info
+  observeEvent(input$pacific_subsidy_info, {
+    showModal(modalDialog(
+      includeHTML("./text/05_pacific_subsidy_info.html"),
+      easyClose = TRUE,
+      footer = NULL,
+      size = "l"
+    ))
+  })
+  
+  # #Country Profile: info for territories
+  # observeEvent(input$flag_info, {
+  #   showModal(modalDialog(
+  #     includeHTML("./text/03_territory_info.html"),
+  #     easyClose = TRUE,
+  #     footer = NULL,
+  #     size = "l"
+  #   ))
+  # })
   
 })
 
