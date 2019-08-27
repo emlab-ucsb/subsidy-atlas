@@ -1772,7 +1772,6 @@ server <- shinyServer(function(input, output, session) {
                 fishing_KWh = sum(fshn_KW, na.rm = T)) %>%
       arrange(territory_iso3)
     
-    
     # Filter and format Country profile data
     ACP_codes_links <- ACP_codes %>%
       dplyr::filter(territory_iso3 == input$pacific_eez_select)
@@ -1822,8 +1821,10 @@ server <- shinyServer(function(input, output, session) {
                        "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
                        "FAO", "</a>",
                        " | ",
-                       "<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
-                       "World Bank", "</a>",
+                       ifelse(length(unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)])) > 0,
+                              paste0("<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
+                              "World Bank", "</a>"),
+                              "World Bank"),
                        " | ",
                        "<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>",
                        "United Nations", "</a>",
