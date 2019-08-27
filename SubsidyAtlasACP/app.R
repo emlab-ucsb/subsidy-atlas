@@ -1154,8 +1154,6 @@ server <- shinyServer(function(input, output, session) {
                                        ACP_codes_links$fishery_org_eng, "</a>"),
                                 ACP_codes_links$fishery_org_eng),
                          
-                         # "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
-                         # unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), "</a>",
                          "<br>",
                          
                          "Country profile: ",
