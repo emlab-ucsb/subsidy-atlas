@@ -145,7 +145,11 @@ fluidRow(
                                  
                                  column(6, align = "center",
                                         
+                                        br(),
+                                        
                                         h4("All flag states"),
+                                        
+                                        br(),
                                         
                                         plotOutput("caribbean_effort_map_all", 
                                                    width = "auto")
@@ -186,7 +190,11 @@ fluidRow(
                                  
                                  column(6, align = "center",
                                         
+                                        br(),
+                                        
                                         h4("All flag states"),
+                                        
+                                        br(),
                                         
                                         plotOutput("caribbean_subsidy_map_all", 
                                                    width = "auto")

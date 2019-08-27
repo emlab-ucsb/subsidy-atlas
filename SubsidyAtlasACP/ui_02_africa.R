@@ -149,7 +149,11 @@ border-right-color: transparent;}"
                                   
                                   column(6, align = "center",
                                          
+                                         br(),
+                                         
                                          h4("All flag states"),
+                                         
+                                         br(),
                                          
                                          plotOutput("africa_effort_map_all", 
                                                     width = "auto")
@@ -191,7 +195,11 @@ border-right-color: transparent;}"
                                   
                                   column(6, align = "center",
                                          
+                                         br(),
+                                         
                                          h4("All flag states"),
+                                         
+                                         br(),
                                          
                                          plotOutput("africa_subsidy_map_all", 
                                                     width = "auto")
