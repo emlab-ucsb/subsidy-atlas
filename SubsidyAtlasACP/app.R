@@ -492,19 +492,28 @@ server <- shinyServer(function(input, output, session) {
     # Combine and format for country profile/summary
     EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(africa_eez_choices[africa_eez_choices == input$africa_eez_select]), "</h3>",
                        "Fisheries management agency:  ", 
-                       "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
-                       unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), "</a>",
+                       ifelse(length(unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])) > 0,
+                              paste0("<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
+                                     ACP_codes_links$fishery_org_eng, "</a>"),
+                       ACP_codes_links$fishery_org_eng),
+                       
+                       # "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
+                       # unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), "</a>",
                        "<br>",
                        
                        "Country profile: ",
                        "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
                        "FAO", "</a>",
                        " | ",
-                       "<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
-                       "World Bank", "</a>",
+                       ifelse(length(unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)])) > 0,
+                              paste0("<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
+                                     "World Bank", "</a>"),
+                              "World Bank"),
                        " | ",
-                       "<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>",
-                       "United Nations", "</a>",
+                       ifelse(length(unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)])) > 0,
+                              paste0("<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>", 
+                                     "United Nations", "</a>"),
+                              "United Nations"),
                        
                        "<br>",
                        
@@ -1140,19 +1149,26 @@ server <- shinyServer(function(input, output, session) {
       # Combine and format for country profile/summary
       EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(caribbean_eez_choices[caribbean_eez_choices == input$caribbean_eez_select]), "</h3>",
                          "Fisheries management agency:  ", 
-                         "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
-                         unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), "</a>",
+                         ifelse(length(unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])) > 0,
+                                paste0("<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
+                                       ACP_codes_links$fishery_org_eng, "</a>"),
+                                ACP_codes_links$fishery_org_eng),
+                         
                          "<br>",
                          
                          "Country profile: ",
                          "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
                          "FAO", "</a>",
                          " | ",
-                         "<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
-                         "World Bank", "</a>",
+                         ifelse(length(unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)])) > 0,
+                                paste0("<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
+                                       "World Bank", "</a>"),
+                                "World Bank"),
                          " | ",
-                         "<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>",
-                         "United Nations", "</a>",
+                         ifelse(length(unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)])) > 0,
+                                paste0("<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>", 
+                                       "United Nations", "</a>"),
+                                "United Nations"),
                          
                          "<br>",
                          
@@ -1813,8 +1829,13 @@ server <- shinyServer(function(input, output, session) {
     # Combine and format for country profile/summary
     EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(pacific_eez_choices[pacific_eez_choices == input$pacific_eez_select]), "</h3>",
                        "Fisheries management agency:  ", 
-                       "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
-                       unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), "</a>",
+                       ifelse(length(unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])) > 0,
+                              paste0("<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
+                                     ACP_codes_links$fishery_org_eng, "</a>")),
+                              #ACP_codes_links$fishery_org_eng),
+                       
+                       # "<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
+                       # unique(ACP_codes_links$fishery_org_eng[!is.na(ACP_codes_links$fishery_org_eng)]), "</a>",
                        "<br>",
                        
                        "Country profile: ",
@@ -1826,8 +1847,10 @@ server <- shinyServer(function(input, output, session) {
                               "World Bank", "</a>"),
                               "World Bank"),
                        " | ",
-                       "<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>",
-                       "United Nations", "</a>",
+                       ifelse(length(unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)])) > 0,
+                              paste0("<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>", 
+                              "United Nations", "</a>"),
+                              "United Nations"),
                        
                        "<br>",
                        
