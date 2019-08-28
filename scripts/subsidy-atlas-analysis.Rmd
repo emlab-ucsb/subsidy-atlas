@@ -52,7 +52,7 @@ number_of_top_countries_eez <- 10
 # Connection to BigQuery - need a project for billing
 bq_project <-  "ucsb-gfw"
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- F
+rerun_gfw <- T
 
 # Choose analysis year (2012 - 2018)
 analysis_year <- 2018
@@ -121,8 +121,10 @@ This section describes the process of linking to the most recent version of the 
 
 We first extract total fishing hours (and fishing days) by year and EEZ for each vessel in the dataset. EEZs are defined by a numeric code, each cooresponding to a region in the World EEZ data set from Marineregions.org. The responsible territory for each region has been identified, as well as the sovereign country (or countries for disputed regions). We then match the best vessel characteristics identified by GFW to each vessel, and remove entries for all vessels that GFW does not consider to be fishing vessels. 
 
+Additionally, we remove all entries in which a vessel has spent less than 1 hour fishing in a given EEZ in a year. We assume that these entries are likely noise. 
+
 ```{r}
-if(run_flag_state | run_eez & rerun_gfw){
+if((run_flag_state | run_eez) & rerun_gfw){
 
 # Query to pull fishing effort by vessel, by EEZ
 sql <- "
@@ -165,7 +167,12 @@ WITH
 SELECT
   year,
   ssvid,
-  best.best_flag flag,
+  CASE
+      WHEN best.best_flag IS NULL THEN 'UNK' 
+      WHEN best.best_flag = 'ROM' THEN 'ROU'
+      WHEN best.best_flag = 'GCA' THEN 'GTM'
+      ELSE best.best_flag         
+    END AS flag,
   best.best_vessel_class vessel_class,
   best.best_length_m length_m,
   best.best_tonnage_gt tonnage_gt,
@@ -196,6 +203,7 @@ USING
 WHERE 
   on_fishing_list_best
   AND activity.offsetting IS FALSE
+  AND fishing_hours_year_eez >= 1
 ORDER BY
   year,
   eez_territory_iso3,
@@ -216,7 +224,7 @@ bq_project_query(bq_project, sql, destination_table = bq_table(project = bq_proj
 For the purposes of allocating subsidies to individual vessels, we need the total number of fishing hours for each flag state in a given year, as we assume that subsidies are allocated proportionally based on fishing effort. 
 
 ```{r}
-if(run_flag_state | run_eez & rerun_gfw){
+if((run_flag_state | run_eez) & rerun_gfw){
   
 sql2 <- "
 SELECT
@@ -269,7 +277,6 @@ In the first step, the following is not considered to be "distant water fishing"
 - All fishing effort occuring on the high seas;
 - All fishing effort occuring in an EEZ when the flag state of the vessel is the same as the administering state of the EEZ in which it is fishing.
 
-Additionally, we remove all entries in which a vessel has spent less than 1 hour fishing in a given EEZ in a year. 
 
 ```{r}
 if(run_flag_state | run_eez & rerun_gfw){
@@ -280,9 +287,8 @@ SELECT
 FROM
   `ucsb-gfw.subsidy_atlas.all_fishing_effort_by_eez`
 WHERE 
-fishing_hours_year_eez > 1
-and eez_territory_iso3 != 'High Seas'
-and flag != eez_territory_iso3"
+eez_territory_iso3 != 'High Seas'
+AND flag != eez_territory_iso3"
 
   # Identify BQ table for this query
   all_dw_fishing_effort_by_eez_table <- bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas")
@@ -303,11 +309,6 @@ and flag != eez_territory_iso3"
   # Correct interpretation of NAs
   dw_effort_raw <- all_dw_fishing_effort_by_eez
   dw_effort_raw[dw_effort_raw == "NA"] <- NA
-  
-  # Fix a couple of iso3 codes that are outdated
-  dw_effort_raw$flag[dw_effort_raw$flag == "ROM"] <- "ROU"
-  dw_effort_raw$flag[dw_effort_raw$flag == "GCA"] <- "GTM"
-  dw_effort_raw$flag[is.na(dw_effort_raw$flag)] <- "UNK"
     
   # Save file locally
   write_csv(dw_effort_raw, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
@@ -335,18 +336,51 @@ sovereign_pairings <- dw_effort_raw %>%
   rename(sovereign_iso3 = eez_sovereign_iso3, iso3 = eez_territory_iso3) %>%
   na.omit() %>% # there's one entry where flag = CHN, and sovereign = NA
   arrange(iso3)
+sovereign_pairings$sovereign_iso3[sovereign_pairings$iso3 == "TWN"] <- "CHN"
 
 # Custom sovereignty pairings that are missing
-c_sovereign_pairings <- tibble(iso3 = c("BLZ", "ARM", "AUT", "SRB", "CHE", "LIE", "UNK", "SVK", "MNG", "IRQ", "JOR", "HKG", "NER", "BOL", "LSO", "HUN", "KHM", "AFG")) %>%
+c_sovereign_pairings <- tibble(iso3 = c("BLZ", # Belize
+                                        "ARM", # Armenia
+                                        "AUT", # Austria
+                                        "SRB", # Serbia
+                                        "CHE", # Switzerland
+                                        "LIE", # Liechtenstein
+                                        "UNK", # Unknown
+                                        "SVK", # Slovakia
+                                        "MNG", # Mongolia
+                                        "JOR", # Jordan
+                                        "HKG", # Hong Kong - not sovereign (!!!)
+                                        "NER", # Niger
+                                        "BOL", # Bolivia, Plurinational State of 
+                                        "LSO", # Lesotho
+                                        "HUN", # Hungary
+                                        "KHM", # Cambodia
+                                        "AFG", # Afghanistan
+                                        "BTN", # Bhutan
+                                        "CAF", # Central African Republic
+                                        "MDA", # Moldova, Republic of 
+                                        "MWI", # Malawi
+                                        "RWA", # Rwanda
+                                        "SMR", # San Marino
+                                        "SWZ", # Swaziland
+                                        "VAT", # Holy See (Vatican City State) 
+                                        "BDI", # Burundi
+                                        "KAZ", # Kazakhstan
+                                        "KGZ", # Kyrgyzstan
+                                        "LUX", # Luxembourg
+                                        "PRY", # Paraguay
+                                        "UGA", # Uganda
+                                        "UZB" # Uzbekistan
+                                        )) %>%
   mutate(name = case_when(iso3 == "UNK" ~ "Unknown",
                           TRUE ~ countrycode::countrycode(iso3, "iso3c", "country.name")),
-         sovereign_iso3 = case_when(iso3 == "HKG" ~ "CHN",
+         sovereign_iso3 = case_when(iso3 == "HKG" ~ "CHN", # of that list above, Hong Kong is the only state that isn't its own sovereign
                                     TRUE ~ iso3))
 
 # Put them all back together
 sovereign_pairings_all <- sovereign_pairings %>%
-  bind_rows(c_sovereign_pairings %>% dplyr::select(sovereign_iso3, iso3)) %>%
-  arrange(iso3)
+  bind_rows(c_sovereign_pairings %>% distinct(sovereign_iso3, iso3)) %>%
+  arrange(sovereign_iso3)
 
 # Save for future reference just in case
 write_csv(sovereign_pairings_all, path = paste0(results_dir, "sovereign_pairings_all.csv"))
@@ -507,7 +541,7 @@ subsidy_factors <- subsidy_dat %>%
 
 subsidy_dat_ordered <- subsidy_dat %>%
   mutate(type_code = factor(type_code, subsidy_factors$type_code),
-         type = factor(type, subsidy_factors$type))
+         type = factor(type, subsidy_factors$type)) 
 
 # Adjust subsidy estimates to only represent subsides going to large-scale fisheries
 subsidy_distribution <- tibble(type_code = c("A1", "A2", "A3", "B7", "B3", "B1", "B4", "B5", "B2", "B6", "C2", "C1", "C3"),
@@ -515,17 +549,44 @@ subsidy_distribution <- tibble(type_code = c("A1", "A2", "A3", "B7", "B3", "B1",
 
 subsidy_dat_edit <- subsidy_dat_ordered %>%
   left_join(subsidy_distribution, by = "type_code") %>%
-  mutate(new_value = value * lsf_prop)
+  mutate(new_value = value * lsf_prop) %>%
+  dplyr::select(iso3, category, type_code, subs = new_value)
 
-# Filter our total fishing effort by flag state for the analysis year and join to the subsidy data
-dw_subsidy_rates_flag_all <- flag_totals %>%
+
+# Get totals by sovereign states
+flag_totals_sovereign <- flag_totals %>%
+left_join(sovereign_pairings_all, by = c("flag" = "iso3")) %>%
+  group_by(year, sovereign_iso3) %>%
+  mutate(sovereign_vessels_total = sum(vessels_total, na.rm = T),
+         sovereign_fishing_hours_total = sum(fishing_hours_total, na.rm = T),
+         sovereign_fishing_KWh_total = sum(fishing_KWh_total, na.rm = T),
+         sovereign_fishing_days_total = sum(fishing_days_total, na.rm = T)) %>%
+  ungroup() %>%
+  arrange(sovereign_iso3) %>%
+  mutate(flag_in_sub_dat = ifelse(flag %in% subsidy_dat_ordered$iso3, TRUE, FALSE),
+         sovereign_in_sub_dat = ifelse(sovereign_iso3 %in% subsidy_dat_ordered$iso3, TRUE, FALSE))
+
+# Assign subsidies by flag state
+dw_subsidy_rates_flag <- flag_totals_sovereign %>%
   dplyr::filter(year == analysis_year) %>%
-  left_join(subsidy_dat_edit, by = c("flag" = "iso3")) %>%
-  dplyr::filter(!is.na(category)) %>% # remove entries for which we don't have subsidy information
+  dplyr::filter(flag_in_sub_dat) %>%
+  left_join(subsidy_dat_edit, by = c("flag" = "iso3"))
+  
+# Assign subsidies by sovereign state
+dw_subsidy_rates_sovereign <- flag_totals_sovereign %>%
+  dplyr::filter(year == analysis_year) %>%
+  dplyr::filter(flag_in_sub_dat == FALSE & sovereign_in_sub_dat) %>%
+  left_join(subsidy_dat_edit, by = c("sovereign_iso3" = "iso3"))
+
+# Combine and calculate rates appropriately
+dw_subsidy_rates_all <- dw_subsidy_rates_flag %>%
+  bind_rows(dw_subsidy_rates_sovereign) %>%
+  dplyr::filter(!is.na(subs)) %>%
   dplyr::filter(!is.na(fishing_hours_total)) %>% # remove entries for which we don't have fishing effort
-  mutate(subs_per_fishing_hour = new_value/fishing_hours_total,
-         subs_per_fishing_KWh = new_value/fishing_KWh_total,
-         subs_per_fishing_day = new_value/fishing_days_total)
+  mutate(use_sovereign_totals = ifelse(sovereign_iso3 %in% dw_subsidy_rates_sovereign$sovereign_iso3, TRUE, FALSE)) %>%
+  mutate(subs_per_fishing_hour = ifelse(use_sovereign_totals, subs/sovereign_fishing_hours_total, subs/fishing_hours_total),
+         subs_per_fishing_KWh = ifelse(use_sovereign_totals, subs/sovereign_fishing_KWh_total, subs/fishing_KWh_total),
+         subs_per_fishing_day = ifelse(use_sovereign_totals, subs/sovereign_fishing_days_total, subs/fishing_days_total)) 
 
 # Save subsidy rates by flag to Bigquery
   subsidy_rates_table <- bq_table(project = bq_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas")
@@ -540,35 +601,28 @@ dw_subsidy_rates_flag_all <- flag_totals %>%
     
     subsidy_rates_table %>%
       bq_table_create() %>%
-      bq_table_upload(values = dw_subsidy_rates_flag_all, fields = dw_subsidy_rates_flag_all)
+      bq_table_upload(values = dw_subsidy_rates_all, fields = dw_subsidy_rates_all)
     
   }else{
     subsidy_rates_table %>%
       bq_table_create() %>%
-      bq_table_upload(values = dw_subsidy_rates_flag_all, fields = dw_subsidy_rates_flag_all)
+      bq_table_upload(values = dw_subsidy_rates_all, fields = dw_subsidy_rates_all)
       
   }
   }
   
-write_csv(dw_subsidy_rates_flag_all, paste0(results_dir, "subsidy_rates_flag.csv"))
+write_csv(dw_subsidy_rates_all, paste0(results_dir, "subsidy_rates_flag.csv"))
 
 # Filter to only include certain subsidy type in the final totals and summarize total subsidy rates by flag state
-dw_subsidy_rates_flag <- dw_subsidy_rates_flag_all %>%
+dw_subsidy_rates_flag <- dw_subsidy_rates_all %>%
   dplyr::filter(category == "Capacity-enhancing") %>%
   group_by(flag) %>%
   summarize(subs_per_fishing_KWh = sum(subs_per_fishing_KWh, na.rm = T))
 
 # Allocate subsidies by flag, and then by sovereign if needed...
 dw_effort_final <- dw_effort %>%
-  left_join(dw_subsidy_rates_flag, by = c("flag" = "flag")) %>%
-  rename(flag_subs_fishing_KWh = subs_per_fishing_KWh) %>%
-  left_join(dw_subsidy_rates_flag, by = c("sovereign_iso3" = "flag")) %>%
-  rename(sovereign_subs_fishing_KWh = subs_per_fishing_KWh) %>%
-  mutate(subs_per_fishing_KWh = case_when(!is.na(flag_subs_fishing_KWh) ~ flag_subs_fishing_KWh,
-                                          TRUE ~ sovereign_subs_fishing_KWh)) %>%
-  dplyr::select(-flag_subs_fishing_KWh, -sovereign_subs_fishing_KWh)
+  left_join(dw_subsidy_rates_flag, by = c("flag" = "flag"))
 dw_effort_final$subs_per_fishing_KWh[is.na(dw_effort_final$subs_per_fishing_KWh)] <- 0
-
 
 # Save
 if(rerun_gfw){
@@ -648,7 +702,7 @@ if(run_flag_state | run_eez){
     mutate(region = "Africa")
   
   # Caribbean
-  caribbean_eez_map <- st_crop(eez_map, c(xmin=-260, xmax=100, ymin=-90, ymax=90))
+  caribbean_eez_map <- st_crop(eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
   caribbean_eez_map_centroids <- caribbean_eez_map %>%
     st_centroid() %>%
     dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
@@ -667,16 +721,6 @@ if(run_flag_state | run_eez){
                 as_tibble() %>%
                 setNames(c("eez_lon", "eez_lat"))) %>%
     arrange(eez_code)
-  
-  # Manually correct certain centroids 
-  # NEED TO DO THIS
-  #manual_coordinates_eez <- read_csv(paste0(results_dir, "corrected_EEZ_centroids.csv"))
-  # eez_map_centroid_coordinates_edited <- eez_map_centroid_coordinates %>% 
-  #   left_join(manual_coordinates_eez, by = c("eez_code")) %>% 
-  #   mutate(eez_lon = ifelse(!is.na(eez_lon_edit), eez_lon_edit, eez_lon)) %>% 
-  #   mutate(eez_lat = ifelse(!is.na(eez_lat_edit), eez_lat_edit, eez_lat)) %>%
-  #   dplyr::select(-eez, -eez_lat_edit, -eez_lon_edit)
-
   
   ### Combined land/EEZs for flag states -----
   land_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "EEZ_land_v2_201410_-360_360"), layer = "EEZ_land_v2_201410_-360_360") %>%
@@ -701,7 +745,7 @@ if(run_flag_state | run_eez){
     mutate(region = "Africa")
   
   # Caribbean
-  caribbean_land_eez_map <- st_crop(land_eez_map, c(xmin=-260, xmax=100, ymin=-90, ymax=90))
+  caribbean_land_eez_map <- st_crop(land_eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
   caribbean_land_eez_map_centroids <- caribbean_land_eez_map %>%
     st_centroid() %>%
     dplyr::select(flag = iso3, flag_name = country, geometry) %>%
@@ -728,11 +772,11 @@ if(run_flag_state | run_eez){
    #NEED TO DO THIS
    manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
    
-   # land_eez_map_centroid_coordinates_edited <- land_eez_map_centroid_coordinates %>%
-   #   left_join(manual_coordinates_flags, by = c("flag", "region")) %>%
-   #   mutate(flag_lon = ifelse(!is.na(flag_lon_edit), flag_lon_edit, flag_lon),
-   #          flag_lat = ifelse(!is.na(flag_lat_edit), flag_lat_edit, flag_lat)) %>%
-   #   dplyr::select(-flag_lon_edit, -flag_lat_edit) 
+   land_eez_map_centroid_coordinates <- land_eez_map_centroid_coordinates %>%
+     left_join(manual_coordinates_flags, by = c("flag", "region")) %>%
+     mutate(flag_lon = ifelse(!is.na(flag_lon_edit), flag_lon_edit, flag_lon),
+            flag_lat = ifelse(!is.na(flag_lat_edit), flag_lat_edit, flag_lat)) %>%
+     dplyr::select(-flag_lon_edit, -flag_lat_edit)
 
 }
 ```
@@ -1061,25 +1105,18 @@ if(eez_purpose == "top_ranked"){
               fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
     arrange(eez_code) %>%
     ungroup() %>%
-    mutate(region == "Africa")
+    mutate(region = "Africa")
   
   # Combine with coordinates
   eez_mapping <- eez_combinations %>%
     left_join(eez_map_centroid_coordinates, by = c("eez_code" = "eez_code", "region" = "region")) %>%
     left_join(land_eez_map_centroid_coordinates, by = c("flag" = "flag", "region" = "region")) 
   
-   # There are some flag states for which we need to manually assign centroids (mostly small island states not included in the world map because they don't show up)
-  # Tuvalu (TUV)
-  eez_mapping$flag_lon[eez_mapping$flag == "TUV" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lat[eez_mapping$flag == "TUV" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Africa"]
-
-  # Réunion (REU)
-  eez_mapping$flag_lon[eez_mapping$flag == "REU" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lat[eez_mapping$flag == "REU" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Africa"]
-
-  # Bonaire, Sint Eustatius and Saba (BES)
-  eez_mapping$flag_lon[eez_mapping$flag == "BES" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lat[eez_mapping$flag == "BES" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Africa"]
+   # There are some flag states for which we need to manually assign centroids: Hong Kong
+   # Vessels with an unknown flag do not have lat/lon coordinates
+  # Hong Kong (HKG)
+  eez_mapping$flag_lon[eez_mapping$flag == "HKG" & eez_mapping$region == "Africa"] <- 22.409
+  eez_mapping$flag_lat[eez_mapping$flag == "HKG" & eez_mapping$region == "Africa"] <- 114.139
   
 
 }else if(eez_purpose == "ACP"){
@@ -1112,31 +1149,7 @@ if(eez_purpose == "top_ranked"){
     left_join(eez_map_centroid_coordinates, by = c("eez_code" = "eez_code", "region" = "region")) %>%
     left_join(land_eez_map_centroid_coordinates, by = c("flag" = "flag", "region" = "region")) 
   
-  # There are some flag states for which we need to manually assign centroids (mostly small island states not included in the world map because they don't show up)
-  # Tuvalu (TUV)
-  eez_mapping$flag_lon[eez_mapping$flag == "TUV" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lat[eez_mapping$flag == "TUV" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Africa"]
-   eez_mapping$flag_lon[eez_mapping$flag == "TUV" & eez_mapping$region == "Caribbean"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Caribbean"]
-  eez_mapping$flag_lat[eez_mapping$flag == "TUV" & eez_mapping$region == "Caribbean"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Caribbean"]
-  eez_mapping$flag_lon[eez_mapping$flag == "TUV" & eez_mapping$region == "Pacific"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Pacific"]
-  eez_mapping$flag_lat[eez_mapping$flag == "TUV" & eez_mapping$region == "Pacific"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8326 & eez_map_centroid_coordinates$region == "Pacific"]
-
-  # Réunion (REU)
-  eez_mapping$flag_lon[eez_mapping$flag == "REU" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lat[eez_mapping$flag == "REU" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lon[eez_mapping$flag == "REU" & eez_mapping$region == "Caribbean"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Caribbean"]
-  eez_mapping$flag_lat[eez_mapping$flag == "REU" & eez_mapping$region == "Caribbean"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Caribbean"]
-  eez_mapping$flag_lon[eez_mapping$flag == "REU" & eez_mapping$region == "Pacific"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Pacific"]
-  eez_mapping$flag_lat[eez_mapping$flag == "REU" & eez_mapping$region == "Pacific"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 8338 & eez_map_centroid_coordinates$region == "Pacific"]
-
-  # Bonaire, Sint Eustatius and Saba (BES)
-  eez_mapping$flag_lon[eez_mapping$flag == "BES" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lat[eez_mapping$flag == "BES" & eez_mapping$region == "Africa"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Africa"]
-  eez_mapping$flag_lon[eez_mapping$flag == "BES" & eez_mapping$region == "Caribbean"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Caribbean"]
-  eez_mapping$flag_lat[eez_mapping$flag == "BES" & eez_mapping$region == "Caribbean"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Caribbean"]
-  eez_mapping$flag_lon[eez_mapping$flag == "BES" & eez_mapping$region == "Pacific"] <- eez_map_centroid_coordinates$eez_lon[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Pacific"]
-  eez_mapping$flag_lat[eez_mapping$flag == "BES" & eez_mapping$region == "Pacific"] <- eez_map_centroid_coordinates$eez_lat[eez_map_centroid_coordinates$eez_code == 26520 & eez_map_centroid_coordinates$region == "Pacific"]
-
+  # The only flag states with NA flag_long/flag_lat coordiantes coorespond to vessels with an unknown flag so we're good there
 }
 
 }
@@ -1169,6 +1182,7 @@ st_write(eez_mapping_wlines, dsn = paste0(eez_results_dir, "eez_mapping_with_lin
 
 }else if(eez_purpose == "ACP"){
 
+# Africa
 eez_mapping_wlines_africa <- eez_mapping %>%
   dplyr::filter(region == "Africa") %>%
   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
@@ -1184,6 +1198,18 @@ eez_mapping_wlines_africa <- eez_mapping %>%
   st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
   sf::st_sf(crs = 4326) 
 
+ # test_plot_africa <- ggplot()+
+ #  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+ #  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+ #  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_africa$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+ #  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_africa$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+ #  geom_sf(data = eez_mapping_wlines_africa, col = "darkgoldenrod", size = 0.25) +
+ #  maptheme+
+ #  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+ #  scale_x_continuous(expand = c(0,0))+
+ #  scale_y_continuous(expand = c(0,0))
+
+# Caribbean
 eez_mapping_wlines_caribbean <- eez_mapping %>%
   dplyr::filter(region == "Caribbean") %>%
   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
@@ -1195,9 +1221,21 @@ eez_mapping_wlines_caribbean <- eez_mapping %>%
   bind_cols(eez_mapping %>% dplyr::filter(region == "Caribbean")) %>%
   select(everything(), geometry) %>% 
   st_segmentize(units::set_units(100,km)) %>% 
-  mutate(geometry = (geometry + c(-100,90)) %% c(360) - c(260,90)) %>% 
+  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
+  #mutate(geometry = (geometry + c(-100,90)) %% c(360) - c(260,90)) %>% 
   st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=100"), quiet = TRUE) %>% 
   sf::st_sf(crs = 4326) 
+
+ # test_plot_caribbean <- ggplot()+
+ #  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+ #  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+ #  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_caribbean$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+ #  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_caribbean$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+ #  geom_sf(data = eez_mapping_wlines_caribbean, col = "darkgoldenrod", size = 0.25) +
+ #  maptheme+
+ #  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+ #  scale_x_continuous(expand = c(0,0))+
+ #  scale_y_continuous(expand = c(0,0))
 
 eez_mapping_wlines_pacific <- eez_mapping %>%
   dplyr::filter(region == "Pacific") %>%
@@ -1236,7 +1274,7 @@ if(run_eez){
   eez_loop_names <- unique(analysis_eez_territory_name)
 
 ## For loop to run top EEZs
-for(i in 55:length(eez_loop_iso3)){
+for(i in 1:length(eez_loop_iso3)){
   
 run_eez_codes <- analysis_eezs[which(analysis_eez_territory_iso3 == eez_loop_iso3[i])]
 
@@ -1247,11 +1285,11 @@ eez_dat <- eez_mapping_wlines %>%
 write_csv(eez_dat, path = paste0(eez_dat_dir, eez_loop_iso3[i], "_EEZ_dat.csv"))
 
 # Make EEZ connection plot
-eez_map <- ggplot()+
-  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% run_eez_codes), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+eez_connectivity_map <- ggplot()+
+  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_dat$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% run_eez_codes), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = eez_dat, col = "darkgoldenrod", size = 0.25) +
   maptheme+
   coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
@@ -1259,7 +1297,7 @@ eez_map <- ggplot()+
   scale_y_continuous(expand = c(0,0))
 
 #plot_map pngs
-ggsave(eez_map, filename = paste0(eez_figures_dir, eez_loop_iso3[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
+ggsave(eez_connectivity_map, filename = paste0(eez_figures_dir, eez_loop_iso3[i], "_EEZ_connectivity_map.png"), width = 10, units = "in")
 
 # Combine map into a one page pdf
 title3 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", eez_loop_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
@@ -1271,8 +1309,12 @@ lay3 <- rbind(c(1,4),
               c(2,2),
               c(3,3))
 
+# White SFG Logo
+sfg_logo_white <- readPNG(here::here("common", "sfg-logo-white.png"))
+logo_white <- rasterGrob(sfg_logo_white, interpolate=TRUE, vjust = 0.8, hjust = 0.6)
+
 # Put together connectivity map
-eez_page <- grid.arrange(title3, eez_map, caption3, logo_white, 
+eez_page <- grid.arrange(title3, eez_connectivity_map, caption3, logo_white, 
                          layout_matrix = lay3,
                          heights=unit(c(1,1.5,5,1), c("in")), 
                          widths=unit(c(8.25,2.75), "in"))
@@ -1326,7 +1368,8 @@ sql4 <- paste0(
        year,
        ssvid,
        engine_power_kw,
-       flag
+       flag,
+       eez_code
     FROM
        `ucsb-gfw.subsidy_atlas.FINAL_dw_effort_by_eez_", analysis_year, "`),
    
@@ -1375,7 +1418,8 @@ sql4 <- paste0(
     selected_vi b
   USING
     (year,
-    ssvid)
+    ssvid,
+    eez_code)
   LEFT JOIN
     `ucsb-gfw.subsidy_atlas.subsidy_rates_flag` c
   USING
@@ -1392,7 +1436,7 @@ sql4 <- paste0(
     lat_cen,
     lon_cen
   HAVING
-    fishing_hours > 1"
+    fishing_hours >= 1"
   )
 
   eez_table <- bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") 
@@ -1437,8 +1481,8 @@ sql4 <- paste0(
     
   # Map of subsidy intensity
   eez_subsidy_plot <- ggplot()+
-    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
-    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
     geom_raster(data = eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
     eezmaptheme +
     scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
@@ -1456,8 +1500,8 @@ sql4 <- paste0(
   
    # Map of subsidy intensity
   eez_subsidy_plot <- ggplot()+
-    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
-    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
     geom_raster(data = eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = subsidy_intensity))+
     eezmaptheme +
     scale_fill_viridis_c(na.value = NA, name = "Subsidy intensity \n(2018 $USD/KWh)", 
@@ -1477,8 +1521,8 @@ sql4 <- paste0(
   
   # Labels for the log scale 
   eez_effort_plot <- ggplot()+
-    geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
-    geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+    geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
     geom_raster(data = eez_effort_aggregated, aes(x = lon_cen, y = lat_cen, fill = fishing_KWh))+
     eezmaptheme +
     scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
@@ -1491,7 +1535,7 @@ sql4 <- paste0(
   ggsave(eez_effort_plot, filename = paste0(eez_figures_dir, eez_loop_iso3[i], "_EEZ_effort_map.png"), width = 10, units = "in")
 
   # Combined plot  
-  logo_white2 <- rasterGrob(sfg_logo_white, interpolate=TRUE, vjust = 0.8, hjust = 0.3)
+logo_white2 <- rasterGrob(sfg_logo_white, interpolate=TRUE, vjust = 0.8, hjust = 0.3)
   
 title4 <- textGrob(paste0("Global network of distant-water fishing\nEEZ: ", eez_loop_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
 
