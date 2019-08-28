@@ -466,7 +466,7 @@ server <- shinyServer(function(input, output, session) {
       "<a href= '",
       unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]),
       "'>",
-      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$treaties_conventions)]),
+      unique(ACP_codes_links$flag[!is.na(ACP_codes_links$treaties_conventions)]),
       "</a>",
       collapse = " | "
     )
@@ -476,7 +476,7 @@ server <- shinyServer(function(input, output, session) {
       "<a href= '", 
       unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
       "'>", 
-      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
+      unique(ACP_codes_links$flag[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
       "</a>", 
       collapse = " | ")
     
@@ -603,7 +603,6 @@ server <- shinyServer(function(input, output, session) {
       "</br>",
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
-    #browser()
     
     
     # Leaflet map
@@ -665,7 +664,7 @@ server <- shinyServer(function(input, output, session) {
     connectivity_data_for_selected_eez <- connectivity_data %>%
       dplyr::filter(ez_tr_3 == input$africa_eez_select) %>% 
       arrange(flag) %>%
-      dplyr::filter(flag != "BES") %>% 
+      #dplyr::filter(flag != "BES") %>% 
       dplyr::filter(flag != "UNK")
     
     flag_state_choices_africa <- unique(connectivity_data_for_selected_eez$flag)
@@ -734,19 +733,7 @@ server <- shinyServer(function(input, output, session) {
   ### Africa: filter flag state selectInput choices based on selected EEZ
   ### -----------------------------------------------------------
   
-  observeEvent(input$africa_eez_select, {
-    
-    req(input$africa_eez_select != "Select a coastal state...")
-    
-    flag_state_choices_africa <- unique(africa_eez_data()$flag)
-    names(flag_state_choices_africa) <- unique(africa_eez_data()$name)
-    
-    updateSelectizeInput(session, "africa_flag_state_select_subsidy",
-                         choices = c("Select a flag state...", flag_state_choices_africa)
-    )
-    
-  })
-  
+  # Update widget for effort tab
   observeEvent(input$africa_eez_select, {
     
     req(input$africa_eez_select != "Select a coastal state...")
@@ -755,6 +742,20 @@ server <- shinyServer(function(input, output, session) {
     names(flag_state_choices_africa) <- unique(africa_eez_data()$name)
     
     updateSelectizeInput(session, "africa_flag_state_select_effort",
+                         choices = c("Select a flag state...", flag_state_choices_africa)
+    )
+    
+  })
+  
+  # Update widget for subsidy tab
+  observeEvent(input$africa_eez_select, {
+    
+    req(input$africa_eez_select != "Select a coastal state...")
+    
+    flag_state_choices_africa <- unique(africa_eez_data()$flag)
+    names(flag_state_choices_africa) <- unique(africa_eez_data()$name)
+    
+    updateSelectizeInput(session, "africa_flag_state_select_subsidy",
                          choices = c("Select a flag state...", flag_state_choices_africa)
     )
     
@@ -986,7 +987,7 @@ server <- shinyServer(function(input, output, session) {
     
     # Filter data
     caribbean_eezs <- eez_map %>%
-      st_crop(c(xmin=-260, xmax=100, ymin=-90, ymax=90)) %>%
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
       st_collection_extract(type = c("POLYGON")) %>%
       dplyr::filter(region == "Caribbean") %>%
       mutate(geoname = str_replace(geoname, " \\(.*\\)", ""))
@@ -1212,7 +1213,7 @@ server <- shinyServer(function(input, output, session) {
     req(input$caribbean_eez_select != "Select a coastal state...")
     
     selected_eez <- eez_map %>% 
-      st_crop(c(xmin=-260, xmax=100, ymin=-90, ymax=90)) %>%
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
       st_collection_extract(type = c("POLYGON")) %>%
       dplyr::filter(iso_ter1 == input$caribbean_eez_select) %>%
       rename(territory_iso3 = iso_ter1)
@@ -1223,7 +1224,7 @@ server <- shinyServer(function(input, output, session) {
       arrange(flag) 
     
     flag_states_for_selected_eez <- land_eez_map %>% 
-      st_crop(c(xmin=-260, xmax=100, ymin=-90, ymax=90)) %>%
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
       st_collection_extract(type = c("POLYGON")) %>%
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
@@ -1322,12 +1323,12 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")) %>% 
       
-      addPolylines(data = connectivity_data_for_selected_eez,
+      addPolylines(data = connectivity_data_edit,
                    fillColor = "goldenrod",
                    fillOpacity = 1,
                    weight = 1,
                    color = "darkgoldenrod") %>% 
-      setView(lng = -75, lat = 17, zoom = 2)
+      setView(lng = 0, lat = 17, zoom = 2)
       
     } #close if statement
     
@@ -1340,10 +1341,11 @@ server <- shinyServer(function(input, output, session) {
   observeEvent(input$caribbean_eez_select, {
     
     req(input$caribbean_eez_select != "Select a coastal state...")
-    
+
     connectivity_data_for_selected_eez <- connectivity_data %>%
       dplyr::filter(ez_tr_3 == input$caribbean_eez_select) %>% 
-      arrange(flag)
+      arrange(flag) %>%
+      dplyr::filter(flag != "UNK")
     
     flag_state_choices_caribbean <- unique(connectivity_data_for_selected_eez$flag)
     names(flag_state_choices_caribbean) <- unique(countrycode(flag_state_choices_caribbean, "iso3c", "country.name"))
@@ -1450,7 +1452,7 @@ server <- shinyServer(function(input, output, session) {
   caribbean_eez_bbox <- eventReactive(input$caribbean_eez_select, {
     
     eez_map_subsidy <- eez_map %>% 
-      st_crop(c(xmin=-260, xmax=100, ymin=-90, ymax=90)) %>%
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
       st_collection_extract(type = c("POLYGON")) %>%
       dplyr::filter(iso_ter1 == input$caribbean_eez_select) %>%
       group_by(iso_ter1) %>%
@@ -1742,6 +1744,15 @@ server <- shinyServer(function(input, output, session) {
       # Get code for selected EEZ
       selected_eez <- subset(eez_map, eez_map$iso_ter1 == input$pacific_eez_select) %>%
         mutate(x_1 = ifelse(x_1 < 0, 360 + x_1, x_1))
+
+      if(input$pacific_eez_select == "FJI"){
+        # The coordinates for Fiji are just wrong in the EEZ file for some reason
+        selected_eez$x_1[selected_eez$iso_ter1 == "FJI"] <- 177.956
+      
+      }else if(input$pacific_eez_select == "TUV"){
+        # Same for Tuvalu
+        selected_eez$x_1[selected_eez$iso_ter1 == "TUV"] <- 177.54
+      }
   
       # Remove any previously highlighted polygon
       pacific_proxy %>% clearGroup("highlighted_eez")
@@ -1978,7 +1989,7 @@ server <- shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")) %>% 
       
-      addPolylines(data = connectivity_data_for_selected_eez,
+      addPolylines(data = connectivity_data_edit,
                    fillColor = "goldenrod",
                    fillOpacity = 1,
                    weight = 1,
@@ -1996,7 +2007,8 @@ server <- shinyServer(function(input, output, session) {
     
     connectivity_data_for_selected_eez <- connectivity_data %>%
       dplyr::filter(ez_tr_3 == input$pacific_eez_select) %>% 
-      arrange(flag)
+      arrange(flag) %>%
+      dplyr::filter(flag != "UNK")
     
     flag_state_choices_pacific <- unique(connectivity_data_for_selected_eez$flag)
     names(flag_state_choices_pacific) <- unique(countrycode(flag_state_choices_pacific, "iso3c", "country.name"))
