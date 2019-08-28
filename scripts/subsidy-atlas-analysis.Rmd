@@ -52,7 +52,7 @@ number_of_top_countries_eez <- 10
 # Connection to BigQuery - need a project for billing
 bq_project <-  "ucsb-gfw"
 # Do you want to pull fresh data from GFW?
-rerun_gfw <- F
+rerun_gfw <- T
 
 # Choose analysis year (2012 - 2018)
 analysis_year <- 2018
@@ -121,8 +121,10 @@ This section describes the process of linking to the most recent version of the 
 
 We first extract total fishing hours (and fishing days) by year and EEZ for each vessel in the dataset. EEZs are defined by a numeric code, each cooresponding to a region in the World EEZ data set from Marineregions.org. The responsible territory for each region has been identified, as well as the sovereign country (or countries for disputed regions). We then match the best vessel characteristics identified by GFW to each vessel, and remove entries for all vessels that GFW does not consider to be fishing vessels. 
 
+Additionally, we remove all entries in which a vessel has spent less than 1 hour fishing in a given EEZ in a year. We assume that these entries are likely noise. 
+
 ```{r}
-if(run_flag_state | run_eez & rerun_gfw){
+if((run_flag_state | run_eez) & rerun_gfw){
 
 # Query to pull fishing effort by vessel, by EEZ
 sql <- "
@@ -165,7 +167,12 @@ WITH
 SELECT
   year,
   ssvid,
-  best.best_flag flag,
+  CASE
+      WHEN best.best_flag IS NULL THEN 'UNK' 
+      WHEN best.best_flag = 'ROM' THEN 'ROU'
+      WHEN best.best_flag = 'GCA' THEN 'GTM'
+      ELSE best.best_flag         
+    END AS flag,
   best.best_vessel_class vessel_class,
   best.best_length_m length_m,
   best.best_tonnage_gt tonnage_gt,
@@ -196,6 +203,7 @@ USING
 WHERE 
   on_fishing_list_best
   AND activity.offsetting IS FALSE
+  AND fishing_hours_year_eez >= 1
 ORDER BY
   year,
   eez_territory_iso3,
@@ -216,7 +224,7 @@ bq_project_query(bq_project, sql, destination_table = bq_table(project = bq_proj
 For the purposes of allocating subsidies to individual vessels, we need the total number of fishing hours for each flag state in a given year, as we assume that subsidies are allocated proportionally based on fishing effort. 
 
 ```{r}
-if(run_flag_state | run_eez & rerun_gfw){
+if((run_flag_state | run_eez) & rerun_gfw){
   
 sql2 <- "
 SELECT
@@ -269,7 +277,6 @@ In the first step, the following is not considered to be "distant water fishing"
 - All fishing effort occuring on the high seas;
 - All fishing effort occuring in an EEZ when the flag state of the vessel is the same as the administering state of the EEZ in which it is fishing.
 
-Additionally, we remove all entries in which a vessel has spent less than 1 hour fishing in a given EEZ in a year. 
 
 ```{r}
 if(run_flag_state | run_eez & rerun_gfw){
@@ -280,9 +287,8 @@ SELECT
 FROM
   `ucsb-gfw.subsidy_atlas.all_fishing_effort_by_eez`
 WHERE 
-fishing_hours_year_eez > 1
-and eez_territory_iso3 != 'High Seas'
-and flag != eez_territory_iso3"
+eez_territory_iso3 != 'High Seas'
+AND flag != eez_territory_iso3"
 
   # Identify BQ table for this query
   all_dw_fishing_effort_by_eez_table <- bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas")
@@ -303,11 +309,6 @@ and flag != eez_territory_iso3"
   # Correct interpretation of NAs
   dw_effort_raw <- all_dw_fishing_effort_by_eez
   dw_effort_raw[dw_effort_raw == "NA"] <- NA
-  
-  # Fix a couple of iso3 codes that are outdated
-  dw_effort_raw$flag[dw_effort_raw$flag == "ROM"] <- "ROU"
-  dw_effort_raw$flag[dw_effort_raw$flag == "GCA"] <- "GTM"
-  dw_effort_raw$flag[is.na(dw_effort_raw$flag)] <- "UNK"
     
   # Save file locally
   write_csv(dw_effort_raw, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
@@ -335,18 +336,51 @@ sovereign_pairings <- dw_effort_raw %>%
   rename(sovereign_iso3 = eez_sovereign_iso3, iso3 = eez_territory_iso3) %>%
   na.omit() %>% # there's one entry where flag = CHN, and sovereign = NA
   arrange(iso3)
+sovereign_pairings$sovereign_iso3[sovereign_pairings$iso3 == "TWN"] <- "CHN"
 
 # Custom sovereignty pairings that are missing
-c_sovereign_pairings <- tibble(iso3 = c("BLZ", "ARM", "AUT", "SRB", "CHE", "LIE", "UNK", "SVK", "MNG", "IRQ", "JOR", "HKG", "NER", "BOL", "LSO", "HUN", "KHM", "AFG")) %>%
+c_sovereign_pairings <- tibble(iso3 = c("BLZ", # Belize
+                                        "ARM", # Armenia
+                                        "AUT", # Austria
+                                        "SRB", # Serbia
+                                        "CHE", # Switzerland
+                                        "LIE", # Liechtenstein
+                                        "UNK", # Unknown
+                                        "SVK", # Slovakia
+                                        "MNG", # Mongolia
+                                        "JOR", # Jordan
+                                        "HKG", # Hong Kong - not sovereign (!!!)
+                                        "NER", # Niger
+                                        "BOL", # Bolivia, Plurinational State of 
+                                        "LSO", # Lesotho
+                                        "HUN", # Hungary
+                                        "KHM", # Cambodia
+                                        "AFG", # Afghanistan
+                                        "BTN", # Bhutan
+                                        "CAF", # Central African Republic
+                                        "MDA", # Moldova, Republic of 
+                                        "MWI", # Malawi
+                                        "RWA", # Rwanda
+                                        "SMR", # San Marino
+                                        "SWZ", # Swaziland
+                                        "VAT", # Holy See (Vatican City State) 
+                                        "BDI", # Burundi
+                                        "KAZ", # Kazakhstan
+                                        "KGZ", # Kyrgyzstan
+                                        "LUX", # Luxembourg
+                                        "PRY", # Paraguay
+                                        "UGA", # Uganda
+                                        "UZB" # Uzbekistan
+                                        )) %>%
   mutate(name = case_when(iso3 == "UNK" ~ "Unknown",
                           TRUE ~ countrycode::countrycode(iso3, "iso3c", "country.name")),
-         sovereign_iso3 = case_when(iso3 == "HKG" ~ "CHN",
+         sovereign_iso3 = case_when(iso3 == "HKG" ~ "CHN", # of that list above, Hong Kong is the only state that isn't its own sovereign
                                     TRUE ~ iso3))
 
 # Put them all back together
 sovereign_pairings_all <- sovereign_pairings %>%
-  bind_rows(c_sovereign_pairings %>% dplyr::select(sovereign_iso3, iso3)) %>%
-  arrange(iso3)
+  bind_rows(c_sovereign_pairings %>% distinct(sovereign_iso3, iso3)) %>%
+  arrange(sovereign_iso3)
 
 # Save for future reference just in case
 write_csv(sovereign_pairings_all, path = paste0(results_dir, "sovereign_pairings_all.csv"))
@@ -507,7 +541,7 @@ subsidy_factors <- subsidy_dat %>%
 
 subsidy_dat_ordered <- subsidy_dat %>%
   mutate(type_code = factor(type_code, subsidy_factors$type_code),
-         type = factor(type, subsidy_factors$type))
+         type = factor(type, subsidy_factors$type)) 
 
 # Adjust subsidy estimates to only represent subsides going to large-scale fisheries
 subsidy_distribution <- tibble(type_code = c("A1", "A2", "A3", "B7", "B3", "B1", "B4", "B5", "B2", "B6", "C2", "C1", "C3"),
@@ -515,17 +549,44 @@ subsidy_distribution <- tibble(type_code = c("A1", "A2", "A3", "B7", "B3", "B1",
 
 subsidy_dat_edit <- subsidy_dat_ordered %>%
   left_join(subsidy_distribution, by = "type_code") %>%
-  mutate(new_value = value * lsf_prop)
+  mutate(new_value = value * lsf_prop) %>%
+  dplyr::select(iso3, category, type_code, subs = new_value)
 
-# Filter our total fishing effort by flag state for the analysis year and join to the subsidy data
-dw_subsidy_rates_flag_all <- flag_totals %>%
+
+# Get totals by sovereign states
+flag_totals_sovereign <- flag_totals %>%
+left_join(sovereign_pairings_all, by = c("flag" = "iso3")) %>%
+  group_by(year, sovereign_iso3) %>%
+  mutate(sovereign_vessels_total = sum(vessels_total, na.rm = T),
+         sovereign_fishing_hours_total = sum(fishing_hours_total, na.rm = T),
+         sovereign_fishing_KWh_total = sum(fishing_KWh_total, na.rm = T),
+         sovereign_fishing_days_total = sum(fishing_days_total, na.rm = T)) %>%
+  ungroup() %>%
+  arrange(sovereign_iso3) %>%
+  mutate(flag_in_sub_dat = ifelse(flag %in% subsidy_dat_ordered$iso3, TRUE, FALSE),
+         sovereign_in_sub_dat = ifelse(sovereign_iso3 %in% subsidy_dat_ordered$iso3, TRUE, FALSE))
+
+# Assign subsidies by flag state
+dw_subsidy_rates_flag <- flag_totals_sovereign %>%
   dplyr::filter(year == analysis_year) %>%
-  left_join(subsidy_dat_edit, by = c("flag" = "iso3")) %>%
-  dplyr::filter(!is.na(category)) %>% # remove entries for which we don't have subsidy information
+  dplyr::filter(flag_in_sub_dat) %>%
+  left_join(subsidy_dat_edit, by = c("flag" = "iso3"))
+  
+# Assign subsidies by sovereign state
+dw_subsidy_rates_sovereign <- flag_totals_sovereign %>%
+  dplyr::filter(year == analysis_year) %>%
+  dplyr::filter(flag_in_sub_dat == FALSE & sovereign_in_sub_dat) %>%
+  left_join(subsidy_dat_edit, by = c("sovereign_iso3" = "iso3"))
+
+# Combine and calculate rates appropriately
+dw_subsidy_rates_all <- dw_subsidy_rates_flag %>%
+  bind_rows(dw_subsidy_rates_sovereign) %>%
+  dplyr::filter(!is.na(subs)) %>%
   dplyr::filter(!is.na(fishing_hours_total)) %>% # remove entries for which we don't have fishing effort
-  mutate(subs_per_fishing_hour = new_value/fishing_hours_total,
-         subs_per_fishing_KWh = new_value/fishing_KWh_total,
-         subs_per_fishing_day = new_value/fishing_days_total)
+  mutate(use_sovereign_totals = ifelse(sovereign_iso3 %in% dw_subsidy_rates_sovereign$sovereign_iso3, TRUE, FALSE)) %>%
+  mutate(subs_per_fishing_hour = ifelse(use_sovereign_totals, subs/sovereign_fishing_hours_total, subs/fishing_hours_total),
+         subs_per_fishing_KWh = ifelse(use_sovereign_totals, subs/sovereign_fishing_KWh_total, subs/fishing_KWh_total),
+         subs_per_fishing_day = ifelse(use_sovereign_totals, subs/sovereign_fishing_days_total, subs/fishing_days_total)) 
 
 # Save subsidy rates by flag to Bigquery
   subsidy_rates_table <- bq_table(project = bq_project, table = "subsidy_rates_flag", dataset = "subsidy_atlas")
@@ -540,35 +601,28 @@ dw_subsidy_rates_flag_all <- flag_totals %>%
     
     subsidy_rates_table %>%
       bq_table_create() %>%
-      bq_table_upload(values = dw_subsidy_rates_flag_all, fields = dw_subsidy_rates_flag_all)
+      bq_table_upload(values = dw_subsidy_rates_all, fields = dw_subsidy_rates_all)
     
   }else{
     subsidy_rates_table %>%
       bq_table_create() %>%
-      bq_table_upload(values = dw_subsidy_rates_flag_all, fields = dw_subsidy_rates_flag_all)
+      bq_table_upload(values = dw_subsidy_rates_all, fields = dw_subsidy_rates_all)
       
   }
   }
   
-write_csv(dw_subsidy_rates_flag_all, paste0(results_dir, "subsidy_rates_flag.csv"))
+write_csv(dw_subsidy_rates_all, paste0(results_dir, "subsidy_rates_flag.csv"))
 
 # Filter to only include certain subsidy type in the final totals and summarize total subsidy rates by flag state
-dw_subsidy_rates_flag <- dw_subsidy_rates_flag_all %>%
+dw_subsidy_rates_flag <- dw_subsidy_rates_all %>%
   dplyr::filter(category == "Capacity-enhancing") %>%
   group_by(flag) %>%
   summarize(subs_per_fishing_KWh = sum(subs_per_fishing_KWh, na.rm = T))
 
 # Allocate subsidies by flag, and then by sovereign if needed...
 dw_effort_final <- dw_effort %>%
-  left_join(dw_subsidy_rates_flag, by = c("flag" = "flag")) %>%
-  rename(flag_subs_fishing_KWh = subs_per_fishing_KWh) %>%
-  left_join(dw_subsidy_rates_flag, by = c("sovereign_iso3" = "flag")) %>%
-  rename(sovereign_subs_fishing_KWh = subs_per_fishing_KWh) %>%
-  mutate(subs_per_fishing_KWh = case_when(!is.na(flag_subs_fishing_KWh) ~ flag_subs_fishing_KWh,
-                                          TRUE ~ sovereign_subs_fishing_KWh)) %>%
-  dplyr::select(-flag_subs_fishing_KWh, -sovereign_subs_fishing_KWh)
+  left_join(dw_subsidy_rates_flag, by = c("flag" = "flag"))
 dw_effort_final$subs_per_fishing_KWh[is.na(dw_effort_final$subs_per_fishing_KWh)] <- 0
-
 
 # Save
 if(rerun_gfw){
