@@ -2399,7 +2399,7 @@ server <- shinyServer(function(input, output, session) {
   # Caribbean Effort map: info
   observeEvent(input$caribbean_effort_info, {
     showModal(modalDialog(
-      includeHTML("./text/04_caribbean_effort_info.html"),
+      includeHTML("./text/03_africa_effort_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
@@ -2409,7 +2409,7 @@ server <- shinyServer(function(input, output, session) {
   # Caribbean Subsidy map: info
   observeEvent(input$caribbean_subsidy_info, {
     showModal(modalDialog(
-      includeHTML("./text/04_caribbean_subsidy_info.html"),
+      includeHTML("./text/03_africa_subsidy_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
@@ -2419,7 +2419,7 @@ server <- shinyServer(function(input, output, session) {
   # Pacific Effort map: info
   observeEvent(input$pacific_effort_info, {
     showModal(modalDialog(
-      includeHTML("./text/05_pacific_effort_info.html"),
+      includeHTML("./text/03_africa_effort_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
@@ -2429,7 +2429,7 @@ server <- shinyServer(function(input, output, session) {
   # Pacific Subsidy map: info
   observeEvent(input$pacific_subsidy_info, {
     showModal(modalDialog(
-      includeHTML("./text/05_pacific_subsidy_info.html"),
+      includeHTML("./text/03_africa_subsidy_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
