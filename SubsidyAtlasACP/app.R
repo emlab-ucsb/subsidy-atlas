@@ -69,6 +69,8 @@ RFMO_links <- read_csv("./data/RMFO_links.csv")
 # Load spatial data frame with lines linking countries and EEZs
 connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") 
 
+#browser()
+
 ### Shapefiles -----
 
 ### 1. Simplified EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
@@ -574,6 +576,13 @@ server <- shinyServer(function(input, output, session) {
       rename(flag = iso3) %>% 
       arrange(flag)
     
+    flag_states_for_selected_eez_2 <- land_eez_map %>% 
+      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
+      st_collection_extract(type = c("POLYGON")) %>%
+      dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
+      rename(flag = iso3) %>% 
+      arrange(flag)
+    
     # Should be able to remove this step eventually. Ideally we need a land/eez map with all flag states represented. 
     connectivity_data_edit <- connectivity_data_for_selected_eez %>%
       dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
@@ -605,15 +614,40 @@ server <- shinyServer(function(input, output, session) {
       lapply(htmltools::HTML)
     
     
+    effort <- flag_state_summary$fishing_KWh
+    vessels <- flag_state_summary$vessels
+    pal_effort <- colorNumeric("YlOrRd", 0:80000000)#0:80000000) #max effort value for africa region is ~79,000,000 KWh
+    pal_vessels <- colorNumeric("YlOrRd", domain = vessels)
+    
+    ## trying to toggle polygon layers on the africa map, 
+    
+    
     # Leaflet map
     leaflet('africa_connection_map', options = leafletOptions(zoomControl = FALSE)) %>% 
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
+      addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
       addPolygons(data = flag_states_for_selected_eez,
-                  fillColor = "darkmagenta",
+                  fillColor = ~pal_effort(effort),
                   fillOpacity = 0.8,
                   color= "white",
+                  group = "Effort (KWh)",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = flag_state_summary_text,
+                  layerId = flag_states_for_selected_eez$flag,
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
+      addPolygons(data = flag_states_for_selected_eez_2,
+                  fillColor = ~pal_vessels(vessels),
+                  fillOpacity = 0.8,
+                  color= "white",
+                  group = "# Vessels",
                   weight = 0.3,
                   highlight = highlightOptions(weight = 5,
                                                color = "#666",
@@ -629,6 +663,7 @@ server <- shinyServer(function(input, output, session) {
                   fillColor = ~region_pal_light(region),
                   fillOpacity = 0.8,
                   color= "white",
+                  group = "eez",
                   weight = 0.3,
                   highlight = highlightOptions(weight = 5,
                                                color = "#666",
@@ -647,8 +682,16 @@ server <- shinyServer(function(input, output, session) {
                    fillColor = "goldenrod",
                    fillOpacity = 1,
                    weight = 1,
-                   color = "darkgoldenrod") %>% 
+                   color = "darkgoldenrod",
+                   group = "lines") %>% 
+      addLayersControl(
+        #baseGroups = c("Effort", "# Vessels"),
+        baseGroups = c("# Vessels", "Effort (KWh)"),
+        options = layersControlOptions(collapsed = FALSE)) %>%
       
+      addLegend(pal = pal_effort, group = "Effort (KWh)", values = 0:80000000, opacity=0.9, title = "Fishing Effort (KWhr)", position = "bottomleft" ) %>%
+      addLegend(pal = pal_vessels, group = "# Vessels", values = vessels, opacity=0.9, title = "# Vessels", position = "bottomright" ) %>%
+      hideGroup("Effort (KWh)") %>%
       setView(15, -13, zoom = 2)
   
   })
@@ -1286,6 +1329,12 @@ server <- shinyServer(function(input, output, session) {
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
+    
+    
+    effort <- flag_state_summary$fishing_KWh
+    vessels <- flag_state_summary$vessels
+    pal <- colorNumeric("YlOrRd", domain = 0:2000000) #highest effort in Caribbean is about ~2,000,000 KWh
+    
 
     #Leaflet map
    caribbean_connection_map <-  leaflet(options = leafletOptions(zoomControl = FALSE)) %>% 
@@ -1293,7 +1342,7 @@ server <- shinyServer(function(input, output, session) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = flag_states_for_selected_eez,
-                  fillColor = "darkmagenta",
+                  fillColor = ~pal(effort),
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -1328,6 +1377,7 @@ server <- shinyServer(function(input, output, session) {
                    fillOpacity = 1,
                    weight = 1,
                    color = "darkgoldenrod") %>% 
+     addLegend(pal = pal, values = 0:2000000, opacity=0.9, title = "# of Vessels", position = "bottomleft" ) %>%
       setView(lng = 0, lat = 17, zoom = 2)
       
     } #close if statement
@@ -1934,6 +1984,20 @@ server <- shinyServer(function(input, output, session) {
                 fishing_KWh = sum(fshn_KW, na.rm = T))
     st_geometry(no_geometry) <- NULL
     
+    #Summary of all info for pacific
+    regional_summary <- connectivity_data %>%
+      rename(territory_iso3 = ez_tr_3) %>%
+      filter(region == "Pacific") %>% 
+    group_by(territory_iso3, flag) %>%
+      summarize(vessels = sum(vessels, na.rm = T),
+                capacity = sum(capacty, na.rm = T),
+                fishing_h = sum(fshng_h, na.rm = T),
+                fishing_KWh = sum(fshn_KW, na.rm = T)) #%>% 
+      #select(fishing_KWh)
+      
+    st_geometry(regional_summary) <- NULL
+    
+    
     #  Hover Text
     flag_state_summary <- flag_states_for_selected_eez %>% 
       left_join(no_geometry, by = "flag") %>%
@@ -1951,6 +2015,21 @@ server <- shinyServer(function(input, output, session) {
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
+    #bins <- c(0,1000,10000,100000,1000000,10000000,50000000,100000000,Inf)
+    #vessels <- flag_state_summary$vessels
+    
+    
+    
+    max_effort_pacific <- regional_summary %>% 
+      arrange(desc(fishing_KWh)) %>% 
+      top_n(n=1)
+    
+    max_effort_pacific <- max(max_effort_pacific$fishing_KWh)
+      
+    
+    effort <- flag_state_summary$fishing_KWh
+    pal <- colorNumeric("YlOrRd", 0:max_effort_pacific)
+    
     
     #Leaflet map
     
@@ -1959,7 +2038,7 @@ server <- shinyServer(function(input, output, session) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels") %>% 
       addPolygons(data = flag_states_for_selected_eez,
-                  fillColor = "darkmagenta",
+                  fillColor = ~pal(effort),
                   fillOpacity = 0.8,
                   color= "white",
                   weight = 0.3,
@@ -1994,6 +2073,7 @@ server <- shinyServer(function(input, output, session) {
                    fillOpacity = 1,
                    weight = 1,
                    color = "darkgoldenrod") %>% 
+      addLegend(pal = pal, values = 0:max_effort_pacific, opacity=0.9, title = "Fishing Effort (Kwh)", position = "bottomleft" ) %>%
       setView(lng = 175, lat = 0, zoom = 1)
   })
   
@@ -2399,7 +2479,7 @@ server <- shinyServer(function(input, output, session) {
   # Caribbean Effort map: info
   observeEvent(input$caribbean_effort_info, {
     showModal(modalDialog(
-      includeHTML("./text/04_caribbean_effort_info.html"),
+      includeHTML("./text/03_africa_effort_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
@@ -2409,7 +2489,7 @@ server <- shinyServer(function(input, output, session) {
   # Caribbean Subsidy map: info
   observeEvent(input$caribbean_subsidy_info, {
     showModal(modalDialog(
-      includeHTML("./text/04_caribbean_subsidy_info.html"),
+      includeHTML("./text/03_africa_subsidy_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
@@ -2419,7 +2499,7 @@ server <- shinyServer(function(input, output, session) {
   # Pacific Effort map: info
   observeEvent(input$pacific_effort_info, {
     showModal(modalDialog(
-      includeHTML("./text/05_pacific_effort_info.html"),
+      includeHTML("./text/03_africa_effort_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
@@ -2429,7 +2509,7 @@ server <- shinyServer(function(input, output, session) {
   # Pacific Subsidy map: info
   observeEvent(input$pacific_subsidy_info, {
     showModal(modalDialog(
-      includeHTML("./text/05_pacific_subsidy_info.html"),
+      includeHTML("./text/03_africa_subsidy_info.html"),
       easyClose = TRUE,
       footer = NULL,
       size = "l"
