@@ -1,5 +1,5 @@
 ---
-title: "Shapefile wrangling for the ACP app"
+title: "Shapefile wrangling for the ACP Atlas of Distant Water Fishing"
 output: html_document
 ---
 
@@ -14,6 +14,96 @@ library(tidyverse)
 library(countrycode)
 
 ```
+
+## Introduction
+
+This script details the analysis/wrangling done to create the shapefiles used in the ACP tool. 
+
+## Data
+
+The following shapefiles were downloaded from the sources listed below and used in this analysis. 
+
+From Marineregions.org: 
+- Maritime Boundaries: World EEZs (v10, 2018-02-21)
+- Marine and land zones: the union of world country boundaries and EEZ's (v2, 2014)
+
+> Flanders Marine Institute (2018). Maritime Boundaries Geodatabase: Maritime Boundaries and Exclusive Economic Zones (200NM), version 10. Available online at http://www.marineregions.org/ https://doi.org/10.14284/312
+
+From naturalearthdata.com: 
+- 10m Cultural Vectors: Admin 0 - Details: Map Subunits (version 4.1.0)
+
+*/ ------------------- /*
+*/ World EEZ Shapefile /*
+*/ ------------------- /*
+
+## Maritime Boundaries: World EEZs (v10, 2018-02-21)
+
+### Preliminary edits
+
+Prior to making the edits detailed below, some edits were done to this shapefile before importing it into R for performance reasons. 
+
+First, we uploaded `eez_v10.shp` to mapshaper.org, and simplified it using the Visvalingam / weighted area method (shape removal prevented). 0.5% of original points were kept, and 2,235 line intersections were repaired. We then exported the resulting file out of mapshaper.org as a shapefile. A copy of this intermediate file can be found in `./data/shapefiles_edit/World_EEZ_v10_20180221_LR/eez_v10.shp`. 
+
+We then imported the modified `eez_v10.shp` into QGIS (version 3.4.7-Madeira) and duplicated the layer. After reprojecting one of the two layers so the total extent of the map was from -360 to 360 degrees, we dissolved all polygons by all attributes. Some manual eliminations had to be made so that polygons with the same attributes did not have small slivers and/or dividing lines between them. We then exported this file out of QGIS as a shapefile. This file can be found in 
+`./data/shapefiles_edit/World_EEZ_v10_20180221_LR_-360_360/eez_v10.shp`. 
+
+The final shapefile was outputted with the following CRS: WGS 84 (EPSG:4326).
+
+### Edits
+
+The edits done to this shapefile primarily relate to disputed areas and joint management areas. For the purposes of data analysis and visualization, we wanted to easily be able to attribute these areas to each/all of the states involved in the dispute or responsible for management of the area. 
+
+In order to do this, we duplicate the polygons cooresponding to disputed areas and joint management areas and assign them to all states (2-3 distinct states) involved. 
+
+```{r}
+eez_shp <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_20180221_LR_-360_360"), layer = "eez_v10") %>%
+  setNames(tolower(names(.))) %>%
+  st_transform(crs = 4326)
+
+#mapview::mapview(eez_shp)
+```
+
+```{r}
+eez_disputed <- eez_shp %>%
+  dplyr::filter(!is.na(iso_ter2)) %>%
+  dplyr::filter(pol_type == "Overlapping claim") %>%
+  mutate(iso_ter_all = case_when(!is.na(iso_ter3) ~ paste(iso_ter1, iso_ter2, iso_ter3, sep = ","),
+                                 !is.na(iso_ter2) ~ paste(iso_ter1, iso_ter2, sep = ","),
+                                 TRUE ~ iso_ter1))
+                                 
+eez_disputed_expand <- eez_disputed %>%
+  separate_rows(iso_ter_all, sep = ",") %>%
+  mutate(matching_entry = case_when(iso_ter1 == iso_ter_all ~ "1",
+                                    iso_ter2 == iso_ter_all ~ "2",
+                                    iso_ter3 == iso_ter_all ~ "3")) %>%
+  mutate(mrgid_ter = case_when(matching_entry == "1" ~ mrgid_ter1,
+                             matching_entry == "2" ~ mrgid_ter2,
+                             matching_entry == "3" ~ mrgid_ter3),
+         iso_ter = case_when(matching_entry == "1" ~ iso_ter1,
+                             matching_entry == "2" ~ iso_ter2,
+                             matching_entry == "3" ~ iso_ter3),
+         territory = case_when(matching_entry == "1" ~ territory1,
+                             matching_entry == "2" ~ territory2,
+                             matching_entry == "3" ~ territory3),
+         mrgid_sov = case_when(matching_entry == "1" ~ mrgid_sov1,
+                             matching_entry == "2" ~ mrgid_sov2,
+                             matching_entry == "3" ~ mrgid_sov3),
+         iso_sov = case_when(matching_entry == "1" ~ iso_sov1,
+                             matching_entry == "2" ~ iso_sov2,
+                             matching_entry == "3" ~ iso_sov3),
+         sovereign = case_when(matching_entry == "1" ~ sovereign1,
+                             matching_entry == "2" ~ sovereign2,
+                             matching_entry == "3" ~ sovereign3))
+
+```
+
+Starting with disputed areas (termed "overlapping claims" in this data set), we have `r nrow(eez_disputed)` regions. Of those, `r nrow(eez_disputed %>% dplyr::filter(!is.na(iso_ter3)))` involve three parties. 
+
+
+
+
+
+
 
 ## Introduction
 
