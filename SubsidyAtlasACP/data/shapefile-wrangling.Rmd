@@ -56,49 +56,140 @@ The edits done to this shapefile primarily relate to disputed areas and joint ma
 In order to do this, we duplicate the polygons cooresponding to disputed areas and joint management areas and assign them to all states (2-3 distinct states) involved. 
 
 ```{r}
+# Load EEZ shapefile
 eez_shp <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_20180221_LR_-360_360"), layer = "eez_v10") %>%
   setNames(tolower(names(.))) %>%
   st_transform(crs = 4326)
+ 
+# Some manual edits to correct mistakes
+eez_shp$sovereign1[eez_shp$mrgid == 49003] <- "China" # south china sea. listed as an overlapping claim, but with no other territories other than China
+eez_shp$iso_ter2[eez_shp$mrgid == 50167] <- "SVN"
+eez_shp$territory2[eez_shp$mrgid == 50167] <- "Slovenia"
+eez_shp$sovereign2[eez_shp$mrgid == 50167] <- "Slovenia"
+
+# Add iso codes for sovereign states
+eez_shp_edit <- eez_shp %>%
+   mutate(iso_sov1 = case_when(sovereign1 == "Comores" ~ "COM",
+                              sovereign1 == "Micronesia" ~ "FSM",
+                              TRUE ~ countrycode(sovereign1, "country.name", "iso3c")),
+         iso_sov2 = case_when(sovereign2 == "Comores" ~ "COM",
+                              TRUE ~ countrycode(sovereign2, "country.name", "iso3c")),
+         iso_sov3 = countrycode(sovereign3, "country.name", "iso3c"))
 
 #mapview::mapview(eez_shp)
 ```
 
 ```{r}
-eez_disputed <- eez_shp %>%
-  dplyr::filter(!is.na(iso_ter2)) %>%
+# Filter out disputed areas with multiple territories
+eez_disputed <- eez_shp_edit %>%
   dplyr::filter(pol_type == "Overlapping claim") %>%
   mutate(iso_ter_all = case_when(!is.na(iso_ter3) ~ paste(iso_ter1, iso_ter2, iso_ter3, sep = ","),
                                  !is.na(iso_ter2) ~ paste(iso_ter1, iso_ter2, sep = ","),
                                  TRUE ~ iso_ter1))
-                                 
+
+# Expand                                  
 eez_disputed_expand <- eez_disputed %>%
   separate_rows(iso_ter_all, sep = ",") %>%
   mutate(matching_entry = case_when(iso_ter1 == iso_ter_all ~ "1",
                                     iso_ter2 == iso_ter_all ~ "2",
                                     iso_ter3 == iso_ter_all ~ "3")) %>%
-  mutate(mrgid_ter = case_when(matching_entry == "1" ~ mrgid_ter1,
-                             matching_entry == "2" ~ mrgid_ter2,
-                             matching_entry == "3" ~ mrgid_ter3),
-         iso_ter = case_when(matching_entry == "1" ~ iso_ter1,
+  mutate(iso_ter = case_when(matching_entry == "1" ~ iso_ter1,
                              matching_entry == "2" ~ iso_ter2,
                              matching_entry == "3" ~ iso_ter3),
          territory = case_when(matching_entry == "1" ~ territory1,
                              matching_entry == "2" ~ territory2,
                              matching_entry == "3" ~ territory3),
-         mrgid_sov = case_when(matching_entry == "1" ~ mrgid_sov1,
-                             matching_entry == "2" ~ mrgid_sov2,
-                             matching_entry == "3" ~ mrgid_sov3),
          iso_sov = case_when(matching_entry == "1" ~ iso_sov1,
                              matching_entry == "2" ~ iso_sov2,
                              matching_entry == "3" ~ iso_sov3),
          sovereign = case_when(matching_entry == "1" ~ sovereign1,
                              matching_entry == "2" ~ sovereign2,
-                             matching_entry == "3" ~ sovereign3))
+                             matching_entry == "3" ~ sovereign3)) %>%
+  dplyr::select(cat,
+                mrgid,
+                geoname,
+                pol_type,
+                iso_ter,
+                territory,
+                iso_sov,
+                sovereign,
+                x_1,
+                y_1,
+                geometry)
+st_geometry(eez_disputed_expand) <- eez_disputed_expand$geometry
 
 ```
 
-Starting with disputed areas (termed "overlapping claims" in this data set), we have `r nrow(eez_disputed)` regions. Of those, `r nrow(eez_disputed %>% dplyr::filter(!is.na(iso_ter3)))` involve three parties. 
+Starting with disputed areas (termed "overlapping claims" in this data set), we have `r nrow(eez_disputed)` regions. Of those, `r nrow(eez_disputed %>% dplyr::filter(!is.na(iso_ter3)))` involve three parties. We duplicate the polygons for these regions, assigning them to each territory involved in the dispute so we can more easily pull them up later. 
 
+```{r}
+# Filter out joint management areas with multiple territories
+eez_joint <- eez_shp_edit %>%
+  dplyr::filter(pol_type == "Joint regime") %>%
+  mutate(iso_ter_all = case_when(!is.na(iso_ter3) ~ paste(iso_ter1, iso_ter2, iso_ter3, sep = ","),
+                                 !is.na(iso_ter2) ~ paste(iso_ter1, iso_ter2, sep = ","),
+                                 TRUE ~ iso_ter1))
+
+# Expand                                  
+eez_joint_expand <- eez_joint %>%
+  separate_rows(iso_ter_all, sep = ",") %>%
+  mutate(matching_entry = case_when(iso_ter1 == iso_ter_all ~ "1",
+                                    iso_ter2 == iso_ter_all ~ "2",
+                                    iso_ter3 == iso_ter_all ~ "3")) %>%
+  mutate(iso_ter = case_when(matching_entry == "1" ~ iso_ter1,
+                             matching_entry == "2" ~ iso_ter2,
+                             matching_entry == "3" ~ iso_ter3),
+         territory = case_when(matching_entry == "1" ~ territory1,
+                             matching_entry == "2" ~ territory2,
+                             matching_entry == "3" ~ territory3),
+         iso_sov = case_when(matching_entry == "1" ~ iso_sov1,
+                             matching_entry == "2" ~ iso_sov2,
+                             matching_entry == "3" ~ iso_sov3),
+         sovereign = case_when(matching_entry == "1" ~ sovereign1,
+                             matching_entry == "2" ~ sovereign2,
+                             matching_entry == "3" ~ sovereign3)) %>%
+  dplyr::select(cat,
+                mrgid,
+                geoname,
+                pol_type,
+                iso_ter,
+                territory,
+                iso_sov,
+                sovereign,
+                x_1,
+                y_1,
+                geometry)
+st_geometry(eez_joint_expand) <- eez_joint_expand$geometry
+
+```
+
+Next, we have `r nrow(eez_joint)` joint management areas. All involve two parties. We duplicate the polygons for these regions, assigning them to each territory involved in the dispute so we can more easily pull them up later. 
+
+We then added these polygons back into our main data set so that each polygon is attributed to a single territory (with duplicates)
+
+```{r}
+eez_200nm <- eez_shp_edit %>%
+  dplyr::filter(pol_type == "200NM") %>%
+  dplyr::select(cat,
+                mrgid,
+                geoname,
+                pol_type,
+                iso_ter = iso_ter1,
+                territory = territory1,
+                iso_sov = iso_sov1,
+                sovereign = sovereign1,
+                x_1,
+                y_1,
+                geometry)
+
+eez_out <- eez_200nm %>%
+  rbind(eez_disputed_expand) %>%
+  rbind(eez_joint_expand)
+
+#mapview::mapview(eez_out)
+
+write_sf(eez_out, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_SubsidyAtlasACP"), layer = "eez_v10", driver = "ESRI shapefile")
+```
 
 
 

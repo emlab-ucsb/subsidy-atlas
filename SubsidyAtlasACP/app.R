@@ -74,15 +74,25 @@ connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp"
 ### Shapefiles -----
 
 ### 1. Simplified EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
-eez_map <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_20180221_LR_-360_360", layer = "World_EEZ_v10_2018021_LR_-360_360") %>%
-  setNames(tolower(names(.))) %>%
-  st_transform(crs = 4326) %>%
-  left_join(eez_regions, by = "mrgid")
+# eez_map <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_20180221_LR_-360_360", layer = "World_EEZ_v10_2018021_LR_-360_360") %>%
+#   setNames(tolower(names(.))) %>%
+#   st_transform(crs = 4326) %>%
+#   left_join(eez_regions, by = "mrgid")
+eez_map <- read_sf(dsn = "./data/shapefiles_edit/World_EEZ_v10_SubsidyAtlasACP", layer = "eez_v10") %>%
+    setNames(tolower(names(.))) %>%
+    st_transform(crs = 4326) %>%
+    left_join(eez_regions, by = "mrgid")
+
+africa_eez_map <- eez_map %>%
+  st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
+  st_collection_extract(type = c("POLYGON"), warn = FALSE) 
 
 ### 2. Simplified land shapefile 
 land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
   st_transform(crs = 4326) %>%
   left_join(flag_regions, by = c("iso3" = "territory_iso3"))
+
+
 
 ### 3. Simplified combined land/EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
 land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_360", layer = "EEZ_land_v2_201410_-360_360") %>%
@@ -93,6 +103,10 @@ land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_36
                 geometry) %>%
   dplyr::filter(!is.na(iso3)) %>%
   left_join(flag_regions, by = c("iso3" = "territory_iso3"))
+
+africa_land_eez_map <- land_eez_map %>% 
+  st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
+  st_collection_extract(type = c("POLYGON"))
 
 ### Widget choice values that depend on a dataset -----
 
@@ -335,17 +349,20 @@ server <- shinyServer(function(input, output, session) {
   ### Map of African EEZs for which we have DW fishing effort
   output$africa_map <- renderLeaflet({
     
-    # Filter data
-    africa_eezs <- eez_map %>%
-      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
-      st_collection_extract(type = c("POLYGON"), warn = FALSE) %>%
+    # Extract ACP EEZs
+    africa_eezs <- africa_eez_map %>%
       dplyr::filter(region == "Africa") %>%
       mutate(geoname = str_replace(geoname, " \\(.*\\)", ""))
     
-   # Deal with multiple EEZs for the same coastal state
-   africa_eezs_merged <- africa_eezs %>%
-      group_by(iso_ter1, geoname, region) %>%
+    # Merge non-contiguous EEZs for the same coastal state (South Africa)
+    africa_eezs_merged <- africa_eezs %>%
+      group_by(iso_ter, geoname, region) %>%
       summarize(geometry = st_union(geometry))
+    
+    # Also extract disputed areas/joint management areas involving ACP coastal states in Africa
+    africa_disputed_joint <- africa_eez_map %>%
+      dplyr::filter(pol_type != "200NM" & iso_ter %in% africa_eezs$iso_ter) %>%
+      mutate(region = "Africa")
    
     # Map
     leaflet('africa_map', options = leafletOptions(zoomControl = FALSE)) %>% 
@@ -355,7 +372,24 @@ server <- shinyServer(function(input, output, session) {
       
       addProviderTiles("Esri.OceanBasemap") %>% 
       
-      addPolygons(data = africa_eezs_merged, 
+      addPolygons(data = africa_disputed_joint, 
+                  fillColor = "grey",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = africa_disputed_joint$geoname,
+                  layerId = NULL, #need this to select input below
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")
+      ) %>%
+      
+      addPolygons(data = africa_eezs_merged,
                   fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
                   color= "white",
@@ -365,7 +399,7 @@ server <- shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = africa_eezs_merged$geoname,
-                  layerId = africa_eezs_merged$iso_ter1, #need this to select input below
+                  layerId = africa_eezs_merged$iso_ter, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -382,6 +416,8 @@ server <- shinyServer(function(input, output, session) {
   ### Register user clicks on map - change select input from widget
   observeEvent(input$africa_map_shape_click, {
 
+    req(!is.null(input$africa_map_shape_click$id)) # Can't click on one of the disputed areas/joint areas
+    
     updateSelectizeInput(session, "africa_eez_select",
                          selected = input$africa_map_shape_click$id
     )
@@ -408,22 +444,27 @@ server <- shinyServer(function(input, output, session) {
     }else{
       
       # Get code for selected EEZ
-      selected_eez <- subset(eez_map, eez_map$iso_ter1 == input$africa_eez_select)
+      selected_eez <- subset(africa_eez_map, africa_eez_map$iso_ter == input$africa_eez_select)
       
       # Remove any previously highlighted polygon
       africa_proxy %>% clearGroup("highlighted_eez")
       
       # Add a different colored polygon on top of map
       africa_proxy %>% addPolygons(data = selected_eez,
-                                      fillColor = ~region_pal_light(region),
-                                      fillOpacity = 1,
-                                      color= "white",
-                                      weight = 2,
-                                      highlight = highlightOptions(weight = 5,
-                                                                   color = "#666",
-                                                                   fillOpacity = 1,
-                                                                   bringToFront = TRUE),
-                                      group = "highlighted_eez") %>%
+                                    fillColor = ~region_pal_light(region),
+                                    fillOpacity = 1,
+                                    color= "white",
+                                    weight = 2,
+                                    highlight = highlightOptions(weight = 5,
+                                                                 color = "#666",
+                                                                  fillOpacity = 1,
+                                                                  bringToFront = TRUE),
+                                    group = "highlighted_eez",
+                                    label = selected_eez$geoname,
+                                    labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                                            padding = "3px 8px"),
+                                                               textsize = "13px",
+                                                               direction = "auto")) %>%
         setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=4)
     }
     
@@ -558,20 +599,19 @@ server <- shinyServer(function(input, output, session) {
     #Require coastal state selection
     req(input$africa_eez_select != "Select a coastal state...")
     
-    selected_eez <- eez_map %>% 
-      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
-      st_collection_extract(type = c("POLYGON")) %>%
-      dplyr::filter(iso_ter1 == input$africa_eez_select) %>%
-      rename(territory_iso3 = iso_ter1)
+    browser()
+    
+    # Selected African ACP coastal state
+    selected_eez <- africa_eez_map %>% 
+      dplyr::filter(iso_ter == input$africa_eez_select) %>%
+      rename(territory_iso3 = iso_ter)
     
     connectivity_data_for_selected_eez <- connectivity_data %>% # load this in up above
       dplyr::filter(ez_tr_3 == input$africa_eez_select) %>% 
       rename(territory_iso3 = ez_tr_3) %>%
       arrange(flag) 
     
-    flag_states_for_selected_eez <- land_eez_map %>% 
-      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
-      st_collection_extract(type = c("POLYGON")) %>%
+    flag_states_for_selected_eez <- africa_land_eez_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
       arrange(flag)
