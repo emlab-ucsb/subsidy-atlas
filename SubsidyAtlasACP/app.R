@@ -166,7 +166,7 @@ ui <- shinyUI(
                     tags$li(class = "dropdown",
                             a(href = 'http://emlab.msi.ucsb.edu/',
                               img(
-                                src = 'emlab-logo-white.png',
+                                src = 'emLab-logo-white.png',
                                 title = "The Environmental Market Solutions Lab",
                                 height = "40px"
                               ), style = "padding-top:10px; padding-bottom:10px;"
@@ -594,6 +594,7 @@ server <- shinyServer(function(input, output, session) {
   ### Africa: connectivity Map
   ### ------------------------
   
+  
   output$africa_connection_map <- renderLeaflet({
     
     #Require coastal state selection
@@ -616,12 +617,12 @@ server <- shinyServer(function(input, output, session) {
       rename(flag = iso3) %>% 
       arrange(flag)
     
-    flag_states_for_selected_eez_2 <- land_eez_map %>% 
-      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
-      st_collection_extract(type = c("POLYGON")) %>%
-      dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
-      rename(flag = iso3) %>% 
-      arrange(flag)
+    # flag_states_for_selected_eez_2 <- land_eez_map %>% 
+    #   st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
+    #   st_collection_extract(type = c("POLYGON")) %>%
+    #   dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
+    #   rename(flag = iso3) %>% 
+    #   arrange(flag)
     
     # Should be able to remove this step eventually. Ideally we need a land/eez map with all flag states represented. 
     connectivity_data_edit <- connectivity_data_for_selected_eez %>%
@@ -637,7 +638,7 @@ server <- shinyServer(function(input, output, session) {
   st_geometry(no_geometry) <- NULL
    
     #  Hover Text
-    flag_state_summary <- flag_states_for_selected_eez %>% 
+  flag_state_summary <- flag_states_for_selected_eez %>% 
       left_join(no_geometry, by = "flag") %>%
       mutate(name = countrycode(flag, "iso3c", "country.name"))
     
@@ -653,48 +654,34 @@ server <- shinyServer(function(input, output, session) {
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
+    #browser()
     
-    effort <- flag_state_summary$fishing_KWh
-    vessels <- flag_state_summary$vessels
-    pal_effort <- colorNumeric("YlOrRd", 0:80000000)#0:80000000) #max effort value for africa region is ~79,000,000 KWh
-    pal_vessels <- colorNumeric("YlOrRd", domain = vessels)
+    # Set fill variable for map
+    fill_scale <- switch(input$africa_connection_fill,
+                         "# of Vessels" = list("vessels", flag_state_summary$vessels),
+                         "Fishing Capacity (KW)" = list("capacity", flag_state_summary$capacity),
+                         "Fishing Effort (hours)" = list("fishing_h", flag_state_summary$fishing_h),
+                         "Fishing Effort (KWh)" = list("fishing_KWh", flag_state_summary$fishing_KWh))
     
-    ## trying to toggle polygon layers on the africa map, 
-    
+    # Make color pallette
+    pal <- colorNumeric("YlOrRd", domain = fill_scale[[2]])
     
     # Leaflet map
     leaflet('africa_connection_map', options = leafletOptions(zoomControl = FALSE)) %>% 
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
-      addPolygons(data = flag_states_for_selected_eez,
-                  fillColor = ~pal_effort(effort),
+      addPolygons(data = flag_state_summary,
+                  fillColor = ~pal(get(fill_scale[[1]])),
                   fillOpacity = 0.8,
                   color= "white",
-                  group = "Effort (KWh)",
                   weight = 0.3,
                   highlight = highlightOptions(weight = 5,
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = flag_state_summary_text,
-                  layerId = flag_states_for_selected_eez$flag,
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>%
-      addPolygons(data = flag_states_for_selected_eez_2,
-                  fillColor = ~pal_vessels(vessels),
-                  fillOpacity = 0.8,
-                  color= "white",
-                  group = "# Vessels",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = flag_state_summary_text,
-                  layerId = flag_states_for_selected_eez$flag,
+                  layerId = flag_state_summary$flag,
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -715,23 +702,15 @@ server <- shinyServer(function(input, output, session) {
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")) %>%
-      
-       
-      
       addPolylines(data = connectivity_data_edit,
                    fillColor = "goldenrod",
                    fillOpacity = 1,
                    weight = 1,
                    color = "darkgoldenrod",
                    group = "lines") %>% 
-      addLayersControl(
-        #baseGroups = c("Effort", "# Vessels"),
-        baseGroups = c("# Vessels", "Effort (KWh)"),
-        options = layersControlOptions(collapsed = FALSE)) %>%
+
+      addLegend(pal = pal, values = fill_scale[[2]], opacity=0.9, title = input$africa_connection_fill, position = "bottomleft" ) %>%
       
-      addLegend(pal = pal_effort, group = "Effort (KWh)", values = 0:80000000, opacity=0.9, title = "Fishing Effort (KWhr)", position = "bottomleft" ) %>%
-      addLegend(pal = pal_vessels, group = "# Vessels", values = vessels, opacity=0.9, title = "# Vessels", position = "bottomright" ) %>%
-      hideGroup("Effort (KWh)") %>%
       setView(15, -13, zoom = 2)
   
   })
