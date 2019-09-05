@@ -13,7 +13,7 @@ selectregion = function(){
     ### Leaflet map with selectable regions
     column(12, stlye = "padding: 0px;",
            
-           leafletOutput("regional_map", width = "auto", height = "93vh")
+           leafletOutput("regional_map", width = "auto", height = "90vh")
            
     )
   
