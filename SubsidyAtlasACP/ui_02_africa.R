@@ -147,11 +147,20 @@ border-right-color: transparent;}"
                                 border-width: 2px 1px 1px 1px;
                                 border-color: #1A1B1D;",
                                 
-                                # selectizeInput("pacific_flag_state_select",
-                                #                label = "Filter fishing activity by flag state...",
-                                #                choices = c("All flag states", flag_state_choices),
-                                #                selected = "All flag states",
-                                #                width = "100%"),
+                                ### Introductory text and info button
+                                column(12, style = "padding: 15px 25px; color: #ffffff;",
+                                       
+                                       # Info button
+                                       tagList("This figure shows distant water fishing effort (in KWh) in the EEZ of the selected ACP coastal state. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total fishing effort for vessels from all flag states and the figure on the right shows fishing effort for vessels from the selected flag states.",
+                                               
+                                               tags$button(id = "africa_effort_info",
+                                                           class = "btn action-button info-button",
+                                                           icon("info"),
+                                                           style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
+                                               
+                                       )
+                                       
+                                ), # /column12
                                 
                                 fluidRow(
                                   
@@ -171,15 +180,7 @@ border-right-color: transparent;}"
                                   column(6, align = "center",
                                          
                                          selectizeInput("africa_flag_state_select_effort",
-                                                        label = tagList(tags$b("Filter fishing activity by flag state..."),
-                                                        
-                                                                  # Info button: subsidy types
-                                                                  tags$button(id = "africa_effort_info",
-                                                                              class = "btn action-button info-button",
-                                                                              icon("info"),
-                                                                              style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")),
-                                                                  
-                                                        
+                                                        label ="Filter fishing activity by flag state...",
                                                         choices = c("Select a flag state...", flag_state_choices),
                                                         selected = "Select a flag state...",
                                                         width = "100%"),
