@@ -117,23 +117,41 @@ border-right-color: transparent;}"
                                        )
                                 
                          ), # /column12
+                         
+                         fluidRow(
+                           
+                           column(6, style = "padding: 0 5px 0 15px;", align = "center",
+                                  
+                                  # Variable by which to fill flag states on map
+                                  selectizeInput("africa_connection_fill",
+                                                 label = "Fill flag state(s) by...",
+                                                 choices = c("# of Different Vessels", 
+                                                             "Total Engine Capacity (KW)",
+                                                             "Total Fishing Effort (hours)", 
+                                                             "Total Fishing Effort (KWh)"),
+                                                 selected = "Total Fishing Effort (KWh)",
+                                                 width = "100%")
+                           ),
+                           
+                           column(6, style = "padding: 0 15px 0 5px;", align = "center",
+                                  
+                                  radioButtons("africa_connection_fill_rescale",
+                                               label = "Fill scale is based on...",
+                                               choices = c("All distant water fishing in the region (default)",
+                                                           "Selected EEZ only"),
+                                               selected = "All distant water fishing in the region (default)",
+                                               inline = T,
+                                               width = "100%")
+                                  )
+                         ),
                                 
                          
                          ### Connectivity map 
-                         column(12, style = "padding: 0;", align = "center",
-                                
-                                selectizeInput("africa_connection_fill",
-                                               label = "Fill flag state(s) by...",
-                                               choices = c("# of Vessels", 
-                                                           "Fishing Capacity (KW)",
-                                                           "Fishing Effort (hours)", 
-                                                           "Fishing Effort (KWh)"),
-                                               selected = "Fishing Effort (KWh)",
-                                               width = "50%"),
+                         column(12, style = "padding: 0;", align = "left",
                                 
                                 leafletOutput("africa_connection_map",
                                               width = "100%",
-                                              height = "50vh")
+                                              height = "60vh")
                                 
                          ) # /column
                          
@@ -142,8 +160,8 @@ border-right-color: transparent;}"
                 
                 # Second tab - heat maps   
                 tabPanel("Distant water fishing effort",
-                         column(12, style = "padding: 15px 25px; 
-                                border-style: solid;
+                         
+                         column(12, style = "border-style: solid;
                                 border-width: 2px 1px 1px 1px;
                                 border-color: #1A1B1D;",
                                 
@@ -151,7 +169,7 @@ border-right-color: transparent;}"
                                 column(12, style = "padding: 15px 25px; color: #ffffff;",
                                        
                                        # Info button
-                                       tagList("This figure shows distant water fishing effort (in KWh) in the EEZ of the selected ACP coastal state. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total fishing effort for vessels from all flag states and the figure on the right shows fishing effort for vessels from the selected flag states.",
+                                       tagList("This figure shows distant water fishing effort (in KWh) in the EEZ of the selected ACP coastal state. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total fishing effort for distant water vessels from all flag states and the figure on the right shows fishing effort for distant water vessels from the selected flag states.",
                                                
                                                tags$button(id = "africa_effort_info",
                                                            class = "btn action-button info-button",
@@ -162,82 +180,132 @@ border-right-color: transparent;}"
                                        
                                 ), # /column12
                                 
-                                fluidRow(
-                                  
-                                  column(6, align = "center",
+                                ### Header row for heat maps w/select input for flag state
+                                column(12, style = "padding: 0px 25px; color: #ffffff;",
+                                       
+                                       fluidRow(
                                          
-                                         br(),
+                                         # All flag states
+                                         column(6, align = "center",
+                                                
+                                                h4("All flag states")
+                                                
+                                                ),
                                          
-                                         h4("All flag states"),
+                                         # Select a flag state
+                                         column(6, align = "center",
+                                                
+                                                selectizeInput("africa_flag_state_select_effort",
+                                                               label ="Filter fishing activity by flag state...",
+                                                               choices = c("Select a flag state...", flag_state_choices),
+                                                               selected = "Select a flag state...",
+                                                               width = "100%")
+                                                
+                                                )
+                                       )
+                                       
+                                ),
+                                
+                                ### Heat maps
+                                column(12, style = "padding: 5px 0; color: #ffffff;",
+                                       
+                                       fluidRow(
                                          
-                                         br(),
-                                         
-                                         plotOutput("africa_effort_map_all", 
-                                                    width = "auto")
-                                         
-                                  ),
-                                  
-                                  column(6, align = "center",
-                                         
-                                         selectizeInput("africa_flag_state_select_effort",
-                                                        label ="Filter fishing activity by flag state...",
-                                                        choices = c("Select a flag state...", flag_state_choices),
-                                                        selected = "Select a flag state...",
-                                                        width = "100%"),
-                                         
-                                         plotOutput("africa_effort_map",
-                                                    width = "auto")
-                                         
-                                  ) # close column   
-                                ) #/fluidRow
-                         ) # close column
+                                         # All flag states
+                                         column(6, align = "center",
+                                                
+                                                plotOutput("africa_effort_map_all", 
+                                                           width = "auto")
+                                                
+                                         ),
+                                         # Selected flag state
+                                         column(6, align = "center",
+                                                
+                                                plotOutput("africa_effort_map",
+                                                           width = "auto")
+                                                
+                                         )
+                                       )
+                                       
+                                )
+                                
+                         ) # close column12
                 ), #/tabPanel #2
                 
                 # Third tab - Subsidy heat maps   
                 tabPanel("Subsidy intensity of distant water vessels",
-                         column(12, style = "padding: 15px 25px; 
-                                  border-style: solid;
+                         
+                         column(12, style = "border-style: solid;
                                   border-width: 2px 1px 1px 1px;
                                   border-color: #1A1B1D;",
                                 
-                                fluidRow(
-                                  
-                                  column(6, align = "center",
-                                         
-                                         br(),
-                                         
-                                         h4("All flag states"),
-                                         
-                                         br(),
-                                         
-                                         plotOutput("africa_subsidy_map_all", 
-                                                    width = "auto")
-                                         
-                                  ),
-                                  
-                                  column(6, align = "center",
-                                         
-                                         selectizeInput("africa_flag_state_select_subsidy",
-                                                        label = tagList(tags$b("Filter fishing activity by flag state..."),
-                                                        
-                                                              # Info button: subsidy types
-                                                              tags$button(id = "africa_subsidy_info",
-                                                                          class = "btn action-button info-button",
-                                                                          icon("info"),
-                                                                          style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")),
+                                ### Introductory text and info button
+                                column(12, style = "padding: 15px 25px; color: #ffffff;",
+                                       
+                                       # Info button
+                                       tagList("This figure shows the estimated magnitude of capacity-enhancing subsidies (in 2018 US$) supporting distant water fishing in the EEZ of the selected ACP coastal state. Subsidy magnitude is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total subsidy intensity for distant water vessels from all flag states and the figure on the right shows subsidy intensity for distant water vessels from the selected flag states.",
                                                
+                                               tags$button(id = "africa_subsidy_info",
+                                                           class = "btn action-button info-button",
+                                                           icon("info"),
+                                                           style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
+                                               
+                                       )
+                                       
+                                ), # /column12
+                                
+                                ### Header row for heat maps w/select input for flag state
+                                column(12, style = "padding: 0px 25px; color: #ffffff;",
+                                       
+                                       fluidRow(
                                          
-                                                        choices = c("Select a flag state...", flag_state_choices),
-                                                        selected = "Select a flag state...",
-                                                        width = "100%"),
+                                         # All flag states
+                                         column(6, align = "center",
+                                                
+                                                h4("All flag states")
+                                                
+                                         ),
                                          
-                                         plotOutput("africa_subsidy_map",
-                                                    width = "auto")
+                                         # Select a flag state
+                                         column(6, align = "center",
+                                                
+                                                selectizeInput("africa_flag_state_select_subsidy",
+                                                               label ="Filter fishing activity by flag state...",
+                                                               choices = c("Select a flag state...", flag_state_choices),
+                                                               selected = "Select a flag state...",
+                                                               width = "100%")
+                                                
+                                         )
+                                       )
+                                       
+                                ),
+                                
+                                ### Heat maps
+                                column(12, style = "padding: 5px 0; color: #ffffff;",
+                                       
+                                       fluidRow(
                                          
-                                  )   
-                                ) #/fluidRow
-                         )
-                ) #/tabPanel #2
+                                         # All flag states
+                                         column(6, align = "center",
+                                                
+                                                plotOutput("africa_subsidy_map_all", 
+                                                           width = "auto")
+                                                
+                                         ),
+                                         # Selected flag state
+                                         column(6, align = "center",
+                                                
+                                                plotOutput("africa_subsidy_map",
+                                                           width = "auto")
+                                                
+                                         )
+                                       )
+                                       
+                                )
+                                
+                                
+                         ) # /column12
+                ) #/tabPanel #3
                 
          ) # /tabBox
   ) # /column (for tabBox)

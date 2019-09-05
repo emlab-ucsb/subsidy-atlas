@@ -67,7 +67,12 @@ flag_regions <- ACP_codes %>%
 RFMO_links <- read_csv("./data/RMFO_links.csv")
 
 # Load spatial data frame with lines linking countries and EEZs
-connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") 
+connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") %>%
+  rename(eez_code = eez_cod,
+         eez_territory_iso3 = ez_tr_3,
+         capacity = capacty,
+         fishing_h = fshng_h,
+         fishing_KWh = fshn_KW)
 
 #browser()
 
@@ -253,11 +258,13 @@ server <- shinyServer(function(input, output, session) {
   
   region_pal <- colorFactor(
     palette = "Dark2",
-    domain = ACP_codes$region
+    domain = ACP_codes$region,
+    na.color = "grey"
   )
   region_pal_light <- colorFactor(
     palette = "Set2",
-    domain = ACP_codes$region
+    domain = ACP_codes$region,
+    na.color = "grey"
   )
   
   ## Leaflet output: map of ACP countries aggregated by region
@@ -365,7 +372,7 @@ server <- shinyServer(function(input, output, session) {
       mutate(region = "Africa")
    
     # Map
-    leaflet('africa_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+    leaflet('africa_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
@@ -480,19 +487,18 @@ server <- shinyServer(function(input, output, session) {
     req(input$africa_eez_select != "Select a coastal state...")
     
     connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
-      dplyr::filter(ez_tr_3 == input$africa_eez_select) %>%
-      rename(territory_iso3 = ez_tr_3) %>%
+      dplyr::filter(eez_territory_iso3 == input$africa_eez_select) %>%
       mutate(eez_nam = str_replace(eez_nam, " \\(.*\\)", ""))
     
     # Distant water fishing summary
     total_stats_africa <- connectivity_data_filter_africa %>%
       as.data.frame() %>%
-      group_by(territory_iso3, eez_nam) %>%
+      group_by(eez_territory_iso3, eez_nam) %>%
       summarize(vessels = sum(vessels, na.rm = T),
-                capacity = sum(capacty, na.rm = T),
-                fishing_h = sum(fshng_h, na.rm = T),
-                fishing_KWh = sum(fshn_KW, na.rm = T)) %>%
-      arrange(territory_iso3)
+                capacity = sum(capacity, na.rm = T),
+                fishing_h = sum(fishing_h, na.rm = T),
+                fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
+      arrange(eez_territory_iso3)
     
     # Filter and format Country profile data
     ACP_codes_links <- ACP_codes %>%
@@ -508,8 +514,8 @@ server <- shinyServer(function(input, output, session) {
     treaties_conventions <- paste0(
       "<a href= '",
       unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]),
-      "'>",
-      unique(ACP_codes_links$flag[!is.na(ACP_codes_links$treaties_conventions)]),
+      "' target='_blank'>",
+      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$treaties_conventions)]),
       "</a>",
       collapse = " | "
     )
@@ -518,8 +524,8 @@ server <- shinyServer(function(input, output, session) {
     foreign_access_agreements <- paste0(
       "<a href= '", 
       unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
-      "'>", 
-      unique(ACP_codes_links$flag[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
+      "' target='_blank'>", 
+      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
       "</a>", 
       collapse = " | ")
     
@@ -527,7 +533,7 @@ server <- shinyServer(function(input, output, session) {
     regional_body_memberships <- paste0(
       "<a href= '", 
       unique(RFMO_links_eez$link[!is.na(RFMO_links_eez$link)]),
-      "'>",
+      "' target='_blank'>",
       unique(RFMO_links_eez$rfmo_name[!is.na(RFMO_links_eez$link)]),
       "</a>",
       collapse = " | ")
@@ -536,7 +542,7 @@ server <- shinyServer(function(input, output, session) {
     EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(africa_eez_choices[africa_eez_choices == input$africa_eez_select]), "</h3>",
                        "Fisheries management agency:  ", 
                        ifelse(length(unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])) > 0,
-                              paste0("<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "'>", 
+                              paste0("<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "' target='_blank'>", 
                                      ACP_codes_links$fishery_org_eng, "</a>"),
                        ACP_codes_links$fishery_org_eng),
                        
@@ -545,17 +551,17 @@ server <- shinyServer(function(input, output, session) {
                        "<br>",
                        
                        "Country profile: ",
-                       "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "'>", 
+                       "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "' target='_blank'>", 
                        "FAO", "</a>",
                        " | ",
                        ifelse(length(unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)])) > 0,
-                              paste0("<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "'>", 
-                                     "World Bank", "</a>"),
+                              paste0("<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "' target='_blank'>", 
+                              "World Bank", "</a>"),
                               "World Bank"),
                        " | ",
                        ifelse(length(unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)])) > 0,
-                              paste0("<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "'>", 
-                                     "United Nations", "</a>"),
+                              paste0("<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "' target='_blank'>", 
+                              "United Nations", "</a>"),
                               "United Nations"),
                        
                        "<br>",
@@ -573,7 +579,7 @@ server <- shinyServer(function(input, output, session) {
                        "<br>",
 
                        "<hr>",
-                       "<b>", "Distant water fishing in the ", total_stats_africa$eez_nam, " (2018)", "</b>",
+                       "<b>", "AIS-observed distant water fishing in the ", total_stats_africa$eez_nam, " (2018)", "</b>",
                        "<br>",
                        "Vessels: ", format(round(total_stats_africa$vessels, 0), big.mark = ","),
                        "<br>",
@@ -594,55 +600,53 @@ server <- shinyServer(function(input, output, session) {
   ### Africa: connectivity Map
   ### ------------------------
   
-  
   output$africa_connection_map <- renderLeaflet({
     
     #Require coastal state selection
     req(input$africa_eez_select != "Select a coastal state...")
-    
-    browser()
     
     # Selected African ACP coastal state
     selected_eez <- africa_eez_map %>% 
       dplyr::filter(iso_ter == input$africa_eez_select) %>%
       rename(territory_iso3 = iso_ter)
     
-    connectivity_data_for_selected_eez <- connectivity_data %>% # load this in up above
-      dplyr::filter(ez_tr_3 == input$africa_eez_select) %>% 
-      rename(territory_iso3 = ez_tr_3) %>%
-      arrange(flag) 
+    # Connectivity data for the entire region
+    connectivity_data_region <- connectivity_data %>% # load this in up above
+      dplyr::filter(region == "Africa")
+    
+    # Connectivity data for the EEZ of the selected ACP coastal state
+    connectivity_data_for_selected_eez <- connectivity_data_region %>% # load this in up above
+      dplyr::filter(eez_territory_iso3 == input$africa_eez_select) %>% 
+      arrange(flag)%>%
+      dplyr::filter(flag != "UNK")
     
     flag_states_for_selected_eez <- africa_land_eez_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
       arrange(flag)
     
-    # flag_states_for_selected_eez_2 <- land_eez_map %>% 
-    #   st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
-    #   st_collection_extract(type = c("POLYGON")) %>%
-    #   dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
-    #   rename(flag = iso3) %>% 
-    #   arrange(flag)
+    # Filter out flag states that may not show up on map 
+    if(length(unique(connectivity_data_for_selected_eez$flag)) != length(unique(flag_states_for_selected_eez$flag))) {
+      
+      connectivity_data_for_selected_eez <- connectivity_data_for_selected_eez %>%
+        dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
+    }
     
-    # Should be able to remove this step eventually. Ideally we need a land/eez map with all flag states represented. 
-    connectivity_data_edit <- connectivity_data_for_selected_eez %>%
-      dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
-   
   # Connectivity stats with no geometry
-  no_geometry <- connectivity_data_edit %>%
-    group_by(territory_iso3, flag) %>%
+  connectivity_data_no_geometry <- connectivity_data_for_selected_eez %>%
+    group_by(eez_territory_iso3, flag) %>%
     summarize(vessels = sum(vessels, na.rm = T),
-              capacity = sum(capacty, na.rm = T),
-              fishing_h = sum(fshng_h, na.rm = T),
-              fishing_KWh = sum(fshn_KW, na.rm = T))
-  st_geometry(no_geometry) <- NULL
+              capacity = sum(capacity, na.rm = T),
+              fishing_h = sum(fishing_h, na.rm = T),
+              fishing_KWh = sum(fishing_KWh, na.rm = T))
+  st_geometry(connectivity_data_no_geometry) <- NULL
    
     #  Hover Text
   flag_state_summary <- flag_states_for_selected_eez %>% 
-      left_join(no_geometry, by = "flag") %>%
+      left_join(connectivity_data_no_geometry, by = "flag") %>%
       mutate(name = countrycode(flag, "iso3c", "country.name"))
     
-    flag_state_summary_text <- paste0(
+  flag_state_summary_text <- paste0(
       "<b>", "Flag state: ", "</b>", flag_state_summary$name,
       "<br/>",
       "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
@@ -654,23 +658,26 @@ server <- shinyServer(function(input, output, session) {
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
-    #browser()
-    
     # Set fill variable for map
     fill_scale <- switch(input$africa_connection_fill,
-                         "# of Vessels" = list("vessels", flag_state_summary$vessels),
-                         "Fishing Capacity (KW)" = list("capacity", flag_state_summary$capacity),
-                         "Fishing Effort (hours)" = list("fishing_h", flag_state_summary$fishing_h),
-                         "Fishing Effort (KWh)" = list("fishing_KWh", flag_state_summary$fishing_KWh))
+                         "# of Different Vessels" = list("vessels", connectivity_data_region$vessels, flag_state_summary$vessels),
+                         "Total Engine Capacity (KW)" = list("capacity", connectivity_data_region$capacity, flag_state_summary$capacity),
+                         "Total Fishing Effort (hours)" = list("fishing_h", connectivity_data_region$fishing_h, flag_state_summary$fishing_h),
+                         "Total Fishing Effort (KWh)" = list("fishing_KWh", connectivity_data_region$fishing_KWh, flag_state_summary$fishing_KWh))
     
-    # Make color pallette
-    pal <- colorNumeric("YlOrRd", domain = fill_scale[[2]])
+    # Make color palette
+    domain <- switch(input$africa_connection_fill_rescale,
+                     "All distant water fishing in the region (default)" = 2,
+                     "Selected EEZ only" = 3)
+
+    pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
     
     # Leaflet map
-    leaflet('africa_connection_map', options = leafletOptions(zoomControl = FALSE)) %>% 
+    leaflet('africa_connection_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>% 
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
+      
       addPolygons(data = flag_state_summary,
                   fillColor = ~pal(get(fill_scale[[1]])),
                   fillOpacity = 0.8,
@@ -702,16 +709,18 @@ server <- shinyServer(function(input, output, session) {
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")) %>%
-      addPolylines(data = connectivity_data_edit,
+      
+      addPolylines(data = connectivity_data_for_selected_eez,
                    fillColor = "goldenrod",
                    fillOpacity = 1,
                    weight = 1,
                    color = "darkgoldenrod",
                    group = "lines") %>% 
 
-      addLegend(pal = pal, values = fill_scale[[2]], opacity=0.9, title = input$africa_connection_fill, position = "bottomleft" ) %>%
+      addLegend(pal = pal, values = fill_scale[[domain]], 
+                opacity=0.9, title = input$africa_connection_fill, position = "bottomleft" ) %>%
       
-      setView(15, -13, zoom = 2)
+      setView(lng = 15, lat = 0, zoom = 2)
   
   })
   
@@ -724,9 +733,8 @@ server <- shinyServer(function(input, output, session) {
     req(input$africa_eez_select != "Select a coastal state...")
     
     connectivity_data_for_selected_eez <- connectivity_data %>%
-      dplyr::filter(ez_tr_3 == input$africa_eez_select) %>% 
+      dplyr::filter(eez_territory_iso3 == input$africa_eez_select) %>% 
       arrange(flag) %>%
-      #dplyr::filter(flag != "BES") %>% 
       dplyr::filter(flag != "UNK")
     
     flag_state_choices_africa <- unique(connectivity_data_for_selected_eez$flag)
@@ -830,17 +838,99 @@ server <- shinyServer(function(input, output, session) {
   
   africa_eez_bbox <- eventReactive(input$africa_eez_select, {
     
-    eez_map_subsidy <- eez_map %>% 
-      st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90)) %>%
-      st_collection_extract(type = c("POLYGON")) %>%
-      dplyr::filter(iso_ter1 == input$africa_eez_select) %>%
-      group_by(iso_ter1) %>%
+    eez_map_subsidy <- africa_eez_map %>%
+      dplyr::filter(iso_ter == input$africa_eez_select) %>%
+      group_by(iso_ter) %>%
       summarize(geometry = st_union(geometry))
     
     st_bbox(eez_map_subsidy)
     
   })
   
+  ### -------------------------
+  ### africa: effort heat map
+  ### ------------------------
+  
+  output$africa_effort_map_all <- renderPlot(bg = "#262626", {
+    
+    req(input$africa_eez_select != "Select a coastal state...")
+    req(nrow(africa_eez_data()) > 0)
+    
+    ### Get totals for data
+    eez_totals <- africa_eez_data() %>%
+      group_by(lon_cen, lat_cen) %>%
+      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                fishing_KWh = sum(fishing_KWh, na.rm = T),
+                subs = sum(subs, na.rm = T)) %>%
+      mutate(subsidy_intensity = subs/fishing_KWh)
+    
+    ### Get limits for map area
+    x_lim <- c(africa_eez_bbox()$xmin - 0.5, africa_eez_bbox()$xmax + 0.5)
+    y_lim <- c(africa_eez_bbox()$ymin - 0.5, africa_eez_bbox()$ymax + 0.5)
+    
+    ### Filter data for selected flag state(s) and aggregate
+    eez_plot_data <- eez_totals
+    
+    # Get data quntiles to set fil scale limit appropriately
+    intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+    
+    # Map of fishing effort
+    ggplot()+
+      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = fishing_KWh))+
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+      geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim) +
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))+
+      eezmaptheme
+    
+  })
+  
+  ### -------------------------
+  ### africa: effort heat map (Selected flag state)
+  ### ------------------------
+  
+  output$africa_effort_map <- renderPlot(bg = "#262626", {
+    
+    req(input$africa_eez_select != "Select a coastal state...")
+    req(nrow(africa_eez_data()) > 0)
+    req(input$africa_flag_state_select_effort != "Select a flag state...")
+    
+    ### Get limits for map area
+    x_lim <- c(africa_eez_bbox()$xmin - 0.5, africa_eez_bbox()$xmax + 0.5)
+    y_lim <- c(africa_eez_bbox()$ymin - 0.5, africa_eez_bbox()$ymax + 0.5)
+    
+    ### Filter data for selected flag state(s) and aggregate
+    eez_plot_data <- africa_eez_data() %>%
+      dplyr::filter(flag == input$africa_flag_state_select_effort) %>%
+      group_by(lon_cen, lat_cen) %>%
+      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                fishing_KWh = sum(fishing_KWh, na.rm = T),
+                subs = sum(subs, na.rm = T)) %>%
+      mutate(subsidy_intensity = subs/fishing_KWh)
+    
+    # Get data quntiles to set fil scale limit appropriately
+    intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
+    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
+    
+    # Map of fishing effort
+    ggplot()+
+      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = fishing_KWh))+
+      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
+      geom_sf(data = africa_eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
+      geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
+      labs(x = "", y = "")+
+      coord_sf(xlim = x_lim, ylim = y_lim) +
+      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
+      scale_x_continuous(expand = c(0,0))+
+      scale_y_continuous(expand = c(0,0))+
+      eezmaptheme
+    
+  })
   
   ### -------------------------
   ### Africa: subsidy heat map (All flag states)
@@ -899,14 +989,6 @@ server <- shinyServer(function(input, output, session) {
     req(nrow(africa_eez_data()) > 0)
     req(input$africa_flag_state_select_subsidy != "Select a flag state...")
     
-    ### Get totals for data
-    eez_totals <- africa_eez_data() %>%
-      group_by(lon_cen, lat_cen) %>%
-      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-                fishing_KWh = sum(fishing_KWh, na.rm = T),
-                subs = sum(subs, na.rm = T)) %>%
-      mutate(subsidy_intensity = subs/fishing_KWh)
-    
     ### Get limits for map area
     x_lim <- c(africa_eez_bbox()$xmin - 0.5, africa_eez_bbox()$xmax + 0.5)
     y_lim <- c(africa_eez_bbox()$ymin - 0.5, africa_eez_bbox()$ymax + 0.5)
@@ -943,103 +1025,6 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
-  
-  ### -------------------------
-  ### africa: effort heat map
-  ### ------------------------
-  
-  output$africa_effort_map_all <- renderPlot(bg = "#262626", {
-    
-    req(input$africa_eez_select != "Select a coastal state...")
-    req(nrow(africa_eez_data()) > 0)
-    
-    ### Get totals for data
-    eez_totals <- africa_eez_data() %>%
-      group_by(lon_cen, lat_cen) %>%
-      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-                fishing_KWh = sum(fishing_KWh, na.rm = T),
-                subs = sum(subs, na.rm = T)) %>%
-      mutate(subsidy_intensity = subs/fishing_KWh)
-    
-    ### Get limits for map area
-    x_lim <- c(africa_eez_bbox()$xmin - 0.5, africa_eez_bbox()$xmax + 0.5)
-    y_lim <- c(africa_eez_bbox()$ymin - 0.5, africa_eez_bbox()$ymax + 0.5)
-    
-    ### Filter data for selected flag state(s) and aggregate
-    eez_plot_data <- eez_totals
-    
-    # Get data quntiles to set fil scale limit appropriately
-    intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
-    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
-    
-    # Map of fishing effort
-    ggplot()+
-      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = fishing_KWh))+
-      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
-      geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
-      geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
-      labs(x = "", y = "")+
-      coord_sf(xlim = x_lim, ylim = y_lim) +
-      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
-      scale_x_continuous(expand = c(0,0))+
-      scale_y_continuous(expand = c(0,0))+
-      eezmaptheme
-    
-  })
-  
-  ### -------------------------
-  ### africa: effort heat map (Selected flag state)
-  ### ------------------------
-  
-  output$africa_effort_map <- renderPlot(bg = "#262626", {
-    
-    req(input$africa_eez_select != "Select a coastal state...")
-    req(nrow(africa_eez_data()) > 0)
-    req(input$africa_flag_state_select_effort != "Select a flag state...")
-    
-    ### Get totals for data
-    # eez_totals <- africa_eez_data() %>%
-    #   mutate(lon_cen = ifelse(lon_cen < 0, 360 + lon_cen, lon_cen)) %>%
-    #   group_by(lon_cen, lat_cen) %>%
-    #   summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-    #             fishing_KWh = sum(fishing_KWh, na.rm = T),
-    #             subs = sum(subs, na.rm = T)) %>%
-    #   mutate(subsidy_intensity = subs/fishing_KWh)
-    
-    ### Get limits for map area
-    x_lim <- c(africa_eez_bbox()$xmin - 0.5, africa_eez_bbox()$xmax + 0.5)
-    y_lim <- c(africa_eez_bbox()$ymin - 0.5, africa_eez_bbox()$ymax + 0.5)
-    
-    ### Filter data for selected flag state(s) and aggregate
-    eez_plot_data <- africa_eez_data() %>%
-      dplyr::filter(flag == input$africa_flag_state_select_effort) %>%
-      group_by(lon_cen, lat_cen) %>%
-      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-                fishing_KWh = sum(fishing_KWh, na.rm = T),
-                subs = sum(subs, na.rm = T)) %>%
-      mutate(subsidy_intensity = subs/fishing_KWh)
-    
-    # Get data quntiles to set fil scale limit appropriately
-    intensity_quantile <- quantile(eez_plot_data$fishing_KWh/1e3, probs = c(0.01, 0.05, 0.95, 0.99), na.rm = T)
-    scale_labels <- round(seq(round(intensity_quantile[1], 1), round(intensity_quantile[4], 1), length.out = 5), 1)
-    
-    # Map of fishing effort
-    ggplot()+
-      geom_tile(data = eez_plot_data, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = fishing_KWh))+
-      scale_fill_viridis_c(na.value = NA, option = "A", name = "Fishing effort \n(KWh)", trans = log10_trans(), labels = comma)+
-      geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
-      geom_sf(data = land_map, fill = "grey2", color = "grey40", size = 0.5)+ # world countries (dark grey, white border lines)
-      labs(x = "", y = "")+
-      coord_sf(xlim = x_lim, ylim = y_lim) +
-      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
-      scale_x_continuous(expand = c(0,0))+
-      scale_y_continuous(expand = c(0,0))+
-      eezmaptheme
-    
-  })
-  
-  
-
   ###------------
   ### Caribbean 
   ###-----------
