@@ -107,12 +107,12 @@ border-right-color: transparent;}"
                          column(12, style = "padding: 15px 25px; color: #ffffff;",
                                 
                                 # Info button
-                                tagList("This figure shows all flag states fishing in the EEZ of the selected ACP coastal state. If no map is visible, please select a coastal state from the map above. Flag states are filled based on the metric of fishing effort selected below. Hover over each flag stay to view more about distant water fishing activity by vessels flagged to that state in the selected EEZ.",
+                                tagList("This figure shows all flag states fishing in the EEZ of the selected ACP coastal state. If no map is visible, please select a coastal state from the map above. Flag states are filled based on the metric of fishing effort selected below. Hover over each flag stay to view more about distant water fishing activity by vessels flagged to that state in the selected EEZ."
                                   
-                                        tags$button(id = "africa_distant_water_info",
-                                                    class = "btn action-button info-button",
-                                                    icon("info"),
-                                                    style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
+                                        # tags$button(id = "africa_distant_water_info",
+                                        #             class = "btn action-button info-button",
+                                        #             icon("info"),
+                                        #             style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
                                                
                                        )
                                 
@@ -169,12 +169,12 @@ border-right-color: transparent;}"
                                 column(12, style = "padding: 15px 25px; color: #ffffff;",
                                        
                                        # Info button
-                                       tagList("This figure shows distant water fishing effort (in KWh) in the EEZ of the selected ACP coastal state. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total fishing effort for distant water vessels from all flag states and the figure on the right shows fishing effort for distant water vessels from the selected flag states.",
+                                       tagList("This figure shows distant water fishing effort (in KWh) in the EEZ of the selected ACP coastal state. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total fishing effort for distant water vessels from all flag states and the figure on the right shows fishing effort for distant water vessels from the selected flag states."
                                                
-                                               tags$button(id = "africa_effort_info",
-                                                           class = "btn action-button info-button",
-                                                           icon("info"),
-                                                           style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
+                                               # tags$button(id = "africa_effort_info",
+                                               #             class = "btn action-button info-button",
+                                               #             icon("info"),
+                                               #             style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
                                                
                                        )
                                        
@@ -243,12 +243,12 @@ border-right-color: transparent;}"
                                 column(12, style = "padding: 15px 25px; color: #ffffff;",
                                        
                                        # Info button
-                                       tagList("This figure shows the estimated magnitude of capacity-enhancing subsidies (in 2018 US$) supporting distant water fishing in the EEZ of the selected ACP coastal state. Subsidy magnitude is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total subsidy intensity for distant water vessels from all flag states and the figure on the right shows subsidy intensity for distant water vessels from the selected flag states.",
+                                       tagList("This figure shows the estimated magnitude of capacity-enhancing subsidies (in 2018 US$) supporting distant water fishing in the EEZ of the selected ACP coastal state. Subsidy magnitude is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state from the map above. The figure on the left shows total subsidy intensity for distant water vessels from all flag states and the figure on the right shows subsidy intensity for distant water vessels from the selected flag states."
                                                
-                                               tags$button(id = "africa_subsidy_info",
-                                                           class = "btn action-button info-button",
-                                                           icon("info"),
-                                                           style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
+                                               # tags$button(id = "africa_subsidy_info",
+                                               #             class = "btn action-button info-button",
+                                               #             icon("info"),
+                                               #             style = "color: #fff; background-color: #3c8dbc; border-width: 0px; padding: 0px; width:20px; height:20px; font-size: 10px; margin: 0px 5px; border-radius: 50%;")
                                                
                                        )
                                        
