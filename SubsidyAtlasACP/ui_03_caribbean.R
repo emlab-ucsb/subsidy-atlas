@@ -215,14 +215,19 @@ border-right-color: transparent;}"
                                          column(6, align = "center",
                                                 
                                                 plotOutput("caribbean_effort_map_all", 
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("caribbean_effort_summary_all")
                                                 
                                          ),
                                          # Selected flag state
                                          column(6, align = "center",
                                                 
                                                 plotOutput("caribbean_effort_map",
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("caribbean_effort_summary")
+                                                
                                                 
                                          )
                                        )
@@ -289,14 +294,18 @@ border-right-color: transparent;}"
                                          column(6, align = "center",
                                                 
                                                 plotOutput("caribbean_subsidy_map_all", 
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("caribbean_subsidy_summary_all")
                                                 
                                          ),
                                          # Selected flag state
                                          column(6, align = "center",
                                                 
                                                 plotOutput("caribbean_subsidy_map",
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("caribbean_subsidy_summary")
                                                 
                                          )
                                        )

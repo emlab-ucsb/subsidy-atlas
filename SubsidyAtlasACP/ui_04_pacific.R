@@ -215,14 +215,18 @@ border-right-color: transparent;}"
                                          column(6, align = "center",
                                                 
                                                 plotOutput("pacific_effort_map_all", 
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("pacific_effort_summary_all")
                                                 
                                          ),
                                          # Selected flag state
                                          column(6, align = "center",
                                                 
                                                 plotOutput("pacific_effort_map",
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("pacific_effort_summary")
                                                 
                                          )
                                        )
@@ -289,14 +293,18 @@ border-right-color: transparent;}"
                                          column(6, align = "center",
                                                 
                                                 plotOutput("pacific_subsidy_map_all", 
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("pacific_subsidy_summary_all")
                                                 
                                          ),
                                          # Selected flag state
                                          column(6, align = "center",
                                                 
                                                 plotOutput("pacific_subsidy_map",
-                                                           width = "auto")
+                                                           width = "auto"),
+                                                
+                                                uiOutput("pacific_subsidy_summary")
                                                 
                                          )
                                        )
