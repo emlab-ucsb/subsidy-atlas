@@ -493,7 +493,7 @@ st_write(eez_mapping_wlines, dsn = paste0(eez_results_app_dir, "eez_mapping_with
 }
 ```
 
-We first need to make the connectivity maps... 
+Now run the full analysis
 
 ```{r}
 
