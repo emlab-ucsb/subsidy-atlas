@@ -501,7 +501,7 @@ We first need to make the connectivity maps...
   eez_loop_names <- unique(analysis_eez_territory_name)
 
 ## For loop to run top EEZs
-for(i in 1:1){
+for(i in 1:length(eez_loop_iso3)){
   
 run_eez_codes <- analysis_eezs[which(analysis_eez_territory_iso3 == eez_loop_iso3[i])]
 
