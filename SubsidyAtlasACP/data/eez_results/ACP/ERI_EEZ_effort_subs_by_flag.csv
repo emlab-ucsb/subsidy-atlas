@@ -1,2 +1,2 @@
-year,eez_code,eez_territory_iso3,flag,lat_cen,lon_cen,fishing_hours,fishing_KWh,subs
-2018,8351,ERI,RUS,15.250000000000002,41.45,72.44833333333334,76795.23333333334,2134.0755383055553
+year,eez_code,eez_territory_iso3,flag,lat_cen,lon_cen,fishing_hours,fishing_days,fishing_KWh,subs
+2018,8351,ERI,RUS,15.250000000000002,41.45,6.037361111111111,1,6399.602777777778,1634.330557388889
