@@ -517,6 +517,7 @@ server <- shinyServer(function(input, output, session) {
                 fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
       arrange(eez_territory_iso3)
     
+
     # Filter and format Country profile data
     ACP_codes_links <- ACP_codes %>%
       dplyr::filter(territory_iso3 == input$africa_eez_select)
@@ -787,7 +788,7 @@ server <- shinyServer(function(input, output, session) {
     coastal_state_codes <- unique(str_replace(all_data_files, "\\_.*", ""))
     matching_file <- all_data_files[coastal_state_codes == input$africa_eez_select]
     
-    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnn")
+    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnnn")
     
     clean_out <- out %>%
       dplyr::filter(year == 2018) %>%
@@ -1519,7 +1520,7 @@ server <- shinyServer(function(input, output, session) {
     coastal_state_codes <- unique(str_replace(all_data_files, "\\_.*", ""))
     matching_file <- all_data_files[coastal_state_codes == input$caribbean_eez_select]
     
-    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnn")
+    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnnn")
     
     clean_out <- out %>%
       dplyr::filter(year == 2018) %>%
@@ -2258,7 +2259,7 @@ server <- shinyServer(function(input, output, session) {
     coastal_state_codes <- unique(str_replace(all_data_files, "\\_.*", ""))
     matching_file <- all_data_files[coastal_state_codes == input$pacific_eez_select]
     
-    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnn")
+    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnnn")
     
     clean_out <- out %>%
       dplyr::filter(year == 2018) %>%
