@@ -501,7 +501,7 @@ We first need to make the connectivity maps...
   eez_loop_names <- unique(analysis_eez_territory_name)
 
 ## For loop to run top EEZs
-for(i in 1:length(eez_loop_iso3)){
+for(i in 1:1){
   
 run_eez_codes <- analysis_eezs[which(analysis_eez_territory_iso3 == eez_loop_iso3[i])]
 
@@ -590,12 +590,14 @@ sql4 <- paste0(
   selected_vi AS (
     SELECT
        year,
+       flag,
        ssvid,
        engine_power_kw,
-       flag,
        eez_code
     FROM
-       `ucsb-gfw.subsidy_atlas.FINAL_dw_effort_by_eez_", analysis_year, "`),
+       `ucsb-gfw.subsidy_atlas.FINAL_dw_effort_by_eez_", analysis_year, "`
+    WHERE
+      " , run_eez_text, "),
    
   eez_info AS (
      SELECT
@@ -624,36 +626,34 @@ sql4 <- paste0(
       lat_cen,
       lon_cen
     HAVING
-      year = ", analysis_year, 
-      " AND ", run_eez_text, 
-      " AND fishing_hours >= 1)
+       year = ", analysis_year, 
+      " AND ", run_eez_text, ")
       
  SELECT
-    a.year,
-    a.eez_code,
+    year,
+    eez_code,
     eez_territory_iso3,
     flag,
     lat_cen,
     lon_cen,
-    SUM(a.fishing_hours) as fishing_hours,
-    SUM(a.fishing_days) as fishing_days,
-    SUM(a.fishing_hours * b.engine_power_kw) as fishing_KWh,
-    SUM(a.fishing_hours * b.engine_power_kw * c.subs_per_fishing_KWh) as subs
+    SUM(fishing_hours) as fishing_hours,
+    SUM(fishing_days) as fishing_days,
+    SUM(fishing_hours * engine_power_kw) as fishing_KWh,
+    SUM(fishing_hours * engine_power_kw * subs_per_fishing_KWh) as subs
   FROM
-    eez_info a
-  INNER JOIN 
-    selected_vi b 
-  ON 
-    a.ssvid = b.ssvid AND 
-    a.eez_code = b.eez_code
+    selected_vi 
   LEFT JOIN
-    `ucsb-gfw.subsidy_atlas.subsidy_rates_flag` c
+    eez_info
+  USING
+    (year, ssvid, eez_code)
+  LEFT JOIN
+    `ucsb-gfw.subsidy_atlas.subsidy_rates_flag`
   USING
     (flag)
   LEFT JOIN
-    eez_lookup d
-  ON
-    a.eez_code = d.eez_code
+    eez_lookup
+  USING
+    (eez_code)
   GROUP BY
     year,
     eez_code,
