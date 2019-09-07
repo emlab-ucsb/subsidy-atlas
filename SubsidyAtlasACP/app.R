@@ -1520,18 +1520,25 @@ server <- shinyServer(function(input, output, session) {
     coastal_state_codes <- unique(str_replace(all_data_files, "\\_.*", ""))
     matching_file <- all_data_files[coastal_state_codes == input$caribbean_eez_select]
     
-    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnnn")
-    
-    clean_out <- out %>%
-      dplyr::filter(year == 2018) %>%
-      mutate(flag = ifelse(is.na(flag), "UNK", flag)) %>%
-      mutate(name = countrycode(flag, "iso3c", "country.name")) %>%
-      dplyr::filter(name != names(caribbean_eez_choices[caribbean_eez_choices == input$caribbean_eez_select])) %>%
-      arrange(name)
-    
-    clean_out$name[is.na(clean_out$name)] <- "Unknown flag"
-    
-    clean_out
+    if(length(matching_file) >= 1){
+      
+      out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnnn")
+      
+      clean_out <- out %>%
+        dplyr::filter(year == 2018) %>%
+        mutate(flag = ifelse(is.na(flag), "UNK", flag)) %>%
+        mutate(name = countrycode(flag, "iso3c", "country.name")) %>%
+        dplyr::filter(name != names(caribbean_eez_choices[caribbean_eez_choices == input$caribbean_eez_select])) %>%
+        arrange(name)
+      
+      clean_out$name[is.na(clean_out$name)] <- "Unknown flag"
+      
+      clean_out
+      
+    }else{
+      
+      tibble(out = character(0))
+    }
     
   })
   
@@ -1543,14 +1550,28 @@ server <- shinyServer(function(input, output, session) {
     
     req(input$caribbean_eez_select != "Select a coastal state...")
     
-    flag_state_choices_caribbean <- unique(caribbean_eez_data()$flag)
-    names(flag_state_choices_caribbean) <- unique(caribbean_eez_data()$name)
-    
-    updateSelectizeInput(session, "caribbean_flag_state_select_effort",
-                         choices = c("Select a flag state...", flag_state_choices_caribbean))
-    
-    updateSelectizeInput(session, "caribbean_flag_state_select_subsidy",
-                         choices = c("Select a flag state...", flag_state_choices_caribbean))
+    if(nrow(caribbean_eez_data()) > 0){
+      
+      flag_state_choices_caribbean <- unique(caribbean_eez_data()$flag)
+      names(flag_state_choices_caribbean) <- unique(caribbean_eez_data()$name)
+      
+      updateSelectizeInput(session, "caribbean_flag_state_select_effort",
+                           choices = c("Select a flag state...", flag_state_choices_caribbean))
+      
+      updateSelectizeInput(session, "caribbean_flag_state_select_subsidy",
+                           choices = c("Select a flag state...", flag_state_choices_caribbean))
+      
+      
+    }else{
+      
+      updateSelectizeInput(session, "caribbean_flag_state_select_effort",
+                           choices = c("Select a flag state..."))
+      
+      updateSelectizeInput(session, "caribbean_flag_state_select_subsidy",
+                           choices = c("Select a flag state..."))
+      
+      
+    }
     
   })
   
@@ -1597,6 +1618,8 @@ server <- shinyServer(function(input, output, session) {
     
     req(input$caribbean_eez_select != "Select a coastal state...")
     req(nrow(caribbean_eez_data()) > 0)
+    
+    browser()
     
     ### Get totals for data
     eez_totals <- caribbean_eez_data() %>%
