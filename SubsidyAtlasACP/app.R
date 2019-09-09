@@ -88,18 +88,19 @@ africa_eez_map <- eez_map %>%
   st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
   st_collection_extract(type = c("POLYGON"), warn = FALSE) 
 # Caribbean
-caribbean_eez_map <- eez_map %>%
-  st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
-  st_collection_extract(type = c("POLYGON"), warn = FALSE) 
+# caribbean_eez_map <- eez_map %>%
+#   st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
+#   st_collection_extract(type = c("POLYGON"), warn = FALSE) 
 # Pacific
 pacific_eez_map <- eez_map %>%
   st_crop(c(xmin=0, xmax=360, ymin=-90, ymax=90), warn = FALSE) %>%
   st_collection_extract(type = c("POLYGON"), warn = FALSE) 
 
 ### 2. Simplified land shapefile 
-land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
-  st_transform(crs = 4326) %>%
-  left_join(flag_regions, by = c("iso3" = "territory_iso3"))
+# land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
+#   st_transform(crs = 4326) %>%
+#   left_join(flag_regions, by = c("iso3" = "territory_iso3"))
+# land_map <- read_sf(dsn = "./data/shapefiles_edit/ne_10m_admin_0_map_subunits_-360_360")
 
 ### 3. Simplified combined land/EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
 land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_360", layer = "EEZ_land_v2_201410_-360_360") %>%

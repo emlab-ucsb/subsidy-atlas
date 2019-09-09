@@ -191,71 +191,83 @@ eez_out <- eez_200nm %>%
 write_sf(eez_out, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_SubsidyAtlasACP"), layer = "eez_v10", driver = "ESRI shapefile")
 ```
 
+*/ -------------------------------------- /*
+*/ 10m World Political Subunits Shapefile /*
+*/ -------------------------------------- /*
+
+## 10m World Political Subunits
+
+### Preliminary edits
+
+Prior to making the edits detailed below, some edits were done to this shapefile before importing it into R for performance reasons. 
+
+We imported `ne_10m_admin_0_map_subunits.shp` into QGIS (version 3.4.7-Madeira) and duplicated the layer. After reprojecting one of the two layers so the total extent of the map was from -360 to 360 degrees, we dissolved all polygons by all attributes. Some manual eliminations had to be made so that polygons with the same attributes did not have small slivers and/or dividing lines between them. We then exported this file out of QGIS as a shapefile. This file can be found in 
+`./data/shapefiles_edit/ne_10m_admin_0_map_subunits_-360_360/ne_10m_admin_0_map_subunits_-360_360.shp`. 
+
+The final shapefile was outputted with the following CRS: WGS 84 (EPSG:4326).
+
+### Edits
+
+The edits done to this shapefile primarily relate to joining the appropriate subunits back together. 
+
+```{r}
+land_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "ne_10m_admin_0_map_subunits_-360_360"), 
+                    layer = "ne_10m_admin_0_map_subunits_-360_360") %>%
+  setNames(tolower(names(.))) %>%
+  dplyr::select(sovereign = sovereignt,
+                sov_iso3 = sov_a3,
+                type,
+                admin,
+                admin_iso3 = adm0_a3,
+                geounit,
+                geo_iso3 = gu_a3,
+                subunit,
+                subunit_iso3 = su_a3,
+                name,
+                name_iso3 = brk_a3,
+                admin_note = note_adm0,
+                name_note = note_brk,
+                geometry) %>%
+  arrange(sov_iso3, admin_iso3, geo_iso3) %>%
+  mutate(sov_admin_same = ifelse(sovereign == admin, T, F))
+```
+
+In general we want to assign polygons to the administering state, with a few exceptions. Those are made manually and include the following: 
+- 
+
+```{r}
+# First filter out disputed areas
+land_map_disputed <- land_map %>%
+  dplyr::filter(type == "Indeterminate") %>%
+  mutate(type = "Disputed")
+
+# Bajo Nuevo Bank (Petrel Is.) - also claimed by Jamaica, Nicaragua, and the United States
+land_map_disputed$sovereign[land_map_disputed$admin_iso3 == "BJN"] <- "Colombia"
+
+# Cyprus buffer zone - In the middle of the turkish/greek 
 
 
 
 
+# First deal with merging the ones for which the sovereign and administering state are the same. These should be easy.
+land_map_sovereign <- land_map %>%
+  dplyr::filter(sov_admin_same)
 
-## Introduction
+not_sovereign <- land_map_sovereign %>%
+  dplyr::filter(geo_iso3 %in% c("GLP", "GUF", "MTQ", "MYT", "REU", # french overseas territories
+                                "NLY", # caribbean netherlands
+                                "BVT", "NJM", "BVT", # norway
+                                "RUC")) # crimea
+```
 
-This script details the analysis/wrangling done to create shapefiles for use in the ACP tool.
 
-## EEZs 
-
-We use Version 10 of the World Maritime Boundaries (World EEZs - 2018) from Marineregions.org, last downloaded on July 31, 2019. 
-
-> Flanders Marine Institute (2018). Maritime Boundaries Geodatabase: Maritime Boundaries and Exclusive Economic Zones (200NM), version 10. Available online at http://www.marineregions.org/ https://doi.org/10.14284/312
-
-Unfortunately, since both the Pacific and Western Africa are regions of interest, there isn't a standard shapefile in which all of the EEZs we need are in one piece. We therefore made our own ACP shapefile, by pulling from both the -180 to 180 degree and 0 to 360 degree representations of the World EEZ shapefiles. 
 
 
 ```{r}
-# Load list of ACP states
-acp_states <- read_csv(here::here("SubsidyAtlasACP", "data", "ACP_eez_codes.csv")) %>%
-  mutate(territory_fixed = countrycode::countrycode(territory_iso3, "iso3c", "country.name"))
-
-# Deal with join regime areas and overlapping claims
-joint_180 <- c(21797) # Sao Tome and Principe/Nigeria
-joint_360 <- c(21792) # Jamaica/Colombia
-
-overlap_180 <- c(33176, # Kenya/Somalia
-                 26582, # Sudan/Egypt
-                 48945, # Madagascar/France
-                 48946, # Mauritius/France
-                 48944) # Comores/France
-overlap_360 <- c(48948, # New Caledonia/Vanuatu
-                 48982, # Puerto Rico/Dominican Republic
-                 48971, # Columbia/Dominican Republic
-                 33185, # Guyana/Trinidad and Tobago
-                 48951) # Haiti/USA/Jamaica
-
-keep_eezs_180 <- c(unique(acp_states$mrgid[acp_states$shp_to_use == 180]), joint_180, overlap_180)
-keep_eezs_360 <- c(unique(acp_states$mrgid[acp_states$shp_to_use == 360]), joint_360, overlap_360)
-
-# Load eez shapefile (-180 to 180 degrees) and filter
-eez_180 <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_raw", "World_EEZ_v10_20180221"), layer = "eez_v10")
-
-eez_180_simple <- eez_180 %>%
-  setNames(tolower(names(.))) %>%
-  dplyr::filter(mrgid %in% keep_eezs_180) %>%
-  rmapshaper::ms_simplify()
-
-# Load eez shapefile (0 to 360 degrees)
-eez_360 <- st_read(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_20180221_HR_0_360"), layer = "World_EEZ_v10_2018_0_360")
-  
-eez_360_simple <- eez_360 %>%
-  setNames(tolower(names(.))) %>%
-  dplyr::filter(mrgid %in% keep_eezs_360) %>%
-  rmapshaper::ms_simplify() %>%
-  dplyr::select(-cat)
-
-# Combine and export
-eez_combine <- eez_180_simple %>%
-  rbind(eez_360_simple)
-
-st_write(eez_combine, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_custom_ACP"), layer = "World_EEZ_v10_custom_ACP", driver = "ESRI Shapefile", delete_layer = T)
-
+  left_join(flag_regions, by = c("iso3" = "territory_iso3"))
+land_map <- read_sf(dsn = "./data/shapefiles_edit/ne_10m_admin_0_map_subunits_-360_360")
 ```
+
 
 
 ## Regional blocks
