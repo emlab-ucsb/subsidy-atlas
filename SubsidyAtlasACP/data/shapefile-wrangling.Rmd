@@ -19,6 +19,10 @@ library(countrycode)
 
 This script details the analysis/wrangling done to create the shapefiles used in the ACP tool. 
 
+*/ ------------ /*
+*/ Data Sources /*
+*/ ------------ /*
+
 ## Data
 
 The following shapefiles were downloaded from the sources listed below and used in this analysis. 
@@ -30,7 +34,8 @@ From Marineregions.org:
 > Flanders Marine Institute (2018). Maritime Boundaries Geodatabase: Maritime Boundaries and Exclusive Economic Zones (200NM), version 10. Available online at http://www.marineregions.org/ https://doi.org/10.14284/312
 
 From naturalearthdata.com: 
-- 10m Cultural Vectors: Admin 0 - Details: Map Subunits (version 4.1.0)
+- 50m Cultural Vectors: Admin 0 - Details: Map Units (version 4.1.0)
+- 50m Cultural Vectors: Admin 0 - Details: Map Subunits (version 4.1.0)
 
 */ ------------------- /*
 */ World EEZ Shapefile /*
@@ -192,27 +197,28 @@ write_sf(eez_out, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit",
 ```
 
 */ -------------------------------------- /*
-*/ 10m World Political Subunits Shapefile /*
+*/ 50m World Political Units Shapefile /*
 */ -------------------------------------- /*
 
-## 10m World Political Subunits
+## 50m World Political Units/Subunits
 
 ### Preliminary edits
 
-Prior to making the edits detailed below, some edits were done to this shapefile before importing it into R for performance reasons. 
+Prior to making the edits detailed below, some edits were done to both shapefiles before importing a combined version into R. 
 
-We imported `ne_10m_admin_0_map_subunits.shp` into QGIS (version 3.4.7-Madeira) and duplicated the layer. After reprojecting one of the two layers so the total extent of the map was from -360 to 360 degrees, we dissolved all polygons by all attributes. Some manual eliminations had to be made so that polygons with the same attributes did not have small slivers and/or dividing lines between them. We then exported this file out of QGIS as a shapefile. This file can be found in 
-`./data/shapefiles_edit/ne_10m_admin_0_map_subunits_-360_360/ne_10m_admin_0_map_subunits_-360_360.shp`. 
+We first imported `ne_50m_admin_0_map_subunits.shp` into QGIS (version 3.4.7-Madeira) and extracted the polygon for the Crimean Peninsula. We then imported the `ne_50m_admin_0_map_units.shp` into QGIS, deleted the portion of the Russian polygon cooresponding to the Crimean Peninsula and replaced it with the polygon extracted from the subunits shapefile. We then duplicated this layer twice and reprojected the duplicate layers so the total extent was from -540 to 540 degrees longitude. We then dissolved all polygons by all attributes. Some manual eliminations had to be made so that polygons with the same attributes did not have small slivers and/or dividing lines between them. We then clipped the layer extent to -360 to 360 degrees longitude and exported this file out of QGIS as a shapefile. This file can be found in 
+`./data/shapefiles_edit/ne_50m_admin_0_map_units_subunits_-360_360/land_50m.shp`. 
 
 The final shapefile was outputted with the following CRS: WGS 84 (EPSG:4326).
 
 ### Edits
 
-The edits done to this shapefile primarily relate to joining the appropriate subunits back together. 
+The edits done to this shapefile primarily relate to manually assigning some attributes, and joining some subunits back together.
 
 ```{r}
-land_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "ne_10m_admin_0_map_subunits_-360_360"), 
-                    layer = "ne_10m_admin_0_map_subunits_-360_360") %>%
+land_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "ne_50m_admin_0_map_units_subunits_-360_360"), 
+                    layer = "land_50m") %>%
+  st_transform(crs = 4326) %>%
   setNames(tolower(names(.))) %>%
   dplyr::select(sovereign = sovereignt,
                 sov_iso3 = sov_a3,
@@ -223,51 +229,305 @@ land_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit
                 geo_iso3 = gu_a3,
                 subunit,
                 subunit_iso3 = su_a3,
-                name,
-                name_iso3 = brk_a3,
-                admin_note = note_adm0,
-                name_note = note_brk,
+                notes = note_brk,
                 geometry) %>%
-  arrange(sov_iso3, admin_iso3, geo_iso3) %>%
-  mutate(sov_admin_same = ifelse(sovereign == admin, T, F))
+  arrange(sov_iso3, admin_iso3, geo_iso3)
+
 ```
 
-In general we want to assign polygons to the administering state, with a few exceptions. Those are made manually and include the following: 
-- 
+Let's first sort out those that have the same sovereign, admin, and geounit.
+ 
 
 ```{r}
-# First filter out disputed areas
-land_map_disputed <- land_map %>%
-  dplyr::filter(type == "Indeterminate") %>%
-  mutate(type = "Disputed")
+# Let's start with entries that have the same party listed as sovereign, admin, geounit, and subunit (193 entries)
+land_same <- land_map %>%
+  dplyr::filter(sovereign == admin & admin == geounit & geounit == subunit)
 
-# Bajo Nuevo Bank (Petrel Is.) - also claimed by Jamaica, Nicaragua, and the United States
-land_map_disputed$sovereign[land_map_disputed$admin_iso3 == "BJN"] <- "Colombia"
+# Northern Cyprus - self admin, but claimed by Turkey. International community considers it to be part of Cyprus. 
+land_same$sovereign[land_same$sov_iso3 == "CYN"] <- "Cyprus"
+land_same$type[land_same$sov_iso3 == "CYN"] <- "Disputed"
 
-# Cyprus buffer zone - In the middle of the turkish/greek 
+# Kosovo - partially recognized state, claimed by Serbia. Much of international community recognizes its independance, but WTO maps include it with Serbia. We do this down below
 
+# Western Sahara - self admin, but claimed by Morocco. International community largely does not recognize Morocco's sovereignty, but WTO maps include it with Morocco. 
+land_same$sovereign[land_same$sov_iso3 == "SAH"] <- "Morocco"
+land_same$type[land_same$sov_iso3 == "SAH"] <- "Disputed"
 
+# Somaliland - self admin, but claimed by Somalia. International community considers it to be an autonomous region of Somalia
+land_same$sovereign[land_same$sov_iso3 == "SOL"] <- "Somalia"
+land_same$type[land_same$sov_iso3 == "SOL"] <- "Disputed"
 
+# Taiwan - self admin, but claimed by China. Is a non-member of the WTO, separate from China. 
+# Leaving as is for the time being. 
 
-# First deal with merging the ones for which the sovereign and administering state are the same. These should be easy.
-land_map_sovereign <- land_map %>%
-  dplyr::filter(sov_admin_same)
+# Let's now simplify to a sovereign state and an administering state/territory. 
+land_same_edit <- land_same %>%
+  dplyr::select(type, 
+                sovereign,
+                admin,
+                notes,
+                geometry) 
 
-not_sovereign <- land_map_sovereign %>%
-  dplyr::filter(geo_iso3 %in% c("GLP", "GUF", "MTQ", "MYT", "REU", # french overseas territories
-                                "NLY", # caribbean netherlands
-                                "BVT", "NJM", "BVT", # norway
-                                "RUC")) # crimea
+#mapview(land_same_edit)
 ```
 
-
-
+Now let's look at those entries where subunit differs.
 
 ```{r}
-  left_join(flag_regions, by = c("iso3" = "territory_iso3"))
-land_map <- read_sf(dsn = "./data/shapefiles_edit/ne_10m_admin_0_map_subunits_-360_360")
+# Entries that have the same party listed as sovereign, admin, and geounit, but have a different subunit (2 entries)
+land_subunits <- land_map %>%
+  dplyr::filter(sovereign == admin & admin == geounit & geounit != subunit)
+
+# Crimea - administered by Russia, claimed by Ukraine. International community largely recognizes Ukraine sovereignty over it
+land_subunits$type[land_subunits$subunit_iso3 == "RUC"] <- "Disputed"
+
+# United States - naming mistake? 
+land_subunits$subunit[land_subunits$subunit_iso3 == "USA"] <- "United States of America"
+
+# Let's now simplify to a sovereign state and an administering state/territory. 
+land_subunits_edit <- land_subunits %>%
+  dplyr::select(type, 
+                sovereign,
+                admin,
+                notes,
+                geometry) 
 ```
 
+Next entries where the geounit and the subunit differ.
+
+```{r}
+# Entries that have the same party listed as sovereign and admin, but have a different geounit and subunit (26 entries)
+land_geounits <- land_map %>%
+  dplyr::filter(sovereign == admin & admin != geounit)
+
+# Antigua and Barbuda - two separate islands. WTO displays the two together
+antiguabarbuda <- land_geounits %>%
+  dplyr::filter(sovereign == "Antigua and Barbuda") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+antiguabarbuda$notes <- "Islands of Antigua and Barbuda combined"
+
+# Belgium - officially has three regions: Brussels Capital Region, Flemish Region, and Walloon Region. WTO displays the three together
+belgium <- land_geounits %>%
+  dplyr::filter(sovereign == "Belgium") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+belgium$notes <- "Brussels Capital Region, Flemish Region, and Walloon Region combined"
+
+# Bosnia and Herzegovina (Republic Srpska) - WTO combines it with the rest of Bosnia and Herzegovina
+bosnia <- land_geounits %>%
+  dplyr::filter(sovereign == "Bosnia and Herzegovina") %>%
+  dplyr::select(type, sovereign, admin, notes, geometry) %>%
+  rbind(land_same_edit %>% dplyr::filter(sovereign == "Bosnia and Herzegovina")) %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+bosnia$notes <- "Includes Republic Srpska"
+
+# Guadeloupe - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
+land_geounits$admin[land_geounits$geounit == "Guadeloupe"] <- "Guadeloupe"
+
+# French Guiana - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
+land_geounits$admin[land_geounits$geounit == "French Guiana"] <- "French Guiana"
+
+# Martinique - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
+land_geounits$admin[land_geounits$geounit == "Martinique"] <- "Martinique"
+
+# Mayotte - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
+land_geounits$admin[land_geounits$geounit == "Mayotte"] <- "Mayotte"
+land_geounits$type[land_geounits$geounit == "Mayotte"] <- "Disputed"
+
+# Reunion - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
+land_geounits$admin[land_geounits$geounit == "Reunion"] <- "Reunion"
+
+# United Kingdom - comprised of England, Northern Ireland, Wales, and Scotland. WTO displays them together as the United Kingdom
+uk <- land_geounits %>%
+  dplyr::filter(sovereign == "United Kingdom") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+uk$notes <- "Includes England, Northern Ireland, Wales, and Scotland"
+
+# Caribbean Netherlands - special (overseas) municipalities of the Netherlands. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
+land_geounits$admin[land_geounits$geounit == "Caribbean Netherlands"] <- "Caribbean Netherlands"
+
+# Svalbard and Jan Mayen - remote jurisdiction of Norway. WTO displays as part of continental norway, but for consistancy with EEZ map, will keep separate
+land_geounits$admin[land_geounits$geounit == "Svalbard"] <- "Svalbard"
+land_geounits$admin[land_geounits$geounit == "Jan Mayen"] <- "Jan Mayen"
+
+# Tokelau - dependancy of New Zealand. WTO does not diplay as part of New Zealand. 
+land_geounits$admin[land_geounits$geounit == "Tokelau"] <- "Tokelau"
+
+# Bougainville - autonomous region of Papua New Guina. WTO displays as part of Papua New Guina. 
+png <- land_geounits %>%
+  dplyr::filter(geounit == "Bougainville") %>%
+  dplyr::select(type, sovereign, admin, notes, geometry) %>%
+  rbind(land_same_edit %>% dplyr::filter(sovereign == "Papua New Guinea")) %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+png$notes <- "Includes the Autonomous Region of Bougainville"
+
+# Azores and Madeira - autonomous region of Portual. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate. 
+land_geounits$admin[land_geounits$geounit == "Azores"] <- "Azores"
+land_geounits$admin[land_geounits$geounit == "Madeira"] <- "Madeira"
+
+# Republic of Serbia (Vojvodina) - Autonomous region in Serbia. WTO combines it with the rest of Serbia. Also including Kosovo
+serbia <- land_geounits %>%
+  dplyr::filter(sovereign == "Republic of Serbia") %>%
+  dplyr::select(type, sovereign, admin, notes, geometry) %>%
+  rbind(land_same_edit %>% dplyr::filter(sovereign == "Republic of Serbia")) %>%
+  rbind(land_same_edit %>% dplyr::filter(sovereign == "Kosovo")) %>%
+  mutate(type = "Geo unit",
+         sovereign = "Republic of Serbia",
+         admin = "Republic of Serbia") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+serbia$notes <- "Includes Kosovo and the Autonomous Province of Vojvodina"
+
+# Zanzibar - semi-autonomous region of Tanzania. WTO combines it with the rest of Tanzania. 
+tanzania <- land_geounits %>%
+  dplyr::filter(sovereign == "United Republic of Tanzania") %>%
+  mutate(type = "Geo unit") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+tanzania$notes <- "Includes the semi-autonomous region of Zanzibar"
+
+# Now we combine again. 
+combined <- antiguabarbuda %>%
+  rbind(belgium) %>%
+  rbind(bosnia) %>%
+  rbind(uk) %>%
+  rbind(png) %>%
+  rbind(serbia) %>%
+  rbind(tanzania)
+
+land_geounits_edit <- land_geounits %>%
+  dplyr::filter(!(sovereign %in% combined$sovereign)) %>%
+  dplyr::select(type, 
+                sovereign,
+                admin,
+                notes,
+                geometry) %>%
+  rbind(combined)
+  
+```
+
+And finally, entries where the sovereign and admin differ.
+
+```{r}
+# Entries that have different parties listed as sovereign and admin (44 entries)
+land_admin <- land_map %>%
+  dplyr::filter(sovereign != admin)
+
+# Ashmore and Cartier Islands - Australian Territory. Including with Australia
+australia <- land_admin %>%
+  dplyr::filter(admin == "Ashmore and Cartier Islands") %>%
+  dplyr::select(type, sovereign, admin, notes, geometry) %>%
+  rbind(land_same_edit %>% dplyr::filter(sovereign == "Australia")) %>%
+  mutate(type = "Geo unit",
+         admin = "Australia") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+australia$notes <- "Includes Ashmore and Cartier Islands"
+
+# Heard Island and McDonald Islands - Australian Territory. Have own EEZ, leaving for now.
+
+# Cocos (Keeling) Islands - Australian Territory, has own EEZ. Spliting apart from indian ocean territory
+land_admin$admin[land_admin$geounit == "Cocos (Keeling) Islands"] <- "Cocos (Keeling) Islands"
+
+# Christmas Island - Australian Territory, has own EEZ. Splitting apart from indian ocean territory
+land_admin$admin[land_admin$geounit == "Christmas Island"] <- "Christmas Island"
+
+# Norfolk Island - Australian Territory, has own EEZ, leaving for now.
+
+# Hong Kong S.A.R./Macao S.A.R - China. Leaving for now. Do not have their own EEZs but are WTO Members indpendantly (?)
+
+# Faroe Islands/Greenland - Denmark. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate. 
+
+# Aland - Finland. Displayed with Finland?
+finland <- land_admin %>%
+  dplyr::filter(sovereign == "Finland") %>%
+  dplyr::select(type, sovereign, admin, notes, geometry) %>%
+  mutate(admin = "Finland") %>%
+  rbind(land_same_edit %>% dplyr::filter(sovereign == "Finland")) %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+finland$notes <- "Includes the Aland Islands"
+
+# French dependancies. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate. 
+
+# United Kingdom dependancies. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate.
+
+# Palestine - Israel. WTO displays separately from Israel. Can combine Gaza and the West Bank? 
+palestine <- land_admin %>%
+  dplyr::filter(admin == "Palestine") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry)) 
+palestine$notes <- "Includes Gaza and the West Bank"
+
+# Siachen Glacier/Kashmir. WTO maps attribute the entire region to India... 
+india <- land_admin %>%
+  dplyr::filter(sovereign == "Kashmir") %>%
+  dplyr::select(type, sovereign, admin, notes, geometry) %>%
+  rbind(land_same_edit %>% dplyr::filter(sovereign == "India")) %>%
+  mutate(type = "Geo unit",
+         sovereign = "India",
+         admin = "India",
+         notes = "Includes the region of Kashmir. Also claimed by Pakistan") %>%
+  group_by(sovereign, type, admin, notes) %>%
+  summarize(geometry = st_union(geometry))
+
+# Combine
+combined2 <- finland %>%
+  rbind(palestine) %>%
+  rbind(india) %>%
+  rbind(australia)
+
+land_admin_edit <- land_admin %>%
+  dplyr::filter(admin != "Ashmore and Cartier Islands") %>%
+  dplyr::filter(sovereign != "Kashmir") %>%
+  dplyr::filter(admin != "Palestine") %>%
+  dplyr::filter(sovereign != "Finland") %>%
+  dplyr::select(type, 
+                sovereign,
+                admin,
+                notes,
+                geometry) %>%
+  rbind(combined2)
+
+```
+
+Now we need to put them all back together and export
+
+```{r}
+# Put them back together
+land_out_raw <- land_subunits_edit %>%
+  rbind(land_geounits_edit) %>%
+  rbind(land_admin_edit)
+
+# Exclude entries from our first cut that have been included elsewhere
+land_same_edit_condensed <- land_same_edit %>%
+  dplyr::filter(!(sovereign %in% c("Bosnia and Herzegovina",
+                                 "Papua New Guinea",
+                                 "Australia",
+                                 "Republic of Serbia",
+                                 "Kosovo",
+                                 "Finland",
+                                 "India")))
+
+land_out <- land_out_raw %>%
+  rbind(land_same_edit_condensed) %>%
+  mutate(sov_iso3 = case_when(sovereign == "eSwatini" ~ "SWZ",
+                                    TRUE ~ countrycode(sovereign, "country.name", "iso3c")),
+         admin_iso3 = case_when(admin == "eSwatini" ~ "SWZ",
+                                admin == "Azores" ~ "PRT",
+                                admin == "Jan Mayen" ~ "SJM",
+                                admin == "Madeira" ~ "PRT",
+                                admin == "Saint Martin" ~ "MAF",
+                                TRUE ~ countrycode(admin, "country.name", "iso3c")))
+
+
+write_sf(land_out, dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "ne_50m_admin_SubsidyAtlasACP"), layer = "land_50m", driver = "ESRI shapefile")
+
+```
 
 
 ## Regional blocks

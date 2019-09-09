@@ -88,19 +88,34 @@ africa_eez_map <- eez_map %>%
   st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
   st_collection_extract(type = c("POLYGON"), warn = FALSE) 
 # Caribbean
-# caribbean_eez_map <- eez_map %>%
-#   st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
-#   st_collection_extract(type = c("POLYGON"), warn = FALSE) 
+caribbean_eez_map <- eez_map %>%
+  st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
+  st_collection_extract(type = c("POLYGON"), warn = FALSE)
 # Pacific
 pacific_eez_map <- eez_map %>%
   st_crop(c(xmin=0, xmax=360, ymin=-90, ymax=90), warn = FALSE) %>%
   st_collection_extract(type = c("POLYGON"), warn = FALSE) 
 
 ### 2. Simplified land shapefile 
-# land_map <- read_sf(dsn = "./data/shapefiles_edit/world_happy_180", layer="world_happy_180") %>%
-#   st_transform(crs = 4326) %>%
-#   left_join(flag_regions, by = c("iso3" = "territory_iso3"))
-# land_map <- read_sf(dsn = "./data/shapefiles_edit/ne_10m_admin_0_map_subunits_-360_360")
+land_map <- read_sf(dsn = "./data/shapefiles_edit/ne_50m_admin_SubsidyAtlasACP", layer="land_50m") %>%
+  st_transform(crs = 4326) %>%
+  group_by(admin_iso3) %>%
+  summarize(geometry = st_union(geometry)) %>%
+  mutate(display_name = countrycode(admin_iso3, "iso3c", "country.name"))
+
+# Africa
+africa_land_map <- land_map %>%
+  st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
+  st_collection_extract(type = c("POLYGON"), warn = FALSE) 
+# Caribbean
+caribbean_land_map <- land_map %>%
+  st_crop(c(xmin=-180, xmax=180, ymin=-90, ymax=90), warn = FALSE) %>%
+  st_collection_extract(type = c("POLYGON"), warn = FALSE)
+# Pacific
+pacific_land_map <- land_map %>%
+  st_crop(c(xmin=0, xmax=360, ymin=-90, ymax=90), warn = FALSE) %>%
+  st_collection_extract(type = c("POLYGON"), warn = FALSE) 
+
 
 ### 3. Simplified combined land/EEZ shapefile (-360 to 360 degrees: crop appropriately for each region)
 land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_360", layer = "EEZ_land_v2_201410_-360_360") %>%
@@ -110,6 +125,7 @@ land_eez_map <- read_sf(dsn = "./data/shapefiles_edit/EEZ_land_v2_201410_-360_36
                 country,
                 geometry) %>%
   dplyr::filter(!is.na(iso3)) %>%
+  mutate(display_name = countrycode(iso3, "iso3c", "country.name")) %>%
   left_join(flag_regions, by = c("iso3" = "territory_iso3"))
 
 # Africa
@@ -636,14 +652,15 @@ server <- shinyServer(function(input, output, session) {
     # Require coastal state selection
     req(input$africa_eez_select != "Select a coastal state...")
     
+    # Connectivity data for the entire region
+    connectivity_data_region <- connectivity_data %>% # load this in up above
+      dplyr::filter(region == "Africa")
+
+    ### Selected ACP coastal state ---    
     # Selected Africa ACP coastal state
     selected_eez <- africa_eez_map %>% 
       dplyr::filter(iso_ter == input$africa_eez_select) %>%
       rename(territory_iso3 = iso_ter)
-    
-    # Connectivity data for the entire region
-    connectivity_data_region <- connectivity_data %>% # load this in up above
-      dplyr::filter(region == "Africa")
     
     # Connectivity data for the EEZ of the selected ACP coastal state
     connectivity_data_for_selected_eez <- connectivity_data_region %>% # load this in up above
@@ -651,18 +668,24 @@ server <- shinyServer(function(input, output, session) {
       arrange(flag)%>%
       dplyr::filter(flag != "UNK")
     
-    flag_states_for_selected_eez <- africa_land_eez_map %>% 
+    ### Polygons of flag states ---   
+    # Get polygons of flag states
+    flag_states_for_selected_eez <- africa_land_map %>%
+      dplyr::filter(admin_iso3 %in% connectivity_data_for_selected_eez$flag) %>%
+      rename(flag = admin_iso3) %>% 
+      arrange(flag)
+
+    # Get polygons of flag state boundaries merged with EEZ boundaries
+    flag_states_combined_for_selected_eez <- africa_land_eez_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
       arrange(flag)
     
-    # Filter out flag states that may not show up on map 
-    if(length(unique(connectivity_data_for_selected_eez$flag)) != length(unique(flag_states_for_selected_eez$flag))) {
+    if(all(ifelse(unique(flag_states_for_selected_eez$flag) == unique(flag_states_combined_for_selected_eez$flag), TRUE, FALSE)) == F){
+      warning("Check flag states")
       
-      connectivity_data_for_selected_eez <- connectivity_data_for_selected_eez %>%
-        dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
     }
-    
+      
     # Connectivity stats with no geometry
     connectivity_data_no_geometry <- connectivity_data_for_selected_eez %>%
       group_by(eez_territory_iso3, flag) %>%
@@ -672,13 +695,12 @@ server <- shinyServer(function(input, output, session) {
                 fishing_KWh = sum(fishing_KWh, na.rm = T))
     st_geometry(connectivity_data_no_geometry) <- NULL
     
-    #  Hover Text
+    #  Create summary polygons with hover text for flag states
     flag_state_summary <- flag_states_for_selected_eez %>% 
-      left_join(connectivity_data_no_geometry, by = "flag") %>%
-      mutate(name = countrycode(flag, "iso3c", "country.name"))
+      left_join(connectivity_data_no_geometry, by = "flag")
     
     flag_state_summary_text <- paste0(
-      "<b>", "Flag state: ", "</b>", flag_state_summary$name,
+      "<b>", "Flag state: ", "</b>", flag_state_summary$display_name,
       "<br/>",
       "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
       "</br>",
@@ -687,6 +709,22 @@ server <- shinyServer(function(input, output, session) {
       "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_h, 0), big.mark = ","), 
       "</br>",
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
+      lapply(htmltools::HTML)
+    
+    #  Create summary polygons with hover text for flag states merged with EEZ boundaries
+    flag_state_summary_combined <- flag_states_combined_for_selected_eez %>% 
+      left_join(connectivity_data_no_geometry, by = "flag")
+    
+    flag_state_summary_combined_text <- paste0(
+      "<b>", "Flag state: ", "</b>", flag_state_summary_combined$display_name,
+      "<br/>",
+      "<b>", "# of DW vessels: ", "</b>", flag_state_summary_combined$vessels,
+      "</br>",
+      "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary_combined$capacity, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary_combined$fishing_h, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary_combined$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
     # Set fill variable for map
@@ -708,6 +746,21 @@ server <- shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
+      
+      addPolygons(data = flag_state_summary_combined,
+                  fillColor = ~pal(get(fill_scale[[1]])),
+                  fillOpacity = 0.3,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = FALSE),
+                  label = flag_state_summary_combined_text,
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
       
       addPolygons(data = flag_state_summary,
                   fillColor = ~pal(get(fill_scale[[1]])),
