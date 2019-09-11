@@ -22,6 +22,7 @@ library(shinyBS)
 library(tidyverse)
 library(sf)
 library(png)
+library(htmltools)
 
 library(sf) # spatial manipulation
 library(lwgeom) # needed for curved lines
@@ -656,7 +657,8 @@ server <- shinyServer(function(input, output, session) {
     connectivity_data_region <- connectivity_data %>% # load this in up above
       dplyr::filter(region == "Africa")
 
-    ### Selected ACP coastal state ---    
+    ### Selected ACP coastal state ---
+    
     # Selected Africa ACP coastal state
     selected_eez <- africa_eez_map %>% 
       dplyr::filter(iso_ter == input$africa_eez_select) %>%
@@ -668,7 +670,8 @@ server <- shinyServer(function(input, output, session) {
       arrange(flag)%>%
       dplyr::filter(flag != "UNK")
     
-    ### Polygons of flag states ---   
+    ### Polygons of flag states --- 
+    
     # Get polygons of flag states
     flag_states_for_selected_eez <- africa_land_map %>%
       dplyr::filter(admin_iso3 %in% connectivity_data_for_selected_eez$flag) %>%
@@ -681,10 +684,11 @@ server <- shinyServer(function(input, output, session) {
       rename(flag = iso3) %>% 
       arrange(flag)
     
-    if(all(ifelse(unique(flag_states_for_selected_eez$flag) == unique(flag_states_combined_for_selected_eez$flag), TRUE, FALSE)) == F){
-      warning("Check flag states")
-      
-    }
+    
+    # if(all(ifelse(unique(flag_states_for_selected_eez$flag) == unique(flag_states_combined_for_selected_eez$flag), TRUE, FALSE)) == F){
+    #   warning("Check flag states")
+    #   
+    # }
       
     # Connectivity stats with no geometry
     connectivity_data_no_geometry <- connectivity_data_for_selected_eez %>%
@@ -727,6 +731,8 @@ server <- shinyServer(function(input, output, session) {
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary_combined$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
     
+    ### Interactive color palette ---
+    
     # Set fill variable for map
     fill_scale <- switch(input$africa_connection_fill,
                          "# of Different Vessels" = list("vessels", connectivity_data_region$vessels, flag_state_summary$vessels),
@@ -741,7 +747,9 @@ server <- shinyServer(function(input, output, session) {
     
     pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
     
-    # Leaflet map
+    
+    ### Leaflet map ---
+    
     leaflet('africa_connection_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>% 
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
@@ -1411,7 +1419,6 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
-  
   ### -----
   ### Leaflet output: Connectivity map for selected ACP Caribbean state
   ### -----
@@ -1421,14 +1428,16 @@ server <- shinyServer(function(input, output, session) {
     # Require coastal state selection
     req(input$caribbean_eez_select != "Select a coastal state...")
     
+    # Connectivity data for the entire region
+    connectivity_data_region <- connectivity_data %>% # load this in up above
+      dplyr::filter(region == "Caribbean")
+    
+    ### Selected ACP coastal state ---
+    
     # Selected Caribbean ACP coastal state
     selected_eez <- caribbean_eez_map %>% 
       dplyr::filter(iso_ter == input$caribbean_eez_select) %>%
       rename(territory_iso3 = iso_ter)
-    
-    # Connectivity data for the entire region
-    connectivity_data_region <- connectivity_data %>% # load this in up above
-      dplyr::filter(region == "Caribbean")
     
     # Connectivity data for the EEZ of the selected ACP coastal state
     connectivity_data_for_selected_eez <- connectivity_data_region %>% # load this in up above
@@ -1436,17 +1445,25 @@ server <- shinyServer(function(input, output, session) {
       arrange(flag)%>%
       dplyr::filter(flag != "UNK")
     
-    flag_states_for_selected_eez <- caribbean_land_eez_map %>% 
+    ### Polygons of flag states --- 
+    
+    # Get polygons of flag states
+    flag_states_for_selected_eez <- caribbean_land_map %>%
+      dplyr::filter(admin_iso3 %in% connectivity_data_for_selected_eez$flag) %>%
+      rename(flag = admin_iso3) %>% 
+      arrange(flag)
+    
+    # Get polygons of flag state boundaries merged with EEZ boundaries
+    flag_states_combined_for_selected_eez <- caribbean_land_eez_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
       arrange(flag)
     
-    # Filter out flag states that may not show up on map 
-    if(length(unique(connectivity_data_for_selected_eez$flag)) != length(unique(flag_states_for_selected_eez$flag))) {
-      
-      connectivity_data_for_selected_eez <- connectivity_data_for_selected_eez %>%
-        dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
-    }
+    
+    # if(all(ifelse(unique(flag_states_for_selected_eez$flag) == unique(flag_states_combined_for_selected_eez$flag), TRUE, FALSE)) == F){
+    #   warning("Check flag states")
+    #   
+    # }
     
     # Connectivity stats with no geometry
     connectivity_data_no_geometry <- connectivity_data_for_selected_eez %>%
@@ -1457,13 +1474,12 @@ server <- shinyServer(function(input, output, session) {
                 fishing_KWh = sum(fishing_KWh, na.rm = T))
     st_geometry(connectivity_data_no_geometry) <- NULL
     
-    #  Hover Text
+    #  Create summary polygons with hover text for flag states
     flag_state_summary <- flag_states_for_selected_eez %>% 
-      left_join(connectivity_data_no_geometry, by = "flag") %>%
-      mutate(name = countrycode(flag, "iso3c", "country.name"))
+      left_join(connectivity_data_no_geometry, by = "flag")
     
     flag_state_summary_text <- paste0(
-      "<b>", "Flag state: ", "</b>", flag_state_summary$name,
+      "<b>", "Flag state: ", "</b>", flag_state_summary$display_name,
       "<br/>",
       "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
       "</br>",
@@ -1473,6 +1489,24 @@ server <- shinyServer(function(input, output, session) {
       "</br>",
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
+    
+    #  Create summary polygons with hover text for flag states merged with EEZ boundaries
+    flag_state_summary_combined <- flag_states_combined_for_selected_eez %>% 
+      left_join(connectivity_data_no_geometry, by = "flag")
+    
+    flag_state_summary_combined_text <- paste0(
+      "<b>", "Flag state: ", "</b>", flag_state_summary_combined$display_name,
+      "<br/>",
+      "<b>", "# of DW vessels: ", "</b>", flag_state_summary_combined$vessels,
+      "</br>",
+      "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary_combined$capacity, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary_combined$fishing_h, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary_combined$fishing_KWh, 0), big.mark = ",")) %>% 
+      lapply(htmltools::HTML)
+    
+    ### Interactive color palette ---
     
     # Set fill variable for map
     fill_scale <- switch(input$caribbean_connection_fill,
@@ -1488,11 +1522,28 @@ server <- shinyServer(function(input, output, session) {
     
     pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
     
-    # Leaflet map
+    
+    ### Leaflet map ---
+    
     leaflet('caribbean_connection_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>% 
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
       addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
+      
+      addPolygons(data = flag_state_summary_combined,
+                  fillColor = ~pal(get(fill_scale[[1]])),
+                  fillOpacity = 0.3,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = FALSE),
+                  label = flag_state_summary_combined_text,
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
       
       addPolygons(data = flag_state_summary,
                   fillColor = ~pal(get(fill_scale[[1]])),
@@ -1536,7 +1587,7 @@ server <- shinyServer(function(input, output, session) {
       addLegend(pal = pal, values = fill_scale[[domain]], 
                 opacity=0.9, title = input$caribbean_connection_fill, position = "bottomleft" ) %>%
       setView(lng= -75, lat = 0, zoom = 2)
-
+    
 })
   
   ### -----
@@ -2173,7 +2224,6 @@ server <- shinyServer(function(input, output, session) {
     
   })
   
-  
   ### -----
   ### Leaflet output: Connectivity map for selected ACP Pacific state
   ### -----
@@ -2183,14 +2233,16 @@ server <- shinyServer(function(input, output, session) {
     # Require coastal state selection
     req(input$pacific_eez_select != "Select a coastal state...")
     
-    # Selected Pacific ACP coastal state
-    selected_eez <- pacific_eez_map %>% 
-      dplyr::filter(iso_ter == input$pacific_eez_select) %>%
-      rename(territory_iso3 = iso_ter)
-    
     # Connectivity data for the entire region
     connectivity_data_region <- connectivity_data %>% # load this in up above
       dplyr::filter(region == "Pacific")
+    
+    ### Selected ACP coastal state ---
+    
+    # # Selected Pacific ACP coastal state
+    # selected_eez <- pacific_eez_map %>% 
+    #   dplyr::filter(iso_ter == input$pacific_eez_select) %>%
+    #   rename(territory_iso3 = iso_ter)
     
     # Connectivity data for the EEZ of the selected ACP coastal state
     connectivity_data_for_selected_eez <- connectivity_data_region %>% # load this in up above
@@ -2198,17 +2250,25 @@ server <- shinyServer(function(input, output, session) {
       arrange(flag)%>%
       dplyr::filter(flag != "UNK")
     
-    flag_states_for_selected_eez <- pacific_land_eez_map %>% 
+    ### Polygons of flag states --- 
+    
+    # Get polygons of flag states
+    flag_states_for_selected_eez <- pacific_land_map %>%
+      dplyr::filter(admin_iso3 %in% connectivity_data_for_selected_eez$flag) %>%
+      rename(flag = admin_iso3) %>% 
+      arrange(flag)
+    
+    # Get polygons of flag state boundaries merged with EEZ boundaries
+    flag_states_combined_for_selected_eez <- pacific_land_eez_map %>% 
       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
       rename(flag = iso3) %>% 
       arrange(flag)
     
-    # Filter out flag states that may not show up on map 
-    if(length(unique(connectivity_data_for_selected_eez$flag)) != length(unique(flag_states_for_selected_eez$flag))) {
-      
-      connectivity_data_for_selected_eez <- connectivity_data_for_selected_eez %>%
-        dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
-    }
+    
+    # if(all(ifelse(unique(flag_states_for_selected_eez$flag) == unique(flag_states_combined_for_selected_eez$flag), TRUE, FALSE)) == F){
+    #   warning("Check flag states")
+    #   
+    # }
     
     # Connectivity stats with no geometry
     connectivity_data_no_geometry <- connectivity_data_for_selected_eez %>%
@@ -2219,13 +2279,12 @@ server <- shinyServer(function(input, output, session) {
                 fishing_KWh = sum(fishing_KWh, na.rm = T))
     st_geometry(connectivity_data_no_geometry) <- NULL
     
-    #  Hover Text
+    #  Create summary polygons with hover text for flag states
     flag_state_summary <- flag_states_for_selected_eez %>% 
-      left_join(connectivity_data_no_geometry, by = "flag") %>%
-      mutate(name = countrycode(flag, "iso3c", "country.name"))
+      left_join(connectivity_data_no_geometry, by = "flag")
     
     flag_state_summary_text <- paste0(
-      "<b>", "Flag state: ", "</b>", flag_state_summary$name,
+      "<b>", "Flag state: ", "</b>", flag_state_summary$display_name,
       "<br/>",
       "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
       "</br>",
@@ -2235,6 +2294,24 @@ server <- shinyServer(function(input, output, session) {
       "</br>",
       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
       lapply(htmltools::HTML)
+    
+    #  Create summary polygons with hover text for flag states merged with EEZ boundaries
+    flag_state_summary_combined <- flag_states_combined_for_selected_eez %>% 
+      left_join(connectivity_data_no_geometry, by = "flag")
+    
+    flag_state_summary_combined_text <- paste0(
+      "<b>", "Flag state: ", "</b>", flag_state_summary_combined$display_name,
+      "<br/>",
+      "<b>", "# of DW vessels: ", "</b>", flag_state_summary_combined$vessels,
+      "</br>",
+      "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary_combined$capacity, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary_combined$fishing_h, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary_combined$fishing_KWh, 0), big.mark = ",")) %>% 
+      lapply(htmltools::HTML)
+    
+    ### Interactive color palette ---
     
     # Set fill variable for map
     fill_scale <- switch(input$pacific_connection_fill,
@@ -2250,12 +2327,32 @@ server <- shinyServer(function(input, output, session) {
     
     pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
     
-    # Leaflet map
+    
+    ### Leaflet map ---
+    
     leaflet('pacific_connection_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>% 
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
+      
+      # Basemap
       addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
       
+      # Flag state polygons (merged land and EEZ boundaries)
+      addPolygons(data = flag_state_summary_combined,
+                  fillColor = ~pal(get(fill_scale[[1]])),
+                  fillOpacity = 0.3,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 0.5,
+                                               bringToFront = FALSE),
+                  label = flag_state_summary_combined_text,
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
+      # Flag state polygons (land)
       addPolygons(data = flag_state_summary,
                   fillColor = ~pal(get(fill_scale[[1]])),
                   fillOpacity = 0.8,
@@ -2271,7 +2368,8 @@ server <- shinyServer(function(input, output, session) {
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")) %>%
-      addPolygons(data = selected_eez, 
+      # EEZ polygon
+      addPolygons(data = (pacific_eez_map %>% dplyr::filter(iso_ter == input$pacific_eez_select)), 
                   fillColor = ~region_pal_light(region),
                   fillOpacity = 0.8,
                   color= "white",
@@ -2281,26 +2379,156 @@ server <- shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = (paste0("<b>", selected_eez$geoname, "</b>") %>%
-                             lapply(htmltools::HTML)),
+                  label = ~htmlEscape(geoname),
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")) %>%
-      
+      # Connecting lines
       addPolylines(data = connectivity_data_for_selected_eez,
                    fillColor = "goldenrod",
                    fillOpacity = 1,
-                   weight = 1,
+                   weight = 1.5,
                    color = "darkgoldenrod",
                    group = "lines") %>% 
       
+      # Legend
       addLegend(pal = pal, values = fill_scale[[domain]], 
                 opacity=0.9, title = input$pacific_connection_fill, position = "bottomleft" ) %>%
+      
+      # Map extent
       setView(lng = 175, lat = 0, zoom = 2)
     
 })
   
+  
+#   ### -----
+#   ### Leaflet output: Connectivity map for selected ACP Pacific state
+#   ### -----
+#   
+#   output$pacific_connection_map <- renderLeaflet({
+#     
+#     # Require coastal state selection
+#     req(input$pacific_eez_select != "Select a coastal state...")
+#     
+#     # Selected Pacific ACP coastal state
+#     selected_eez <- pacific_eez_map %>% 
+#       dplyr::filter(iso_ter == input$pacific_eez_select) %>%
+#       rename(territory_iso3 = iso_ter)
+#     
+#     # Connectivity data for the entire region
+#     connectivity_data_region <- connectivity_data %>% # load this in up above
+#       dplyr::filter(region == "Pacific")
+#     
+#     # Connectivity data for the EEZ of the selected ACP coastal state
+#     connectivity_data_for_selected_eez <- connectivity_data_region %>% # load this in up above
+#       dplyr::filter(eez_territory_iso3 == input$pacific_eez_select) %>% 
+#       arrange(flag)%>%
+#       dplyr::filter(flag != "UNK")
+#     
+#     flag_states_for_selected_eez <- pacific_land_eez_map %>% 
+#       dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
+#       rename(flag = iso3) %>% 
+#       arrange(flag)
+#     
+#     # Filter out flag states that may not show up on map 
+#     if(length(unique(connectivity_data_for_selected_eez$flag)) != length(unique(flag_states_for_selected_eez$flag))) {
+#       
+#       connectivity_data_for_selected_eez <- connectivity_data_for_selected_eez %>%
+#         dplyr::filter(flag %in% flag_states_for_selected_eez$flag)
+#     }
+#     
+#     # Connectivity stats with no geometry
+#     connectivity_data_no_geometry <- connectivity_data_for_selected_eez %>%
+#       group_by(eez_territory_iso3, flag) %>%
+#       summarize(vessels = sum(vessels, na.rm = T),
+#                 capacity = sum(capacity, na.rm = T),
+#                 fishing_h = sum(fishing_h, na.rm = T),
+#                 fishing_KWh = sum(fishing_KWh, na.rm = T))
+#     st_geometry(connectivity_data_no_geometry) <- NULL
+#     
+#     #  Hover Text
+#     flag_state_summary <- flag_states_for_selected_eez %>% 
+#       left_join(connectivity_data_no_geometry, by = "flag") %>%
+#       mutate(name = countrycode(flag, "iso3c", "country.name"))
+#     
+#     flag_state_summary_text <- paste0(
+#       "<b>", "Flag state: ", "</b>", flag_state_summary$name,
+#       "<br/>",
+#       "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
+#       "</br>",
+#       "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary$capacity, 0), big.mark = ","), 
+#       "</br>",
+#       "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_h, 0), big.mark = ","), 
+#       "</br>",
+#       "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
+#       lapply(htmltools::HTML)
+#     
+#     # Set fill variable for map
+#     fill_scale <- switch(input$pacific_connection_fill,
+#                          "# of Different Vessels" = list("vessels", connectivity_data_region$vessels, flag_state_summary$vessels),
+#                          "Total Engine Capacity (KW)" = list("capacity", connectivity_data_region$capacity, flag_state_summary$capacity),
+#                          "Total Fishing Effort (hours)" = list("fishing_h", connectivity_data_region$fishing_h, flag_state_summary$fishing_h),
+#                          "Total Fishing Effort (KWh)" = list("fishing_KWh", connectivity_data_region$fishing_KWh, flag_state_summary$fishing_KWh))
+#     
+#     # Make color palette
+#     domain <- switch(input$pacific_connection_fill_rescale,
+#                      "All distant water fishing in the region (default)" = 2,
+#                      "Selected EEZ only" = 3)
+#     
+#     pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
+#     
+#     # Leaflet map
+#     leaflet('pacific_connection_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>% 
+#       htmlwidgets::onRender("function(el, x) {
+#                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
+#       addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
+#       
+#       addPolygons(data = flag_state_summary,
+#                   fillColor = ~pal(get(fill_scale[[1]])),
+#                   fillOpacity = 0.8,
+#                   color= "white",
+#                   weight = 0.3,
+#                   highlight = highlightOptions(weight = 5,
+#                                                color = "#666",
+#                                                fillOpacity = 1,
+#                                                bringToFront = TRUE),
+#                   label = flag_state_summary_text,
+#                   layerId = flag_state_summary$flag,
+#                   labelOptions = labelOptions(style = list("font-weight" = "normal",
+#                                                            padding = "3px 8px"),
+#                                               textsize = "13px",
+#                                               direction = "auto")) %>%
+#       addPolygons(data = selected_eez, 
+#                   fillColor = ~region_pal_light(region),
+#                   fillOpacity = 0.8,
+#                   color= "white",
+#                   group = "eez",
+#                   weight = 0.3,
+#                   highlight = highlightOptions(weight = 5,
+#                                                color = "#666",
+#                                                fillOpacity = 1,
+#                                                bringToFront = TRUE),
+#                   label = (paste0("<b>", selected_eez$geoname, "</b>") %>%
+#                              lapply(htmltools::HTML)),
+#                   labelOptions = labelOptions(style = list("font-weight" = "normal",
+#                                                            padding = "3px 8px"),
+#                                               textsize = "13px",
+#                                               direction = "auto")) %>%
+#       
+#       addPolylines(data = connectivity_data_for_selected_eez,
+#                    fillColor = "goldenrod",
+#                    fillOpacity = 1,
+#                    weight = 1,
+#                    color = "darkgoldenrod",
+#                    group = "lines") %>% 
+#       
+#       addLegend(pal = pal, values = fill_scale[[domain]], 
+#                 opacity=0.9, title = input$pacific_connection_fill, position = "bottomleft" ) %>%
+#       setView(lng = 175, lat = 0, zoom = 2)
+#     
+# })
+#   
   ### -----
   ### Update tab and selectInput: Register clicks on Pacific connectivity map and change tab ans flag state input widgets accordingly
   ### -----
