@@ -237,7 +237,6 @@ land_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit
 
 Let's first sort out those that have the same sovereign, admin, and geounit.
  
-
 ```{r}
 # Let's start with entries that have the same party listed as sovereign, admin, geounit, and subunit (193 entries)
 land_same <- land_map %>%

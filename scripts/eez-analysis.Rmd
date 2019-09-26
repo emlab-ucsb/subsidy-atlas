@@ -239,8 +239,6 @@ For the purposes of plotting the EEZs in which the fishing activity is taking pl
 If we're making figures, we also need to do some setup for our figures. 
 
 ```{r}
-if(make_figures){
-  
   # Custom theme for map
   maptheme <- theme_minimal() +
     theme(panel.background = element_rect(fill = "grey27", colour = NA),
@@ -251,20 +249,7 @@ if(make_figures){
           axis.title = element_blank(),
           axis.text = element_blank(),
           axis.ticks.length = unit(0, "pt"))
-  
-  # Custom color palette for Sumaila subsidy types
-  goodColors <- rev(brewer.pal(3, "Blues"))
-  names(goodColors) <- levels(subsidy_dat_edit$type)[1:3]
-  
-  badColors <- rev(brewer.pal(7, "Reds"))
-  names(badColors) <- levels(subsidy_dat_edit$type)[4:10]
-  
-  ambigColors <- c("purple", "mediumorchid", "violet")
-  names(ambigColors) <- levels(subsidy_dat_edit$type)[11:13]
-  
-  myColors <- c(goodColors, badColors, ambigColors)
-  
-}
+
 ```
 
 ## Part 2: Identify top locations of DW fishing by EEZ
@@ -412,16 +397,16 @@ eez_mapping_wlines_africa <- eez_mapping %>%
   st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
   sf::st_sf(crs = 4326) 
 
- # test_plot_africa <- ggplot()+
- #  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
- #  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
- #  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_africa$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
- #  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_africa$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
- #  geom_sf(data = eez_mapping_wlines_africa, col = "darkgoldenrod", size = 0.25) +
- #  maptheme+
- #  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
- #  scale_x_continuous(expand = c(0,0))+
- #  scale_y_continuous(expand = c(0,0))
+ test_plot_africa <- ggplot()+
+  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_africa$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_africa$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_africa, col = "darkgoldenrod", size = 0.25) +
+  maptheme+
+  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
 
 # Caribbean
 eez_mapping_wlines_caribbean <- eez_mapping %>%
@@ -441,17 +426,18 @@ eez_mapping_wlines_caribbean <- eez_mapping %>%
   st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=100"), quiet = TRUE) %>% 
   sf::st_sf(crs = 4326) 
 
- # test_plot_caribbean <- ggplot()+
- #  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
- #  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
- #  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_caribbean$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
- #  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_caribbean$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
- #  geom_sf(data = eez_mapping_wlines_caribbean, col = "darkgoldenrod", size = 0.25) +
- #  maptheme+
- #  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
- #  scale_x_continuous(expand = c(0,0))+
- #  scale_y_continuous(expand = c(0,0))
+ test_plot_caribbean <- ggplot()+
+  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_caribbean$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_caribbean$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_caribbean, col = "darkgoldenrod", size = 0.25) +
+  maptheme+
+  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
 
+ # Pacific
 eez_mapping_wlines_pacific <- eez_mapping %>%
   dplyr::filter(flag != "UNK") %>%
   dplyr::filter(region == "Pacific") %>%
@@ -468,16 +454,16 @@ eez_mapping_wlines_pacific <- eez_mapping %>%
   st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=0"), quiet = TRUE) %>%
   sf::st_sf(crs = 4326) 
 
- # test_plot_pacific <- ggplot()+
- #  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
- #  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
- #  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_pacific$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
- #  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_pacific$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
- #  geom_sf(data = eez_mapping_wlines_pacific, col = "darkgoldenrod", size = 0.25) +
- #  maptheme+
- #  #coord_sf(xlim = c(0,360), ylim = c(-90,90))+
- #  scale_x_continuous(expand = c(0,0))+
- #  scale_y_continuous(expand = c(0,0))
+ test_plot_pacific <- ggplot()+
+  geom_sf(data = eez_map, fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
+  geom_sf(data = land_eez_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
+  geom_sf(data = land_eez_map %>% dplyr::filter(iso3 %in% eez_mapping_wlines_pacific$flag), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_pacific$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_pacific, col = "darkgoldenrod", size = 0.25) +
+  maptheme+
+  #coord_sf(xlim = c(0,360), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
 
 
 eez_mapping_wlines <- eez_mapping_wlines_africa %>%
