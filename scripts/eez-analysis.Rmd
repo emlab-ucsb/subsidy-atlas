@@ -461,7 +461,7 @@ eez_mapping_wlines_pacific <- eez_mapping %>%
   geom_sf(data = eez_map %>% dplyr::filter(mrgid %in% eez_mapping_wlines_pacific$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
   geom_sf(data = eez_mapping_wlines_pacific, col = "darkgoldenrod", size = 0.25) +
   maptheme+
-  #coord_sf(xlim = c(0,360), ylim = c(-90,90))+
+  coord_sf(xlim = c(0,360), ylim = c(-90,90))+
   scale_x_continuous(expand = c(0,0))+
   scale_y_continuous(expand = c(0,0))
 
@@ -488,6 +488,8 @@ Now run the full analysis
 
 ## For loop to run top EEZs
 for(i in 1:length(eez_loop_iso3)){
+  
+  i <- 59
   
 run_eez_codes <- analysis_eezs[which(analysis_eez_territory_iso3 == eez_loop_iso3[i])]
 

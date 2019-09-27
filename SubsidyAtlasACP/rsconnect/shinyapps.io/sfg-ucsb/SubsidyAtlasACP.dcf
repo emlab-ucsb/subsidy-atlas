@@ -5,8 +5,8 @@ account: sfg-ucsb
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1109630
-bundleId: 2395163
+bundleId: 2450089
 url: https://sfg-ucsb.shinyapps.io/SubsidyAtlasACP/
-when: 1567885508.58001
+when: 1569600909.84845
 asMultiple: FALSE
 asStatic: FALSE
