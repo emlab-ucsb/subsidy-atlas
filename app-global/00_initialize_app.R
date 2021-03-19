@@ -36,6 +36,7 @@ eez_ter_360 <- eez_ter_360 %>%
 
 ### REPLACE WITH ACTUAL DATA
 ter_flag_connectivity_data <- eez_ter_360 %>%
+  st_drop_geometry() %>%
   distinct(region, name_ter, iso_ter, name_sov, iso_sov) %>%
   arrange(region, name_ter)
 
@@ -43,7 +44,6 @@ ter_flag_connectivity_data <- eez_ter_360 %>%
 # East Asia & Pacific
 east_asia_pacific_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
 names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
-east_asia_pacific_eezs <- unique(east_asia_pacific_eezs)
 
 ### Data -----
 

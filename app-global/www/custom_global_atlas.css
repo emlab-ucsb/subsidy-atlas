@@ -289,6 +289,31 @@ header.main-header {
   background-color: var(--accent-color-2); 
 }
 
+/* Info button */
+.info-button {
+  color: #fff; 
+  background-color: var(--accent-color); 
+  border-width: 0; 
+  width:25px; 
+  height:25px; 
+  font-size: 6pt;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 6pt;
+  padding-right: 15px;
+  margin: 0 5px 0 5px;
+}
+
+/* Info button */
+.info-button i{
+  margin: 0;
+}
+
+.info-button:hover {
+  color: #fff; 
+  background-color: var(--accent-color-2); 
+}
+
 #left-column-placeholder{
   position: absolute;
   top: 0;
