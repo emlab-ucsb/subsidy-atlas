@@ -388,37 +388,44 @@ header.main-header {
   margin-bottom: 0;
 }
 
-.nav-tabs-custom #results-tabs.nav-tabs{
+.nav-tabs-custom #east-asia-pacific-results-tabs.nav-tabs, 
+.nav-tabs-custom #europe-central-asia-results-tabs.nav-tabs{
   background-color: #ffffff;
   border-bottom: 4px solid var(--main-color);
 }
 
-.nav-tabs-custom #results-tabs.nav-tabs li {
+.nav-tabs-custom #east-asia-pacific-results-tabs.nav-tabs li, 
+.nav-tabs-custom #europe-central-asia-results-tabs.nav-tabs li {
   width: 25%;
   margin: 0;
 }
       
-.nav-tabs-custom #results-tabs.nav-tabs li a{
+.nav-tabs-custom #east-asia-pacific-results-tabs.nav-tabs li a, 
+.nav-tabs-custom #europe-central-asia-results-tabs.nav-tabs li a{
   color: var(--main-color);
   padding: 25px;
   text-align: center;
 }
       
-.nav-tabs-custom #results-tabs.nav-tabs li:hover {
+.nav-tabs-custom #east-asia-pacific-results-tabs.nav-tabs li:hover, 
+.nav-tabs-custom #europe-central-asia-results-tabs.nav-tabs li:hover {
   color: var(--accent-color-2)
 }
       
-.nav-tabs-custom #results-tabs.nav-tabs li.active:hover a{
+.nav-tabs-custom #east-asia-pacific-results-tabs.nav-tabs li.active:hover a, 
+.nav-tabs-custom #europe-central-asia-results-tabs.nav-tabs li.active:hover a{
   color: var(--accent-color);
 }
       
-.nav-tabs-custom #results-tabs.nav-tabs li.active {
+.nav-tabs-custom #east-asia-pacific-results-tabs.nav-tabs li.active, 
+.nav-tabs-custom #europe-central-asia-results-tabs.nav-tabs li.active {
   border-bottom: 5px solid var(--accent-color);
   border-top: transparent;
   background: #ffffff;
 }
       
-.nav-tabs-custom #results-tabs.nav-tabs li.active a {
+.nav-tabs-custom #east-asia-pacific-results-tabs.nav-tabs li.active a, 
+.nav-tabs-custom #europe-central-asia-results-tabs.nav-tabs li.active a {
   color: var(--accent-color);
   background: #ffffff;
   border-left-color: transparent;

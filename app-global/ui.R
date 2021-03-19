@@ -200,23 +200,6 @@ shinyUI(
                selectregion()
        ),
        
-       # # Africa
-       # tabItem(tabName = "africa",
-       #         africa(africa_eez_choices, flag_state_choices)
-       # ),
-       
-       # # Caribbean
-       # tabItem(tabName = "caribbean",
-       #         caribbean(caribbean_eez_choices, flag_state_choices)
-       # ),
-       # 
-       # # Pacific Islands
-       # tabItem(tabName = "pacific",
-       #         pacific(pacific_eez_choices, flag_state_choices)
-       # ),
-       # 
-       #-------
-       
        # East Asia & Pacific
        tabItem(tabName = "east-asia-pacific",
                EastAsiaPacific(east_asia_pacific_eezs, flag_state_choices)
@@ -224,8 +207,7 @@ shinyUI(
        
        # Europe & Central Asia
        tabItem(tabName = "europe-central-asia",
-               fluidPage()
-               #EuropeCentralAsia(europe_central_asia_eezs, flag_state_choices)
+               EuropeCentralAsia(europe_central_asia_eezs, flag_state_choices)
        ),
        
        # Latin America & Caribbean
