@@ -1,0 +1,401 @@
+/*-------*/
+/* Setup */
+/*-------*/
+
+:root {
+    --main-color: #2b4860;
+    --secondary-color: #243e54;
+    --accent-color: #0d5ba2;
+    --accent-color-2: #23A085;
+    --grey-dark: #6f6f6f;
+    --grey-text: #404040;
+    --grey-light: #f7f8f9;
+}
+
+@font-face {
+    font-family: Avenir-Book;
+    src: url(Avenir-Book.ttf) format('truetype');
+}
+
+/*--------------------*/  
+/*--------------------*/
+/* General containers */
+/*--------------------*/
+/*--------------------*/
+
+/* rows - fluidRow() */
+.row {
+  margin: 0;
+}
+
+/* dividers - column() */
+.col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9 {
+  min-height: 1px;
+  padding: 0;
+}
+
+/* hyperlinks */
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:visited {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+b.big {
+  font-size: 12pt;
+}
+
+small.gray {
+  color: var(--grey-dark);
+}
+
+.action-button i{
+  margin: 0 10px 0 10px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Avenir-Book', "Helvetica", sans-serif;
+    font-weight: bold;
+}
+
+h2 {
+  font-size: 18pt;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 16pt;
+  margin-bottom: 20px;
+}
+
+h4 {
+  font-size: 14pt;
+}
+
+h5 {
+  font-size: 12pt;
+}
+
+.box-title {
+  font-size: 10pt;
+  font-weight: bold;
+}
+
+p {
+  font-family: 'Avenir-Book', "Helvetica", sans-serif;
+  font-size: 10pt;
+}
+
+text {
+   font-family: 'Avenir-Book', "Helvetica", sans-serif;
+}
+
+/*----------------------------*/  
+/*----------------------------*/
+/* Shiny Dashboard containers */
+/*----------------------------*/
+/*----------------------------*/
+
+/*--------------------------------------------*/
+/* Shiny Dashboard Header - dashboardHeader() */
+/*--------------------------------------------*/
+  
+/* top bar general */
+header.main-header {
+  max-height: 60px;
+  position: relative;
+  width: 100%;
+}
+
+/* navigation bar */
+.skin-blue .main-header .navbar {
+  background-color: var(--main-color);
+}
+
+/* logo (title container) - hidden for this app */
+.skin-blue .main-header .logo {
+  height: 60px;
+  padding: 0;
+  margin: 0;
+  background-color: var(--main-color);
+}
+
+/* logo (title container) when hovered - hidden for this app */
+.skin-blue .main-header .logo:hover {
+  background-color: var(--main-color);
+}
+
+/* sidebar menu toggle button */
+.skin-blue .main-header .navbar .sidebar-toggle {
+  height: 60px; 
+  padding-top: 20px !important;
+  padding-bottom: 20px;
+}
+
+/* sidebar menue toggle button when hovered  */
+.skin-blue .main-header .navbar .sidebar-toggle:hover{
+  background-color: var(--secondary-color);
+}
+
+/*----------------------------------------------*/
+/* Shiny Dashboard Sidebar - dashboardSidebar() */
+/*----------------------------------------------*/
+  
+/* sidebar container */
+.skin-blue .main-sidebar {
+  padding-top: 60px; /* spacing to allow for top nav bar */
+  background-color: var(--secondary-color); /* background color for sidebar */
+  padding-bottom: 60px;
+}
+
+/* sidebar container (tablet) */
+@media (max-width: 767px){
+.skin-blue .main-sidebar {
+  padding-top: 120px; /* spacing to allow for top nav bar */
+}
+}
+/* sidebar container for phone */
+@media (max-width: 344px){
+  .skin-blue .main-sidebar {
+   padding-top: 180px; /* spacing to allow for top nav bar */
+}
+}
+
+/* menu item text */
+.skin-blue .sidebar-menu>li>a {
+  color: #ffffff;
+  text-decoration: none!important;
+}
+
+.skin-blue .sidebar-menu>li>a:link {
+  text-decoration: none!important;
+}
+
+/* active selected tab in the sidebar */
+.skin-blue .sidebar-menu>li.active>a {
+  background-color: var(--accent-color);
+  border-left-color: var(--accent-color);
+}
+
+/* hover over a tab in the sidebar */
+.skin-blue .sidebar-menu>li:hover>a {
+  background-color: var(--accent-color);
+  border-left-color: var(--accent-color);
+}
+
+/* Submenu container */
+  .skin-blue .sidebar-menu>li>.treeview-menu {
+    margin: 0;
+    padding: 0;
+    background: var(--main-color);
+    border-left: 3px solid transparent;
+  }
+
+/* Submenu container - expanded */
+  .skin-blue .sidebar-menu>li>.menu-expanded {
+    border-left-color: var(--main-color);
+  }
+
+/* Submenu container - Parent menu item selected */
+  .skin-blue .sidebar-menu>li.active>.treeview-menu {
+    border-left-color: var(--main-color);
+  }
+
+/* Subitems within submenu */
+  .sidebar-menu .treeview-menu>li {
+    margin-left: -3px;
+    border-left: 3px solid transparent;
+  }
+
+/* Subitem links within submenu */
+  .skin-blue .treeview-menu>li>a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10pt 0 10pt 20pt;
+  }
+
+/* Active subitem link within submenu */
+  .sidebar-menu .treeview-menu>li.active {
+    background: var(--accent-color);
+    border-left-color: var(--accent-color);
+  }
+
+/* Subitem links within submenu - Hover over item */
+  .sidebar-menu .treeview-menu>li:hover {
+    background: var(--accent-color);
+    border-left-color: var(--accent-color);
+  }
+
+
+/*----------------------------------------------*/
+/* Shiny Dashboard Body - dashboardSidebar() */
+/*----------------------------------------------*/
+  
+/* Content wrapper - includes both sidebar and content */
+.skin-blue .wrapper {
+  background-color: #ffffff;
+  font-family: 'Avenir-Book', "Helvetica", sans-serif;
+}
+
+/* Content wrapper - includes only content */
+.skin-blue div.content-wrapper{
+  background: var(--main-color);
+  height: auto;
+}
+
+/* Content (section) */
+.skin-blue section.content{
+  min-height: 100%;
+  overflow: auto;
+  margin: 0 -15px;
+  padding: 0;
+}
+
+/* Tab content (div) */
+.skin-blue div.tab-content{
+  margin: 0;
+  padding: 0;
+}
+
+/*----------------------------*/  
+/*----------------------------*/
+/* Custom containers */
+/*----------------------------*/
+/*----------------------------*/
+
+/* Wide plain rounded button */
+.rounded-button {
+  color: #fff;
+  background-color: var(--accent-color); 
+  border-width: 0; 
+  padding: 10px; 
+  width: 100%; 
+  font-size: 10pt; 
+  border-radius: 5px;
+}
+
+/* Wide plain rounded button */
+.rounded-button:hover {
+  color: #fff;
+  background-color: var(--accent-color-2); 
+}
+
+#left-column-placeholder{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--grey-light);
+  color: var(--grey-dark);
+  padding: 0 25px 0 25px;
+}
+
+#left-column-real{
+  color: var(--grey-dark);
+  padding: 0 25px 40px 25px;
+}
+
+#right-column{
+  min-height: 90vh;
+  color: var(--grey-dark);
+  padding: 0 25px 0 25px;
+}
+
+/* TB spaced divider */
+#t-spaced-div {
+  padding: 15px 0px 7px 0px;
+}
+
+/* TB spaced divider */
+#tb-spaced-div {
+  padding: 7px 0px 7px 0px;
+}
+
+/* LR spaced divider */
+#lr-spaced-div {
+  padding: 0px 15px 0px 15px;
+}
+
+/* TB spaced divider */
+#b-spaced-div {
+  padding: 7px 0px 15px 0px;
+}
+
+/* TB spaced divider */
+#tblr-spaced-div {
+  padding: 15px;
+}
+
+#custom-title-container {
+  position: absolute;
+  left: 60px;
+  text-align: center;
+  line-height: 16pt;
+  color: #ffffff;
+}
+
+#ab_home {
+  background-color:transparent;
+  color: white;
+  height: 60px;
+}
+
+
+#ab_home:hover {
+  background-color:transparent;
+  color: var(--accent-color-2);
+}
+
+/* ------ */
+/* TabBox */
+/* -------*/
+
+.nav-tabs-custom{
+  margin-bottom: 0;
+}
+
+.nav-tabs-custom #results-tabs.nav-tabs{
+  background-color: #ffffff;
+  border-bottom: 4px solid var(--main-color);
+}
+
+.nav-tabs-custom #results-tabs.nav-tabs li {
+  width: 25%;
+  margin: 0;
+}
+      
+.nav-tabs-custom #results-tabs.nav-tabs li a{
+  color: var(--main-color);
+  padding: 25px;
+  text-align: center;
+}
+      
+.nav-tabs-custom #results-tabs.nav-tabs li:hover {
+  color: var(--accent-color-2)
+}
+      
+.nav-tabs-custom #results-tabs.nav-tabs li.active:hover a{
+  color: var(--accent-color);
+}
+      
+.nav-tabs-custom #results-tabs.nav-tabs li.active {
+  border-bottom: 5px solid var(--accent-color);
+  border-top: transparent;
+  background: #ffffff;
+}
+      
+.nav-tabs-custom #results-tabs.nav-tabs li.active a {
+  color: var(--accent-color);
+  background: #ffffff;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
