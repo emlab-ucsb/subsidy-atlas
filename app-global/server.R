@@ -33,14 +33,7 @@ shinyServer(function(input, output, session) {
   
   output$regional_map <- renderLeaflet({
     
-    ## Make aggregated regional map data
-    # regional_dat <- land_eez_map %>%
-    #   st_crop(c(xmin=-30, xmax=330, ymin=-90, ymax=90)) %>%
-    #   st_collection_extract(type = c("POLYGON")) %>%
-    #   dplyr::filter(!is.na(region)) %>%
-    #   group_by(region) %>%
-    #   summarize(geometry = st_union(geometry))
-    
+    ## Get regional dat
     regional_dat <- eez_region_360
     
     # Formatting for semi-transparent title box over map
@@ -117,39 +110,43 @@ shinyServer(function(input, output, session) {
     
   })
   
-  ###---------------------------------------------------------------------------------------
-  ### Africa -------------------------------------------------------------------------------
-  ###---------------------------------------------------------------------------------------
+  ###------------------------------------------------------------------
+  ### East Asia & Pacific ---------------------------------------------
+  ###------------------------------------------------------------------
   
-  ### -----
-  ### Leaflet output: Map of Africa ACP EEZs for which we have DW fishing effort
-  ### -----
-  output$africa_map <- renderLeaflet({
+  ### Leaflet output: Navigational map for the region ---------
+  
+  output$east_asia_pacific_nav_map <- renderLeaflet({
     
-    # Extract ACP EEZs
-    africa_eezs <- africa_eez_map %>%
-      dplyr::filter(region == "Africa") %>%
-      mutate(geoname = str_replace(geoname, " \\(.*\\)", ""))
+    # Extract East Asia & Pacific EEZs
+    east_asia_pacific_eezs <- eez_ter_360 %>%
+      dplyr::filter(region == "East Asia & Pacific") %>%
+      dplyr::filter(pol_type == "200NM")
     
-    # Merge non-contiguous EEZs for the same coastal state (South Africa)
-    africa_eezs_merged <- africa_eezs %>%
-      group_by(iso_ter, geoname, region) %>%
-      summarize(geometry = st_union(geometry))
+    east_asia_pacific_disputed <- eez_ter_360 %>%
+      dplyr::filter(region == "East Asia & Pacific") %>%
+      dplyr::filter(pol_type != "200NM")
+    
+    # # Merge non-contiguous EEZs for the same coastal state (South Africa)
+    # africa_eezs_merged <- africa_eezs %>%
+    #   group_by(iso_ter, geoname, region) %>%
+    #   summarize(geometry = st_union(geometry))
     
     # Also extract disputed areas/joint management areas involving ACP coastal states in Africa
-    africa_disputed_joint <- africa_eez_map %>%
-      dplyr::filter(pol_type != "200NM" & iso_ter %in% africa_eezs$iso_ter) %>%
-      mutate(region = "Africa")
+    # africa_disputed_joint <- africa_eez_map %>%
+    #   dplyr::filter(pol_type != "200NM" & iso_ter %in% africa_eezs$iso_ter) %>%
+    #   mutate(region = "Africa")
     
     # Map
-    leaflet('africa_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE, attributionControl=FALSE)) %>% 
+    leaflet('east_asia_pacific_nav_map', 
+            options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.OceanBasemap") %>% 
       
-      addPolygons(data = africa_disputed_joint, 
+      addPolygons(data = east_asia_pacific_disputed, 
                   fillColor = "grey",
                   fillOpacity = 0.8,
                   color= "white",
@@ -158,7 +155,7 @@ shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = africa_disputed_joint$geoname,
+                  label = east_asia_pacific_disputed$geoname_new,
                   layerId = NULL, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
@@ -166,7 +163,7 @@ shinyServer(function(input, output, session) {
                                               direction = "auto")
       ) %>%
       
-      addPolygons(data = africa_eezs_merged,
+      addPolygons(data = east_asia_pacific_eezs,
                   fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
                   color= "white",
@@ -175,76 +172,79 @@ shinyServer(function(input, output, session) {
                                                color = "#666",
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
-                  label = africa_eezs_merged$geoname,
-                  layerId = africa_eezs_merged$iso_ter, #need this to select input below
+                  label = east_asia_pacific_eezs$geoname_new,
+                  layerId = east_asia_pacific_eezs$iso_ter, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng= 15, lat = 0, zoom = 2)
+      setView(lng= 175, lat = -5, zoom = 1) %>%
+      setMaxBounds(lng1 = 90, lat1 = -90, lng2 = 270, lat2 = 90)
     
 })
   
-  ### -----
-  ### Update selectInput: Register user clicks on Africa map - change selected value of widget
-  ### -----
-  
-  observeEvent(input$africa_map_shape_click, {
+  ### Update selectInput: Register user clicks on nav map ---------
+
+  observeEvent(input$east_asia_pacific_nav_map_shape_click, {
     
     # Don't register clicks on the disputed areas/joint areas
-    req(!is.null(input$africa_map_shape_click$id))
+    req(!is.null(input$east_asia_pacific_nav_map_shape_click$id))
     
-    updateSelectizeInput(session, "africa_eez_select",
-                         selected = input$africa_map_shape_click$id)
+    updateSelectizeInput(session, "east_asia_pacific_eez_select",
+                         choices = east_asia_pacific_eezs,
+                         selected = input$east_asia_pacific_nav_map_shape_click$id)
     
   })
   
-  ### -----
-  ### Leaflet proxy: Create proxy for the Africa map of ACP countries
-  ### -----
+  ### Leaflet proxy: Create proxy for the nav map -----------
+
+  east_asia_pacific_nav_map_proxy <- leafletProxy("east_asia_pacific_nav_map")
   
-  africa_proxy <- leafletProxy("africa_map")
-  
-  ### -----
   ### Leaflet proxy: When user selects country either from the dropdown widget or by clicking on the map, highlight EEZ and change zoom
-  ### -----
-  
-  observeEvent(input$africa_eez_select, {
+
+  observeEvent(input$east_asia_pacific_eez_select, {
     
-    if(input$africa_eez_select == "Select a coastal state..."){
+    if(input$east_asia_pacific_eez_select == "Select a coastal state..."){
       
       # Remove any previously highlighted polygon
-      africa_proxy %>% clearGroup("highlighted_eez")  
+      east_asia_pacific_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      africa_proxy %>% setView(lng= 15, lat = 0, zoom = 2)
+      east_asia_pacific_nav_map_proxy %>% setView(lng= 175, lat = -5, zoom = 1)
       
     }else{
       
       # Get code for selected EEZ
-      selected_eez <- subset(africa_eez_map, africa_eez_map$iso_ter == input$africa_eez_select)
+      selected_eez <- subset(eez_ter_360, 
+                             eez_ter_360$iso_ter == input$east_asia_pacific_eez_select)
       
+      # selected_eez_centroid <- st_centroid(selected_eez) %>%
+      #   st_coordinates()
+
       # Remove any previously highlighted polygon
-      africa_proxy %>% clearGroup("highlighted_eez")
+      east_asia_pacific_nav_map_proxy %>% clearGroup("highlighted_eez")
       
       # Add a different colored polygon on top of map
-      africa_proxy %>% addPolygons(data = selected_eez,
-                                      fillColor = ~region_pal_light(region),
-                                      fillOpacity = 1,
-                                      color= "white",
-                                      weight = 2,
-                                      highlight = highlightOptions(weight = 5,
-                                                                   color = "#666",
-                                                                   fillOpacity = 1,
-                                                                   bringToFront = TRUE),
-                                      group = "highlighted_eez",
-                                      label = selected_eez$geoname,
-                                      labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                                               padding = "3px 8px"),
-                                                                  textsize = "13px",
-                                                                  direction = "auto")) %>%
-        setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+      east_asia_pacific_nav_map_proxy %>% 
+        addPolygons(data = selected_eez,
+                    fillColor = ~ region_pal_light(region),
+                    fillOpacity = 1,
+                    color = "white",
+                    weight = 2,
+                    highlight = highlightOptions(weight = 5,
+                                                 color = "#666",
+                                                 fillOpacity = 1,
+                                                 bringToFront = TRUE),
+                    group = "highlighted_eez",
+                    label = selected_eez$geoname_new,
+                    labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                             padding = "3px 8px"),
+                                                textsize = "13px",
+                                                direction = "auto")) 
+      
+      # %>%
+      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
     }
     
   }) # close observe event

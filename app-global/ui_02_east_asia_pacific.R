@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-EastAsiaPacific = function(africa_eez_choices, flag_state_choices)
+EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
   fluidPage(
             
             # Page style
@@ -44,7 +44,7 @@ EastAsiaPacific = function(africa_eez_choices, flag_state_choices)
                                    column(12, id = "tb-spaced-div",
                                           
                                           # Africa map with selectable EEZs
-                                          leafletOutput("africa_map", width = "auto", height = "250px")
+                                          leafletOutput("east_asia_pacific_nav_map", width = "auto", height = "250px")
                                           
                                           # # Panel for dropdown widget 
                                           # absolutePanel(top = 10, left = 25, right = 25, fixed = FALSE,
@@ -57,9 +57,9 @@ EastAsiaPacific = function(africa_eez_choices, flag_state_choices)
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("africa_eez_select",
+                                          selectizeInput("east_asia_pacific_eez_select",
                                                          label = NULL,
-                                                         choices = c("Select a coastal state...", africa_eez_choices),
+                                                         choices = c("Select a coastal state...", east_asia_pacific_eezs),
                                                          selected = "Select a coastal state...",
                                                          width = "100%")
     

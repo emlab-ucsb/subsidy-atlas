@@ -219,7 +219,7 @@ shinyUI(
        
        # East Asia & Pacific
        tabItem(tabName = "east-asia-pacific",
-               EastAsiaPacific(africa_eez_choices, flag_state_choices)
+               EastAsiaPacific(east_asia_pacific_eezs, flag_state_choices)
        ),
        
        # Europe & Central Asia

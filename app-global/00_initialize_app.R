@@ -9,11 +9,41 @@
 ### This script loads data needed for the app and performs some final data wrangling
 ### --------------------------------------------------------------------
 
-### Load new GeoPackage
-# Note this contains duplicate polygons for disputed and joint areas attributed to each territory individually
+### Load GeoPackages 
+# Note the first contains duplicate polygons for disputed and joint areas attributed to each territory individually - additionally, all non-contiguous EEZ regions have been unionized for each territory. 
 eez_ter_360 <- st_read("./data/world_eez_ter_neg360_360.gpkg")
 
 eez_region_360 <- st_read("./data/world_eez_regions_neg360_360.gpkg")
+
+### MOVE TO DATA PROCESSING SCRIPT EVENTUALLY
+eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+  
+eez_eu_360 <- eez_ter_360 %>%
+  dplyr::filter((iso_ter %in% eu_countries) & pol_type == "200NM") %>%
+  mutate(iso_sov = "EU") %>%
+  group_by(iso_sov, pol_type) %>%
+  summarize(geom = st_union(geom)) %>%
+  ungroup() %>%
+  mutate(region = "Europe & Central Asia",
+         name_ter = "European Union",
+         iso_ter = "EU",
+         name_sov = "European Union",
+         geoname_new = "Exclusive Economic Zone: European Union")
+
+eez_ter_360 <- eez_ter_360 %>%
+  dplyr::filter(!(iso_ter %in% eu_countries) | pol_type != "200NM") %>%
+  rbind(eez_eu_360)
+
+### REPLACE WITH ACTUAL DATA
+ter_flag_connectivity_data <- eez_ter_360 %>%
+  distinct(region, name_ter, iso_ter, name_sov, iso_sov) %>%
+  arrange(region, name_ter)
+
+### EEZ choices for each region
+# East Asia & Pacific
+east_asia_pacific_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+east_asia_pacific_eezs <- unique(east_asia_pacific_eezs)
 
 ### Data -----
 
