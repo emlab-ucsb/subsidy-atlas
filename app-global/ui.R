@@ -212,14 +212,12 @@ shinyUI(
        
        # Latin America & Caribbean
        tabItem(tabName = "latin-america-caribbean",
-               fluidPage()
-               #LatinAmericaCaribbean()
+               LatinAmericaCaribbean(latin_america_caribbean_eezs, flag_state_choices)
        ),
        
        # Middle East & North Africa
        tabItem(tabName = "middle-east-north-africa",
-               fluidPage()
-               #MiddleEastNorthAfrica()
+               MiddleEastNorthAfrica(middle_east_north_africa_eezs, flag_state_choices)
        ),
        
        # North America

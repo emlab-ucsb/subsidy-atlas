@@ -1,12 +1,12 @@
 ### -----------------------------------
 #
 # ACP Atlas of Distant Water Fishing
-# UI - Tab 2: Africa
+# UI - Tab 5: Middle East & North Africa
 # 
 ### ------------------------------------
 
 ### Function
-EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
+LatinAmericaCaribbean = function(middle_east_north_africa_eezs, flag_state_choices)
   fluidPage(
             
             # Page style
@@ -35,7 +35,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                    # Return to regional map button
                                    column(12, id = "t-spaced-div",
                                  
-                                          tags$button(id = "east_asia_pacific_return_to_region",
+                                          tags$button(id = "middle_east_north_africa_return_to_region",
                                                       tags$b("Return to Regional Map"),
                                                       class = "btn action-button rounded-button")
                                    ),
@@ -44,16 +44,16 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                    column(12, id = "tb-spaced-div",
                                           
                                           # Africa map with selectable EEZs
-                                          leafletOutput("east_asia_pacific_nav_map", width = "auto", height = "350px")
+                                          leafletOutput("middle_east_north_africa_nav_map", width = "auto", height = "350px")
 
                                    ),
                                    
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("east_asia_pacific_eez_select",
+                                          selectizeInput("middle_east_north_africa_eez_select",
                                                          label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", east_asia_pacific_eezs),
+                                                         choices = c("Select..." = "Select a coastal state...", middle_east_north_africa_eezs),
                                                          selected = "Select a coastal state...",
                                                          width = "100%")
     
@@ -73,20 +73,20 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                    column(12,
                           
                           # tabBox
-                          tabBox(width = 12, id = "east-asia-pacific-results-tabs", 
+                          tabBox(width = 12, id = "middle-east-north-africa-results-tabs", 
                                  
                                  ### --------------------------
                                  ### Tab # 1  - Stats overview
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-summary",
+                                 tabPanel(value = "middle-east-north-africa-summary",
                                    
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Summary"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_summary",
+                                            tags$button(id = "middle_east_north_africa_info_summary",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                           ),
@@ -95,7 +95,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                           column(12, id = "tblr-spaced-div",
                                                  
                                                  # Interactive text
-                                                 uiOutput("east_asia_pacific_country_profile")
+                                                 uiOutput("middle_east_north_africa_country_profile")
                                                  
                                           )
                                  ),
@@ -104,14 +104,14 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                  ### Tab # 2  - Origins of distant water vessels
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-origins",
+                                 tabPanel(value = "middle-east-north-africa-origins",
                                           
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Vessel Origins"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_vessel_origins",
+                                            tags$button(id = "middle_east_north_africa_info_vessel_origins",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                             ),
@@ -127,7 +127,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           
                                                                  # Variable by which to fill flag states on map
                                                                  selectizeInput(
-                                                                   "east_asia_pacific_vessel_origins_fill",
+                                                                   "middle_east_north_africa_vessel_origins_fill",
                                                                    label = "Fill flag state(s) by...",
                                                                    choices = c("# of Different Vessels", 
                                                                                "Total Engine Capacity (KW)",
@@ -140,7 +140,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           column(6, align = "center",
                                                           
                                                                  radioButtons(
-                                                                   "east_asia_pacific_vessel_origins_fill_rescale",
+                                                                   "middle_east_north_africa_vessel_origins_fill_rescale",
                                                                    label = "Fill scale is based on...",
                                                                    choices = c("All distant water fishing in the region (default)",
                                                                                "Selected EEZ only"),
@@ -157,7 +157,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                  ### Connectivity map 
                                                  column(12, id = "b-spaced-div",
                                                         
-                                                        leafletOutput("east_asia_pacific_vessel_origins_map", width = "auto")
+                                                        leafletOutput("middle_east_north_africa_vessel_origins_map", width = "auto")
                                                         
                                                  ) # /column
                                                  
@@ -168,14 +168,14 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                  ### Tab # 3  - Fishing Effort
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-effort",
+                                 tabPanel(value = "middle-east-north-africa-effort",
                                           
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Fishing Effort"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_effort",
+                                            tags$button(id = "middle_east_north_africa_info_effort",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                           ),
@@ -199,7 +199,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           column(6, align = "center",
                                                                  
                                                                  selectizeInput(
-                                                                   "east_asia_pacific_effort_select_flag_state",
+                                                                   "middle_east_north_africa_effort_select_flag_state",
                                                                    label = "Filter fishing activity by flag state...",
                                                                    choices = c("Select a flag state...", flag_state_choices),
                                                                    selected = "Select a flag state...",
@@ -218,19 +218,19 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           # All flag states
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_effort_map_all", 
+                                                                 plotOutput("middle_east_north_africa_effort_map_all", 
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_effort_summary_all")
+                                                                 uiOutput("middle_east_north_africa_effort_summary_all")
                                                                  
                                                           ),
                                                           # Selected flag state
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_effort_map_selected",
+                                                                 plotOutput("middle_east_north_africa_effort_map_selected",
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_effort_summary_selected")
+                                                                 uiOutput("middle_east_north_africa_effort_summary_selected")
                                                                  
                                                                  
                                                           )
@@ -245,14 +245,14 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                  ### Tab # 4  - Global fishing footprint
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-subsidies",
+                                 tabPanel(value = "middle-east-north-africa-subsidies",
                                           
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Subsidy Intensity"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_subsidies",
+                                            tags$button(id = "middle_east_north_africa_info_subsidies",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                             ),
@@ -276,7 +276,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           column(6, align = "center",
                                                                  
                                                                  selectizeInput(
-                                                                   "east_asia_pacific_subsidies_select_flag_state",
+                                                                   "middle_east_north_africa_subsidies_select_flag_state",
                                                                    label = "Filter fishing activity by flag state...",
                                                                    choices = c("Select a flag state...", flag_state_choices),
                                                                    selected = "Select a flag state...",
@@ -296,20 +296,20 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           # All flag states
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_subsidies_map_all", 
+                                                                 plotOutput("middle_east_north_africa_subsidies_map_all", 
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_subsidies_summary_all")
+                                                                 uiOutput("middle_east_north_africa_subsidies_summary_all")
                                                                  
                                                                  
                                                           ),
                                                           # Selected flag state
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_subsidies_map_selected",
+                                                                 plotOutput("middle_east_north_africa_subsidies_map_selected",
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_subsidies_summary_selected")
+                                                                 uiOutput("middle_east_north_africa_subsidies_summary_selected")
                                                                  
                                                                  
                                                           )

@@ -1,12 +1,12 @@
 ### -----------------------------------
 #
 # ACP Atlas of Distant Water Fishing
-# UI - Tab 2: Africa
+# UI - Tab 4: Latin America & Caribbean
 # 
 ### ------------------------------------
 
 ### Function
-EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
+LatinAmericaCaribbean = function(latin_america_caribbean_eezs, flag_state_choices)
   fluidPage(
             
             # Page style
@@ -35,7 +35,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                    # Return to regional map button
                                    column(12, id = "t-spaced-div",
                                  
-                                          tags$button(id = "east_asia_pacific_return_to_region",
+                                          tags$button(id = "latin_america_caribbean_return_to_region",
                                                       tags$b("Return to Regional Map"),
                                                       class = "btn action-button rounded-button")
                                    ),
@@ -44,16 +44,16 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                    column(12, id = "tb-spaced-div",
                                           
                                           # Africa map with selectable EEZs
-                                          leafletOutput("east_asia_pacific_nav_map", width = "auto", height = "350px")
+                                          leafletOutput("latin_america_caribbean_nav_map", width = "auto", height = "350px")
 
                                    ),
                                    
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("east_asia_pacific_eez_select",
+                                          selectizeInput("latin_america_caribbean_eez_select",
                                                          label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", east_asia_pacific_eezs),
+                                                         choices = c("Select..." = "Select a coastal state...", latin_america_caribbean_eezs),
                                                          selected = "Select a coastal state...",
                                                          width = "100%")
     
@@ -73,20 +73,20 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                    column(12,
                           
                           # tabBox
-                          tabBox(width = 12, id = "east-asia-pacific-results-tabs", 
+                          tabBox(width = 12, id = "latin-america-caribbean-results-tabs", 
                                  
                                  ### --------------------------
                                  ### Tab # 1  - Stats overview
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-summary",
+                                 tabPanel(value = "latin-america-caribbean-summary",
                                    
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Summary"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_summary",
+                                            tags$button(id = "latin_america_caribbean_info_summary",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                           ),
@@ -95,7 +95,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                           column(12, id = "tblr-spaced-div",
                                                  
                                                  # Interactive text
-                                                 uiOutput("east_asia_pacific_country_profile")
+                                                 uiOutput("latin_america_caribbean_country_profile")
                                                  
                                           )
                                  ),
@@ -104,14 +104,14 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                  ### Tab # 2  - Origins of distant water vessels
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-origins",
+                                 tabPanel(value = "latin-america-caribbean-origins",
                                           
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Vessel Origins"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_vessel_origins",
+                                            tags$button(id = "latin_america_caribbean_info_vessel_origins",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                             ),
@@ -127,7 +127,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           
                                                                  # Variable by which to fill flag states on map
                                                                  selectizeInput(
-                                                                   "east_asia_pacific_vessel_origins_fill",
+                                                                   "latin_america_caribbean_vessel_origins_fill",
                                                                    label = "Fill flag state(s) by...",
                                                                    choices = c("# of Different Vessels", 
                                                                                "Total Engine Capacity (KW)",
@@ -140,7 +140,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           column(6, align = "center",
                                                           
                                                                  radioButtons(
-                                                                   "east_asia_pacific_vessel_origins_fill_rescale",
+                                                                   "latin_america_caribbean_vessel_origins_fill_rescale",
                                                                    label = "Fill scale is based on...",
                                                                    choices = c("All distant water fishing in the region (default)",
                                                                                "Selected EEZ only"),
@@ -157,7 +157,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                  ### Connectivity map 
                                                  column(12, id = "b-spaced-div",
                                                         
-                                                        leafletOutput("east_asia_pacific_vessel_origins_map", width = "auto")
+                                                        leafletOutput("latin_america_caribbean_vessel_origins_map", width = "auto")
                                                         
                                                  ) # /column
                                                  
@@ -168,14 +168,14 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                  ### Tab # 3  - Fishing Effort
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-effort",
+                                 tabPanel(value = "latin-america-caribbean-effort",
                                           
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Fishing Effort"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_effort",
+                                            tags$button(id = "latin_america_caribbean_info_effort",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                           ),
@@ -199,7 +199,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           column(6, align = "center",
                                                                  
                                                                  selectizeInput(
-                                                                   "east_asia_pacific_effort_select_flag_state",
+                                                                   "latin_america_caribbean_effort_select_flag_state",
                                                                    label = "Filter fishing activity by flag state...",
                                                                    choices = c("Select a flag state...", flag_state_choices),
                                                                    selected = "Select a flag state...",
@@ -218,19 +218,19 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           # All flag states
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_effort_map_all", 
+                                                                 plotOutput("latin_america_caribbean_effort_map_all", 
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_effort_summary_all")
+                                                                 uiOutput("latin_america_caribbean_effort_summary_all")
                                                                  
                                                           ),
                                                           # Selected flag state
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_effort_map_selected",
+                                                                 plotOutput("latin_america_caribbean_effort_map_selected",
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_effort_summary_selected")
+                                                                 uiOutput("latin_america_caribbean_effort_summary_selected")
                                                                  
                                                                  
                                                           )
@@ -245,14 +245,14 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                  ### Tab # 4  - Global fishing footprint
                                  ### --------------------------
                                  
-                                 tabPanel(value = "east-asia-pacific-subsidies",
+                                 tabPanel(value = "latin-america-caribbean-subsidies",
                                           
                                           # Title
                                           tagList(
                                             # Text 
                                             tags$b("Subsidy Intensity"),
                                             # Info button
-                                            tags$button(id = "east_asia_pacific_info_subsidies",
+                                            tags$button(id = "latin_america_caribbean_info_subsidies",
                                                         class = "btn action-button info-button",
                                                         icon("info"))
                                             ),
@@ -276,7 +276,7 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           column(6, align = "center",
                                                                  
                                                                  selectizeInput(
-                                                                   "east_asia_pacific_subsidies_select_flag_state",
+                                                                   "latin_america_caribbean_subsidies_select_flag_state",
                                                                    label = "Filter fishing activity by flag state...",
                                                                    choices = c("Select a flag state...", flag_state_choices),
                                                                    selected = "Select a flag state...",
@@ -296,20 +296,20 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                                           # All flag states
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_subsidies_map_all", 
+                                                                 plotOutput("latin_america_caribbean_subsidies_map_all", 
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_subsidies_summary_all")
+                                                                 uiOutput("latin_america_caribbean_subsidies_summary_all")
                                                                  
                                                                  
                                                           ),
                                                           # Selected flag state
                                                           column(6, align = "center",
                                                                  
-                                                                 plotOutput("east_asia_pacific_subsidies_map_selected",
+                                                                 plotOutput("latin_america_caribbean_subsidies_map_selected",
                                                                             width = "auto"),
                                                                  
-                                                                 uiOutput("east_asia_pacific_subsidies_summary_selected")
+                                                                 uiOutput("latin_america_caribbean_subsidies_summary_selected")
                                                                  
                                                                  
                                                           )

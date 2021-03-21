@@ -44,7 +44,7 @@ EuropeCentralAsia = function(europe_central_asia_eezs, flag_state_choices)
                                    column(12, id = "tb-spaced-div",
                                           
                                           # Africa map with selectable EEZs
-                                          leafletOutput("europe_central_asia_nav_map", width = "auto", height = "250px")
+                                          leafletOutput("europe_central_asia_nav_map", width = "auto", height = "350px")
 
                                    ),
                                    

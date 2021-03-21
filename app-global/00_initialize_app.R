@@ -37,6 +37,7 @@ eez_ter_360 <- eez_ter_360 %>%
 ### REPLACE WITH ACTUAL DATA
 ter_flag_connectivity_data <- eez_ter_360 %>%
   st_drop_geometry() %>%
+  dplyr::filter(!(iso_ter %in% eu_countries)) %>%
   distinct(region, name_ter, iso_ter, name_sov, iso_sov) %>%
   arrange(region, name_ter)
 
@@ -48,6 +49,14 @@ names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_co
 # Europe & Central Asia
 europe_central_asia_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Europe & Central Asia"]
 names(europe_central_asia_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Europe & Central Asia"]
+
+# Latin America & Caribbean
+latin_america_caribbean_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Latin America & Caribbean"]
+names(latin_america_caribbean_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Latin America & Caribbean"]
+
+# Middle East & North Africa
+middle_east_north_africa_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Middle East & North Africa"]
+names(middle_east_north_africa_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Middle East & North Africa"]
 
 ### Data -----
 
