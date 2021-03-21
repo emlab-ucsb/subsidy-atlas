@@ -47,31 +47,31 @@ shinyServer(function(input, output, session) {
     ## Get regional dat
     regional_dat <- eez_region_360
     
-    # Formatting for semi-transparent title box over map
-    intro_overlay_formatting <- tags$style(HTML("
-  .leaflet-control.map-title {
-
-    transform: translate(0, 10%);
-    position: fixed !important;
-    left: 10%;
-    right: 10%;
-    text-align: center;
-    padding: 20px;
-    background: rgba(255,255,255,0.6);
-    color:black;
-
-    -webkit-box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
-    box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
-  }
-"))
-    
-    # Load text for title box
-    intro_top_overlay_text <- includeHTML("./text/01_intro_overlay.html")
-    
-    # Combine formatting and text for semi-transparent title box over map
-    intro_overlay <- tags$div(
-      intro_overlay_formatting, 
-      intro_top_overlay_text)
+#     # Formatting for semi-transparent title box over map
+#     intro_overlay_formatting <- tags$style(HTML("
+#   .leaflet-control.map-title {
+# 
+#     transform: translate(0, 10%);
+#     position: fixed !important;
+#     left: 10%;
+#     right: 10%;
+#     text-align: center;
+#     padding: 20px;
+#     background: rgba(255,255,255,0.6);
+#     color:black;
+# 
+#     -webkit-box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+#     box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+#   }
+# "))
+    # 
+    # # Load text for title box
+    # intro_top_overlay_text <- includeHTML("./text/01_intro_overlay.html")
+    # 
+    # # Combine formatting and text for semi-transparent title box over map
+    # intro_overlay <- tags$div(
+    #   intro_overlay_formatting, 
+    #   intro_top_overlay_text)
       
     # Leaflet map
     leaflet("regional_map", 
@@ -83,10 +83,10 @@ shinyServer(function(input, output, session) {
       
       addProviderTiles("Esri.OceanBasemap") %>% 
       
-      # Title box
-      addControl(intro_overlay, 
-                 position = "topleft", 
-                 className = "map-title") %>%
+      # # Title box
+      # addControl(intro_overlay, 
+      #            position = "topleft", 
+      #            className = "map-title") %>%
        
       addPolygons(data = regional_dat, 
                   fillColor = ~region_pal(region),
@@ -103,8 +103,7 @@ shinyServer(function(input, output, session) {
       setMaxBounds(lng1 = -270, lat1 = -90, lng2 = 270, lat2 = 90)
       
   })
-  
-  
+
   ### Based on where the user clicks on regional map, change tab
   observeEvent(input$regional_map_shape_click, {
     
@@ -120,6 +119,27 @@ shinyServer(function(input, output, session) {
     updateTabItems(session, "tabs", tab_navigation[[1]])
     
   })
+  
+  ### Action button: Show map text (and show "close" button) ---------------
+  observeEvent(input$ab_regional_map_expand_text, {
+    
+    # show panel
+    shinyjs::showElement(id = "regional_map_text_panel")
+    shinyjs::showElement(id = "regional_map_hide_text_arrow")
+    shinyjs::hideElement(id = "regional_map_expand_text_arrow")
+    
+  })
+  
+  ### Action button: Hide global subsidies map disclaimer (and show "expand" button) -------------------
+  observeEvent(input$ab_regional_map_hide_text, {
+    
+    # show panel
+    shinyjs::hideElement(id = "regional_map_text_panel")
+    shinyjs::hideElement(id = "regional_map_hide_text_arrow")
+    shinyjs::showElement(id = "regional_map_expand_text_arrow")
+    
+  }) 
+  
   
   ###------------------------------------------------------------------
   ### East Asia & Pacific ---------------------------------------------

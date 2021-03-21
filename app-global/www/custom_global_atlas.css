@@ -466,3 +466,78 @@ header.main-header {
   border-left-color: transparent;
   border-right-color: transparent;
 }
+
+/* ------ */
+/* Landing Page Interactive Text panel */
+/* -------*/
+
+/* Hide text button panel */
+#regional_map_hide_text_arrow {
+  background: rgba(255,255,255,0.9);
+  padding: 0;
+  left: 400px;
+  bottom: 150px;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+/* Hide text button */
+#ab_regional_map_hide_text {
+  background: rgba(255,255,255,0.9);
+  padding: 0;
+  height: 30px;
+  width: 100px;
+  border-radius: 5px 5px 0 0;
+  color: var(--accent-color);
+  line-height: 30px;
+  text-align: center;
+}
+
+#ab_regional_map_hide_text:hover {
+  background: var(--accent-color-2);
+}
+
+/* Show text button panel */
+#regional_map_expand_text_arrow {
+  background: rgba(255,255,255,0.9);
+  padding: 0;
+  left: 400px;
+  bottom: 0;
+  width: 100px;
+  height: 30px;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  z-index: 20;
+}
+
+/* Show text button */
+#ab_regional_map_expand_text {
+  background: rgba(255,255,255,0.9);
+  padding: 0;
+  height: 30px;
+  width: 100px;
+  border-radius: 5px 5px 0 0;
+  color: var(--accent-color);
+  line-height: 30px;
+  text-align: center;
+}
+
+#ab_regional_map_expand_text:hover {
+  background: var(--accent-color-2);
+}
+
+/* Map text panel */
+#regional_map_text_panel {
+  background: rgba(255,255,255,0.9);
+  padding: 15px 25px;
+  left: 100px;
+  right: 100px;
+  bottom: 0;
+  height: 150px;
+  border-radius: 5px 5px 0 0;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+  z-index: 15;
+}

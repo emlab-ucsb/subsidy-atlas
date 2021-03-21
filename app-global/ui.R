@@ -23,6 +23,7 @@ library(shinyjs)
 library(shinydashboard)
 library(leaflet)
 library(shinyBS)
+library(shinyjs)
 
 library(tidyverse)
 library(sf)
@@ -173,6 +174,9 @@ shinyUI(
      
      # Custom stylesheet
      tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "custom_global_atlas.css")),
+     
+     # Allow js functionality
+     useShinyjs(),
      
      # Tabs
      tabItems(
