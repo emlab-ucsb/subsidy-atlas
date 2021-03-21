@@ -222,8 +222,7 @@ shinyUI(
        
        # North America
        tabItem(tabName = "north-america",
-               fluidPage()
-               #NorthAmerica()
+               NorthAmerica(north_america_eezs, flag_state_choices)
        ),
        
        # South Asisa
