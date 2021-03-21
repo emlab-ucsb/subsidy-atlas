@@ -120,24 +120,6 @@ shinyUI(
                                          tabName = "selectregion",
                                          icon = NULL,
                                          selected = TRUE),
-
-                                # # Africa
-                                # menuItem("Africa", 
-                                #          tabName = "africa", 
-                                #          icon = NULL,
-                                #          selected = NULL),
-                                # 
-                                # # Caribbean
-                                # menuItem("Caribbean", 
-                                #          tabName = "caribbean", 
-                                #          icon = NULL,
-                                #          selected = NULL),
-                                # 
-                                # # Pacific 
-                                # menuItem("Pacific", 
-                                #          tabName = "pacific", 
-                                #          icon = NULL,
-                                #          selected = NULL),
                                 
                                 # East Asia & Pacific 
                                 menuItem("East Asia & Pacific", 
@@ -227,14 +209,12 @@ shinyUI(
        
        # South Asisa
        tabItem(tabName = "south-asia",
-               fluidPage()
-               #SouthAsia()
+               SouthAsia(south_asia_eezs, flag_state_choices)
        ),
        
        # South Asisa
        tabItem(tabName = "sub-saharan-africa",
-               fluidPage()
-               #SubSaharanAfrica()
+               SubSaharanAfrica(sub_saharan_africa_eezs, flag_state_choices)
        )
        
      ) # close tabItems

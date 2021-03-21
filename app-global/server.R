@@ -21,7 +21,9 @@ shinyServer(function(input, output, session) {
                 input$europe_central_asia_return_to_region,
                 input$latin_america_caribbean_return_to_region,
                 input$middle_east_north_africa_return_to_region,
-                input$north_america_return_to_region), {
+                input$north_america_return_to_region,
+                input$south_asia_return_to_region,
+                input$sub_saharan_africa_return_to_region), {
     updateTabItems(session, "tabs", "selectregion")
   })
   
@@ -752,6 +754,264 @@ shinyServer(function(input, output, session) {
       
       # Add a different colored polygon on top of map
       north_america_nav_map_proxy %>% 
+        addPolygons(data = selected_eez,
+                    fillColor = ~ region_pal_light(region),
+                    fillOpacity = 1,
+                    color = "white",
+                    weight = 2,
+                    highlight = highlightOptions(weight = 5,
+                                                 color = "#666",
+                                                 fillOpacity = 1,
+                                                 bringToFront = TRUE),
+                    group = "highlighted_eez",
+                    label = selected_eez$geoname_new,
+                    labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                             padding = "3px 8px"),
+                                                textsize = "13px",
+                                                direction = "auto")) 
+      
+      # %>%
+      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+    }
+    
+  }) # close observe event
+  
+  ###------------------------------------------------------------------
+  ### South Asia ---------------------------------------------
+  ###------------------------------------------------------------------
+  
+  ### Leaflet output: Navigational map for the region ---------
+  
+  output$south_asia_nav_map <- renderLeaflet({
+    
+    # Extract South Asia EEZs
+    south_asia_eezs <- eez_ter_360 %>%
+      dplyr::filter(region == "South Asia") %>%
+      dplyr::filter(pol_type == "200NM")
+    
+    # south_asia_disputed <- eez_ter_360 %>%
+    #   dplyr::filter(region == "South Asia") %>%
+    #   dplyr::filter(pol_type != "200NM")
+    
+    # Map
+    leaflet('south_asia_nav_map', 
+            options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
+      
+      htmlwidgets::onRender("function(el, x) {
+                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+      
+      addProviderTiles("Esri.OceanBasemap") %>% 
+      
+      # addPolygons(data = south_asia_disputed, 
+      #             fillColor = "grey",
+      #             fillOpacity = 0.8,
+      #             color= "white",
+      #             weight = 0.3,
+      #             highlight = highlightOptions(weight = 5,
+      #                                          color = "#666",
+      #                                          fillOpacity = 1,
+      #                                          bringToFront = TRUE),
+      #             label = south_asia_disputed$geoname_new,
+      #             layerId = NULL, #need this to select input below
+      #             labelOptions = labelOptions(style = list("font-weight" = "normal",
+      #                                                      padding = "3px 8px"),
+      #                                         textsize = "13px",
+      #                                         direction = "auto")
+      # ) %>%
+      
+      addPolygons(data = south_asia_eezs,
+                  fillColor = ~region_pal(region),
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = south_asia_eezs$geoname_new,
+                  layerId = south_asia_eezs$iso_ter, #need this to select input below
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")
+      ) %>%
+      setView(lng = 70, lat = 0, zoom = 3) %>%
+      setMaxBounds(lng1 = -20, lat1 = -90, lng2 = 160, lat2 = 90)
+    
+  })
+  
+  ### Update selectInput: Register user clicks on nav map ---------
+  
+  observeEvent(input$south_asia_nav_map_shape_click, {
+    
+    # Don't register clicks on the disputed areas/joint areas
+    req(!is.null(input$south_asia_nav_map_shape_click$id))
+    
+    updateSelectizeInput(session, "south_asia_eez_select",
+                         choices = south_asia_eezs,
+                         selected = input$south_asia_nav_map_shape_click$id)
+    
+  })
+  
+  ### Leaflet proxy: Create proxy for the nav map -----------
+  
+  south_asia_nav_map_proxy <- leafletProxy("south_asia_nav_map")
+  
+  ### Leaflet proxy: When user selects country either from the dropdown widget or by clicking on the map, highlight EEZ and change zoom --------------
+  
+  observeEvent(input$south_asia_eez_select, {
+    
+    if(input$south_asia_eez_select == "Select a coastal state..."){
+      
+      # Remove any previously highlighted polygon
+      south_asia_nav_map_proxy %>% clearGroup("highlighted_eez")  
+      
+      # Reset view to entire region
+      south_asia_nav_map_proxy %>% setView(lng = 70, lat = 0, zoom = 3) 
+      
+    }else{
+      
+      # Get code for selected EEZ
+      selected_eez <- subset(eez_ter_360, 
+                             eez_ter_360$iso_ter == input$south_asia_eez_select)
+      
+      # selected_eez_centroid <- st_centroid(selected_eez) %>%
+      #   st_coordinates()
+      
+      # Remove any previously highlighted polygon
+      south_asia_nav_map_proxy %>% clearGroup("highlighted_eez")
+      
+      # Add a different colored polygon on top of map
+      south_asia_nav_map_proxy %>% 
+        addPolygons(data = selected_eez,
+                    fillColor = ~ region_pal_light(region),
+                    fillOpacity = 1,
+                    color = "white",
+                    weight = 2,
+                    highlight = highlightOptions(weight = 5,
+                                                 color = "#666",
+                                                 fillOpacity = 1,
+                                                 bringToFront = TRUE),
+                    group = "highlighted_eez",
+                    label = selected_eez$geoname_new,
+                    labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                             padding = "3px 8px"),
+                                                textsize = "13px",
+                                                direction = "auto")) 
+      
+      # %>%
+      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+    }
+    
+  }) # close observe event
+  
+  ###------------------------------------------------------------------
+  ### Sub-Saharan Africa ---------------------------------------------
+  ###------------------------------------------------------------------
+  
+  ### Leaflet output: Navigational map for the region ---------
+  
+  output$sub_saharan_africa_nav_map <- renderLeaflet({
+    
+    # Extract Sub-Saharan Africa EEZs
+    sub_saharan_africa_eezs <- eez_ter_360 %>%
+      dplyr::filter(region == "Sub-Saharan Africa") %>%
+      dplyr::filter(pol_type == "200NM")
+    
+    sub_saharan_africa_disputed <- eez_ter_360 %>%
+      dplyr::filter(region == "Sub-Saharan Africa") %>%
+      dplyr::filter(pol_type != "200NM")
+    
+    # Map
+    leaflet('sub_saharan_africa_nav_map', 
+            options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
+      
+      htmlwidgets::onRender("function(el, x) {
+                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+      
+      addProviderTiles("Esri.OceanBasemap") %>% 
+      
+      addPolygons(data = sub_saharan_africa_disputed, 
+                  fillColor = "grey",
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = sub_saharan_africa_disputed$geoname_new,
+                  layerId = NULL, #need this to select input below
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")
+      ) %>%
+      
+      addPolygons(data = sub_saharan_africa_eezs,
+                  fillColor = ~region_pal(region),
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = sub_saharan_africa_eezs$geoname_new,
+                  layerId = sub_saharan_africa_eezs$iso_ter, #need this to select input below
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")
+      ) %>%
+      setView(lng = 10, lat = -20, zoom = 2) %>%
+      setMaxBounds(lng1 = -85, lat1 = -90, lng2 = 95, lat2 = 90)
+    
+  })
+  
+  ### Update selectInput: Register user clicks on nav map ---------
+  
+  observeEvent(input$sub_saharan_africa_nav_map_shape_click, {
+    
+    # Don't register clicks on the disputed areas/joint areas
+    req(!is.null(input$sub_saharan_africa_nav_map_shape_click$id))
+    
+    updateSelectizeInput(session, "sub_saharan_africa_eez_select",
+                         choices = sub_saharan_africa_eezs,
+                         selected = input$sub_saharan_africa_nav_map_shape_click$id)
+    
+  })
+  
+  ### Leaflet proxy: Create proxy for the nav map -----------
+  
+  sub_saharan_africa_nav_map_proxy <- leafletProxy("sub_saharan_africa_nav_map")
+  
+  ### Leaflet proxy: When user selects country either from the dropdown widget or by clicking on the map, highlight EEZ and change zoom --------------
+  
+  observeEvent(input$sub_saharan_africa_eez_select, {
+    
+    if(input$sub_saharan_africa_eez_select == "Select a coastal state..."){
+      
+      # Remove any previously highlighted polygon
+      sub_saharan_africa_nav_map_proxy %>% clearGroup("highlighted_eez")  
+      
+      # Reset view to entire region
+      sub_saharan_africa_nav_map_proxy %>% setView(lng = 10, lat = -20, zoom = 2)
+      
+    }else{
+      
+      # Get code for selected EEZ
+      selected_eez <- subset(eez_ter_360, 
+                             eez_ter_360$iso_ter == input$sub_saharan_africa_eez_select)
+      
+      # selected_eez_centroid <- st_centroid(selected_eez) %>%
+      #   st_coordinates()
+      
+      # Remove any previously highlighted polygon
+      sub_saharan_africa_nav_map_proxy %>% clearGroup("highlighted_eez")
+      
+      # Add a different colored polygon on top of map
+      sub_saharan_africa_nav_map_proxy %>% 
         addPolygons(data = selected_eez,
                     fillColor = ~ region_pal_light(region),
                     fillOpacity = 1,

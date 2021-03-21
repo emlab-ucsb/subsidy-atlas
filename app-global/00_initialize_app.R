@@ -62,6 +62,14 @@ names(middle_east_north_africa_eezs) <- ter_flag_connectivity_data$name_ter[ter_
 north_america_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "North America"]
 names(north_america_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "North America"]
 
+# South Asia
+south_asia_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "South Asia"]
+names(south_asia_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "South Asia"]
+
+# Sub-Saharan Africa
+sub_saharan_africa_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Sub-Saharan Africa"]
+names(sub_saharan_africa_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Sub-Saharan Africa"]
+
 ### Data -----
 
 # 1) CSV of ACP EEZ and ISO3 codes
