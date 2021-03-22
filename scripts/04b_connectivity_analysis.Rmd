@@ -30,6 +30,12 @@ library(ggalt) # transform to robinson projection
 # Path to vessel list
 vessel_list_path <- here::here("results", "03b-distant-water-fishing", "vessel_list_2018_distant_water.csv")
 
+# Path to eez file
+eez_path <- here::here("data", "edited", "world_eez_v11_simple_neg360_360_ter_duplicates.gpkg")
+
+# Path to land file
+land_path <- here::here("data", "edited", "ne_50m_admin_neg360_360.gpkg")
+
 ### Create results directories
 results_dir <- here::here("results/04b-connectivity-analysis/")
   if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
@@ -45,8 +51,8 @@ vessel_list_raw <- read.csv(vessel_list_path, stringsAsFactors = F)
 ```
 
 ```{r}
-flag_eez_fao_summary <- vessel_list_raw %>%
-  group_by(eez_id, flag_iso3, flag_sovereign_iso3, is_EU) %>%
+flag_eez_summary <- vessel_list_raw %>%
+  group_by(eez_id, flag_iso3, is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -61,603 +67,413 @@ flag_eez_fao_summary <- vessel_list_raw %>%
 Now let's load in our world and EEZ polygons so we can start matching them up and finding their centroids. 
 
 ```{r}
+land_sf <- st_read(land_path) %>%
+  st_set_crs(4326)
 
+eez_sf <- st_read(eez_path) %>%
+  st_set_crs(4326) %>%
+  rename(eez_id = mrgid)
 ```
 
+Starting with the EEZ file, let's attach our summary statistics directly to it to check that things match up. 
+
+```{r}
+# Match all rows (1442 obs)
+eez_dw_sf <- eez_sf %>%
+  full_join(flag_eez_fao_summary, by = "eez_id")
+
+# First extract rows with both a geoname and stats (1337 rows)
+eez_dw_sf_match <- eez_dw_sf %>%
+  dplyr::filter(!is.na(geoname) & !is.na(n_vessels))
+
+# Let's find EEZs with no distant water fishing (97 entries)
+# Most appear to belong to either EU states, 
+eez_no_dw <- eez_dw_sf %>%
+  dplyr::filter(is.na(n_vessels) & !is.na(geoname))
+
+# Let's see if we have any outdated EEZ codes with distant water fishing, but no EEZ info (8 entries)
+# Not ideal, but they all correspond to two EZZ codes: "8344" (Chagos Archipelago - UK/Mauritius) and "8399" (Bouvet Island - Norway). 
+# Leaving these for now. 
+eez_no_sf <- eez_dw_sf %>%
+  dplyr::filter(!is.na(n_vessels) & is.na(geoname))
+
+# Let's save all but the last category
+eez_dw_sf <- eez_dw_sf %>%
+  dplyr::filter((!is.na(n_vessels) & !is.na(geoname)) | (is.na(n_vessels) & !is.na(geoname)))
+```
+
+Now let's do something similar with our land file. 
+
+```{r}
+# Match all rows (1407 obs)
+land_flag_sf <- land_sf %>%
+  full_join(flag_eez_fao_summary, by = c("admin_iso3" = "flag_iso3"))
+
+# First extract rows with both an admin name and stats (1289 rows)
+land_flag_sf_match <- land_flag_sf %>%
+  dplyr::filter(!is.na(admin) & !is.na(n_vessels))
+
+# Then find countries with no dw fishing vessels (112 rows)
+land_no_dw <- land_flag_sf %>%
+  dplyr::filter(!is.na(admin) & is.na(n_vessels))
+
+# Any vessel flags with no matching land? (6 entries)
+# All coorespond to "TUV" - "Tuvalu" doesn't appear on our map for some reason. Appears to only be one vessel, probably not a big deal. 
+land_no_sf <- land_flag_sf %>%
+  dplyr::filter(is.na(admin) & !is.na(n_vessels))
+
+# Save all but the last
+land_flag_sf <- land_flag_sf %>%
+  dplyr::filter((!is.na(admin) & !is.na(n_vessels)) | (!is.na(admin) & is.na(n_vessels)))
+
+```
 
 # Connectivity plots
 
-## Flag state and EEZ centroids 
+## EEZ Centroids 
 
 In order to make our connection plots, we need to find the centroids of each EEZ and flag state so we can create the connectivity lines. In the Distant Water Fishing Atlas, this gets a little tricky because we want our plots to be centered on each EEZ of interest, depending on the region. 
 
-This is why we have created files with our EEZ and country polygons duplicated and extended such that the total extent ranges from -540 to 540 degrees. We can then clip these to the appropriate extents for each of our seven regions, such that no polygons (and connectivity) lines get bifurcated. 
+This is why we have created files with our EEZ and country polygons duplicated and extended such that the total extent ranges from -360 to 360 degrees. We can then clip these to the appropriate extents for each of our seven regions, such that no polygons (and connectivity) lines should be getting bifurcated. 
 
-For the purposes of plotting the EEZs in which the fishing activity is taking place, we're using a simplified form of the Maritime Boundaries - World EEZs (v11) from MarineRegions.org. 
+For the purposes of plotting the EEZs in which the fishing activity is taking place, we're using a simplified form of the Maritime Boundaries - World EEZs (v11) from MarineRegions.org.
 
-Things get slightly more complicated for the ACP eez analysis because we want to use three different world views for each of the three regions (so the region of interest is centered). Therefore we have created shapefiles that span from -360 to 360 degrees, which we can clip to the appropriate extents for each of our three regions (Africa, Caribbean, and Pacific). For Africa, we've chosen to use a -180 to 180 degree view (so we'll also use this for the flag state analysis and/or the top ranked eez analysis). For the Caribbean, we've chosen to use a -260 to 100 degree view. For the Pacific, we've chosen to use a 0 to 360 degree view. 
+For our seven regions, we're using the following regional centroids: 
+- East Asia & Pacific: (170, -5)
+- Europe & Central Asia: (0, 50)
+- Latin America & Caribbean: (-70, -15)
+- Middle East & North Africa: (25, 10)
+- North America: (-100, 40)
+- South Asia: (80, 15)
+- Sub-Saharan Africa: (25, -15) 
 
-```{r}
-### Create results directories -----
-# Shouldn't need to manually change anything in this section
-
-# If either the flag state or eez analyses should be run: 
-if(run_flag_state | run_eez){
-  
-  # Set general results directory
-  results_dir <- here::here("results/")
-  if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
-  
-  ## Create flag state results directories
-  if(run_flag_state){
-    
-    flag_state_results_dir <- paste0(results_dir, "flag_state_results/", flag_state_purpose, "/")
-    if (dir.exists(flag_state_results_dir) == F) { dir.create(flag_state_results_dir, recursive = T) }
-
-    flag_state_country_dat_dir <- paste0(flag_state_results_dir, "country_dat/")
-    if (dir.exists(flag_state_country_dat_dir) == F) { dir.create(flag_state_country_dat_dir, recursive = T) }
-
-    flag_state_figures_dir <- paste0(flag_state_results_dir, "figures/")
-    if (dir.exists(flag_state_figures_dir) == F) { dir.create(flag_state_figures_dir, recursive = T) }
-
-    flag_state_pdf_dir <- paste0(flag_state_results_dir, "pdfs/")
-    if (dir.exists(flag_state_pdf_dir) == F) { dir.create(flag_state_pdf_dir, recursive = T) }
-    
-  } # /flag state results
-  
-  ## Create eez results directories
-  if(run_eez){
-    
-    eez_results_dir <- paste0(results_dir, "eez_results/", eez_purpose, "/")
-    if (dir.exists(eez_results_dir) == F) { dir.create(eez_results_dir, recursive = T) }
-    
-    eez_dat_dir <- paste0(eez_results_dir, "dat/")
-    if (dir.exists(eez_dat_dir) == F) { dir.create(eez_dat_dir, recursive = T) }
-
-    eez_figures_dir <- paste0(eez_results_dir, "figures/")
-    if (dir.exists(eez_figures_dir) == F) { dir.create(eez_figures_dir, recursive = T) }
-
-    eez_pdf_dir <- paste0(eez_results_dir, "pdfs/")
-    if (dir.exists(eez_pdf_dir) == F) { dir.create(eez_pdf_dir, recursive = T) }
-    
-    
-    # If EEZ purpose is "ACP", also create a results directory for the app
-    if(eez_purpose == "ACP"){
-      eez_results_app_dir <- paste0(here::here("SubsidyAtlasACP/"), "data/eez_results/", eez_purpose, "/")
-      if (dir.exists(eez_results_app_dir) == F) { dir.create(eez_results_app_dir, recursive = T) }
-    }
-    
-  } # /eez results
-  
-} # /all results
-```
-
-## Flag state and EEZ centroids 
-
-In order to make our connection plots, we need to find the centroids of each EEZ and flag state so we can create the connectivity lines. For the flag state analysis and the eez analyis for the top ranked EEZs, we're going to use a standard -180 to 180 degree world view for plotting to keep things simple. 
-
-Things get slightly more complicated for the ACP eez analysis because we want to use three different world views for each of the three regions (so the region of interest is centered). Therefore we have created shapefiles that span from -360 to 360 degrees, which we can clip to the appropriate extents for each of our three regions (Africa, Caribbean, and Pacific). For Africa, we've chosen to use a -180 to 180 degree view (so we'll also use this for the flag state analysis and/or the top ranked eez analysis). For the Caribbean, we've chosen to use a -260 to 100 degree view. For the Pacific, we've chosen to use a 0 to 360 degree view. 
-
-For the purposes of plotting the EEZs in which the fishing activity is taking place, we're using a simplified form of the Version 10 shapefile of the Maritime Boundaries - World EEZs from MarineRegions.org. We simplified the shapefile using mapshaper (online at mapshaper.org) to a tolerance of 0.5%. For the purposes of plotting the flag states to which distant water vessels are flagged, we're using the Version 2 shapefile of the Marine and land zones: the union of world country boundaries and EEZs from Marine Regions.org.
+As a starting point, we'll therefore try creating our regional extents by going +/- 180 degrees from those points: 
+- East Asia & Pacific: (-10, 350)
+- Europe & Central Asia: (-180, 180)
+- Latin America & Caribbean: (-250, -110)
+- Middle East & North Africa: (-155, 205)
+- North America: (-280, 80)
+- South Asia: (-100, 260)
+- Sub-Saharan Africa: (-155, 205) 
 
 ```{r}
-# For the flag state analysis and the eez analysis for the top ranked EEZs we're going to use the standard -180 to 180 degree world view
-# For the ACP analysis, things get a little complicated as we want to use three different world views for the three different regions
-# For Africa, we're going to use the standard -180 to 180 degree world view
-# For the Pacific, we're going to use a 0 to 360 degree world view
-# For the Caribbean, we're going to use a -260 to 100 degree world view
-# Therefore, if we're running the flag state analysis, or the top-ranked EEZ analysis, we'll just use the coordinates for the Africa version
-if(run_flag_state | run_eez){
-  
-  ### EEZs for location of fishing activity -----
-  eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "World_EEZ_v10_20180221_LR_-360_360"), layer = "eez_v10") %>%
-    st_transform(crs = 4326) %>%
-    setNames(tolower(names(.))) %>%
-    dplyr::select(id = cat,
-                  mrgid,
-                  geoname,
-                  pol_type,
-                  territory1,
-                  iso3_ter1 = iso_ter1,
-                  sovereign1,
-                  territory2,
-                  iso3_ter2 = iso_ter2,
-                  sovereign2,
-                  territory3,
-                  iso3_ter3 = iso_ter3,
-                  sovereign3)
-  
-  # Pacific
-  pacific_eez_map <- st_crop(eez_map, c(xmin=0, xmax=360, ymin=-90, ymax=90))
-  pacific_eez_map_centroids <- pacific_eez_map %>%
+  # East Asia & Pacific
+  east_asia_pacific_eez_sf <- st_crop(eez_sf, c(xmin=-10, xmax=350, ymin=-90, ymax=90))
+  east_asia_pacific_eez_centroids <- east_asia_pacific_eez_sf %>%
     st_centroid() %>%
-    dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
-    mutate(region = "Pacific")
+    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+    mutate(region = "East Asia & Pacific")
   
-  # Africa
-  africa_eez_map <- st_crop(eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
-  africa_eez_map_centroids <- africa_eez_map %>%
+  # Europe & Central Asia
+  europe_central_asia_eez_sf <- st_crop(eez_sf, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
+  europe_central_asia_eez_centroids <- europe_central_asia_eez_sf %>%
     st_centroid() %>%
-    dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
-    mutate(region = "Africa")
+    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+    mutate(region = "Europe & Central Asia")
   
-  # Caribbean
-  caribbean_eez_map <- st_crop(eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
-  caribbean_eez_map_centroids <- caribbean_eez_map %>%
+  # Latin America & Caribbean
+  latin_america_caribbean_eez_sf <- st_crop(eez_sf, c(xmin=-250, xmax=110, ymin=-90, ymax=90))
+  latin_america_caribbean_eez_centroids <- latin_america_caribbean_eez_sf %>%
     st_centroid() %>%
-    dplyr::select(eez_code = mrgid, eez_name = geoname, geometry) %>%
-    mutate(region = "Caribbean")
+    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+    mutate(region = "Latin America & Caribbean")
+  
+  # Middle East & North Africa
+  middle_east_north_africa_eez_sf <- st_crop(eez_sf, c(xmin=-155, xmax=205, ymin=-90, ymax=90))
+  middle_east_north_africa_eez_centroids <- middle_east_north_africa_eez_sf %>%
+    st_centroid() %>%
+    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+    mutate(region = "Middle East & North Africa")
+  
+  # North America
+  north_america_eez_sf <- st_crop(eez_sf, c(xmin=-280, xmax=80, ymin=-90, ymax=90))
+  north_america_eez_centroids <- north_america_eez_sf %>%
+    st_centroid() %>%
+    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+    mutate(region = "North America")
+  
+  # South Asia
+  south_asia_eez_sf <- st_crop(eez_sf, c(xmin=-100, xmax=260, ymin=-90, ymax=90))
+  south_asia_eez_centroids <- south_asia_eez_sf %>%
+    st_centroid() %>%
+    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+    mutate(region = "South Asia")
+  
+  # Sub Saharan Africa
+  sub_saharan_africa_eez_sf <- st_crop(eez_sf, c(xmin=-155, xmax=205, ymin=-90, ymax=90))
+  sub_saharan_africa_eez_centroids <- sub_saharan_africa_eez_sf %>%
+    st_centroid() %>%
+    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+    mutate(region = "Sub-Saharan Africa")
   
   # Bind together 
-  eez_map_centroids <- pacific_eez_map_centroids %>%
-    rbind(africa_eez_map_centroids) %>%
-    rbind(caribbean_eez_map_centroids)
+  eez_centroids <- east_asia_pacific_eez_centroids %>%
+    rbind(europe_central_asia_eez_centroids) %>%
+    rbind(latin_america_caribbean_eez_centroids) %>%
+    rbind(middle_east_north_africa_eez_centroids) %>%
+    rbind(north_america_eez_centroids) %>%
+    rbind(south_asia_eez_centroids) %>%
+    rbind(sub_saharan_africa_eez_centroids)
   
   # Put centroids in lon/lat columns
-  eez_map_centroid_coordinates <- tibble(eez_code = eez_map_centroids$eez_code,
-                                         eez_name = eez_map_centroids$eez_name,
-                                         region = eez_map_centroids$region) %>% 
-    bind_cols(do.call(rbind, st_geometry(eez_map_centroids)) %>%
+  eez_centroid_coordinates <- tibble(eez_id = eez_centroids$eez_id,
+                                     pol_type = eez_centroids$pol_type,
+                                     geoname = eez_centroids$geoname,
+                                     eez_ter_iso3 = eez_centroids$eez_ter_iso3,
+                                     eez_ter_name = eez_centroids$eez_ter_name,
+                                     eez_sov_iso3 = eez_centroids$eez_sov_iso3,
+                                     eez_sov_name = eez_centroids$eez_sov_name,
+                                     region = eez_centroids$region) %>% 
+    bind_cols(do.call(rbind, st_geometry(eez_centroids)) %>%
                 as_tibble() %>%
                 setNames(c("eez_lon", "eez_lat"))) %>%
-    arrange(eez_code)
+    arrange(eez_id)
   
-  ### Combined land/EEZs for flag states -----
-  land_eez_map <- read_sf(dsn = here::here("SubsidyAtlasACP", "data", "shapefiles_edit", "EEZ_land_v2_201410_-360_360"), layer = "EEZ_land_v2_201410_-360_360") %>%
-    st_transform(crs = 4326) %>%
-    setNames(tolower(names(.))) %>%
-    dplyr::select(id = objectid,
-                  iso3 = iso_3digit,
-                  country)
+  # We only need one set of EEZ coordinates for each EEZ - let's figure out which region each EEZ is being displayed in. 
+  eez_centroid_coordinates_keep <- eez_centroid_coordinates %>%
+    mutate(region_to_keep = case_when(eez_ter_iso3 == "ATA" ~ "NA",
+                                   eez_ter_iso3 == "ATF" ~ "Sub-Saharan Africa",
+                                   eez_ter_iso3 == "ESH" ~ "Middle East & North Africa",
+                                   eez_ter_iso3 == "MYT" ~ "Sub-Saharan Africa",
+                                   eez_ter_iso3 == "REU" ~ "Sub-Saharan Africa",
+                                   eez_ter_iso3 == "SHN" ~ "Sub-Saharan Africa",
+                                   eez_ter_iso3 == "SJM" ~ "Europe & Central Asia",
+                                   eez_ter_iso3 == "UMI" ~ "East Asia & Pacific",
+                                   eez_ter_iso3 == "WLF" ~ "East Asia & Pacific",
+                                   TRUE ~ countrycode(eez_ter_iso3, "iso3c", "region"))) %>%
+    dplyr::filter(region == region_to_keep) %>%
+    dplyr::select(-region_to_keep)
   
-   # Pacific
-  pacific_land_eez_map <- st_crop(land_eez_map, c(xmin=0, xmax=360, ymin=-90, ymax=90))
-  pacific_land_eez_map_centroids <- pacific_land_eez_map %>%
+  write_csv(eez_centroid_coordinates_keep, paste0(results_dir, "eez_centroid_coordinates.csv"))
+```
+
+## Flag State Centroids 
+
+We'll now repeat the process for our flag states. 
+
+```{r}
+  # East Asia & Pacific
+  east_asia_pacific_land_sf <- st_crop(land_sf, c(xmin=-10, xmax=350, ymin=-90, ymax=90))
+  east_asia_pacific_land_centroids <- east_asia_pacific_land_sf %>%
     st_centroid() %>%
-    dplyr::select(flag = iso3, flag_name = country, geometry) %>%
-    mutate(region = "Pacific")
+    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
+    mutate(region = "East Asia & Pacific")
   
-  # Africa
-  africa_land_eez_map <- st_crop(land_eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
-  africa_land_eez_map_centroids <- africa_land_eez_map %>%
+  # Europe & Central Asia
+  europe_central_asia_land_sf <- st_crop(land_sf, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
+  europe_central_asia_land_centroids <- europe_central_asia_land_sf %>%
     st_centroid() %>%
-    dplyr::select(flag = iso3, flag_name = country, geometry) %>%
-    mutate(region = "Africa")
+    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
+    mutate(region = "Europe & Central Asia")
   
-  # Caribbean
-  caribbean_land_eez_map <- st_crop(land_eez_map, c(xmin=-180, xmax=180, ymin=-90, ymax=90))
-  caribbean_land_eez_map_centroids <- caribbean_land_eez_map %>%
+  # Latin America & Caribbean
+  latin_america_caribbean_land_sf <- st_crop(land_sf, c(xmin=-250, xmax=110, ymin=-90, ymax=90))
+  latin_america_caribbean_land_centroids <- latin_america_caribbean_land_sf %>%
     st_centroid() %>%
-    dplyr::select(flag = iso3, flag_name = country, geometry) %>%
-    mutate(region = "Caribbean")
+    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
+    mutate(region = "Latin America & Caribbean")
+  
+  # Middle East & North Africa
+  middle_east_north_africa_land_sf <- st_crop(land_sf, c(xmin=-155, xmax=205, ymin=-90, ymax=90))
+  middle_east_north_africa_land_centroids <- middle_east_north_africa_land_sf %>%
+    st_centroid() %>%
+    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
+    mutate(region = "Middle East & North Africa")
+  
+  # North America
+  north_america_land_sf <- st_crop(land_sf, c(xmin=-280, xmax=80, ymin=-90, ymax=90))
+  north_america_land_centroids <- north_america_land_sf %>%
+    st_centroid() %>%
+    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
+    mutate(region = "North America")
+  
+  # South Asia
+  south_asia_land_sf <- st_crop(land_sf, c(xmin=-100, xmax=260, ymin=-90, ymax=90))
+  south_asia_land_centroids <- south_asia_land_sf %>%
+    st_centroid() %>%
+    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
+    mutate(region = "South Asia")
+  
+  # Sub Saharan Africa
+  sub_saharan_africa_land_sf <- st_crop(land_sf, c(xmin=-155, xmax=205, ymin=-90, ymax=90))
+  sub_saharan_africa_land_centroids <- sub_saharan_africa_land_sf %>%
+    st_centroid() %>%
+    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
+    mutate(region = "Sub-Saharan Africa")
   
   # Bind together
-  land_eez_map_centroids <- pacific_land_eez_map_centroids %>%
-    rbind(africa_land_eez_map_centroids) %>%
-    rbind(caribbean_land_eez_map_centroids)
-  
-  
+  land_centroids <- east_asia_pacific_land_centroids %>%
+    rbind(europe_central_asia_land_centroids) %>%
+    rbind(latin_america_caribbean_land_centroids) %>%
+    rbind(middle_east_north_africa_land_centroids) %>%
+    rbind(north_america_land_centroids) %>%
+    rbind(south_asia_land_centroids) %>%
+    rbind(sub_saharan_africa_land_centroids)
   
   # Put centroids in lon/lat columns
-  land_eez_map_centroid_coordinates <- tibble(flag = land_eez_map_centroids$flag,
-                                              flag_name = land_eez_map_centroids$flag_name,
-                                              region = land_eez_map_centroids$region) %>% 
-    bind_cols(do.call(rbind, st_geometry(land_eez_map_centroids)) %>%
+  land_centroid_coordinates <- tibble(admin_iso3 = land_centroids$admin_iso3,
+                                      admin = land_centroids$admin,
+                                      sov_iso3 = land_centroids$sov_iso3,
+                                      sovereign = land_centroids$sovereign,
+                                      region = land_centroids$region) %>% 
+    bind_cols(do.call(rbind, st_geometry(land_centroids)) %>%
                 as_tibble() %>%
                 setNames(c("flag_lon", "flag_lat"))) %>%
-    arrange(flag) %>%
-    na.omit()
+    arrange(admin_iso3) %>%
+    na.omit() # removes Somaliland
   
-   #Manually correct certain centroids
-   manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
-   
-   land_eez_map_centroid_coordinates <- land_eez_map_centroid_coordinates %>%
-     left_join(manual_coordinates_flags, by = c("flag", "region")) %>%
-     mutate(flag_lon = ifelse(!is.na(flag_lon_edit), flag_lon_edit, flag_lon),
-            flag_lat = ifelse(!is.na(flag_lat_edit), flag_lat_edit, flag_lat)) %>%
-     dplyr::select(-flag_lon_edit, -flag_lat_edit)
+  write_csv(land_centroid_coordinates, paste0(results_dir, "land_centroid_coordinates.csv"))
 
-}
+  
+   # #Manually correct certain centroids
+   # manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
+   # 
+   # land_eez_map_centroid_coordinates <- land_eez_map_centroid_coordinates %>%
+   #   left_join(manual_coordinates_flags, by = c("flag", "region")) %>%
+   #   mutate(flag_lon = ifelse(!is.na(flag_lon_edit), flag_lon_edit, flag_lon),
+   #          flag_lat = ifelse(!is.na(flag_lat_edit), flag_lat_edit, flag_lat)) %>%
+   #   dplyr::select(-flag_lon_edit, -flag_lat_edit)
+
 ```
 
-We also need to do some setup for our figures. 
+
+## Add centroids to our EEZ/flag state distant water summary
 
 ```{r}
-if(run_flag_state | run_eez){
-  
-  # Custom theme for map
-  maptheme <- theme_minimal() +
-    theme(panel.background = element_rect(fill = "grey27", colour = NA),
-          panel.grid.major = element_line(colour = "grey27"),
-          panel.border = element_blank(),
-          plot.margin = unit(c(0, 0, 0, 0), "mm"),
-          plot.background = element_blank(),
-          axis.title = element_blank(),
-          axis.text = element_blank(),
-          axis.ticks.length = unit(0, "pt"))
-
-}
-if(run_flag_state){
-  
-  # Custom color palette for Sumaila subsidy types
-  goodColors <- rev(brewer.pal(3, "Blues"))
-  names(goodColors) <- levels(subsidy_dat_edit$type)[1:3]
-  
-  badColors <- rev(brewer.pal(7, "Reds"))
-  names(badColors) <- levels(subsidy_dat_edit$type)[4:10]
-  
-  ambigColors <- c("purple", "mediumorchid", "violet")
-  names(ambigColors) <- levels(subsidy_dat_edit$type)[11:13]
-  
-  myColors <- c(goodColors, badColors, ambigColors)
-
-}
+flag_eez_summary_centroids <- flag_eez_summary %>%
+  left_join(eez_centroid_coordinates_keep, by = c("eez_id")) %>%
+  left_join(land_centroid_coordinates, by = c("region", "flag_iso3" = "admin_iso3"))
 ```
 
-## Part 1: Identify top DW fishing fleets by flag state
-
-Currently, the only option for this part of the analysis is to look at distant water fishing fleets by flag state, ranked according to total distant water fishing effort. 
-
-We first rank flag states with DW fishing fleets based on the following metrics:
-- Number of fishing vessels partaking in DW fishing
-- Total capacity of fishing vessels partaking of DW fishing
-- Total number of DW fishing hours
-- Total number of DW fishing KWh 
+### East Asia & Pacific
 
 ```{r}
-if(run_flag_state){
-
-# Mutate totals by flag state for all
-flag_state_ranking <- dw_effort_final_manual %>% 
-  group_by(flag, ssvid) %>%
-  summarize(engine_power_kw = unique(engine_power_kw),
-            fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
+# Let's do a test run with East Asia (-10, 350)
+eez_mapping_wlines_east_asia_pacific <- flag_eez_summary_centroids %>%
   ungroup() %>%
-  group_by(flag) %>%
-  summarize(total_vessels = n_distinct(ssvid),
-            total_capacity = sum(engine_power_kw, na.rm = T),
-            total_fishing_hours = sum(fishing_hours, na.rm = T),
-            total_fishing_KWh = sum(fishing_KWh, na.rm = T)) %>% 
-  arrange(desc(total_vessels)) %>%
-  ungroup() %>%
-  mutate(vessel_rank = dense_rank(desc(total_vessels)),
-         capacity_rank = dense_rank(desc(total_capacity)),
-         fishing_hours_rank = dense_rank(desc(total_fishing_hours)),
-         fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
-  mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
-
-# Save flag states by average ranking
-write_csv(flag_state_ranking, paste0(flag_state_results_dir, "flag_state_ranking_", analysis_year, ".csv"))
-
-}
-```
-
-We then identify the top `r number_of_top_countries_flag` flag states. For each of our top flag states, we also identify all EEZs in which DW vessels flagged to that state fish.
-
-```{r}
-if(run_flag_state){
-  
-  # Set defaults in case option isn't correctly specified above
-  if(is.na(number_of_top_countries_flag) | !is.numeric(number_of_top_countries_flag)){
-    number_of_top_countries_flag <- 10
-  }
-
-  flag_state_ranking_top <- flag_state_ranking %>%
-    top_n(-number_of_top_countries_flag, wt = avg_rank)
-  
-  # Get iso3 codes for selected flag states 
-  top_flag_states <- flag_state_ranking_top$flag
-
-  top_flag_states_names <- (tibble(flag = top_flag_states) %>%
-    mutate(name = countrycode::countrycode(flag, "iso3c", "country.name")))$name
-
-  flag_state_combinations <- dw_effort_final_manual %>%
-    dplyr::filter(flag %in% top_flag_states) %>%
-    group_by(flag, eez_code = as.numeric(eez_code)) %>%
-    summarize(vessels = n_distinct(ssvid),
-              capacity = sum(engine_power_kw, na.rm = T),
-              fishing_h = sum(fishing_hours_year_eez, na.rm = T),
-              fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
-    arrange(flag) %>%
-    ungroup() %>%
-    mutate(region == "Africa")
-
-}
-```
-
-We then match the previously obtained centroids to each of our top flag states, as well as all EEZs in which DW vessels from these states fish. 
-
-```{r}
-if(run_flag_state){
-  
-flag_state_mapping <- flag_state_combinations %>%
-  left_join(land_eez_map_centroid_coordinates, by = c("flag" = "flag", "region" = "region")) %>%
-  left_join(eez_map_centroid_coordinates, by = c("eez_code" = "eez_code", "region" = "region"))
-  
-flag_state_mapping_wlines <- flag_state_mapping %>%
+  dplyr::filter(!is.na(flag_lon)) %>%
+  dplyr::filter(region == "East Asia & Pacific") %>%
   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
   purrr::transpose() %>% 
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
   purrr::map(st_linestring) %>%
   st_sfc(crs = 4326) %>%
   st_sf(geometry = .) %>% 
-  bind_cols(flag_state_mapping) %>%
+  bind_cols(flag_eez_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region == "East Asia & Pacific")) %>%
   select(everything(), geometry) %>% 
   st_segmentize(units::set_units(100,km)) %>% 
-  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>% 
-  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>% 
-  sf::st_sf(crs = 4326) %>%
-  mutate(fishing_KWh = round(fishing_KWh, digits = 4))
+  st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
+  st_shift_longitude() %>%
+  sf::st_sf(crs = 4326) 
 
-st_write(flag_state_mapping_wlines, dsn = paste0(flag_state_results_dir, "flag_state_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
+test_dat <- eez_mapping_wlines_east_asia_pacific %>%
+  dplyr::filter(eez_id == 8455)
 
-}
-```
-
-We then make our connectivity maps and subsidy plots for each of our top ranked flag states. 
-
-```{r}
-if(run_flag_state){
-  
-## For loop to run top X countries
-for(i in 1:length(top_flag_states)){
-   
-### Step 1: Flag state connectivity data
-# Pull connectivity data for only our flag state of interest
-flag_dat <- flag_state_mapping_wlines %>%
-  dplyr::filter(flag == top_flag_states[i]) 
-
-# Write flag state connectivity data
-write_csv(flag_dat, path = paste0(flag_state_country_dat_dir, top_flag_states[i], "_flag_state_dat.csv"))
-
-### Step 2: Make connectivity map
-# Map
-map_plot <- ggplot()+
-  geom_sf(data = EEZ_map %>% dplyr::filter(is.na(zone)), fill = NA, color = "grey60", size = 0.1)+ # world EEZs (transparent, light grey border lines)
-  geom_sf(data = country_map, fill = "grey2", color = "grey40", size = 0.1)+ # world countries (dark grey, white border lines)
-  geom_sf(data = country_map %>% dplyr::filter(iso3 == top_flag_states[i]), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, white border lines)
-  geom_sf(data = EEZ_map %>% dplyr::filter(iso_tr1 == top_flag_states[i]), fill = NA, alpha = 0.5, color = NA, size = 0.1) +
-  geom_sf(data = EEZ_map %>% dplyr::filter(mrgid %in% flag_dat$eez_code), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = flag_dat, col = "darkgoldenrod", size = 0.25) + 
-  maptheme+
-  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+test_plot_east_asia_pacific <- ggplot()+
+  geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = test_dat, col = "darkgoldenrod", size = 0.25) +
+  coord_sf(xlim = c(-10,350), ylim = c(-90,90))+
   scale_x_continuous(expand = c(0,0))+
   scale_y_continuous(expand = c(0,0))
 
-# Save map
-ggsave(map_plot, filename = paste0(flag_state_figures_dir, top_flag_states[i], "_flag_state_map.png"), width = 10, units = "in")
-
-# Combine map into a one page pdf
-sfg_logo_white <- readPNG(here::here("common", "sfg-logo-white.png"))
-logo_white <- rasterGrob(sfg_logo_white, interpolate=TRUE, vjust = 0.8, hjust = 0.6)
-
-title1 <- textGrob(paste0("Global network of distant-water fishing\nFlag state: ", top_flag_states_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "white", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
-
-caption1 <- textGrob(paste0("This map shows the global range of distant-water fishing effort for vessels flagged to ", top_flag_states_names[i], ". Lines connect the flag state (pink) \nwith all foreign EEZs (blue) in which vessels flagged to that state fished in 2018. Data were taken from Global Fishing Watch (2018)."), gp = gpar(fontsize = 10, col = "white", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
-
-lay1 <- rbind(c(1,4),
-              c(2,2),
-              c(2,2),
-              c(3,3))
-
-# Put together connectivity map
-map_page <- grid.arrange(title1, map_plot, caption1, logo_white,
-                         layout_matrix = lay1,
-                         heights=unit(c(1,1.5,5,1), c("in")), 
-                         widths=unit(c(8,3), "in"))
-out1 <- cowplot::ggdraw(map_page) + 
-  theme(plot.background = element_rect(fill="grey27", color = NA))
-
-# Save connectivity map
-ggsave(out1, filename = paste0(flag_state_pdf_dir, top_flag_states[i], "_map_page.pdf"), width = 11, height = 8.5, units = "in")
-
-### Step 3: Make fisheries subsidies summary plot(s) 
-# Subsidies by subtype plot
-flag_subsidy_dat <- subsidy_dat_ordered %>%
-  dplyr::filter(iso3 == top_flag_states[i]) %>%
-  na.omit()
-
-if(nrow(flag_subsidy_dat) > 0){
-  
-  # Filter color scale to only use those for subsidy types represented by that country
-  filtered_colors <- myColors[names(myColors) %in% unique(flag_subsidy_dat$type)]
-  
-  # Make plot
-  subsidy_plot <- ggplot(flag_subsidy_dat, aes(x = category, y = value/1e6, fill = type))+
-    geom_bar(stat = "identity")+
-    scale_fill_manual(name = "Subsidy Type", values = filtered_colors, labels = unique(flag_subsidy_dat$type))+
-    theme_bw()+
-    coord_flip()+
-    scale_y_continuous(expand = c(0,0), labels = scales::comma)+
-    labs(x = "", y = "Est. fisheries subsidies (2018 $USD, millions)")
-  
-  # Save plot as png
-  ggsave(subsidy_plot, filename = paste0(flag_state_figures_dir, top_flag_states[i], "_subsidy_plot.png"), width = 10, height = 6, units = "in")
-  
-  # Make one page pdf of subsidy/other statistics
-  sfg_logo_black <- readPNG(here::here("common", "sfg-logo-black.png"))
-  logo_black <- rasterGrob(sfg_logo_black, interpolate=TRUE, vjust = 0.8, hjust = 0.6)
-
-  title2 <- textGrob(paste0("Global network of distant-water fishing\nFlag state: ", top_flag_states_names[i]), gp = gpar(fontsize=16, fontface="bold", lineheight=1, col = "black", fontfamily = "Helvetica"), hjust = 0.55, vjust = 1)
-  
-  dw_summary <- textGrob(
-    paste0("Number of distant-water vessels: ", format(flag_state_ranking_top$total_vessels[i], big.mark = ","), 
-           "  |  Rank: ", flag_state_ranking_top$vessel_rank[i],
-           "\nNumber of EEZs fished: ", length(unique(flag_dat$eez_code)), 
-           # "  |  Rank: ", flag_state_combinations_ranking$eez_rank[flag_state_combinations_ranking$flag == top_flag_states[i]],
-           "\nTotal distant-water capacity (KW): ", format(round(flag_state_ranking_top$total_capacity[i]), big.mark = ","),
-           "  |  Rank: ", flag_state_ranking_top$capacity_rank[i],
-           "\nTotal distant-water fishing effort (hours): ", format(round(flag_state_ranking_top$total_fishing_hours[i]), big.mark = ","),
-           "  |  Rank: ", flag_state_ranking_top$fishing_hours_rank[i],
-           "\nTotal distant-water fishing effort (KWh): ", format(round(flag_state_ranking_top$total_fishing_KWh), big.mark = ","),
-           "  |  Rank: ", flag_state_ranking_top$fishing_KWh_rank[i]), just = "left", x = unit(0.14, "npc")
-  )
-
-  caption2 <- textGrob(paste0("This figure shows fisheries subsides provided by ", top_flag_states_names[i], " in 2018 $USD. Subsidies are grouped into three types: neutral (purples), capacity-enhancing (reds), \nand beneficial (blues) based on their generalized effects. Data are updated estimates from those found in Sumaila et al. (2016)."), gp = gpar(fontsize = 10, col = "black", fontfamily = "Helvetica"), vjust = 0, hjust = 0.5)
-
-  # Layout matrix
-  lay <- rbind(c(1,5),
-               c(2,2),
-               c(3,3),
-               c(4,4))
-  
-  # Create info/summary page
-info_page <- grid.arrange(title2, dw_summary, subsidy_plot, caption2, logo_black, 
-                          layout_matrix = lay, 
-                          heights = unit(c(1,1.5,5,1), "in"), 
-                          widths = unit(c(8,3), "in"))
-
-out2 <- cowplot::ggdraw(info_page) +
-  theme(plot.background = element_rect(fill="white", color = NA))
-
-# Save summary page
-ggsave(out2, filename = paste0(flag_state_pdf_dir, top_flag_states[i], "_info_page.pdf"), width = 11, height = 8.5, units = "in")
-  
-# Save both plots into one pdf
-  out_flag_state <- marrangeGrob(grobs = list(out1, out2), nrow = 1, ncol = 1, top = NULL)
-  
-  ggsave(out_flag_state, filename = paste0(flag_state_pdf_dir, top_flag_states[i], "_combined.pdf"), width = 11, height = 8.5, units = "in")
-}
-}
-}
+test_plot_east_asia_pacific
 ```
-
-
-## Part 2: Identify top locations of DW fishing by EEZ
-
-If the purpose of the eez analysis is to identify the top `r number_of_top_countries_eez` EEZs in which DW fleets fish, we consider the following metrics:
-- Number of fishing vessels partaking in DW fishing
-- Total number of DW fishing hours
-- Total number of DW fishing KWh
+### Europe & Central Asia
 
 ```{r}
-if(run_eez){
-# Mutate totals by EEZ
-EEZ_ranking <- dw_effort_final_manual %>% 
-  group_by(eez_code, eez_name, eez_territory_iso3, eez_sovereign_iso3, ssvid) %>%
-  summarize(engine_power_kw = unique(engine_power_kw),
-            fishing_hours = sum(fishing_hours_year_eez, na.rm = T),
-            fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
+# Europe & Central Asia should be straightforward
+eez_mapping_wlines_europe_central_asia <- flag_eez_summary_centroids %>%
   ungroup() %>%
-  group_by(eez_code, eez_name, eez_territory_iso3, eez_sovereign_iso3) %>%
-  summarize(total_vessels = n_distinct(ssvid),
-            total_capacity = sum(engine_power_kw, na.rm = T),
-            total_fishing_hours = sum(fishing_hours, na.rm = T),
-            total_fishing_KWh = sum(fishing_KWh, na.rm = T)) %>% 
-  arrange(desc(total_vessels)) %>%
-  ungroup() %>%
-  mutate(vessel_rank = dense_rank(desc(total_vessels)),
-         capacity_rank = dense_rank(desc(total_capacity)),
-         fishing_hours_rank = dense_rank(desc(total_fishing_hours)),
-         fishing_KWh_rank = dense_rank(desc(total_fishing_KWh))) %>%
-  mutate(avg_rank = rowMeans(select(., c(vessel_rank, capacity_rank, fishing_hours_rank, fishing_KWh_rank))))
-
-  # Save
-  write_csv(EEZ_ranking, paste0(eez_results_dir, "EEZ_ranking_avg_", analysis_year, ".csv"))
-
-}
-```
-
-Alternatively, we may want to run the EEZ analysis for all ACP countries.
-
-```{r}
-if(run_eez){
-  
-# Get codes/name to run anlysis for 
-if(eez_purpose == "top_ranked"){
-  
-  EEZ_ranking_top <- EEZ_ranking %>%
-    top_n(-number_of_top_countries_eez, wt = avg_rank)
-
-  analysis_eezs <- EEZ_ranking_top$eez_code
-  analysis_eez_territory_iso3 <- EEZ_ranking_top$eez_territory_iso3
-  analysis_eez_territory_name <- countrycode(analysis_eez_territory_iso3, "iso3c", "country.name")
-  
-  ##EEZ combinations for the selected subset
-  eez_combinations <- dw_effort_final_manual %>%
-    dplyr::filter(eez_code %in% analysis_eezs) %>%
-    group_by(eez_code = as.numeric(eez_code), eez_territory_iso3, flag) %>%
-    summarize(vessels = n_distinct(ssvid),
-              capacity = sum(engine_power_kw, na.rm = T),
-              fishing_h = sum(fishing_hours_year_eez, na.rm = T),
-              fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
-    arrange(eez_code) %>%
-    ungroup() %>%
-    mutate(region = "Africa")
-  
-  # Combine with coordinates
-  eez_mapping <- eez_combinations %>%
-    left_join(eez_map_centroid_coordinates, by = c("eez_code" = "eez_code", "region" = "region")) %>%
-    left_join(land_eez_map_centroid_coordinates, by = c("flag" = "flag", "region" = "region")) 
-  
-   # There are some flag states for which we need to manually assign centroids: Hong Kong
-   # Vessels with an unknown flag do not have lat/lon coordinates
-  # Hong Kong (HKG)
-  eez_mapping$flag_lon[eez_mapping$flag == "HKG" & eez_mapping$region == "Africa"] <- 22.409
-  eez_mapping$flag_lat[eez_mapping$flag == "HKG" & eez_mapping$region == "Africa"] <- 114.139
-  
-
-}else if(eez_purpose == "ACP"){
-  
-  ACP_codes <- read_csv(here::here("SubsidyAtlasACP", "data", "ACP_eez_codes.csv")) %>% 
-    dplyr::select(territory, territory_iso3, mrgid, region) %>%
-    dplyr::filter(!is.na(mrgid))
-  
-  ACP_eez_filter <- EEZ_ranking %>%
-    dplyr::filter(eez_code %in% ACP_codes$mrgid)
-  
-  analysis_eezs <- ACP_eez_filter$eez_code
-  analysis_eez_territory_iso3 <- ACP_eez_filter$eez_territory_iso3
-  analysis_eez_territory_name <- countrycode(analysis_eez_territory_iso3, "iso3c", "country.name")
-  
-  ##EEZ combinations for the selected subset
-  eez_combinations <- dw_effort_final_manual %>%
-    dplyr::filter(eez_code %in% analysis_eezs) %>%
-    group_by(eez_code = as.numeric(eez_code), eez_territory_iso3, flag) %>%
-    summarize(vessels = n_distinct(ssvid),
-              capacity = sum(engine_power_kw, na.rm = T),
-              fishing_h = sum(fishing_hours_year_eez, na.rm = T),
-              fishing_KWh = sum(fishing_KWh_year_eez, na.rm = T)) %>%
-    arrange(eez_code) %>%
-    ungroup() %>%
-    left_join(ACP_codes %>% dplyr::select(mrgid, region), by = c("eez_code" = "mrgid"))
-  
-  # Combine with coordinates
-  eez_mapping <- eez_combinations %>%
-    left_join(eez_map_centroid_coordinates, by = c("eez_code" = "eez_code", "region" = "region")) %>%
-    left_join(land_eez_map_centroid_coordinates, by = c("flag" = "flag", "region" = "region")) 
-  
-  # The only flag states with NA flag_long/flag_lat coordiantes coorespond to vessels with an unknown flag so we're good there
-}
-
-}
-
-```
-
-In order to make our connection plots, we again need the centroids of each EEZ and flag state, which we match to each of our top EEZs, as well as to all flag states from which vessels are fishing in each EEZ.
-
-
-```{r}
-if(run_eez){
-
-if(eez_purpose == "top_ranked"){  
-# We then make our lines from each EEZ going to all of the countries fishing there. 
-eez_mapping_wlines <- eez_mapping %>%
+  dplyr::filter(!is.na(flag_lon)) %>%
+  dplyr::filter(region == "Europe & Central Asia") %>%
   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
   purrr::transpose() %>% 
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
   purrr::map(st_linestring) %>%
   st_sfc(crs = 4326) %>%
-  st_sf(geometry = .) %>%
-  bind_cols(eez_mapping) %>%
-  select(everything(), geometry) %>%
-  st_segmentize(units::set_units(100,km)) %>%
-  mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>%
-  st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>%
-  sf::st_sf(crs = 4326)
+  st_sf(geometry = .) %>% 
+  bind_cols(flag_eez_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region == "Europe & Central Asia")) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
+  #st_shift_longitude() %>%
+  sf::st_sf(crs = 4326) 
 
-st_write(eez_mapping_wlines, dsn = paste0(eez_results_dir, "eez_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
+test_dat <- eez_mapping_wlines_europe_central_asia %>%
+  dplyr::filter(eez_id == 8364)
+
+test_plot_europe_central_asia <- ggplot()+
+  geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = test_dat, col = "darkgoldenrod", size = 0.25) +
+  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
+
+test_plot_europe_central_asia
+```
+### Latin America & Caribbean
+
+```{r}
+# Europe & Central Asia should be straightforward
+eez_mapping_wlines_latin_america_caribbean <- flag_eez_summary_centroids %>%
+  ungroup() %>%
+  dplyr::filter(!is.na(flag_lon)) %>%
+  dplyr::filter(region == "Latin America & Caribbean") %>%
+  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(flag_eez_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region == "Latin America & Caribbean")) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
+  st_shift_longitude() %>%
+  sf::st_sf(crs = 4326) 
+
+test_dat <- eez_mapping_wlines_latin_america_caribbean %>%
+  dplyr::filter(eez_id == 8466)
+
+test_plot_latin_america_caribbean <- ggplot()+
+  geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = test_dat, col = "darkgoldenrod", size = 0.25) +
+  coord_sf(xlim = c(-250,110), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
+
+test_plot_latin_america_caribbean
+```
+
+```{r}
+if(run_eez){
+# 
+# if(eez_purpose == "top_ranked"){  
+# # We then make our lines from each EEZ going to all of the countries fishing there. 
+# eez_mapping_wlines <- eez_mapping %>%
+#   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+#   purrr::transpose() %>% 
+#   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+#   purrr::map(st_linestring) %>%
+#   st_sfc(crs = 4326) %>%
+#   st_sf(geometry = .) %>%
+#   bind_cols(eez_mapping) %>%
+#   select(everything(), geometry) %>%
+#   st_segmentize(units::set_units(100,km)) %>%
+#   mutate(geometry = (geometry + c(180,90)) %% c(360) - c(180,90)) %>%
+#   st_wrap_dateline(options = c("WRAPDATELINE=YES",  "DATELINEOFFSET=180"), quiet = TRUE) %>%
+#   sf::st_sf(crs = 4326)
+# 
+# st_write(eez_mapping_wlines, dsn = paste0(eez_results_dir, "eez_mapping_with_lines.shp"),  delete_dsn=TRUE, driver = "ESRI Shapefile")
 
 }else if(eez_purpose == "ACP"){
 

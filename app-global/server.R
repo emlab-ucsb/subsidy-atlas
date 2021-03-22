@@ -116,9 +116,9 @@ shinyServer(function(input, output, session) {
   ### Data Container -----------
   east_asia_pacific_rv <- reactiveValues(eezs = eez_ter_360 %>% 
                                            dplyr::filter(region == "East Asia & Pacific"),
-                                         map_lng = 175,
+                                         map_lng = 170,
                                          map_lat = -5,
-                                         map_zoom = 1)
+                                         map_zoom = 2)
   
   ### UI output: Select coastal state widget --------
   output$east_asia_pacific_eez_select <- renderUI({
@@ -276,7 +276,7 @@ shinyServer(function(input, output, session) {
   europe_central_asia_rv <- reactiveValues(eezs = eez_ter_360 %>%
                                              dplyr::filter(region == "Europe & Central Asia"),
                                            map_lng = 0,
-                                           map_lat = 40,
+                                           map_lat = 50,
                                            map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
@@ -554,8 +554,8 @@ shinyServer(function(input, output, session) {
   ### Data Container ----------
   middle_east_north_africa_rv <- reactiveValues(eezs = eez_ter_360 %>%
                                                   dplyr::filter(region == "Middle East & North Africa"),
-                                                map_lng = 30,
-                                                map_lat = 0,
+                                                map_lng = 25,
+                                                map_lat = 10,
                                                 map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
@@ -692,8 +692,8 @@ shinyServer(function(input, output, session) {
   ### Data Container ----------
   north_america_rv <- reactiveValues(eezs = eez_ter_360 %>%
                                        dplyr::filter(region == "North America"),
-                                     map_lng = -90,
-                                     map_lat = 20,
+                                     map_lng = -100,
+                                     map_lat = 40,
                                      map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
@@ -818,7 +818,7 @@ shinyServer(function(input, output, session) {
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
         setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
+                lat=mean(selected_eez$y_cen, na.rm = T), zoom=2)
     }
     
   }) # close observe event
@@ -830,8 +830,8 @@ shinyServer(function(input, output, session) {
   ### Data Container ----------
   south_asia_rv <- reactiveValues(eezs = eez_ter_360 %>%
                                        dplyr::filter(region == "South Asia"),
-                                     map_lng = 70,
-                                     map_lat = 0,
+                                     map_lng = 80,
+                                     map_lat = 15,
                                      map_zoom = 3)
   
   ### Leaflet output: Navigational map for the region ---------
@@ -968,8 +968,8 @@ shinyServer(function(input, output, session) {
   ### Data Container ----------
   sub_saharan_africa_rv <- reactiveValues(eezs = eez_ter_360 %>%
                                             dplyr::filter(region == "Sub-Saharan Africa"),
-                                          map_lng = 10,
-                                          map_lat = -20,
+                                          map_lng = 25,
+                                          map_lat = -15,
                                           map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
