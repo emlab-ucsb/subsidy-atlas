@@ -1,0 +1,1981 @@
+,RegionName,Country,Category,Type,Constant 2018 USD,SSF_USD,Reported vs modeled estimates
+0,Africa,Algeria,Beneficial,Fisheries mangt.,1629280.79,1311597.3,Modeled
+1,Africa,Algeria,Beneficial,Fishery R&D,4529977.646,396534.5876,Modeled
+2,Africa,Algeria,Beneficial,MPAs,508033.9447,195083.2897,Modeled
+3,Africa,Algeria,Capacity-enhancing,Boat constsruct. & renov.,43901678.58,7024268.573,Reported
+4,Africa,Algeria,Capacity-enhancing,Fisheries dev. projects,25878295.63,25878295.63,Reported
+5,Africa,Algeria,Capacity-enhancing,Fishing port develop.,31776201.77,0,Reported
+6,Africa,Algeria,Capacity-enhancing,Markt. & storage infrast.,55303477.09,0,Modeled
+7,Africa,Algeria,Capacity-enhancing,Tax exemption,0,0,NA
+8,Africa,Algeria,Capacity-enhancing,Fishing access,0,0,NA
+9,Africa,Algeria,Capacity-enhancing,Fuel subsidies,51563511.22,3300064.718,Reported
+10,Africa,Algeria,Ambiguous,Fisher assistance,3822168.638,1911084.319,Reported
+11,Africa,Algeria,Ambiguous,Vessel buyback,0,0,NA
+12,Africa,Algeria,Ambiguous,Rural fisher communities,9191270.444,9191270.444,Reported
+13,Africa,Angola,Beneficial,Fisheries mangt.,7402331.289,0,Reported
+14,Africa,Angola,Beneficial,Fishery R&D,216102.8855,99517.02159,Modeled
+15,Africa,Angola,Beneficial,MPAs,0,0,NA
+16,Africa,Angola,Capacity-enhancing,Boat constsruct. & renov.,12842685.77,5914146.889,Modeled
+17,Africa,Angola,Capacity-enhancing,Fisheries dev. projects,6528959.537,6528959.537,Reported
+18,Africa,Angola,Capacity-enhancing,Fishing port develop.,3484958.702,1148805.594,Reported
+19,Africa,Angola,Capacity-enhancing,Markt. & storage infrast.,5855177.318,1932208.515,Reported
+20,Africa,Angola,Capacity-enhancing,Tax exemption,12077126.52,3623137.956,Reported
+21,Africa,Angola,Capacity-enhancing,Fishing access,377318.47,0,Reported
+22,Africa,Angola,Capacity-enhancing,Fuel subsidies,1883821.395,369228.9934,Reported
+23,Africa,Angola,Ambiguous,Fisher assistance,653698.2873,301033.0307,Modeled
+24,Africa,Angola,Ambiguous,Vessel buyback,0,0,NA
+25,Africa,Angola,Ambiguous,Rural fisher communities,3679027.916,3679027.916,Reported
+26,Africa,Benin,Beneficial,Fisheries mangt.,9232292.617,8713729.498,Modeled
+27,Africa,Benin,Beneficial,Fishery R&D,451720.0195,451720.0195,Modeled
+28,Africa,Benin,Beneficial,MPAs,0,0,NA
+29,Africa,Benin,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+30,Africa,Benin,Capacity-enhancing,Fisheries dev. projects,1121835.021,1121835.021,Modeled
+31,Africa,Benin,Capacity-enhancing,Fishing port develop.,0,0,NA
+32,Africa,Benin,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+33,Africa,Benin,Capacity-enhancing,Tax exemption,0,0,NA
+34,Africa,Benin,Capacity-enhancing,Fishing access,0,0,NA
+35,Africa,Benin,Capacity-enhancing,Fuel subsidies,0,0,NA
+36,Africa,Benin,Ambiguous,Fisher assistance,0,0,NA
+37,Africa,Benin,Ambiguous,Vessel buyback,0,0,NA
+38,Africa,Benin,Ambiguous,Rural fisher communities,232400.3112,232400.3112,Modeled
+39,Africa,Cameroon,Beneficial,Fisheries mangt.,5131498.144,0,Modeled
+40,Africa,Cameroon,Beneficial,Fishery R&D,609560.6984,455951.5213,Modeled
+41,Africa,Cameroon,Beneficial,MPAs,1475377.546,1103580.519,Modeled
+42,Africa,Cameroon,Capacity-enhancing,Boat constsruct. & renov.,655684.3985,0,Modeled
+43,Africa,Cameroon,Capacity-enhancing,Fisheries dev. projects,17023910.09,17023910.09,Modeled
+44,Africa,Cameroon,Capacity-enhancing,Fishing port develop.,0,0,NA
+45,Africa,Cameroon,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+46,Africa,Cameroon,Capacity-enhancing,Tax exemption,1288360.776,0,Reported
+47,Africa,Cameroon,Capacity-enhancing,Fishing access,538959.66,0,Reported
+48,Africa,Cameroon,Capacity-enhancing,Fuel subsidies,0,0,NA
+49,Africa,Cameroon,Ambiguous,Fisher assistance,0,0,NA
+50,Africa,Cameroon,Ambiguous,Vessel buyback,0,0,NA
+51,Africa,Cameroon,Ambiguous,Rural fisher communities,0,0,NA
+52,Africa,Cape Verde,Beneficial,Fisheries mangt.,2405245.315,834235.5275,Modeled
+53,Africa,Cape Verde,Beneficial,Fishery R&D,322245.4956,139489.2547,Modeled
+54,Africa,Cape Verde,Beneficial,MPAs,0,0,NA
+55,Africa,Cape Verde,Capacity-enhancing,Boat constsruct. & renov.,797687.9776,736063.9719,Modeled
+56,Africa,Cape Verde,Capacity-enhancing,Fisheries dev. projects,1648340.528,802887.2026,Modeled
+57,Africa,Cape Verde,Capacity-enhancing,Fishing port develop.,0,0,NA
+58,Africa,Cape Verde,Capacity-enhancing,Markt. & storage infrast.,13304053.89,9719781.187,Modeled
+59,Africa,Cape Verde,Capacity-enhancing,Tax exemption,1567385.017,687765.6144,Modeled
+60,Africa,Cape Verde,Capacity-enhancing,Fishing access,1221567.68,0,Reported
+61,Africa,Cape Verde,Capacity-enhancing,Fuel subsidies,704134.0583,264035.0045,Modeled
+62,Africa,Cape Verde,Ambiguous,Fisher assistance,0,0,NA
+63,Africa,Cape Verde,Ambiguous,Vessel buyback,0,0,NA
+64,Africa,Cape Verde,Ambiguous,Rural fisher communities,0,0,NA
+65,Africa,Comoros,Beneficial,Fisheries mangt.,3311832.347,3311832.347,Reported
+66,Africa,Comoros,Beneficial,Fishery R&D,127232.6209,68189.04639,Modeled
+67,Africa,Comoros,Beneficial,MPAs,0,0,NA
+68,Africa,Comoros,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+69,Africa,Comoros,Capacity-enhancing,Fisheries dev. projects,6050083.932,1645030.063,Modeled
+70,Africa,Comoros,Capacity-enhancing,Fishing port develop.,47644064,47644064,Reported
+71,Africa,Comoros,Capacity-enhancing,Markt. & storage infrast.,383333.33,383333.33,Reported
+72,Africa,Comoros,Capacity-enhancing,Tax exemption,0,0,NA
+73,Africa,Comoros,Capacity-enhancing,Fishing access,1622522.98,0,Reported
+74,Africa,Comoros,Capacity-enhancing,Fuel subsidies,0,0,NA
+75,Africa,Comoros,Ambiguous,Fisher assistance,0,0,NA
+76,Africa,Comoros,Ambiguous,Vessel buyback,0,0,NA
+77,Africa,Comoros,Ambiguous,Rural fisher communities,65458.46857,65458.46857,Modeled
+78,Africa,Congo Dem Rep,Beneficial,Fisheries mangt.,2842892.895,0,Modeled
+79,Africa,Congo Dem Rep,Beneficial,Fishery R&D,0,0,NA
+80,Africa,Congo Dem Rep,Beneficial,MPAs,439062.5749,195179.0203,Modeled
+81,Africa,Congo Dem Rep,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+82,Africa,Congo Dem Rep,Capacity-enhancing,Fisheries dev. projects,302615.391,302615.391,Modeled
+83,Africa,Congo Dem Rep,Capacity-enhancing,Fishing port develop.,0,0,NA
+84,Africa,Congo Dem Rep,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+85,Africa,Congo Dem Rep,Capacity-enhancing,Tax exemption,0,0,NA
+86,Africa,Congo Dem Rep,Capacity-enhancing,Fishing access,0,0,NA
+87,Africa,Congo Dem Rep,Capacity-enhancing,Fuel subsidies,0,0,NA
+88,Africa,Congo Dem Rep,Ambiguous,Fisher assistance,0,0,NA
+89,Africa,Congo Dem Rep,Ambiguous,Vessel buyback,0,0,NA
+90,Africa,Congo Dem Rep,Ambiguous,Rural fisher communities,0,0,NA
+91,Africa,Congo Republic,Beneficial,Fisheries mangt.,408629.1227,0,Modeled
+92,Africa,Congo Republic,Beneficial,Fishery R&D,631605.1949,251138.9605,Modeled
+93,Africa,Congo Republic,Beneficial,MPAs,312560.1748,97648.48732,Modeled
+94,Africa,Congo Republic,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+95,Africa,Congo Republic,Capacity-enhancing,Fisheries dev. projects,331981.5699,331981.5699,Modeled
+96,Africa,Congo Republic,Capacity-enhancing,Fishing port develop.,0,0,NA
+97,Africa,Congo Republic,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+98,Africa,Congo Republic,Capacity-enhancing,Tax exemption,905912.8824,452956.4412,Reported
+99,Africa,Congo Republic,Capacity-enhancing,Fishing access,265119.04,0,Reported
+100,Africa,Congo Republic,Capacity-enhancing,Fuel subsidies,0,0,NA
+101,Africa,Congo Republic,Ambiguous,Fisher assistance,0,0,NA
+102,Africa,Congo Republic,Ambiguous,Vessel buyback,0,0,NA
+103,Africa,Congo Republic,Ambiguous,Rural fisher communities,0,0,NA
+104,Africa,Cote d'Ivoire,Beneficial,Fisheries mangt.,3271594.835,937248.3093,Modeled
+105,Africa,Cote d'Ivoire,Beneficial,Fishery R&D,854274.1473,305433.7402,Modeled
+106,Africa,Cote d'Ivoire,Beneficial,MPAs,213080.5174,21685.54923,Modeled
+107,Africa,Cote d'Ivoire,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+108,Africa,Cote d'Ivoire,Capacity-enhancing,Fisheries dev. projects,32851596.54,32851596.54,Modeled
+109,Africa,Cote d'Ivoire,Capacity-enhancing,Fishing port develop.,8469529.029,616083.8864,Modeled
+110,Africa,Cote d'Ivoire,Capacity-enhancing,Markt. & storage infrast.,8443324.366,8443324.366,Modeled
+111,Africa,Cote d'Ivoire,Capacity-enhancing,Tax exemption,1889723,1360600.56,Reported
+112,Africa,Cote d'Ivoire,Capacity-enhancing,Fishing access,655127.14,0,Reported
+113,Africa,Cote d'Ivoire,Capacity-enhancing,Fuel subsidies,2147412.5,2147412.5,Modeled
+114,Africa,Cote d'Ivoire,Ambiguous,Fisher assistance,9256.149246,6556.337226,Modeled
+115,Africa,Cote d'Ivoire,Ambiguous,Vessel buyback,0,0,NA
+116,Africa,Cote d'Ivoire,Ambiguous,Rural fisher communities,411787.821,411787.821,Reported
+117,Africa,Djibouti,Beneficial,Fisheries mangt.,1876666.66,422921.8027,Modeled
+118,Africa,Djibouti,Beneficial,Fishery R&D,0,0,NA
+119,Africa,Djibouti,Beneficial,MPAs,0,0,NA
+120,Africa,Djibouti,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+121,Africa,Djibouti,Capacity-enhancing,Fisheries dev. projects,369346.0502,106118.5318,Modeled
+122,Africa,Djibouti,Capacity-enhancing,Fishing port develop.,0,0,NA
+123,Africa,Djibouti,Capacity-enhancing,Markt. & storage infrast.,2730000,316428.5563,Modeled
+124,Africa,Djibouti,Capacity-enhancing,Tax exemption,61513.26739,53332.00283,Reported
+125,Africa,Djibouti,Capacity-enhancing,Fishing access,6775.11,0,Reported
+126,Africa,Djibouti,Capacity-enhancing,Fuel subsidies,0,0,NA
+127,Africa,Djibouti,Ambiguous,Fisher assistance,382500,382500,Reported
+128,Africa,Djibouti,Ambiguous,Vessel buyback,0,0,NA
+129,Africa,Djibouti,Ambiguous,Rural fisher communities,19225.5454,19225.5454,Modeled
+130,Africa,Egypt,Beneficial,Fisheries mangt.,18845311.55,18845311.55,Modeled
+131,Africa,Egypt,Beneficial,Fishery R&D,1521906.215,167958.0721,Modeled
+132,Africa,Egypt,Beneficial,MPAs,4741507.452,1283072.846,Modeled
+133,Africa,Egypt,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+134,Africa,Egypt,Capacity-enhancing,Fisheries dev. projects,24057563.23,744115.5017,Modeled
+135,Africa,Egypt,Capacity-enhancing,Fishing port develop.,19973336.61,0,Modeled
+136,Africa,Egypt,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+137,Africa,Egypt,Capacity-enhancing,Tax exemption,0,0,NA
+138,Africa,Egypt,Capacity-enhancing,Fishing access,4416742.68,0,Reported
+139,Africa,Egypt,Capacity-enhancing,Fuel subsidies,0,0,NA
+140,Africa,Egypt,Ambiguous,Fisher assistance,0,0,NA
+141,Africa,Egypt,Ambiguous,Vessel buyback,0,0,NA
+142,Africa,Egypt,Ambiguous,Rural fisher communities,0,0,NA
+143,Africa,Equatorial Guinea,Beneficial,Fisheries mangt.,175989.1871,0,Modeled
+144,Africa,Equatorial Guinea,Beneficial,Fishery R&D,0,0,NA
+145,Africa,Equatorial Guinea,Beneficial,MPAs,1481876.091,183802.1566,Modeled
+146,Africa,Equatorial Guinea,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+147,Africa,Equatorial Guinea,Capacity-enhancing,Fisheries dev. projects,135775.6578,135775.6578,Modeled
+148,Africa,Equatorial Guinea,Capacity-enhancing,Fishing port develop.,0,0,NA
+149,Africa,Equatorial Guinea,Capacity-enhancing,Markt. & storage infrast.,883872.2542,381286.4316,Modeled
+150,Africa,Equatorial Guinea,Capacity-enhancing,Tax exemption,0,0,NA
+151,Africa,Equatorial Guinea,Capacity-enhancing,Fishing access,15258.23,0,Reported
+152,Africa,Equatorial Guinea,Capacity-enhancing,Fuel subsidies,0,0,NA
+153,Africa,Equatorial Guinea,Ambiguous,Fisher assistance,545566.48,328422.1146,Modeled
+154,Africa,Equatorial Guinea,Ambiguous,Vessel buyback,0,0,NA
+155,Africa,Equatorial Guinea,Ambiguous,Rural fisher communities,703956.7484,703956.7484,Reported
+156,Africa,Eritrea,Beneficial,Fisheries mangt.,11252411.16,3199035.242,Modeled
+157,Africa,Eritrea,Beneficial,Fishery R&D,75731.72988,33319.53092,Modeled
+158,Africa,Eritrea,Beneficial,MPAs,0,0,NA
+159,Africa,Eritrea,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+160,Africa,Eritrea,Capacity-enhancing,Fisheries dev. projects,754344.253,209248.8322,Modeled
+161,Africa,Eritrea,Capacity-enhancing,Fishing port develop.,0,0,NA
+162,Africa,Eritrea,Capacity-enhancing,Markt. & storage infrast.,9858787.65,1142711.334,Modeled
+163,Africa,Eritrea,Capacity-enhancing,Tax exemption,0,0,NA
+164,Africa,Eritrea,Capacity-enhancing,Fishing access,0,0,NA
+165,Africa,Eritrea,Capacity-enhancing,Fuel subsidies,0,0,NA
+166,Africa,Eritrea,Ambiguous,Fisher assistance,0,0,NA
+167,Africa,Eritrea,Ambiguous,Vessel buyback,0,0,NA
+168,Africa,Eritrea,Ambiguous,Rural fisher communities,38962.35906,38962.35906,Modeled
+169,Africa,Gabon,Beneficial,Fisheries mangt.,19147680.71,0,Modeled
+170,Africa,Gabon,Beneficial,Fishery R&D,4486358.331,1251694.764,Modeled
+171,Africa,Gabon,Beneficial,MPAs,12007262.61,3350023.446,Modeled
+172,Africa,Gabon,Capacity-enhancing,Boat constsruct. & renov.,1733674.407,1100887.831,Modeled
+173,Africa,Gabon,Capacity-enhancing,Fisheries dev. projects,5127871.903,5127871.903,Modeled
+174,Africa,Gabon,Capacity-enhancing,Fishing port develop.,0,0,NA
+175,Africa,Gabon,Capacity-enhancing,Markt. & storage infrast.,3894780.973,1701142.767,Modeled
+176,Africa,Gabon,Capacity-enhancing,Tax exemption,6036531.899,3833197.756,Reported
+177,Africa,Gabon,Capacity-enhancing,Fishing access,24940.23,0,Reported
+178,Africa,Gabon,Capacity-enhancing,Fuel subsidies,7429373.573,1645832.429,Modeled
+179,Africa,Gabon,Ambiguous,Fisher assistance,0,0,NA
+180,Africa,Gabon,Ambiguous,Vessel buyback,0,0,NA
+181,Africa,Gabon,Ambiguous,Rural fisher communities,2399530.004,2399525.138,Modeled
+182,Africa,Gambia,Beneficial,Fisheries mangt.,1085070.818,368872.1543,Modeled
+183,Africa,Gambia,Beneficial,Fishery R&D,1244210.96,527881.4549,Modeled
+184,Africa,Gambia,Beneficial,MPAs,232967.7543,28134.88434,Modeled
+185,Africa,Gambia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+186,Africa,Gambia,Capacity-enhancing,Fisheries dev. projects,5152611.661,5152611.661,Modeled
+187,Africa,Gambia,Capacity-enhancing,Fishing port develop.,4277858.326,311176.6397,Modeled
+188,Africa,Gambia,Capacity-enhancing,Markt. & storage infrast.,7284018.723,7284018.723,Modeled
+189,Africa,Gambia,Capacity-enhancing,Tax exemption,858149.0953,858149.0953,Modeled
+190,Africa,Gambia,Capacity-enhancing,Fishing access,16465.68,0,Reported
+191,Africa,Gambia,Capacity-enhancing,Fuel subsidies,0,0,NA
+192,Africa,Gambia,Ambiguous,Fisher assistance,0,0,NA
+193,Africa,Gambia,Ambiguous,Vessel buyback,0,0,NA
+194,Africa,Gambia,Ambiguous,Rural fisher communities,640119.9899,640119.9899,Modeled
+195,Africa,Ghana,Beneficial,Fisheries mangt.,5107681.32,1915380.495,Reported
+196,Africa,Ghana,Beneficial,Fishery R&D,2397032.108,1235661.221,Modeled
+197,Africa,Ghana,Beneficial,MPAs,474609.9589,99462.319,Modeled
+198,Africa,Ghana,Capacity-enhancing,Boat constsruct. & renov.,4693988.198,4693988.198,Reported
+199,Africa,Ghana,Capacity-enhancing,Fisheries dev. projects,474609.9589,355957.4753,Modeled
+200,Africa,Ghana,Capacity-enhancing,Fisheries dev. projects,34442052.79,25831540.04,Modeled
+201,Africa,Ghana,Capacity-enhancing,Fishing port develop.,28594862.56,1072245.276,Modeled
+202,Africa,Ghana,Capacity-enhancing,Markt. & storage infrast.,296819.0076,247349.1732,Reported
+203,Africa,Ghana,Capacity-enhancing,Tax exemption,3790718.998,1952220.284,Reported
+204,Africa,Ghana,Capacity-enhancing,Fishing access,2053122.88,0,Reported
+205,Africa,Ghana,Capacity-enhancing,Fuel subsidies,63219653.83,63219653.83,Reported
+206,Africa,Ghana,Ambiguous,Fisher assistance,1045460.346,1045460.346,Reported
+207,Africa,Ghana,Ambiguous,Vessel buyback,0,0,NA
+208,Africa,Ghana,Ambiguous,Rural fisher communities,474609.9589,474609.9589,Reported
+209,Africa,Guinea,Beneficial,Fisheries mangt.,1334303.946,0,Modeled
+210,Africa,Guinea,Beneficial,Fishery R&D,38000,8169.999202,Modeled
+211,Africa,Guinea,Beneficial,MPAs,1067840.652,85247.57836,Modeled
+212,Africa,Guinea,Capacity-enhancing,Boat constsruct. & renov.,175000,175000,Modeled
+213,Africa,Guinea,Capacity-enhancing,Fisheries dev. projects,11658575.83,2506593.547,Modeled
+214,Africa,Guinea,Capacity-enhancing,Fishing port develop.,1123156.633,81699.78532,Modeled
+215,Africa,Guinea,Capacity-enhancing,Markt. & storage infrast.,703850.6207,703850.6207,Modeled
+216,Africa,Guinea,Capacity-enhancing,Tax exemption,2154352.98,0,Modeled
+217,Africa,Guinea,Capacity-enhancing,Fishing access,705379.22,0,Reported
+218,Africa,Guinea,Capacity-enhancing,Fuel subsidies,0,0,NA
+219,Africa,Guinea,Ambiguous,Fisher assistance,16890.61528,11964.00002,Modeled
+220,Africa,Guinea,Ambiguous,Vessel buyback,0,0,NA
+221,Africa,Guinea,Ambiguous,Rural fisher communities,150000,150000,Reported
+222,Africa,Guinea-Bissau,Beneficial,Fisheries mangt.,2831394.736,378581.8185,Modeled
+223,Africa,Guinea-Bissau,Beneficial,Fishery R&D,61420.47523,10249.36829,Modeled
+224,Africa,Guinea-Bissau,Beneficial,MPAs,2620727.204,124483.756,Modeled
+225,Africa,Guinea-Bissau,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+226,Africa,Guinea-Bissau,Capacity-enhancing,Fisheries dev. projects,91002.74705,91002.74705,Modeled
+227,Africa,Guinea-Bissau,Capacity-enhancing,Fishing port develop.,0,0,NA
+228,Africa,Guinea-Bissau,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+229,Africa,Guinea-Bissau,Capacity-enhancing,Tax exemption,0,0,NA
+230,Africa,Guinea-Bissau,Capacity-enhancing,Fishing access,0,0,NA
+231,Africa,Guinea-Bissau,Capacity-enhancing,Fuel subsidies,0,0,NA
+232,Africa,Guinea-Bissau,Ambiguous,Fisher assistance,0,0,NA
+233,Africa,Guinea-Bissau,Ambiguous,Vessel buyback,0,0,NA
+234,Africa,Guinea-Bissau,Ambiguous,Rural fisher communities,2779096.15,2779096.15,Modeled
+235,Africa,Kenya,Beneficial,Fisheries mangt.,7614342.818,0,Reported
+236,Africa,Kenya,Beneficial,Fishery R&D,529675.1309,285765.335,Modeled
+237,Africa,Kenya,Beneficial,MPAs,2234932.358,1191085.269,Modeled
+238,Africa,Kenya,Capacity-enhancing,Boat constsruct. & renov.,711467.0494,0,Reported
+239,Africa,Kenya,Capacity-enhancing,Fisheries dev. projects,38135798.14,0,Reported
+240,Africa,Kenya,Capacity-enhancing,Fishing port develop.,4444600.86,3482018.276,Reported
+241,Africa,Kenya,Capacity-enhancing,Markt. & storage infrast.,3204817.919,0,Reported
+242,Africa,Kenya,Capacity-enhancing,Tax exemption,441949.9208,4674.996481,Modeled
+243,Africa,Kenya,Capacity-enhancing,Fishing access,315437.34,0,Reported
+244,Africa,Kenya,Capacity-enhancing,Fuel subsidies,0,0,NA
+245,Africa,Kenya,Ambiguous,Fisher assistance,0,0,NA
+246,Africa,Kenya,Ambiguous,Vessel buyback,0,0,NA
+247,Africa,Kenya,Ambiguous,Rural fisher communities,0,0,NA
+248,Africa,Liberia,Beneficial,Fisheries mangt.,66376,18905.70347,Modeled
+249,Africa,Liberia,Beneficial,Fishery R&D,0,0,NA
+250,Africa,Liberia,Beneficial,MPAs,207925.2143,21038.77537,Modeled
+251,Africa,Liberia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+252,Africa,Liberia,Capacity-enhancing,Fisheries dev. projects,1853228.03,1853228.03,Modeled
+253,Africa,Liberia,Capacity-enhancing,Fishing port develop.,0,0,NA
+254,Africa,Liberia,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+255,Africa,Liberia,Capacity-enhancing,Tax exemption,308648.5188,308648.5188,Modeled
+256,Africa,Liberia,Capacity-enhancing,Fishing access,1019.04,0,Reported
+257,Africa,Liberia,Capacity-enhancing,Fuel subsidies,1267806.749,1267806.749,Reported
+258,Africa,Liberia,Ambiguous,Fisher assistance,0,0,NA
+259,Africa,Liberia,Ambiguous,Vessel buyback,0,0,NA
+260,Africa,Liberia,Ambiguous,Rural fisher communities,315461.0911,315461.0911,Reported
+261,Africa,Libya,Beneficial,Fisheries mangt.,13086935.19,13086935.19,Modeled
+262,Africa,Libya,Beneficial,Fishery R&D,3066307.696,609874.5356,Modeled
+263,Africa,Libya,Beneficial,MPAs,0,0,NA
+264,Africa,Libya,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+265,Africa,Libya,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+266,Africa,Libya,Capacity-enhancing,Fishing port develop.,0,0,NA
+267,Africa,Libya,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+268,Africa,Libya,Capacity-enhancing,Tax exemption,0,0,NA
+269,Africa,Libya,Capacity-enhancing,Fishing access,0,0,NA
+270,Africa,Libya,Capacity-enhancing,Fuel subsidies,0,0,NA
+271,Africa,Libya,Ambiguous,Fisher assistance,0,0,NA
+272,Africa,Libya,Ambiguous,Vessel buyback,0,0,NA
+273,Africa,Libya,Ambiguous,Rural fisher communities,0,0,NA
+274,Africa,Madagascar,Beneficial,Fisheries mangt.,50033939.11,12248631.11,Modeled
+275,Africa,Madagascar,Beneficial,Fishery R&D,1128771.624,580615.8356,Modeled
+276,Africa,Madagascar,Beneficial,MPAs,10027541.19,7390302.149,Modeled
+277,Africa,Madagascar,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+278,Africa,Madagascar,Capacity-enhancing,Fisheries dev. projects,32804971.73,16402485.87,Reported
+279,Africa,Madagascar,Capacity-enhancing,Fishing port develop.,22974.10736,0,Reported
+280,Africa,Madagascar,Capacity-enhancing,Markt. & storage infrast.,39887.50845,19943.75423,Reported
+281,Africa,Madagascar,Capacity-enhancing,Tax exemption,0,0,NA
+282,Africa,Madagascar,Capacity-enhancing,Fishing access,35073.78,0,Reported
+283,Africa,Madagascar,Capacity-enhancing,Fuel subsidies,0,0,NA
+284,Africa,Madagascar,Ambiguous,Fisher assistance,0,0,NA
+285,Africa,Madagascar,Ambiguous,Vessel buyback,0,0,NA
+286,Africa,Madagascar,Ambiguous,Rural fisher communities,580728.915,580728.915,Modeled
+287,Africa,Mauritania,Beneficial,Fisheries mangt.,3090217.037,0,Modeled
+288,Africa,Mauritania,Beneficial,Fishery R&D,511872.2042,0,Modeled
+289,Africa,Mauritania,Beneficial,MPAs,818875.2952,35211.97998,Modeled
+290,Africa,Mauritania,Capacity-enhancing,Boat constsruct. & renov.,1664961.274,1664961.274,Modeled
+291,Africa,Mauritania,Capacity-enhancing,Fisheries dev. projects,1136227.586,1136227.586,Modeled
+292,Africa,Mauritania,Capacity-enhancing,Fishing port develop.,14709876.34,535007.4074,Modeled
+293,Africa,Mauritania,Capacity-enhancing,Markt. & storage infrast.,6367759.65,3420180.013,Modeled
+294,Africa,Mauritania,Capacity-enhancing,Tax exemption,3271498.918,1762984.805,Modeled
+295,Africa,Mauritania,Capacity-enhancing,Fishing access,122240.29,0,Reported
+296,Africa,Mauritania,Capacity-enhancing,Fuel subsidies,1621495.023,0,Reported
+297,Africa,Mauritania,Ambiguous,Fisher assistance,1135178.245,804072.1025,Modeled
+298,Africa,Mauritania,Ambiguous,Vessel buyback,0,0,NA
+299,Africa,Mauritania,Ambiguous,Rural fisher communities,3246144.947,3246144.947,Modeled
+300,Africa,Mauritius,Beneficial,Fisheries mangt.,8238822.889,1003613.223,Modeled
+301,Africa,Mauritius,Beneficial,Fishery R&D,188664.255,35566.27673,Modeled
+302,Africa,Mauritius,Beneficial,MPAs,809473.8456,150740.5538,Modeled
+303,Africa,Mauritius,Capacity-enhancing,Boat constsruct. & renov.,464404.32,232202.16,Reported
+304,Africa,Mauritius,Capacity-enhancing,Boat constsruct. & renov.,462199.3412,231099.6706,Reported
+305,Africa,Mauritius,Capacity-enhancing,Fisheries dev. projects,470209.374,63886.21183,Modeled
+306,Africa,Mauritius,Capacity-enhancing,Fishing port develop.,58050.54,58050.54,Reported
+307,Africa,Mauritius,Capacity-enhancing,Markt. & storage infrast.,145126.35,9530.935284,Modeled
+308,Africa,Mauritius,Capacity-enhancing,Tax exemption,1609345.477,0,Modeled
+309,Africa,Mauritius,Capacity-enhancing,Fishing access,6051.47,0,Reported
+310,Africa,Mauritius,Capacity-enhancing,Fuel subsidies,0,0,NA
+311,Africa,Mauritius,Ambiguous,Fisher assistance,303314.0715,81894.79931,Reported
+312,Africa,Mauritius,Ambiguous,Vessel buyback,0,0,NA
+313,Africa,Mauritius,Ambiguous,Rural fisher communities,0,0,NA
+314,Africa,Morocco,Beneficial,Fisheries mangt.,55146226.48,3649777.07,Modeled
+315,Africa,Morocco,Beneficial,Fishery R&D,20104068.72,321664.8583,Modeled
+316,Africa,Morocco,Beneficial,MPAs,2795403.864,138841.9542,Modeled
+317,Africa,Morocco,Capacity-enhancing,Boat constsruct. & renov.,11581371.69,1853019.473,Modeled
+318,Africa,Morocco,Capacity-enhancing,Fisheries dev. projects,165989449.2,0,Reported
+319,Africa,Morocco,Capacity-enhancing,Fishing port develop.,1643404.053,0,Reported
+320,Africa,Morocco,Capacity-enhancing,Markt. & storage infrast.,13351220.26,0,Reported
+321,Africa,Morocco,Capacity-enhancing,Tax exemption,7531986.7,0,Reported
+322,Africa,Morocco,Capacity-enhancing,Fishing access,289710.22,0,Reported
+323,Africa,Morocco,Capacity-enhancing,Fuel subsidies,8047876.2,346174.8879,Modeled
+324,Africa,Morocco,Ambiguous,Fisher assistance,0,0,NA
+325,Africa,Morocco,Ambiguous,Vessel buyback,0,0,NA
+326,Africa,Morocco,Ambiguous,Rural fisher communities,10343114.38,10343114.38,Modeled
+327,Africa,Mozambique,Beneficial,Fisheries mangt.,13228364.17,6476775.075,Modeled
+328,Africa,Mozambique,Beneficial,Fishery R&D,525204.4784,269931.369,Modeled
+329,Africa,Mozambique,Beneficial,MPAs,1300751.471,958449.0425,Modeled
+330,Africa,Mozambique,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+331,Africa,Mozambique,Capacity-enhancing,Fisheries dev. projects,7936405.885,2285710.287,Modeled
+332,Africa,Mozambique,Capacity-enhancing,Fishing port develop.,11923445.75,9300287.685,Reported
+333,Africa,Mozambique,Capacity-enhancing,Markt. & storage infrast.,383333.33,44431.35978,Modeled
+334,Africa,Mozambique,Capacity-enhancing,Tax exemption,2391873.083,0,Reported
+335,Africa,Mozambique,Capacity-enhancing,Fishing access,0,0,NA
+336,Africa,Mozambique,Capacity-enhancing,Fuel subsidies,1179118.776,0,Reported
+337,Africa,Mozambique,Ambiguous,Fisher assistance,8995.483238,7016.476926,Reported
+338,Africa,Mozambique,Ambiguous,Vessel buyback,0,0,NA
+339,Africa,Mozambique,Ambiguous,Rural fisher communities,610800.2552,610799.9309,Modeled
+340,Africa,Namibia,Beneficial,Fisheries mangt.,12877659.34,0,Modeled
+341,Africa,Namibia,Beneficial,Fishery R&D,3409343.886,0,Modeled
+342,Africa,Namibia,Beneficial,MPAs,592958.2479,240.0591467,Modeled
+343,Africa,Namibia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+344,Africa,Namibia,Capacity-enhancing,Fisheries dev. projects,294376.1161,0,Modeled
+345,Africa,Namibia,Capacity-enhancing,Fishing port develop.,0,0,NA
+346,Africa,Namibia,Capacity-enhancing,Markt. & storage infrast.,45984143.96,0,Modeled
+347,Africa,Namibia,Capacity-enhancing,Tax exemption,0,0,NA
+348,Africa,Namibia,Capacity-enhancing,Fishing access,13027.17,0,Reported
+349,Africa,Namibia,Capacity-enhancing,Fuel subsidies,4133740.475,0,Modeled
+350,Africa,Namibia,Ambiguous,Fisher assistance,0,0,NA
+351,Africa,Namibia,Ambiguous,Vessel buyback,0,0,NA
+352,Africa,Namibia,Ambiguous,Rural fisher communities,0,0,NA
+353,Africa,Nigeria,Beneficial,Fisheries mangt.,988712.0057,297814.997,Modeled
+354,Africa,Nigeria,Beneficial,Fishery R&D,209850.7696,143026.3245,Modeled
+355,Africa,Nigeria,Beneficial,MPAs,0,0,NA
+356,Africa,Nigeria,Capacity-enhancing,Boat constsruct. & renov.,1465876.115,1465876.115,Modeled
+357,Africa,Nigeria,Capacity-enhancing,Fisheries dev. projects,1924207.983,962103.3065,Modeled
+358,Africa,Nigeria,Capacity-enhancing,Fishing port develop.,0,0,NA
+359,Africa,Nigeria,Capacity-enhancing,Markt. & storage infrast.,21354888.93,21354888.93,Modeled
+360,Africa,Nigeria,Capacity-enhancing,Tax exemption,11068824.04,7526800.347,Reported
+361,Africa,Nigeria,Capacity-enhancing,Fishing access,1588003.99,0,Reported
+362,Africa,Nigeria,Capacity-enhancing,Fuel subsidies,0,0,NA
+363,Africa,Nigeria,Ambiguous,Fisher assistance,10766873.08,7321473.694,Reported
+364,Africa,Nigeria,Ambiguous,Vessel buyback,0,0,NA
+365,Africa,Nigeria,Ambiguous,Rural fisher communities,2691887.436,2691886.988,Modeled
+366,Africa,Sao Tome Prn,Beneficial,Fisheries mangt.,2612212.652,0,Modeled
+367,Africa,Sao Tome Prn,Beneficial,Fishery R&D,0,0,NA
+368,Africa,Sao Tome Prn,Beneficial,MPAs,0,0,NA
+369,Africa,Sao Tome Prn,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+370,Africa,Sao Tome Prn,Capacity-enhancing,Fisheries dev. projects,834621.543,834621.543,Modeled
+371,Africa,Sao Tome Prn,Capacity-enhancing,Fishing port develop.,0,0,NA
+372,Africa,Sao Tome Prn,Capacity-enhancing,Markt. & storage infrast.,546415.4411,310658.1932,Modeled
+373,Africa,Sao Tome Prn,Capacity-enhancing,Tax exemption,0,0,NA
+374,Africa,Sao Tome Prn,Capacity-enhancing,Fishing access,48719.93,0,Reported
+375,Africa,Sao Tome Prn,Capacity-enhancing,Fuel subsidies,0,0,NA
+376,Africa,Sao Tome Prn,Ambiguous,Fisher assistance,0,0,NA
+377,Africa,Sao Tome Prn,Ambiguous,Vessel buyback,0,0,NA
+378,Africa,Sao Tome Prn,Ambiguous,Rural fisher communities,63200.54775,63200.54301,Modeled
+379,Africa,Senegal,Beneficial,Fisheries mangt.,18361362.53,9812640.622,Modeled
+380,Africa,Senegal,Beneficial,Fishery R&D,4298318.584,2149158.798,Modeled
+381,Africa,Senegal,Beneficial,MPAs,2354040.162,1038130.085,Modeled
+382,Africa,Senegal,Capacity-enhancing,Boat constsruct. & renov.,7321817.66,7321817.66,Reported
+383,Africa,Senegal,Capacity-enhancing,Fisheries dev. projects,111374838,55687433.81,Modeled
+384,Africa,Senegal,Capacity-enhancing,Fishing port develop.,22286705.89,858965,Reported
+385,Africa,Senegal,Capacity-enhancing,Markt. & storage infrast.,28967662.49,0,Modeled
+386,Africa,Senegal,Capacity-enhancing,Tax exemption,18549082.05,13143063.19,Modeled
+387,Africa,Senegal,Capacity-enhancing,Fishing access,44711296.53,0,Reported
+388,Africa,Senegal,Capacity-enhancing,Fuel subsidies,17042252.59,17042252.59,Reported
+389,Africa,Senegal,Ambiguous,Fisher assistance,18043074.08,12780312.32,Modeled
+390,Africa,Senegal,Ambiguous,Vessel buyback,0,0,NA
+391,Africa,Senegal,Ambiguous,Rural fisher communities,2211393.194,2211393.194,Modeled
+392,Africa,Seychelles,Beneficial,Fisheries mangt.,17776804.84,1914822.984,Modeled
+393,Africa,Seychelles,Beneficial,Fishery R&D,420538.2963,46259.41655,Modeled
+394,Africa,Seychelles,Beneficial,MPAs,1909233.515,210016.5573,Modeled
+395,Africa,Seychelles,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+396,Africa,Seychelles,Capacity-enhancing,Fisheries dev. projects,21325370.58,0,Modeled
+397,Africa,Seychelles,Capacity-enhancing,Fishing port develop.,0,0,NA
+398,Africa,Seychelles,Capacity-enhancing,Markt. & storage infrast.,7976323.233,114662.5316,Modeled
+399,Africa,Seychelles,Capacity-enhancing,Tax exemption,0,0,NA
+400,Africa,Seychelles,Capacity-enhancing,Fishing access,363635.69,0,Reported
+401,Africa,Seychelles,Capacity-enhancing,Fuel subsidies,499972.9771,0,Modeled
+402,Africa,Seychelles,Ambiguous,Fisher assistance,0,0,NA
+403,Africa,Seychelles,Ambiguous,Vessel buyback,0,0,NA
+404,Africa,Seychelles,Ambiguous,Rural fisher communities,162997.5337,162997.5337,Modeled
+405,Africa,Sierra Leone,Beneficial,Fisheries mangt.,5072647.218,4707115.284,Modeled
+406,Africa,Sierra Leone,Beneficial,Fishery R&D,0,0,NA
+407,Africa,Sierra Leone,Beneficial,MPAs,0,0,NA
+408,Africa,Sierra Leone,Capacity-enhancing,Boat constsruct. & renov.,243918.504,243918.504,Modeled
+409,Africa,Sierra Leone,Capacity-enhancing,Fisheries dev. projects,341475.072,112686.7847,Modeled
+410,Africa,Sierra Leone,Capacity-enhancing,Fishing port develop.,0,0,NA
+411,Africa,Sierra Leone,Capacity-enhancing,Markt. & storage infrast.,297924,297924,Modeled
+412,Africa,Sierra Leone,Capacity-enhancing,Tax exemption,3512030.886,3512030.886,Modeled
+413,Africa,Sierra Leone,Capacity-enhancing,Fishing access,4326075.17,0,Reported
+414,Africa,Sierra Leone,Capacity-enhancing,Fuel subsidies,0,0,NA
+415,Africa,Sierra Leone,Ambiguous,Fisher assistance,16151.09768,11440.18318,Modeled
+416,Africa,Sierra Leone,Ambiguous,Vessel buyback,0,0,NA
+417,Africa,Sierra Leone,Ambiguous,Rural fisher communities,54154.458,54154.458,Reported
+418,Africa,Somalia,Beneficial,Fisheries mangt.,2260639.781,843410.9646,Modeled
+419,Africa,Somalia,Beneficial,Fishery R&D,0,0,NA
+420,Africa,Somalia,Beneficial,MPAs,0,0,NA
+421,Africa,Somalia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+422,Africa,Somalia,Capacity-enhancing,Fisheries dev. projects,399649.0802,0,Modeled
+423,Africa,Somalia,Capacity-enhancing,Fishing port develop.,0,0,NA
+424,Africa,Somalia,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+425,Africa,Somalia,Capacity-enhancing,Tax exemption,0,0,NA
+426,Africa,Somalia,Capacity-enhancing,Fishing access,24478.04,0,Reported
+427,Africa,Somalia,Capacity-enhancing,Fuel subsidies,0,0,NA
+428,Africa,Somalia,Ambiguous,Fisher assistance,513127.1214,389463.4851,Reported
+429,Africa,Somalia,Ambiguous,Vessel buyback,0,0,NA
+430,Africa,Somalia,Ambiguous,Rural fisher communities,919360.8355,919360.8355,Modeled
+431,Africa,South Africa,Beneficial,Fisheries mangt.,35118651.21,2859844.411,Modeled
+432,Africa,South Africa,Beneficial,Fishery R&D,5411588.362,440686.2422,Modeled
+433,Africa,South Africa,Beneficial,MPAs,5841031.834,475657.278,Modeled
+434,Africa,South Africa,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+435,Africa,South Africa,Capacity-enhancing,Fisheries dev. projects,40618409.95,3307738.158,Modeled
+436,Africa,South Africa,Capacity-enhancing,Fishing port develop.,41743.10668,0,Reported
+437,Africa,South Africa,Capacity-enhancing,Markt. & storage infrast.,3579321.243,3579321.243,Reported
+438,Africa,South Africa,Capacity-enhancing,Tax exemption,0,0,NA
+439,Africa,South Africa,Capacity-enhancing,Fishing access,623506.25,0,Reported
+440,Africa,South Africa,Capacity-enhancing,Fuel subsidies,25388558.57,0,Reported
+441,Africa,South Africa,Ambiguous,Fisher assistance,0,0,NA
+442,Africa,South Africa,Ambiguous,Vessel buyback,0,0,NA
+443,Africa,South Africa,Ambiguous,Rural fisher communities,0,0,NA
+444,Africa,Sudan,Beneficial,Fisheries mangt.,808084.1248,808084.1248,Modeled
+445,Africa,Sudan,Beneficial,Fishery R&D,29087.38393,3618.409477,Modeled
+446,Africa,Sudan,Beneficial,MPAs,543131.3445,296387.7442,Modeled
+447,Africa,Sudan,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+448,Africa,Sudan,Capacity-enhancing,Fisheries dev. projects,321225.8136,48317.6613,Modeled
+449,Africa,Sudan,Capacity-enhancing,Fishing port develop.,0,0,NA
+450,Africa,Sudan,Capacity-enhancing,Markt. & storage infrast.,815311.9301,0,Modeled
+451,Africa,Sudan,Capacity-enhancing,Tax exemption,96054.00835,0,Modeled
+452,Africa,Sudan,Capacity-enhancing,Fishing access,171150.29,0,Reported
+453,Africa,Sudan,Capacity-enhancing,Fuel subsidies,0,0,NA
+454,Africa,Sudan,Ambiguous,Fisher assistance,0,0,NA
+455,Africa,Sudan,Ambiguous,Vessel buyback,0,0,NA
+456,Africa,Sudan,Ambiguous,Rural fisher communities,14964.83836,14964.8379,Modeled
+457,Africa,Tanzania,Beneficial,Fisheries mangt.,91663.57466,53855.60901,Modeled
+458,Africa,Tanzania,Beneficial,Fishery R&D,1241042.428,1191400.731,Modeled
+459,Africa,Tanzania,Beneficial,MPAs,3552888.17,3410772.643,Modeled
+460,Africa,Tanzania,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+461,Africa,Tanzania,Capacity-enhancing,Fisheries dev. projects,84646.25771,29803.33205,Modeled
+462,Africa,Tanzania,Capacity-enhancing,Fishing port develop.,0,0,NA
+463,Africa,Tanzania,Capacity-enhancing,Markt. & storage infrast.,645154.7056,70142.25605,Modeled
+464,Africa,Tanzania,Capacity-enhancing,Tax exemption,2588344.587,0,Reported
+465,Africa,Tanzania,Capacity-enhancing,Fishing access,123530.44,0,Reported
+466,Africa,Tanzania,Capacity-enhancing,Fuel subsidies,0,0,NA
+467,Africa,Tanzania,Ambiguous,Fisher assistance,0,0,NA
+468,Africa,Tanzania,Ambiguous,Vessel buyback,0,0,NA
+469,Africa,Tanzania,Ambiguous,Rural fisher communities,0,0,NA
+470,Africa,Togo,Beneficial,Fisheries mangt.,4082945.453,1383571.411,Modeled
+471,Africa,Togo,Beneficial,Fishery R&D,0,0,NA
+472,Africa,Togo,Beneficial,MPAs,0,0,NA
+473,Africa,Togo,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+474,Africa,Togo,Capacity-enhancing,Fisheries dev. projects,1286920.477,1286920.477,Modeled
+475,Africa,Togo,Capacity-enhancing,Fishing port develop.,0,0,NA
+476,Africa,Togo,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+477,Africa,Togo,Capacity-enhancing,Tax exemption,214332.0156,214332.0156,Modeled
+478,Africa,Togo,Capacity-enhancing,Fishing access,160528.82,0,Reported
+479,Africa,Togo,Capacity-enhancing,Fuel subsidies,120090.904,120090.904,Modeled
+480,Africa,Togo,Ambiguous,Fisher assistance,0,0,NA
+481,Africa,Togo,Ambiguous,Vessel buyback,0,0,NA
+482,Africa,Togo,Ambiguous,Rural fisher communities,143890.5679,143890.5679,Modeled
+483,Africa,Tunisia,Beneficial,Fisheries mangt.,276802.9333,110721.1733,Reported
+484,Africa,Tunisia,Beneficial,Fishery R&D,0,0,NA
+485,Africa,Tunisia,Beneficial,MPAs,1361672.086,356898.9406,Modeled
+486,Africa,Tunisia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+487,Africa,Tunisia,Capacity-enhancing,Fisheries dev. projects,7624710.37,994895.9229,Reported
+488,Africa,Tunisia,Capacity-enhancing,Fishing port develop.,0,0,Reported
+489,Africa,Tunisia,Capacity-enhancing,Markt. & storage infrast.,5791208.797,0,Modeled
+490,Africa,Tunisia,Capacity-enhancing,Tax exemption,8975810.675,0,Modeled
+491,Africa,Tunisia,Capacity-enhancing,Fishing access,184753.04,0,Reported
+492,Africa,Tunisia,Capacity-enhancing,Fuel subsidies,64122572.56,4103844.643,Modeled
+493,Africa,Tunisia,Ambiguous,Fisher assistance,0,0,NA
+494,Africa,Tunisia,Ambiguous,Vessel buyback,0,0,NA
+495,Africa,Tunisia,Ambiguous,Rural fisher communities,0,0,NA
+496,Asia,Bahrain,Beneficial,Fisheries mangt.,10990054.9,2754526.835,Modeled
+497,Asia,Bahrain,Beneficial,Fishery R&D,2575002.432,527167.3963,Modeled
+498,Asia,Bahrain,Beneficial,MPAs,0,0,NA
+499,Asia,Bahrain,Capacity-enhancing,Boat constsruct. & renov.,1653254.107,0,Modeled
+500,Asia,Bahrain,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+501,Asia,Bahrain,Capacity-enhancing,Fishing port develop.,2848880.814,2293349.056,Modeled
+502,Asia,Bahrain,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+503,Asia,Bahrain,Capacity-enhancing,Tax exemption,5756514.089,5756514.089,Modeled
+504,Asia,Bahrain,Capacity-enhancing,Fishing access,989996.01,0,Reported
+505,Asia,Bahrain,Capacity-enhancing,Fuel subsidies,0,0,NA
+506,Asia,Bahrain,Ambiguous,Fisher assistance,1106171.208,680985.5438,Modeled
+507,Asia,Bahrain,Ambiguous,Vessel buyback,0,0,NA
+508,Asia,Bahrain,Ambiguous,Rural fisher communities,0,0,NA
+509,Asia,Bangladesh,Beneficial,Fisheries mangt.,9047546.933,7784285.898,Modeled
+510,Asia,Bangladesh,Beneficial,Fishery R&D,7900501.951,0,Modeled
+511,Asia,Bangladesh,Beneficial,MPAs,3718424.563,3051511.017,Modeled
+512,Asia,Bangladesh,Capacity-enhancing,Boat constsruct. & renov.,3883144.511,0,Reported
+513,Asia,Bangladesh,Capacity-enhancing,Fisheries dev. projects,45813224.54,40636330.17,Reported
+514,Asia,Bangladesh,Capacity-enhancing,Fishing port develop.,0,0,NA
+515,Asia,Bangladesh,Capacity-enhancing,Markt. & storage infrast.,6598368.872,0,Reported
+516,Asia,Bangladesh,Capacity-enhancing,Tax exemption,0,0,NA
+517,Asia,Bangladesh,Capacity-enhancing,Fishing access,0,0,NA
+518,Asia,Bangladesh,Capacity-enhancing,Fuel subsidies,35088039.27,29729963.65,Modeled
+519,Asia,Bangladesh,Ambiguous,Fisher assistance,47308800,47308800,Reported
+520,Asia,Bangladesh,Ambiguous,Vessel buyback,0,0,NA
+521,Asia,Bangladesh,Ambiguous,Rural fisher communities,2024552.428,2024552.417,Modeled
+522,Asia,Brunei Darsm,Beneficial,Fisheries mangt.,2676994.35,44317.74114,Modeled
+523,Asia,Brunei Darsm,Beneficial,Fishery R&D,627227.7092,454709.6598,Modeled
+524,Asia,Brunei Darsm,Beneficial,MPAs,291888.1474,199464.0142,Modeled
+525,Asia,Brunei Darsm,Capacity-enhancing,Boat constsruct. & renov.,331698.4963,282909.4889,Modeled
+526,Asia,Brunei Darsm,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+527,Asia,Brunei Darsm,Capacity-enhancing,Fishing port develop.,0,0,NA
+528,Asia,Brunei Darsm,Capacity-enhancing,Markt. & storage infrast.,745176.2492,745176.2492,Modeled
+529,Asia,Brunei Darsm,Capacity-enhancing,Tax exemption,0,0,NA
+530,Asia,Brunei Darsm,Capacity-enhancing,Fishing access,0,0,NA
+531,Asia,Brunei Darsm,Capacity-enhancing,Fuel subsidies,0,0,NA
+532,Asia,Brunei Darsm,Ambiguous,Fisher assistance,0,0,NA
+533,Asia,Brunei Darsm,Ambiguous,Vessel buyback,0,0,NA
+534,Asia,Brunei Darsm,Ambiguous,Rural fisher communities,0,0,NA
+535,Asia,Cambodia,Beneficial,Fisheries mangt.,45397687.99,23183.20384,Modeled
+536,Asia,Cambodia,Beneficial,Fishery R&D,3666218.162,81985.45536,Modeled
+537,Asia,Cambodia,Beneficial,MPAs,831999.0866,17538.01742,Modeled
+538,Asia,Cambodia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+539,Asia,Cambodia,Capacity-enhancing,Fisheries dev. projects,9972837.86,3862216.664,Modeled
+540,Asia,Cambodia,Capacity-enhancing,Fishing port develop.,0,0,NA
+541,Asia,Cambodia,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+542,Asia,Cambodia,Capacity-enhancing,Tax exemption,0,0,NA
+543,Asia,Cambodia,Capacity-enhancing,Fishing access,1495908.19,0,Reported
+544,Asia,Cambodia,Capacity-enhancing,Fuel subsidies,0,0,NA
+545,Asia,Cambodia,Ambiguous,Fisher assistance,0,0,NA
+546,Asia,Cambodia,Ambiguous,Vessel buyback,0,0,NA
+547,Asia,Cambodia,Ambiguous,Rural fisher communities,1886191.015,955518.7909,Modeled
+548,Asia,China,Beneficial,Fisheries mangt.,428865387,0,Reported
+549,Asia,China,Beneficial,Fishery R&D,172033.4961,34800.46008,Modeled
+550,Asia,China,Beneficial,MPAs,5454908.028,1940722.587,Modeled
+551,Asia,China,Capacity-enhancing,Boat constsruct. & renov.,14581816.8,0,Reported
+552,Asia,China,Capacity-enhancing,Fisheries dev. projects,5752133.196,714383.959,Modeled
+553,Asia,China,Capacity-enhancing,Fisheries dev. projects,902580106.1,112095587.4,Modeled
+554,Asia,China,Capacity-enhancing,Fishing port develop.,185153513.2,157380486.2,Reported
+555,Asia,China,Capacity-enhancing,Markt. & storage infrast.,6194721.574,0,Reported
+556,Asia,China,Capacity-enhancing,Tax exemption,1062517493,0,Modeled
+557,Asia,China,Capacity-enhancing,Fishing access,275424947,0,Reported
+558,Asia,China,Capacity-enhancing,Fuel subsidies,3433436331,0,Modeled
+559,Asia,China,Ambiguous,Fisher assistance,54898339.52,0,Reported
+560,Asia,China,Ambiguous,Vessel buyback,886222569,0,Reported
+561,Asia,China,Ambiguous,Rural fisher communities,0,0,NA
+562,Asia,Cyprus,Beneficial,Fisheries mangt.,633368.0092,118499.925,Modeled
+563,Asia,Cyprus,Beneficial,Fishery R&D,148400.0015,22215.76273,Modeled
+564,Asia,Cyprus,Beneficial,MPAs,1131549.547,438333.1922,Modeled
+565,Asia,Cyprus,Capacity-enhancing,Boat constsruct. & renov.,84554.11951,0,Modeled
+566,Asia,Cyprus,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+567,Asia,Cyprus,Capacity-enhancing,Fishing port develop.,0,0,NA
+568,Asia,Cyprus,Capacity-enhancing,Markt. & storage infrast.,189954.8003,1062.235448,Modeled
+569,Asia,Cyprus,Capacity-enhancing,Tax exemption,0,0,NA
+570,Asia,Cyprus,Capacity-enhancing,Fishing access,25864944.17,0,Reported
+571,Asia,Cyprus,Capacity-enhancing,Fuel subsidies,1336031.921,0,Modeled
+572,Asia,Cyprus,Ambiguous,Fisher assistance,56574.08145,284.9161826,Modeled
+573,Asia,Cyprus,Ambiguous,Vessel buyback,61614.16672,0,Modeled
+574,Asia,Cyprus,Ambiguous,Rural fisher communities,0,0,NA
+575,Asia,Hong Kong,Beneficial,Fisheries mangt.,1338136.823,118205.1752,Modeled
+576,Asia,Hong Kong,Beneficial,Fishery R&D,0,0,NA
+577,Asia,Hong Kong,Beneficial,MPAs,0,0,NA
+578,Asia,Hong Kong,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+579,Asia,Hong Kong,Capacity-enhancing,Fisheries dev. projects,40962323.03,123601.566,Modeled
+580,Asia,Hong Kong,Capacity-enhancing,Fishing port develop.,0,0,NA
+581,Asia,Hong Kong,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+582,Asia,Hong Kong,Capacity-enhancing,Tax exemption,0,0,NA
+583,Asia,Hong Kong,Capacity-enhancing,Fishing access,71892110.84,0,Reported
+584,Asia,Hong Kong,Capacity-enhancing,Fuel subsidies,0,0,NA
+585,Asia,Hong Kong,Ambiguous,Fisher assistance,0,0,NA
+586,Asia,Hong Kong,Ambiguous,Vessel buyback,0,0,NA
+587,Asia,Hong Kong,Ambiguous,Rural fisher communities,0,0,NA
+588,Asia,India,Beneficial,Fisheries mangt.,52122688.5,22090290.96,Modeled
+589,Asia,India,Beneficial,Fishery R&D,26710263.24,0,Modeled
+590,Asia,India,Beneficial,MPAs,4127834.913,1749431.167,Modeled
+591,Asia,India,Capacity-enhancing,Boat constsruct. & renov.,8531208.046,3753731.54,Reported
+592,Asia,India,Capacity-enhancing,Fisheries dev. projects,159275.6736,75686.15131,Modeled
+593,Asia,India,Capacity-enhancing,Fishing port develop.,10530705.02,0,Modeled
+594,Asia,India,Capacity-enhancing,Markt. & storage infrast.,2762127.639,0,Reported
+595,Asia,India,Capacity-enhancing,Tax exemption,45961256.01,9192251.11,Modeled
+596,Asia,India,Capacity-enhancing,Fishing access,15971345.57,0,Reported
+597,Asia,India,Capacity-enhancing,Fuel subsidies,90487776.48,4559425.636,Reported
+598,Asia,India,Ambiguous,Fisher assistance,8120990.291,7618945.418,Reported
+599,Asia,India,Ambiguous,Vessel buyback,0,0,NA
+600,Asia,India,Ambiguous,Rural fisher communities,11272695.27,11272695.08,Modeled
+601,Asia,Indonesia,Beneficial,Fisheries mangt.,210754701.2,1041344.27,Modeled
+602,Asia,Indonesia,Beneficial,Fishery R&D,56386451.51,6089737.045,Modeled
+603,Asia,Indonesia,Beneficial,MPAs,41431606.13,9249137.933,Modeled
+604,Asia,Indonesia,Capacity-enhancing,Boat constsruct. & renov.,66744946.25,21738529.29,Reported
+605,Asia,Indonesia,Capacity-enhancing,Fisheries dev. projects,91542906.4,91542906.4,Reported
+606,Asia,Indonesia,Capacity-enhancing,Fishing port develop.,26823464.5,16764665.31,Reported
+607,Asia,Indonesia,Capacity-enhancing,Markt. & storage infrast.,140059127.8,62719821.52,Reported
+608,Asia,Indonesia,Capacity-enhancing,Tax exemption,98477275.81,10119551.65,Modeled
+609,Asia,Indonesia,Capacity-enhancing,Fishing access,1019127.28,0,Reported
+610,Asia,Indonesia,Capacity-enhancing,Fuel subsidies,141322801.1,0,Modeled
+611,Asia,Indonesia,Ambiguous,Fisher assistance,4680451.016,4680451.016,Reported
+612,Asia,Indonesia,Ambiguous,Vessel buyback,0,0,NA
+613,Asia,Indonesia,Ambiguous,Rural fisher communities,56310415.98,56310415.98,Reported
+614,Asia,Iran,Beneficial,Fisheries mangt.,67491230.07,39180093.38,Modeled
+615,Asia,Iran,Beneficial,Fishery R&D,15813395.21,0,Modeled
+616,Asia,Iran,Beneficial,MPAs,5544576.344,3218744.484,Modeled
+617,Asia,Iran,Capacity-enhancing,Boat constsruct. & renov.,9696722.097,2857021.524,Modeled
+618,Asia,Iran,Capacity-enhancing,Fisheries dev. projects,130138.9601,130138.9601,Modeled
+619,Asia,Iran,Capacity-enhancing,Fishing port develop.,0,0,NA
+620,Asia,Iran,Capacity-enhancing,Markt. & storage infrast.,21784141.57,0,Modeled
+621,Asia,Iran,Capacity-enhancing,Tax exemption,0,0,NA
+622,Asia,Iran,Capacity-enhancing,Fishing access,3609634.32,0,Reported
+623,Asia,Iran,Capacity-enhancing,Fuel subsidies,0,0,NA
+624,Asia,Iran,Ambiguous,Fisher assistance,0,0,NA
+625,Asia,Iran,Ambiguous,Vessel buyback,0,0,NA
+626,Asia,Iran,Ambiguous,Rural fisher communities,8457798.834,8457798.834,Modeled
+627,Asia,Iraq,Beneficial,Fisheries mangt.,617482.2827,154764.6061,Modeled
+628,Asia,Iraq,Beneficial,Fishery R&D,0,0,NA
+629,Asia,Iraq,Beneficial,MPAs,0,0,NA
+630,Asia,Iraq,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+631,Asia,Iraq,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+632,Asia,Iraq,Capacity-enhancing,Fishing port develop.,0,0,NA
+633,Asia,Iraq,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+634,Asia,Iraq,Capacity-enhancing,Tax exemption,0,0,NA
+635,Asia,Iraq,Capacity-enhancing,Fishing access,454381.89,0,Reported
+636,Asia,Iraq,Capacity-enhancing,Fuel subsidies,0,0,NA
+637,Asia,Iraq,Ambiguous,Fisher assistance,0,0,NA
+638,Asia,Iraq,Ambiguous,Vessel buyback,0,0,NA
+639,Asia,Iraq,Ambiguous,Rural fisher communities,0,0,NA
+640,Asia,Israel,Beneficial,Fisheries mangt.,809638.8608,48781.47036,Modeled
+641,Asia,Israel,Beneficial,Fishery R&D,189700.7843,9145.301758,Modeled
+642,Asia,Israel,Beneficial,MPAs,485400.2559,60552.54123,Modeled
+643,Asia,Israel,Capacity-enhancing,Boat constsruct. & renov.,108106.9553,0,Modeled
+644,Asia,Israel,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+645,Asia,Israel,Capacity-enhancing,Fishing port develop.,0,0,NA
+646,Asia,Israel,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+647,Asia,Israel,Capacity-enhancing,Tax exemption,0,0,NA
+648,Asia,Israel,Capacity-enhancing,Fishing access,0,0,NA
+649,Asia,Israel,Capacity-enhancing,Fuel subsidies,0,0,NA
+650,Asia,Israel,Ambiguous,Fisher assistance,0,0,NA
+651,Asia,Israel,Ambiguous,Vessel buyback,0,0,NA
+652,Asia,Israel,Ambiguous,Rural fisher communities,0,0,NA
+653,Asia,Japan,Beneficial,Fisheries mangt.,345674903.4,19664326.78,Modeled
+654,Asia,Japan,Beneficial,Fishery R&D,160089659.9,16441835.16,Modeled
+655,Asia,Japan,Beneficial,MPAs,28316872.91,6679022.63,Modeled
+656,Asia,Japan,Capacity-enhancing,Boat constsruct. & renov.,146739219.3,0,Modeled
+657,Asia,Japan,Capacity-enhancing,Fisheries dev. projects,20731419.18,2995633.928,Modeled
+658,Asia,Japan,Capacity-enhancing,Fishing port develop.,659197308.7,342688016,Modeled
+659,Asia,Japan,Capacity-enhancing,Markt. & storage infrast.,28454674.41,11919663.53,Modeled
+660,Asia,Japan,Capacity-enhancing,Tax exemption,510935602.7,510935602.7,Modeled
+661,Asia,Japan,Capacity-enhancing,Fishing access,112772067.1,0,Reported
+662,Asia,Japan,Capacity-enhancing,Fuel subsidies,631740242.5,0,Modeled
+663,Asia,Japan,Ambiguous,Fisher assistance,75917356.22,75917356.22,Reported
+664,Asia,Japan,Ambiguous,Vessel buyback,106928139.9,0,Modeled
+665,Asia,Japan,Ambiguous,Rural fisher communities,32345071.11,32345071.11,Reported
+666,Asia,Jordan,Beneficial,Fisheries mangt.,105387.0716,25542.9744,Modeled
+667,Asia,Jordan,Beneficial,Fishery R&D,0,0,NA
+668,Asia,Jordan,Beneficial,MPAs,0,0,NA
+669,Asia,Jordan,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+670,Asia,Jordan,Capacity-enhancing,Fisheries dev. projects,41621.64651,2.9773271,Modeled
+671,Asia,Jordan,Capacity-enhancing,Fishing port develop.,0,0,NA
+672,Asia,Jordan,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+673,Asia,Jordan,Capacity-enhancing,Tax exemption,0,0,NA
+674,Asia,Jordan,Capacity-enhancing,Fishing access,0,0,NA
+675,Asia,Jordan,Capacity-enhancing,Fuel subsidies,0,0,NA
+676,Asia,Jordan,Ambiguous,Fisher assistance,0,0,NA
+677,Asia,Jordan,Ambiguous,Vessel buyback,0,0,NA
+678,Asia,Jordan,Ambiguous,Rural fisher communities,0,0,NA
+679,Asia,Korea D P Rp,Beneficial,Fisheries mangt.,10400164.62,2493441.757,Modeled
+680,Asia,Korea D P Rp,Beneficial,Fishery R&D,0,0,NA
+681,Asia,Korea D P Rp,Beneficial,MPAs,0,0,NA
+682,Asia,Korea D P Rp,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+683,Asia,Korea D P Rp,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+684,Asia,Korea D P Rp,Capacity-enhancing,Fishing port develop.,0,0,NA
+685,Asia,Korea D P Rp,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+686,Asia,Korea D P Rp,Capacity-enhancing,Tax exemption,0,0,NA
+687,Asia,Korea D P Rp,Capacity-enhancing,Fishing access,975586.68,0,Reported
+688,Asia,Korea D P Rp,Capacity-enhancing,Fuel subsidies,0,0,NA
+689,Asia,Korea D P Rp,Ambiguous,Fisher assistance,0,0,NA
+690,Asia,Korea D P Rp,Ambiguous,Vessel buyback,0,0,NA
+691,Asia,Korea D P Rp,Ambiguous,Rural fisher communities,0,0,NA
+692,Asia,Korea Rep,Beneficial,Fisheries mangt.,1177574425,123421601.8,Reported
+693,Asia,Korea Rep,Beneficial,Fishery R&D,457516062.9,50326766.92,Reported
+694,Asia,Korea Rep,Beneficial,MPAs,0,0,NA
+695,Asia,Korea Rep,Capacity-enhancing,Boat constsruct. & renov.,45751448.21,0,Modeled
+696,Asia,Korea Rep,Capacity-enhancing,Fisheries dev. projects,131658318.6,18059503.67,Reported
+697,Asia,Korea Rep,Capacity-enhancing,Fishing port develop.,231798842.7,41491992.84,Reported
+698,Asia,Korea Rep,Capacity-enhancing,Markt. & storage infrast.,477334712.3,79727365.87,Reported
+699,Asia,Korea Rep,Capacity-enhancing,Tax exemption,9013873.76,9013873.76,Reported
+700,Asia,Korea Rep,Capacity-enhancing,Fishing access,0,0,NA
+701,Asia,Korea Rep,Capacity-enhancing,Fuel subsidies,604031262.9,146175565.6,Reported
+702,Asia,Korea Rep,Ambiguous,Fisher assistance,4800088.96,873616.1907,Reported
+703,Asia,Korea Rep,Ambiguous,Vessel buyback,33338852.96,0,Modeled
+704,Asia,Korea Rep,Ambiguous,Rural fisher communities,12132870.4,12132870.4,Reported
+705,Asia,Kuwait,Beneficial,Fisheries mangt.,6410762.503,768695.1381,Modeled
+706,Asia,Kuwait,Beneficial,Fishery R&D,1502060.652,144111.0516,Modeled
+707,Asia,Kuwait,Beneficial,MPAs,237044.8721,58849.64436,Modeled
+708,Asia,Kuwait,Capacity-enhancing,Boat constsruct. & renov.,785523.3078,0,Modeled
+709,Asia,Kuwait,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+710,Asia,Kuwait,Capacity-enhancing,Fishing port develop.,0,0,NA
+711,Asia,Kuwait,Capacity-enhancing,Markt. & storage infrast.,1764715.001,685079.8034,Modeled
+712,Asia,Kuwait,Capacity-enhancing,Tax exemption,0,0,NA
+713,Asia,Kuwait,Capacity-enhancing,Fishing access,0,0,NA
+714,Asia,Kuwait,Capacity-enhancing,Fuel subsidies,0,0,NA
+715,Asia,Kuwait,Ambiguous,Fisher assistance,0,0,NA
+716,Asia,Kuwait,Ambiguous,Vessel buyback,0,0,NA
+717,Asia,Kuwait,Ambiguous,Rural fisher communities,0,0,NA
+718,Asia,Lebanon,Beneficial,Fisheries mangt.,914696.4243,229257.8035,Modeled
+719,Asia,Lebanon,Beneficial,Fishery R&D,0,0,NA
+720,Asia,Lebanon,Beneficial,MPAs,705793.2829,416688.5414,Modeled
+721,Asia,Lebanon,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+722,Asia,Lebanon,Capacity-enhancing,Fisheries dev. projects,361250.8703,34.45521248,Modeled
+723,Asia,Lebanon,Capacity-enhancing,Fishing port develop.,0,0,NA
+724,Asia,Lebanon,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+725,Asia,Lebanon,Capacity-enhancing,Tax exemption,0,0,NA
+726,Asia,Lebanon,Capacity-enhancing,Fishing access,4074.62,0,Reported
+727,Asia,Lebanon,Capacity-enhancing,Fuel subsidies,0,0,NA
+728,Asia,Lebanon,Ambiguous,Fisher assistance,0,0,NA
+729,Asia,Lebanon,Ambiguous,Vessel buyback,0,0,NA
+730,Asia,Lebanon,Ambiguous,Rural fisher communities,0,0,NA
+731,Asia,Malaysia,Beneficial,Fisheries mangt.,45873348.99,0,Reported
+732,Asia,Malaysia,Beneficial,Fishery R&D,6499537.441,1436398.008,Modeled
+733,Asia,Malaysia,Beneficial,MPAs,8206086.762,1813545.174,Modeled
+734,Asia,Malaysia,Capacity-enhancing,Boat constsruct. & renov.,48890373.63,28088973.56,Modeled
+735,Asia,Malaysia,Capacity-enhancing,Fisheries dev. projects,60242002.23,27797977.63,Reported
+736,Asia,Malaysia,Capacity-enhancing,Fishing port develop.,4141147.143,639489.3725,Reported
+737,Asia,Malaysia,Capacity-enhancing,Markt. & storage infrast.,109834520.4,109834520.4,Modeled
+738,Asia,Malaysia,Capacity-enhancing,Tax exemption,170232829.6,0,Modeled
+739,Asia,Malaysia,Capacity-enhancing,Fishing access,3849380.43,0,Reported
+740,Asia,Malaysia,Capacity-enhancing,Fuel subsidies,74825408.33,11220237.93,Reported
+741,Asia,Malaysia,Ambiguous,Fisher assistance,62847934.94,41376778.62,Modeled
+742,Asia,Malaysia,Ambiguous,Vessel buyback,0,0,NA
+743,Asia,Malaysia,Ambiguous,Rural fisher communities,0,0,NA
+744,Asia,Maldives,Beneficial,Fisheries mangt.,12135686.56,2281924.053,Modeled
+745,Asia,Maldives,Beneficial,Fishery R&D,2843427.324,0,Modeled
+746,Asia,Maldives,Beneficial,MPAs,5904549.878,1058989.523,Modeled
+747,Asia,Maldives,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+748,Asia,Maldives,Capacity-enhancing,Fisheries dev. projects,4800934.228,1775297.816,Modeled
+749,Asia,Maldives,Capacity-enhancing,Fishing port develop.,2796989.248,0,Modeled
+750,Asia,Maldives,Capacity-enhancing,Markt. & storage infrast.,3646461.464,0,Modeled
+751,Asia,Maldives,Capacity-enhancing,Tax exemption,0,0,NA
+752,Asia,Maldives,Capacity-enhancing,Fishing access,0,0,NA
+753,Asia,Maldives,Capacity-enhancing,Fuel subsidies,17437887.06,2615683.059,Reported
+754,Asia,Maldives,Ambiguous,Fisher assistance,0,0,NA
+755,Asia,Maldives,Ambiguous,Vessel buyback,0,0,NA
+756,Asia,Maldives,Ambiguous,Rural fisher communities,0,0,NA
+757,Asia,Myanmar,Beneficial,Fisheries mangt.,3827487.505,17632.42255,Modeled
+758,Asia,Myanmar,Beneficial,Fishery R&D,10621182.25,3373261.705,Modeled
+759,Asia,Myanmar,Beneficial,MPAs,618349.5365,128701.7508,Modeled
+760,Asia,Myanmar,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+761,Asia,Myanmar,Capacity-enhancing,Fisheries dev. projects,3566126.393,2581570.478,Modeled
+762,Asia,Myanmar,Capacity-enhancing,Fishing port develop.,0,0,NA
+763,Asia,Myanmar,Capacity-enhancing,Markt. & storage infrast.,103983563.2,0,Modeled
+764,Asia,Myanmar,Capacity-enhancing,Tax exemption,0,0,NA
+765,Asia,Myanmar,Capacity-enhancing,Fishing access,0,0,NA
+766,Asia,Myanmar,Capacity-enhancing,Fuel subsidies,0,0,NA
+767,Asia,Myanmar,Ambiguous,Fisher assistance,115497.8661,115497.8661,Modeled
+768,Asia,Myanmar,Ambiguous,Vessel buyback,0,0,NA
+769,Asia,Myanmar,Ambiguous,Rural fisher communities,5464371.635,5464371.635,Modeled
+770,Asia,Oman,Beneficial,Fisheries mangt.,49316872.12,11493341.63,Modeled
+771,Asia,Oman,Beneficial,Fishery R&D,11555089.28,2154713.181,Modeled
+772,Asia,Oman,Beneficial,MPAs,1058771.541,510883.507,Modeled
+773,Asia,Oman,Capacity-enhancing,Boat constsruct. & renov.,6597281.969,6597281.969,Reported
+774,Asia,Oman,Capacity-enhancing,Fisheries dev. projects,19513477.68,1498.99092,Modeled
+775,Asia,Oman,Capacity-enhancing,Fishing port develop.,11368409.7,9151569.809,Reported
+776,Asia,Oman,Capacity-enhancing,Markt. & storage infrast.,14821103.77,5965494.267,Reported
+777,Asia,Oman,Capacity-enhancing,Tax exemption,0,0,NA
+778,Asia,Oman,Capacity-enhancing,Fishing access,191570.48,0,Reported
+779,Asia,Oman,Capacity-enhancing,Fuel subsidies,32075590.7,16358551.26,Reported
+780,Asia,Oman,Ambiguous,Fisher assistance,0,0,NA
+781,Asia,Oman,Ambiguous,Vessel buyback,0,0,NA
+782,Asia,Oman,Ambiguous,Rural fisher communities,6180242.723,6180242.723,Modeled
+783,Asia,Pakistan,Beneficial,Fisheries mangt.,54989948.76,35649428.22,Modeled
+784,Asia,Pakistan,Beneficial,Fishery R&D,4440868.199,0,Modeled
+785,Asia,Pakistan,Beneficial,MPAs,1312712.304,811721.1141,Modeled
+786,Asia,Pakistan,Capacity-enhancing,Boat constsruct. & renov.,4662151.391,1586053.828,Modeled
+787,Asia,Pakistan,Capacity-enhancing,Fisheries dev. projects,55003924.76,37454389.86,Modeled
+788,Asia,Pakistan,Capacity-enhancing,Fishing port develop.,0,0,NA
+789,Asia,Pakistan,Capacity-enhancing,Markt. & storage infrast.,77756610.46,0,Modeled
+790,Asia,Pakistan,Capacity-enhancing,Tax exemption,0,0,NA
+791,Asia,Pakistan,Capacity-enhancing,Fishing access,467245.44,0,Reported
+792,Asia,Pakistan,Capacity-enhancing,Fuel subsidies,0,0,NA
+793,Asia,Pakistan,Ambiguous,Fisher assistance,8910808.828,8910808.828,Modeled
+794,Asia,Pakistan,Ambiguous,Vessel buyback,0,0,NA
+795,Asia,Pakistan,Ambiguous,Rural fisher communities,2284731.929,2284731.916,Modeled
+796,Asia,Philippines,Beneficial,Fisheries mangt.,1250295.514,685861.9381,Reported
+797,Asia,Philippines,Beneficial,Fishery R&D,11836904.69,3015510.903,Modeled
+798,Asia,Philippines,Beneficial,MPAs,27904234.65,7998029.463,Modeled
+799,Asia,Philippines,Capacity-enhancing,Boat constsruct. & renov.,13928267.81,7721975.935,Modeled
+800,Asia,Philippines,Capacity-enhancing,Fisheries dev. projects,2984547.163,0,Reported
+801,Asia,Philippines,Capacity-enhancing,Fishing port develop.,0,0,NA
+802,Asia,Philippines,Capacity-enhancing,Markt. & storage infrast.,33394.59952,275.1885507,Reported
+803,Asia,Philippines,Capacity-enhancing,Tax exemption,27367791.54,0,Modeled
+804,Asia,Philippines,Capacity-enhancing,Fishing access,8652193.27,0,Reported
+805,Asia,Philippines,Capacity-enhancing,Fuel subsidies,86620873.61,0,Modeled
+806,Asia,Philippines,Ambiguous,Fisher assistance,6431.433215,6431.433215,Reported
+807,Asia,Philippines,Ambiguous,Vessel buyback,0,0,NA
+808,Asia,Philippines,Ambiguous,Rural fisher communities,6089834.888,6089834.888,Modeled
+809,Asia,Qatar,Beneficial,Fisheries mangt.,18936885.99,4746305.738,Modeled
+810,Asia,Qatar,Beneficial,Fishery R&D,0,0,NA
+811,Asia,Qatar,Beneficial,MPAs,295127.1652,178762.2169,Modeled
+812,Asia,Qatar,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+813,Asia,Qatar,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+814,Asia,Qatar,Capacity-enhancing,Fishing port develop.,0,0,NA
+815,Asia,Qatar,Capacity-enhancing,Markt. & storage infrast.,5670503.101,4396959.588,Modeled
+816,Asia,Qatar,Capacity-enhancing,Tax exemption,0,0,NA
+817,Asia,Qatar,Capacity-enhancing,Fishing access,0,0,NA
+818,Asia,Qatar,Capacity-enhancing,Fuel subsidies,0,0,NA
+819,Asia,Qatar,Ambiguous,Fisher assistance,1688841.26,1179366.386,Modeled
+820,Asia,Qatar,Ambiguous,Vessel buyback,0,0,NA
+821,Asia,Qatar,Ambiguous,Rural fisher communities,0,0,NA
+822,Asia,Saudi Arabia,Beneficial,Fisheries mangt.,30694138.66,4992836.165,Modeled
+823,Asia,Saudi Arabia,Beneficial,Fishery R&D,7191727.647,955539.8772,Modeled
+824,Asia,Saudi Arabia,Beneficial,MPAs,1526504.565,990701.7222,Modeled
+825,Asia,Saudi Arabia,Capacity-enhancing,Boat constsruct. & renov.,4262127.931,0,Modeled
+826,Asia,Saudi Arabia,Capacity-enhancing,Fisheries dev. projects,12606545.94,1376.837351,Modeled
+827,Asia,Saudi Arabia,Capacity-enhancing,Fishing port develop.,0,0,NA
+828,Asia,Saudi Arabia,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+829,Asia,Saudi Arabia,Capacity-enhancing,Tax exemption,0,0,NA
+830,Asia,Saudi Arabia,Capacity-enhancing,Fishing access,846553.32,0,Reported
+831,Asia,Saudi Arabia,Capacity-enhancing,Fuel subsidies,0,0,NA
+832,Asia,Saudi Arabia,Ambiguous,Fisher assistance,0,0,NA
+833,Asia,Saudi Arabia,Ambiguous,Vessel buyback,0,0,NA
+834,Asia,Saudi Arabia,Ambiguous,Rural fisher communities,3846497.537,3846497.537,Modeled
+835,Asia,Singapore,Beneficial,Fisheries mangt.,713110.3625,8036.478793,Modeled
+836,Asia,Singapore,Beneficial,Fishery R&D,0,0,NA
+837,Asia,Singapore,Beneficial,MPAs,37964.82016,17660.71714,Modeled
+838,Asia,Singapore,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+839,Asia,Singapore,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+840,Asia,Singapore,Capacity-enhancing,Fishing port develop.,0,0,NA
+841,Asia,Singapore,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+842,Asia,Singapore,Capacity-enhancing,Tax exemption,0,0,NA
+843,Asia,Singapore,Capacity-enhancing,Fishing access,55432.35,0,Reported
+844,Asia,Singapore,Capacity-enhancing,Fuel subsidies,0,0,NA
+845,Asia,Singapore,Ambiguous,Fisher assistance,0,0,NA
+846,Asia,Singapore,Ambiguous,Vessel buyback,0,0,NA
+847,Asia,Singapore,Ambiguous,Rural fisher communities,0,0,NA
+848,Asia,Sri Lanka,Beneficial,Fisheries mangt.,5014719.851,2462227.427,Modeled
+849,Asia,Sri Lanka,Beneficial,Fishery R&D,1889334.72,0,Reported
+850,Asia,Sri Lanka,Beneficial,MPAs,1198161.813,588297.3651,Modeled
+851,Asia,Sri Lanka,Capacity-enhancing,Boat constsruct. & renov.,4428128.25,1029949.83,Reported
+852,Asia,Sri Lanka,Capacity-enhancing,Fisheries dev. projects,12475061.17,3446149.494,Reported
+853,Asia,Sri Lanka,Capacity-enhancing,Fishing port develop.,17887801.28,0,Reported
+854,Asia,Sri Lanka,Capacity-enhancing,Markt. & storage infrast.,559610.4478,0,Reported
+855,Asia,Sri Lanka,Capacity-enhancing,Tax exemption,31619903.22,6425511.394,Modeled
+856,Asia,Sri Lanka,Capacity-enhancing,Fishing access,1512494.77,0,Reported
+857,Asia,Sri Lanka,Capacity-enhancing,Fuel subsidies,32800950,32800950,Reported
+858,Asia,Sri Lanka,Ambiguous,Fisher assistance,239038.527,233671.609,Modeled
+859,Asia,Sri Lanka,Ambiguous,Vessel buyback,0,0,NA
+860,Asia,Sri Lanka,Ambiguous,Rural fisher communities,1312038,1312038,Reported
+861,Asia,Syria,Beneficial,Fisheries mangt.,605688.8588,123774.7323,Modeled
+862,Asia,Syria,Beneficial,Fishery R&D,0,0,NA
+863,Asia,Syria,Beneficial,MPAs,0,0,NA
+864,Asia,Syria,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+865,Asia,Syria,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+866,Asia,Syria,Capacity-enhancing,Fishing port develop.,0,0,NA
+867,Asia,Syria,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+868,Asia,Syria,Capacity-enhancing,Tax exemption,0,0,NA
+869,Asia,Syria,Capacity-enhancing,Fishing access,0,0,NA
+870,Asia,Syria,Capacity-enhancing,Fuel subsidies,0,0,NA
+871,Asia,Syria,Ambiguous,Fisher assistance,0,0,NA
+872,Asia,Syria,Ambiguous,Vessel buyback,0,0,NA
+873,Asia,Syria,Ambiguous,Rural fisher communities,0,0,NA
+874,Asia,Taiwan,Beneficial,Fisheries mangt.,52202342.22,1598959.026,Modeled
+875,Asia,Taiwan,Beneficial,Fishery R&D,12231163.48,2491086.505,Modeled
+876,Asia,Taiwan,Beneficial,MPAs,4157082.083,972756.6878,Modeled
+877,Asia,Taiwan,Capacity-enhancing,Boat constsruct. & renov.,18304461.44,0,Modeled
+878,Asia,Taiwan,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+879,Asia,Taiwan,Capacity-enhancing,Fishing port develop.,31542174.19,4790578.258,Modeled
+880,Asia,Taiwan,Capacity-enhancing,Markt. & storage infrast.,41121832.25,25454885.82,Modeled
+881,Asia,Taiwan,Capacity-enhancing,Tax exemption,0,0,NA
+882,Asia,Taiwan,Capacity-enhancing,Fishing access,24497938.6,0,Reported
+883,Asia,Taiwan,Capacity-enhancing,Fuel subsidies,592949908.3,16602597.43,Reported
+884,Asia,Taiwan,Ambiguous,Fisher assistance,1850922.197,303924.6955,Modeled
+885,Asia,Taiwan,Ambiguous,Vessel buyback,7720655.777,0,Modeled
+886,Asia,Taiwan,Ambiguous,Rural fisher communities,0,0,NA
+887,Asia,Thailand,Beneficial,Fisheries mangt.,66405473.16,0,Reported
+888,Asia,Thailand,Beneficial,Fishery R&D,1840743.56,249610.1631,Modeled
+889,Asia,Thailand,Beneficial,MPAs,5551335.739,2347098.827,Modeled
+890,Asia,Thailand,Capacity-enhancing,Boat constsruct. & renov.,4562539.203,0,Reported
+891,Asia,Thailand,Capacity-enhancing,Fisheries dev. projects,756991.1976,0,Reported
+892,Asia,Thailand,Capacity-enhancing,Fishing port develop.,160610126.6,0,Modeled
+893,Asia,Thailand,Capacity-enhancing,Markt. & storage infrast.,34536270.78,29766857.67,Modeled
+894,Asia,Thailand,Capacity-enhancing,Tax exemption,324532515.3,81133127.85,Modeled
+895,Asia,Thailand,Capacity-enhancing,Fishing access,292468417.5,0,Reported
+896,Asia,Thailand,Capacity-enhancing,Fuel subsidies,251385951.7,0,Modeled
+897,Asia,Thailand,Ambiguous,Fisher assistance,907874.3592,480339.9553,Modeled
+898,Asia,Thailand,Ambiguous,Vessel buyback,3260958.378,0,Reported
+899,Asia,Thailand,Ambiguous,Rural fisher communities,2229412.452,2229412.452,Reported
+900,Asia,Timor Leste,Beneficial,Fisheries mangt.,729505.6968,16146.42105,Modeled
+901,Asia,Timor Leste,Beneficial,Fishery R&D,0,0,NA
+902,Asia,Timor Leste,Beneficial,MPAs,0,0,NA
+903,Asia,Timor Leste,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+904,Asia,Timor Leste,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+905,Asia,Timor Leste,Capacity-enhancing,Fishing port develop.,0,0,NA
+906,Asia,Timor Leste,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+907,Asia,Timor Leste,Capacity-enhancing,Tax exemption,0,0,NA
+908,Asia,Timor Leste,Capacity-enhancing,Fishing access,0,0,NA
+909,Asia,Timor Leste,Capacity-enhancing,Fuel subsidies,0,0,NA
+910,Asia,Timor Leste,Ambiguous,Fisher assistance,0,0,NA
+911,Asia,Timor Leste,Ambiguous,Vessel buyback,0,0,NA
+912,Asia,Timor Leste,Ambiguous,Rural fisher communities,0,0,NA
+913,Asia,Turkey,Beneficial,Fisheries mangt.,36440721.89,5797310.538,Reported
+914,Asia,Turkey,Beneficial,Fishery R&D,2681535.788,429045.7261,Reported
+915,Asia,Turkey,Beneficial,MPAs,572203.5561,92696.95778,Modeled
+916,Asia,Turkey,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+917,Asia,Turkey,Capacity-enhancing,Fisheries dev. projects,8315119.359,380.2961997,Reported
+918,Asia,Turkey,Capacity-enhancing,Fishing port develop.,0,0,NA
+919,Asia,Turkey,Capacity-enhancing,Markt. & storage infrast.,22586347.38,0,Modeled
+920,Asia,Turkey,Capacity-enhancing,Tax exemption,0,0,NA
+921,Asia,Turkey,Capacity-enhancing,Fishing access,2431707.74,0,Reported
+922,Asia,Turkey,Capacity-enhancing,Fuel subsidies,52629187.96,7894378.194,Reported
+923,Asia,Turkey,Ambiguous,Fisher assistance,0,0,NA
+924,Asia,Turkey,Ambiguous,Vessel buyback,14828655.02,2372584.803,Reported
+925,Asia,Turkey,Ambiguous,Rural fisher communities,8815496.399,8815496.399,Modeled
+926,Asia,Untd Arab Em,Beneficial,Fisheries mangt.,27294577.14,6841061.838,Modeled
+927,Asia,Untd Arab Em,Beneficial,Fishery R&D,6395200.308,1309257.441,Modeled
+928,Asia,Untd Arab Em,Beneficial,MPAs,4342666.708,2703899.247,Modeled
+929,Asia,Untd Arab Em,Capacity-enhancing,Boat constsruct. & renov.,3826540.782,0,Modeled
+930,Asia,Untd Arab Em,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+931,Asia,Untd Arab Em,Capacity-enhancing,Fishing port develop.,0,0,NA
+932,Asia,Untd Arab Em,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+933,Asia,Untd Arab Em,Capacity-enhancing,Tax exemption,0,0,NA
+934,Asia,Untd Arab Em,Capacity-enhancing,Fishing access,1029802.24,0,Reported
+935,Asia,Untd Arab Em,Capacity-enhancing,Fuel subsidies,0,0,NA
+936,Asia,Untd Arab Em,Ambiguous,Fisher assistance,0,0,NA
+937,Asia,Untd Arab Em,Ambiguous,Vessel buyback,0,0,NA
+938,Asia,Untd Arab Em,Ambiguous,Rural fisher communities,0,0,NA
+939,Asia,Viet Nam,Beneficial,Fisheries mangt.,188797971.8,1330075.953,Modeled
+940,Asia,Viet Nam,Beneficial,Fishery R&D,15246911.99,5657963.854,Modeled
+941,Asia,Viet Nam,Beneficial,MPAs,9781832.868,3113520.074,Modeled
+942,Asia,Viet Nam,Capacity-enhancing,Boat constsruct. & renov.,15967175.75,0,Modeled
+943,Asia,Viet Nam,Capacity-enhancing,Fisheries dev. projects,8300468.702,7021508.238,Modeled
+944,Asia,Viet Nam,Capacity-enhancing,Fishing port develop.,15832740,0,Modeled
+945,Asia,Viet Nam,Capacity-enhancing,Markt. & storage infrast.,266304836.8,172551702.9,Modeled
+946,Asia,Viet Nam,Capacity-enhancing,Tax exemption,31374061.96,3936161.169,Modeled
+947,Asia,Viet Nam,Capacity-enhancing,Fishing access,74267.13,0,Reported
+948,Asia,Viet Nam,Capacity-enhancing,Fuel subsidies,0,0,NA
+949,Asia,Viet Nam,Ambiguous,Fisher assistance,30518196.15,30518196.15,Modeled
+950,Asia,Viet Nam,Ambiguous,Vessel buyback,0,0,NA
+951,Asia,Viet Nam,Ambiguous,Rural fisher communities,7844210.88,7844210.88,Modeled
+952,Asia,Yemen,Beneficial,Fisheries mangt.,38101911.94,8757159.309,Modeled
+953,Asia,Yemen,Beneficial,Fishery R&D,0,0,NA
+954,Asia,Yemen,Beneficial,MPAs,322152.4923,197746.0487,Modeled
+955,Asia,Yemen,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+956,Asia,Yemen,Capacity-enhancing,Fisheries dev. projects,39146915.08,4276.086194,Modeled
+957,Asia,Yemen,Capacity-enhancing,Fishing port develop.,0,0,NA
+958,Asia,Yemen,Capacity-enhancing,Markt. & storage infrast.,55340258.72,37395283.01,Modeled
+959,Asia,Yemen,Capacity-enhancing,Tax exemption,6519779.09,5118026.586,Modeled
+960,Asia,Yemen,Capacity-enhancing,Fishing access,4310133.7,0,Reported
+961,Asia,Yemen,Capacity-enhancing,Fuel subsidies,37051455.27,0,Modeled
+962,Asia,Yemen,Ambiguous,Fisher assistance,0,0,NA
+963,Asia,Yemen,Ambiguous,Vessel buyback,0,0,NA
+964,Asia,Yemen,Ambiguous,Rural fisher communities,0,0,NA
+965,Europe,Albania,Beneficial,Fisheries mangt.,404279.0098,35697.76827,Modeled
+966,Europe,Albania,Beneficial,Fishery R&D,94723.77003,9257.544913,Modeled
+967,Europe,Albania,Beneficial,MPAs,1095096.061,135279.5742,Modeled
+968,Europe,Albania,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+969,Europe,Albania,Capacity-enhancing,Fisheries dev. projects,159666.2457,44937.27631,Modeled
+970,Europe,Albania,Capacity-enhancing,Fishing port develop.,93020.38965,13986.89489,Modeled
+971,Europe,Albania,Capacity-enhancing,Markt. & storage infrast.,121271.566,17737.53858,Modeled
+972,Europe,Albania,Capacity-enhancing,Tax exemption,0,0,NA
+973,Europe,Albania,Capacity-enhancing,Fishing access,685.47,0,Reported
+974,Europe,Albania,Capacity-enhancing,Fuel subsidies,6613050.757,2481621.764,Modeled
+975,Europe,Albania,Ambiguous,Fisher assistance,0,0,NA
+976,Europe,Albania,Ambiguous,Vessel buyback,0,0,NA
+977,Europe,Albania,Ambiguous,Rural fisher communities,0,0,NA
+978,Europe,Belgium,Beneficial,Fisheries mangt.,3296561.546,0,Modeled
+979,Europe,Belgium,Beneficial,Fishery R&D,496189.7241,0,Modeled
+980,Europe,Belgium,Beneficial,MPAs,1757024.727,0,Modeled
+981,Europe,Belgium,Capacity-enhancing,Boat constsruct. & renov.,61226.16941,0,Modeled
+982,Europe,Belgium,Capacity-enhancing,Fisheries dev. projects,911650.023,0,Modeled
+983,Europe,Belgium,Capacity-enhancing,Fishing port develop.,645794.6053,0,Modeled
+984,Europe,Belgium,Capacity-enhancing,Markt. & storage infrast.,338203.845,0,Modeled
+985,Europe,Belgium,Capacity-enhancing,Tax exemption,18834978.99,0,Reported
+986,Europe,Belgium,Capacity-enhancing,Fishing access,779750.29,0,Reported
+987,Europe,Belgium,Capacity-enhancing,Fuel subsidies,5142150.503,0,Modeled
+988,Europe,Belgium,Ambiguous,Fisher assistance,1305911.342,0,Modeled
+989,Europe,Belgium,Ambiguous,Vessel buyback,1422252.683,0,Modeled
+990,Europe,Belgium,Ambiguous,Rural fisher communities,0,0,NA
+991,Europe,Bosnia Herzg,Beneficial,Fisheries mangt.,7849.27132,6115.804353,Modeled
+992,Europe,Bosnia Herzg,Beneficial,Fishery R&D,0,0,NA
+993,Europe,Bosnia Herzg,Beneficial,MPAs,0,0,NA
+994,Europe,Bosnia Herzg,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+995,Europe,Bosnia Herzg,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+996,Europe,Bosnia Herzg,Capacity-enhancing,Fishing port develop.,0,0,NA
+997,Europe,Bosnia Herzg,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+998,Europe,Bosnia Herzg,Capacity-enhancing,Tax exemption,0,0,NA
+999,Europe,Bosnia Herzg,Capacity-enhancing,Fishing access,0,0,NA
+1000,Europe,Bosnia Herzg,Capacity-enhancing,Fuel subsidies,0,0,NA
+1001,Europe,Bosnia Herzg,Ambiguous,Fisher assistance,0,0,NA
+1002,Europe,Bosnia Herzg,Ambiguous,Vessel buyback,0,0,NA
+1003,Europe,Bosnia Herzg,Ambiguous,Rural fisher communities,0,0,NA
+1004,Europe,Bulgaria,Beneficial,Fisheries mangt.,1891613.495,67160.91592,Modeled
+1005,Europe,Bulgaria,Beneficial,Fishery R&D,443210.6473,15117.1892,Modeled
+1006,Europe,Bulgaria,Beneficial,MPAs,5491622.52,189872.7882,Modeled
+1007,Europe,Bulgaria,Capacity-enhancing,Boat constsruct. & renov.,218338.5888,6307.04649,Modeled
+1008,Europe,Bulgaria,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1009,Europe,Bulgaria,Capacity-enhancing,Fishing port develop.,0,0,NA
+1010,Europe,Bulgaria,Capacity-enhancing,Markt. & storage infrast.,490507.8935,17718.48389,Modeled
+1011,Europe,Bulgaria,Capacity-enhancing,Tax exemption,0,0,NA
+1012,Europe,Bulgaria,Capacity-enhancing,Fishing access,0,0,NA
+1013,Europe,Bulgaria,Capacity-enhancing,Fuel subsidies,6787535.747,6787535.747,Modeled
+1014,Europe,Bulgaria,Ambiguous,Fisher assistance,146087.5612,0,Modeled
+1015,Europe,Bulgaria,Ambiguous,Vessel buyback,0,0,NA
+1016,Europe,Bulgaria,Ambiguous,Rural fisher communities,237051.3383,49636.95346,Modeled
+1017,Europe,Croatia,Beneficial,Fisheries mangt.,9524970.569,1596413.323,Modeled
+1018,Europe,Croatia,Beneficial,Fishery R&D,0,0,NA
+1019,Europe,Croatia,Beneficial,MPAs,30231776.27,7088682.204,Modeled
+1020,Europe,Croatia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1021,Europe,Croatia,Capacity-enhancing,Fisheries dev. projects,3833895.54,1810641.858,Modeled
+1022,Europe,Croatia,Capacity-enhancing,Fishing port develop.,0,0,NA
+1023,Europe,Croatia,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1024,Europe,Croatia,Capacity-enhancing,Tax exemption,0,0,NA
+1025,Europe,Croatia,Capacity-enhancing,Fishing access,50112.97,0,Reported
+1026,Europe,Croatia,Capacity-enhancing,Fuel subsidies,0,0,NA
+1027,Europe,Croatia,Ambiguous,Fisher assistance,0,0,NA
+1028,Europe,Croatia,Ambiguous,Vessel buyback,0,0,NA
+1029,Europe,Croatia,Ambiguous,Rural fisher communities,0,0,NA
+1030,Europe,Denmark,Beneficial,Fisheries mangt.,9864278.813,1083056.312,Reported
+1031,Europe,Denmark,Beneficial,Fishery R&D,49642694.78,0,Modeled
+1032,Europe,Denmark,Beneficial,MPAs,71133967.21,5548449.016,Modeled
+1033,Europe,Denmark,Capacity-enhancing,Boat constsruct. & renov.,38503641.44,6267068.703,Modeled
+1034,Europe,Denmark,Capacity-enhancing,Fisheries dev. projects,2390097.943,0,Reported
+1035,Europe,Denmark,Capacity-enhancing,Fishing port develop.,1431729.611,121510.5198,Modeled
+1036,Europe,Denmark,Capacity-enhancing,Markt. & storage infrast.,1217533.842,0,Reported
+1037,Europe,Denmark,Capacity-enhancing,Tax exemption,2328852.088,0,Reported
+1038,Europe,Denmark,Capacity-enhancing,Fishing access,5976721.13,0,Reported
+1039,Europe,Denmark,Capacity-enhancing,Fuel subsidies,54339882.05,4750041.107,Modeled
+1040,Europe,Denmark,Ambiguous,Fisher assistance,1557227.111,0,Reported
+1041,Europe,Denmark,Ambiguous,Vessel buyback,28057412.18,0,Modeled
+1042,Europe,Denmark,Ambiguous,Rural fisher communities,0,0,NA
+1043,Europe,Estonia,Beneficial,Fisheries mangt.,2846303.092,977834.6407,Modeled
+1044,Europe,Estonia,Beneficial,Fishery R&D,211365.6744,0,Modeled
+1045,Europe,Estonia,Beneficial,MPAs,45726485.06,3208032.829,Modeled
+1046,Europe,Estonia,Capacity-enhancing,Boat constsruct. & renov.,332905.6901,43865.61816,Modeled
+1047,Europe,Estonia,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1048,Europe,Estonia,Capacity-enhancing,Fishing port develop.,0,0,NA
+1049,Europe,Estonia,Capacity-enhancing,Markt. & storage infrast.,841097.4317,22156.3097,Modeled
+1050,Europe,Estonia,Capacity-enhancing,Tax exemption,0,0,NA
+1051,Europe,Estonia,Capacity-enhancing,Fishing access,289083.83,0,Reported
+1052,Europe,Estonia,Capacity-enhancing,Fuel subsidies,34609526.81,3463614.839,Modeled
+1053,Europe,Estonia,Ambiguous,Fisher assistance,653478.2843,3756.916122,Modeled
+1054,Europe,Estonia,Ambiguous,Vessel buyback,242586.7221,0,Modeled
+1055,Europe,Estonia,Ambiguous,Rural fisher communities,0,0,NA
+1056,Europe,Finland,Beneficial,Fisheries mangt.,3367746.519,365986.7834,Reported
+1057,Europe,Finland,Beneficial,Fishery R&D,274690.0084,0,Modeled
+1058,Europe,Finland,Beneficial,MPAs,68029176.05,4820689.664,Modeled
+1059,Europe,Finland,Capacity-enhancing,Boat constsruct. & renov.,1169135.033,151463.0193,Modeled
+1060,Europe,Finland,Capacity-enhancing,Fisheries dev. projects,752063.4617,444857.3198,Modeled
+1061,Europe,Finland,Capacity-enhancing,Fishing port develop.,274690.0084,26241.57436,Modeled
+1062,Europe,Finland,Capacity-enhancing,Markt. & storage infrast.,563673.075,0,Reported
+1063,Europe,Finland,Capacity-enhancing,Tax exemption,4070845.651,377585.0014,Modeled
+1064,Europe,Finland,Capacity-enhancing,Fishing access,164441.84,0,Reported
+1065,Europe,Finland,Capacity-enhancing,Fuel subsidies,5560472.756,547122.4646,Modeled
+1066,Europe,Finland,Ambiguous,Fisher assistance,782253.3185,4421.673315,Modeled
+1067,Europe,Finland,Ambiguous,Vessel buyback,28586.11633,10576.86304,Reported
+1068,Europe,Finland,Ambiguous,Rural fisher communities,0,0,NA
+1069,Europe,France,Beneficial,Fisheries mangt.,17355699.94,1042089.991,Reported
+1070,Europe,France,Beneficial,Fishery R&D,5519224.015,488006.7258,Modeled
+1071,Europe,France,Beneficial,MPAs,107992258.6,43664493.07,Modeled
+1072,Europe,France,Capacity-enhancing,Boat constsruct. & renov.,3207366.134,184567.6901,Modeled
+1073,Europe,France,Capacity-enhancing,Fisheries dev. projects,5654749.573,90393.8773,Modeled
+1074,Europe,France,Capacity-enhancing,Fishing port develop.,40837845.26,9032151.403,Modeled
+1075,Europe,France,Capacity-enhancing,Markt. & storage infrast.,8269915.73,0,Reported
+1076,Europe,France,Capacity-enhancing,Tax exemption,3382038.45,744048.459,Reported
+1077,Europe,France,Capacity-enhancing,Fishing access,14783246.57,0,Reported
+1078,Europe,France,Capacity-enhancing,Fuel subsidies,87393045.88,11361095.96,Reported
+1079,Europe,France,Ambiguous,Fisher assistance,37455212.07,19851262.4,Reported
+1080,Europe,France,Ambiguous,Vessel buyback,984896.607,364411.7446,Reported
+1081,Europe,France,Ambiguous,Rural fisher communities,0,0,NA
+1082,Europe,Georgia,Beneficial,Fisheries mangt.,9901778.994,127722.2183,Modeled
+1083,Europe,Georgia,Beneficial,Fishery R&D,2320016.161,23944.71119,Modeled
+1084,Europe,Georgia,Beneficial,MPAs,492877.8627,13163.19642,Modeled
+1085,Europe,Georgia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1086,Europe,Georgia,Capacity-enhancing,Fisheries dev. projects,1354512.457,11.63125771,Modeled
+1087,Europe,Georgia,Capacity-enhancing,Fishing port develop.,0,0,NA
+1088,Europe,Georgia,Capacity-enhancing,Markt. & storage infrast.,1028795.073,74327.40248,Modeled
+1089,Europe,Georgia,Capacity-enhancing,Tax exemption,0,0,NA
+1090,Europe,Georgia,Capacity-enhancing,Fishing access,55214.75,0,Reported
+1091,Europe,Georgia,Capacity-enhancing,Fuel subsidies,0,0,NA
+1092,Europe,Georgia,Ambiguous,Fisher assistance,0,0,NA
+1093,Europe,Georgia,Ambiguous,Vessel buyback,0,0,NA
+1094,Europe,Georgia,Ambiguous,Rural fisher communities,1240861.29,261021.9698,Modeled
+1095,Europe,Germany,Beneficial,Fisheries mangt.,75911271.71,2714492.182,Reported
+1096,Europe,Germany,Beneficial,Fishery R&D,55600.37525,2224.01501,Reported
+1097,Europe,Germany,Beneficial,MPAs,46176231.36,3324688.658,Modeled
+1098,Europe,Germany,Capacity-enhancing,Boat constsruct. & renov.,69654.46399,2786.17856,Reported
+1099,Europe,Germany,Capacity-enhancing,Fisheries dev. projects,12716980.49,203287.0176,Reported
+1100,Europe,Germany,Capacity-enhancing,Fishing port develop.,15390944.59,248132.9472,Modeled
+1101,Europe,Germany,Capacity-enhancing,Markt. & storage infrast.,1913311.376,85293.64975,Reported
+1102,Europe,Germany,Capacity-enhancing,Tax exemption,17155068.54,205860.8225,Reported
+1103,Europe,Germany,Capacity-enhancing,Fishing access,5787534.17,0,Reported
+1104,Europe,Germany,Capacity-enhancing,Fuel subsidies,17713136.88,2143289.562,Reported
+1105,Europe,Germany,Ambiguous,Fisher assistance,164824.833,27863.0421,Reported
+1106,Europe,Germany,Ambiguous,Vessel buyback,1914929.644,682045.173,Reported
+1107,Europe,Germany,Ambiguous,Rural fisher communities,0,0,NA
+1108,Europe,Greece,Beneficial,Fisheries mangt.,5672223.553,1025128.644,Reported
+1109,Europe,Greece,Beneficial,Fishery R&D,18576451.49,11108719.07,Modeled
+1110,Europe,Greece,Beneficial,MPAs,40727603.2,24355106.8,Modeled
+1111,Europe,Greece,Capacity-enhancing,Boat constsruct. & renov.,10978433.28,10978433.28,Modeled
+1112,Europe,Greece,Capacity-enhancing,Fisheries dev. projects,555270.1299,555270.1299,Modeled
+1113,Europe,Greece,Capacity-enhancing,Fishing port develop.,3334540.538,1700615.701,Modeled
+1114,Europe,Greece,Capacity-enhancing,Markt. & storage infrast.,225469.23,0,Reported
+1115,Europe,Greece,Capacity-enhancing,Tax exemption,38226129.65,0,Modeled
+1116,Europe,Greece,Capacity-enhancing,Fishing access,3851613.15,0,Reported
+1117,Europe,Greece,Capacity-enhancing,Fuel subsidies,87456111.42,8520104.27,Modeled
+1118,Europe,Greece,Ambiguous,Fisher assistance,7345529.489,20917.25282,Modeled
+1119,Europe,Greece,Ambiguous,Vessel buyback,2428444.525,898524.4743,Reported
+1120,Europe,Greece,Ambiguous,Rural fisher communities,0,0,NA
+1121,Europe,Iceland,Beneficial,Fisheries mangt.,35767416.31,4945037.769,Modeled
+1122,Europe,Iceland,Beneficial,Fishery R&D,20569572.26,0,Modeled
+1123,Europe,Iceland,Beneficial,MPAs,1531853.96,54140.37272,Modeled
+1124,Europe,Iceland,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1125,Europe,Iceland,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1126,Europe,Iceland,Capacity-enhancing,Fishing port develop.,0,0,NA
+1127,Europe,Iceland,Capacity-enhancing,Markt. & storage infrast.,8645022.577,0,Modeled
+1128,Europe,Iceland,Capacity-enhancing,Tax exemption,68865010.39,5551489.039,Modeled
+1129,Europe,Iceland,Capacity-enhancing,Fishing access,13355709.04,0,Reported
+1130,Europe,Iceland,Capacity-enhancing,Fuel subsidies,0,0,NA
+1131,Europe,Iceland,Ambiguous,Fisher assistance,13233093.94,12835.96842,Modeled
+1132,Europe,Iceland,Ambiguous,Vessel buyback,0,0,NA
+1133,Europe,Iceland,Ambiguous,Rural fisher communities,0,0,NA
+1134,Europe,Ireland,Beneficial,Fisheries mangt.,58460651.99,5928235.719,Reported
+1135,Europe,Ireland,Beneficial,Fishery R&D,674664.1541,0,Modeled
+1136,Europe,Ireland,Beneficial,MPAs,44553479.65,935623.0727,Modeled
+1137,Europe,Ireland,Capacity-enhancing,Boat constsruct. & renov.,5806200.896,333547.0097,Modeled
+1138,Europe,Ireland,Capacity-enhancing,Fisheries dev. projects,588949.9605,135458.4909,Reported
+1139,Europe,Ireland,Capacity-enhancing,Fishing port develop.,24496678,740004.5903,Modeled
+1140,Europe,Ireland,Capacity-enhancing,Markt. & storage infrast.,15566418.49,359993.2064,Reported
+1141,Europe,Ireland,Capacity-enhancing,Tax exemption,353844.8361,0,Reported
+1142,Europe,Ireland,Capacity-enhancing,Fishing access,2518249.25,0,Reported
+1143,Europe,Ireland,Capacity-enhancing,Fuel subsidies,18986601.27,3379615.026,Reported
+1144,Europe,Ireland,Ambiguous,Fisher assistance,479754.6236,35475.89353,Reported
+1145,Europe,Ireland,Ambiguous,Vessel buyback,0,0,NA
+1146,Europe,Ireland,Ambiguous,Rural fisher communities,0,0,NA
+1147,Europe,Italy,Beneficial,Fisheries mangt.,5087203.792,4476739.337,Reported
+1148,Europe,Italy,Beneficial,Fishery R&D,5617141.482,654688.9392,Modeled
+1149,Europe,Italy,Beneficial,MPAs,58137958.8,8520982.374,Modeled
+1150,Europe,Italy,Capacity-enhancing,Boat constsruct. & renov.,18805905.75,8813252.925,Modeled
+1151,Europe,Italy,Capacity-enhancing,Fisheries dev. projects,1490253.045,745126.5225,Reported
+1152,Europe,Italy,Capacity-enhancing,Fishing port develop.,0,0,NA
+1153,Europe,Italy,Capacity-enhancing,Markt. & storage infrast.,20267742.9,10133871.45,Reported
+1154,Europe,Italy,Capacity-enhancing,Tax exemption,21977613.19,18522015.4,Reported
+1155,Europe,Italy,Capacity-enhancing,Fishing access,26327033.95,0,Reported
+1156,Europe,Italy,Capacity-enhancing,Fuel subsidies,103927228.1,16436269.84,Modeled
+1157,Europe,Italy,Ambiguous,Fisher assistance,12582791.35,3480600.709,Modeled
+1158,Europe,Italy,Ambiguous,Vessel buyback,80816037.33,32399588.75,Reported
+1159,Europe,Italy,Ambiguous,Rural fisher communities,0,0,NA
+1160,Europe,Latvia,Beneficial,Fisheries mangt.,1501625.072,45048.75216,Reported
+1161,Europe,Latvia,Beneficial,Fishery R&D,754535.8657,0,Modeled
+1162,Europe,Latvia,Beneficial,MPAs,8320886.737,408841.2947,Modeled
+1163,Europe,Latvia,Capacity-enhancing,Boat constsruct. & renov.,1149326.801,39222.14809,Modeled
+1164,Europe,Latvia,Capacity-enhancing,Fisheries dev. projects,1314872.55,204878.2285,Modeled
+1165,Europe,Latvia,Capacity-enhancing,Fishing port develop.,1305355.234,32848.96162,Modeled
+1166,Europe,Latvia,Capacity-enhancing,Markt. & storage infrast.,2931099.99,0,Reported
+1167,Europe,Latvia,Capacity-enhancing,Tax exemption,0,0,NA
+1168,Europe,Latvia,Capacity-enhancing,Fishing access,13676453.32,0,Reported
+1169,Europe,Latvia,Capacity-enhancing,Fuel subsidies,9259273.11,239991.369,Modeled
+1170,Europe,Latvia,Ambiguous,Fisher assistance,768999.8835,1145.015646,Modeled
+1171,Europe,Latvia,Ambiguous,Vessel buyback,137647.8376,50929.69991,Reported
+1172,Europe,Latvia,Ambiguous,Rural fisher communities,0,0,NA
+1173,Europe,Lithuania,Beneficial,Fisheries mangt.,304383.4605,9131.503815,Reported
+1174,Europe,Lithuania,Beneficial,Fishery R&D,294866.6146,0,Modeled
+1175,Europe,Lithuania,Beneficial,MPAs,7590381.571,284205.5793,Modeled
+1176,Europe,Lithuania,Capacity-enhancing,Boat constsruct. & renov.,1748424.106,15683.31172,Modeled
+1177,Europe,Lithuania,Capacity-enhancing,Fisheries dev. projects,518293.3791,21227.11605,Modeled
+1178,Europe,Lithuania,Capacity-enhancing,Fishing port develop.,563704.6407,3728.616454,Modeled
+1179,Europe,Lithuania,Capacity-enhancing,Markt. & storage infrast.,555556.1827,0,Reported
+1180,Europe,Lithuania,Capacity-enhancing,Tax exemption,6087889.308,39097.21987,Modeled
+1181,Europe,Lithuania,Capacity-enhancing,Fishing access,7697219.27,0,Reported
+1182,Europe,Lithuania,Capacity-enhancing,Fuel subsidies,368084.7318,178058.8688,Modeled
+1183,Europe,Lithuania,Ambiguous,Fisher assistance,1169848.239,457.8443287,Modeled
+1184,Europe,Lithuania,Ambiguous,Vessel buyback,644.8419978,238.5915392,Reported
+1185,Europe,Lithuania,Ambiguous,Rural fisher communities,0,0,NA
+1186,Europe,Malta,Beneficial,Fisheries mangt.,1116167.329,124895.9978,Modeled
+1187,Europe,Malta,Beneficial,Fishery R&D,261521.3129,32389.42846,Modeled
+1188,Europe,Malta,Beneficial,MPAs,8878676.274,1389912.875,Modeled
+1189,Europe,Malta,Capacity-enhancing,Boat constsruct. & renov.,2025845.11,29437.43259,Modeled
+1190,Europe,Malta,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1191,Europe,Malta,Capacity-enhancing,Fishing port develop.,0,0,NA
+1192,Europe,Malta,Capacity-enhancing,Markt. & storage infrast.,4551156.177,45996.08389,Modeled
+1193,Europe,Malta,Capacity-enhancing,Tax exemption,0,0,NA
+1194,Europe,Malta,Capacity-enhancing,Fishing access,4145226.03,0,Reported
+1195,Europe,Malta,Capacity-enhancing,Fuel subsidies,3588460.69,3945.217409,Modeled
+1196,Europe,Malta,Ambiguous,Fisher assistance,1355467.089,30016.99402,Modeled
+1197,Europe,Malta,Ambiguous,Vessel buyback,1476223.264,22819.76127,Modeled
+1198,Europe,Malta,Ambiguous,Rural fisher communities,0,0,NA
+1199,Europe,Monaco,Beneficial,Fisheries mangt.,0,0,NA
+1200,Europe,Monaco,Beneficial,Fishery R&D,0,0,NA
+1201,Europe,Monaco,Beneficial,MPAs,0,0,NA
+1202,Europe,Monaco,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1203,Europe,Monaco,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1204,Europe,Monaco,Capacity-enhancing,Fishing port develop.,0,0,NA
+1205,Europe,Monaco,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1206,Europe,Monaco,Capacity-enhancing,Tax exemption,0,0,NA
+1207,Europe,Monaco,Capacity-enhancing,Fishing access,0,0,NA
+1208,Europe,Monaco,Capacity-enhancing,Fuel subsidies,0,0,NA
+1209,Europe,Monaco,Ambiguous,Fisher assistance,0,0,NA
+1210,Europe,Monaco,Ambiguous,Vessel buyback,0,0,NA
+1211,Europe,Monaco,Ambiguous,Rural fisher communities,0,0,NA
+1212,Europe,Montenegro,Beneficial,Fisheries mangt.,280103.8154,84161.30938,Modeled
+1213,Europe,Montenegro,Beneficial,Fishery R&D,0,0,NA
+1214,Europe,Montenegro,Beneficial,MPAs,34342.3113,14435.87524,Modeled
+1215,Europe,Montenegro,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1216,Europe,Montenegro,Capacity-enhancing,Fisheries dev. projects,95855.77076,95855.77076,Modeled
+1217,Europe,Montenegro,Capacity-enhancing,Fishing port develop.,0,0,NA
+1218,Europe,Montenegro,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1219,Europe,Montenegro,Capacity-enhancing,Tax exemption,0,0,NA
+1220,Europe,Montenegro,Capacity-enhancing,Fishing access,0,0,NA
+1221,Europe,Montenegro,Capacity-enhancing,Fuel subsidies,0,0,NA
+1222,Europe,Montenegro,Ambiguous,Fisher assistance,0,0,NA
+1223,Europe,Montenegro,Ambiguous,Vessel buyback,0,0,NA
+1224,Europe,Montenegro,Ambiguous,Rural fisher communities,0,0,NA
+1225,Europe,Netherlands,Beneficial,Fisheries mangt.,18786099.32,15599.04013,Modeled
+1226,Europe,Netherlands,Beneficial,Fishery R&D,1127059.849,2252.882704,Modeled
+1227,Europe,Netherlands,Beneficial,MPAs,22549581.48,112747.5015,Modeled
+1228,Europe,Netherlands,Capacity-enhancing,Boat constsruct. & renov.,10239799.65,18529.75015,Modeled
+1229,Europe,Netherlands,Capacity-enhancing,Fisheries dev. projects,935123.7108,168.8718716,Modeled
+1230,Europe,Netherlands,Capacity-enhancing,Fishing port develop.,0,0,NA
+1231,Europe,Netherlands,Capacity-enhancing,Markt. & storage infrast.,2180051.715,714.3990842,Modeled
+1232,Europe,Netherlands,Capacity-enhancing,Tax exemption,35654259.51,0,Reported
+1233,Europe,Netherlands,Capacity-enhancing,Fishing access,9927304.9,0,Reported
+1234,Europe,Netherlands,Capacity-enhancing,Fuel subsidies,82563795.09,121793.1644,Modeled
+1235,Europe,Netherlands,Ambiguous,Fisher assistance,6851319.164,90221.75679,Modeled
+1236,Europe,Netherlands,Ambiguous,Vessel buyback,7461691.12,0,Modeled
+1237,Europe,Netherlands,Ambiguous,Rural fisher communities,0,0,NA
+1238,Europe,Norway,Beneficial,Fisheries mangt.,117729335.3,46514047.42,Modeled
+1239,Europe,Norway,Beneficial,Fishery R&D,83106764.43,0,Modeled
+1240,Europe,Norway,Beneficial,MPAs,76910276.92,7767938.969,Modeled
+1241,Europe,Norway,Capacity-enhancing,Boat constsruct. & renov.,55851241.76,11095951.14,Modeled
+1242,Europe,Norway,Capacity-enhancing,Fisheries dev. projects,165197116.7,83280384.89,Modeled
+1243,Europe,Norway,Capacity-enhancing,Fishing port develop.,0,0,NA
+1244,Europe,Norway,Capacity-enhancing,Markt. & storage infrast.,4202313.633,117839.0651,Modeled
+1245,Europe,Norway,Capacity-enhancing,Tax exemption,194470081,16141016.72,Reported
+1246,Europe,Norway,Capacity-enhancing,Fishing access,49260505.61,0,Reported
+1247,Europe,Norway,Capacity-enhancing,Fuel subsidies,58254825.88,6206053.942,Modeled
+1248,Europe,Norway,Ambiguous,Fisher assistance,170877.211,2743.683366,Modeled
+1249,Europe,Norway,Ambiguous,Vessel buyback,40698522.33,0,Modeled
+1250,Europe,Norway,Ambiguous,Rural fisher communities,0,0,NA
+1251,Europe,Poland,Beneficial,Fisheries mangt.,992064.612,29761.93836,Reported
+1252,Europe,Poland,Beneficial,Fishery R&D,2108920.111,79061.6498,Modeled
+1253,Europe,Poland,Beneficial,MPAs,12310429.78,1470411.48,Modeled
+1254,Europe,Poland,Capacity-enhancing,Boat constsruct. & renov.,5180732.12,1206636.357,Modeled
+1255,Europe,Poland,Capacity-enhancing,Fisheries dev. projects,5474992.562,0,Modeled
+1256,Europe,Poland,Capacity-enhancing,Fishing port develop.,904061.7168,0,Modeled
+1257,Europe,Poland,Capacity-enhancing,Markt. & storage infrast.,4661049.848,0,Reported
+1258,Europe,Poland,Capacity-enhancing,Tax exemption,18038943.51,59405.6323,Modeled
+1259,Europe,Poland,Capacity-enhancing,Fishing access,12753918.68,0,Reported
+1260,Europe,Poland,Capacity-enhancing,Fuel subsidies,9907748.061,891697.3255,Reported
+1261,Europe,Poland,Ambiguous,Fisher assistance,3466361.694,0,Modeled
+1262,Europe,Poland,Ambiguous,Vessel buyback,336019.0482,124327.0478,Reported
+1263,Europe,Poland,Ambiguous,Rural fisher communities,0,0,NA
+1264,Europe,Portugal,Beneficial,Fisheries mangt.,3503115.774,490842.3823,Reported
+1265,Europe,Portugal,Beneficial,Fishery R&D,11132888.97,4120672.171,Modeled
+1266,Europe,Portugal,Beneficial,MPAs,28305028.09,10476682.36,Modeled
+1267,Europe,Portugal,Capacity-enhancing,Boat constsruct. & renov.,240467.4432,88972.95398,Reported
+1268,Europe,Portugal,Capacity-enhancing,Fisheries dev. projects,2105986.211,2105986.211,Modeled
+1269,Europe,Portugal,Capacity-enhancing,Fishing port develop.,1071028.446,581882.9151,Modeled
+1270,Europe,Portugal,Capacity-enhancing,Markt. & storage infrast.,2771668.443,0,Reported
+1271,Europe,Portugal,Capacity-enhancing,Tax exemption,0,0,NA
+1272,Europe,Portugal,Capacity-enhancing,Fishing access,3488440.12,0,Reported
+1273,Europe,Portugal,Capacity-enhancing,Fuel subsidies,86191614.78,3878622.665,Reported
+1274,Europe,Portugal,Ambiguous,Fisher assistance,1437098.033,819145.8788,Reported
+1275,Europe,Portugal,Ambiguous,Vessel buyback,480934.8864,177945.908,Reported
+1276,Europe,Portugal,Ambiguous,Rural fisher communities,0,0,NA
+1277,Europe,Romania,Beneficial,Fisheries mangt.,596042.3219,596042.3219,Modeled
+1278,Europe,Romania,Beneficial,Fishery R&D,139654.4823,128063.146,Modeled
+1279,Europe,Romania,Beneficial,MPAs,3903249.213,3579276.706,Modeled
+1280,Europe,Romania,Capacity-enhancing,Boat constsruct. & renov.,45347.56574,3662.511994,Modeled
+1281,Europe,Romania,Capacity-enhancing,Fisheries dev. projects,134129.2847,0,Modeled
+1282,Europe,Romania,Capacity-enhancing,Fishing port develop.,0,0,NA
+1283,Europe,Romania,Capacity-enhancing,Markt. & storage infrast.,101875.4361,1903.429069,Modeled
+1284,Europe,Romania,Capacity-enhancing,Tax exemption,157897.0226,2053.965207,Modeled
+1285,Europe,Romania,Capacity-enhancing,Fishing access,4792700.09,0,Reported
+1286,Europe,Romania,Capacity-enhancing,Fuel subsidies,737947.2848,2633.576121,Modeled
+1287,Europe,Romania,Ambiguous,Fisher assistance,30341.47706,0,Modeled
+1288,Europe,Romania,Ambiguous,Vessel buyback,0,0,NA
+1289,Europe,Romania,Ambiguous,Rural fisher communities,0,0,NA
+1290,Europe,Russian Federation,Beneficial,Fisheries mangt.,135078647.1,23161512.94,Reported
+1291,Europe,Russian Federation,Beneficial,Fishery R&D,125468312,20161427.4,Modeled
+1292,Europe,Russian Federation,Beneficial,MPAs,34949718.49,5325611.017,Modeled
+1293,Europe,Russian Federation,Capacity-enhancing,Boat constsruct. & renov.,10062774.32,1367396.316,Reported
+1294,Europe,Russian Federation,Capacity-enhancing,Fisheries dev. projects,58669753.96,0,Reported
+1295,Europe,Russian Federation,Capacity-enhancing,Fishing port develop.,1443977.649,0,Reported
+1296,Europe,Russian Federation,Capacity-enhancing,Markt. & storage infrast.,20706266.67,4236644.799,Reported
+1297,Europe,Russian Federation,Capacity-enhancing,Tax exemption,980113207.6,13834868.35,Modeled
+1298,Europe,Russian Federation,Capacity-enhancing,Fishing access,89174582.28,0,Reported
+1299,Europe,Russian Federation,Capacity-enhancing,Fuel subsidies,1844332.031,92216.60155,Reported
+1300,Europe,Russian Federation,Ambiguous,Fisher assistance,1270701.202,0,Reported
+1301,Europe,Russian Federation,Ambiguous,Vessel buyback,52939694.14,0,Modeled
+1302,Europe,Russian Federation,Ambiguous,Rural fisher communities,0,0,NA
+1303,Europe,Slovenia,Beneficial,Fisheries mangt.,681151.3095,133960.5327,Modeled
+1304,Europe,Slovenia,Beneficial,Fishery R&D,591385.5925,128730.3621,Modeled
+1305,Europe,Slovenia,Beneficial,MPAs,2040485.547,561418.7771,Modeled
+1306,Europe,Slovenia,Capacity-enhancing,Boat constsruct. & renov.,19023.17422,369.2749315,Modeled
+1307,Europe,Slovenia,Capacity-enhancing,Fisheries dev. projects,34403.15393,893.7782823,Modeled
+1308,Europe,Slovenia,Capacity-enhancing,Fishing port develop.,51897.24263,720.3197673,Modeled
+1309,Europe,Slovenia,Capacity-enhancing,Markt. & storage infrast.,42736.45427,576.9933386,Modeled
+1310,Europe,Slovenia,Capacity-enhancing,Tax exemption,0,0,NA
+1311,Europe,Slovenia,Capacity-enhancing,Fishing access,1439347.51,0,Reported
+1312,Europe,Slovenia,Capacity-enhancing,Fuel subsidies,70948.2486,104.2023518,Modeled
+1313,Europe,Slovenia,Ambiguous,Fisher assistance,12728.16291,376.5451472,Modeled
+1314,Europe,Slovenia,Ambiguous,Vessel buyback,0,0,NA
+1315,Europe,Slovenia,Ambiguous,Rural fisher communities,0,0,NA
+1316,Europe,Spain,Beneficial,Fisheries mangt.,25413428.31,344010.8004,Reported
+1317,Europe,Spain,Beneficial,Fishery R&D,36118031.01,962443.9264,Modeled
+1318,Europe,Spain,Beneficial,MPAs,88665450.12,6905963.673,Modeled
+1319,Europe,Spain,Capacity-enhancing,Boat constsruct. & renov.,4823053.743,213322.6624,Modeled
+1320,Europe,Spain,Capacity-enhancing,Fisheries dev. projects,16033494.34,2649940.87,Modeled
+1321,Europe,Spain,Capacity-enhancing,Fishing port develop.,7675249.916,0,Modeled
+1322,Europe,Spain,Capacity-enhancing,Markt. & storage infrast.,16243693.93,0,Reported
+1323,Europe,Spain,Capacity-enhancing,Tax exemption,461545847.8,12412123.39,Reported
+1324,Europe,Spain,Capacity-enhancing,Fishing access,90588507.18,0,Reported
+1325,Europe,Spain,Capacity-enhancing,Fuel subsidies,85922565.74,437157.5655,Modeled
+1326,Europe,Spain,Ambiguous,Fisher assistance,3622852.512,2065025.932,Reported
+1327,Europe,Spain,Ambiguous,Vessel buyback,7000077.798,2520028.007,Reported
+1328,Europe,Spain,Ambiguous,Rural fisher communities,0,0,NA
+1329,Europe,Sweden,Beneficial,Fisheries mangt.,26719135.01,1538298.709,Reported
+1330,Europe,Sweden,Beneficial,Fishery R&D,627378.5279,0,Reported
+1331,Europe,Sweden,Beneficial,MPAs,150338399.6,7967937.735,Modeled
+1332,Europe,Sweden,Capacity-enhancing,Boat constsruct. & renov.,2655791.664,438628.6196,Modeled
+1333,Europe,Sweden,Capacity-enhancing,Fisheries dev. projects,3344151.501,3310709.986,Reported
+1334,Europe,Sweden,Capacity-enhancing,Fishing port develop.,94509.83958,8096.15989,Modeled
+1335,Europe,Sweden,Capacity-enhancing,Markt. & storage infrast.,2481866.933,23015.43091,Reported
+1336,Europe,Sweden,Capacity-enhancing,Tax exemption,8192641.1,0,Reported
+1337,Europe,Sweden,Capacity-enhancing,Fishing access,186009.68,0,Reported
+1338,Europe,Sweden,Capacity-enhancing,Fuel subsidies,27026405.61,2384603.366,Modeled
+1339,Europe,Sweden,Ambiguous,Fisher assistance,3161527.447,0,Reported
+1340,Europe,Sweden,Ambiguous,Vessel buyback,1935262.188,0,Modeled
+1341,Europe,Sweden,Ambiguous,Rural fisher communities,0,0,NA
+1342,Europe,Ukraine,Beneficial,Fisheries mangt.,4157123.464,964380.1687,Modeled
+1343,Europe,Ukraine,Beneficial,Fishery R&D,0,0,NA
+1344,Europe,Ukraine,Beneficial,MPAs,5465943.455,562989.1915,Modeled
+1345,Europe,Ukraine,Capacity-enhancing,Boat constsruct. & renov.,2779029.504,517957.984,Modeled
+1346,Europe,Ukraine,Capacity-enhancing,Fisheries dev. projects,8219829.081,0,Modeled
+1347,Europe,Ukraine,Capacity-enhancing,Fishing port develop.,0,0,NA
+1348,Europe,Ukraine,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1349,Europe,Ukraine,Capacity-enhancing,Tax exemption,0,0,NA
+1350,Europe,Ukraine,Capacity-enhancing,Fishing access,9346391.36,0,Reported
+1351,Europe,Ukraine,Capacity-enhancing,Fuel subsidies,40267757.64,40267757.64,Modeled
+1352,Europe,Ukraine,Ambiguous,Fisher assistance,0,0,NA
+1353,Europe,Ukraine,Ambiguous,Vessel buyback,0,0,NA
+1354,Europe,Ukraine,Ambiguous,Rural fisher communities,520958.263,520958.263,Modeled
+1355,Europe,United Kingdom,Beneficial,Fisheries mangt.,27850200.86,23464830.55,Reported
+1356,Europe,United Kingdom,Beneficial,Fishery R&D,2331460.224,0,Reported
+1357,Europe,United Kingdom,Beneficial,MPAs,230078592.9,8292014.082,Modeled
+1358,Europe,United Kingdom,Capacity-enhancing,Boat constsruct. & renov.,552703.6406,56008.00104,Reported
+1359,Europe,United Kingdom,Capacity-enhancing,Fisheries dev. projects,7103821.978,2867739.216,Reported
+1360,Europe,United Kingdom,Capacity-enhancing,Fishing port develop.,2760246.86,222399.5706,Modeled
+1361,Europe,United Kingdom,Capacity-enhancing,Markt. & storage infrast.,7237121.591,200861.3965,Reported
+1362,Europe,United Kingdom,Capacity-enhancing,Tax exemption,0,0,NA
+1363,Europe,United Kingdom,Capacity-enhancing,Fishing access,2950640.49,0,Reported
+1364,Europe,United Kingdom,Capacity-enhancing,Fuel subsidies,64386296.09,7919514.419,Reported
+1365,Europe,United Kingdom,Ambiguous,Fisher assistance,2358501.778,0,Reported
+1366,Europe,United Kingdom,Ambiguous,Vessel buyback,16345552.27,0,Modeled
+1367,Europe,United Kingdom,Ambiguous,Rural fisher communities,6230662.501,6230662.501,Reported
+1368,North America,Canada,Beneficial,Fisheries mangt.,280471131.4,27934910.17,Reported
+1369,North America,Canada,Beneficial,Fishery R&D,2459332.459,231624.9257,Modeled
+1370,North America,Canada,Beneficial,MPAs,105237495,4200377.183,Modeled
+1371,North America,Canada,Capacity-enhancing,Boat constsruct. & renov.,3549806.3,0,Reported
+1372,North America,Canada,Capacity-enhancing,Fisheries dev. projects,9683507.593,0,Reported
+1373,North America,Canada,Capacity-enhancing,Fishing port develop.,70927867.73,4348739.214,Modeled
+1374,North America,Canada,Capacity-enhancing,Markt. & storage infrast.,1848857.448,0,Reported
+1375,North America,Canada,Capacity-enhancing,Tax exemption,39069952.88,2416203.409,Modeled
+1376,North America,Canada,Capacity-enhancing,Fishing access,16727.93,0,Reported
+1377,North America,Canada,Capacity-enhancing,Fuel subsidies,69117291.51,47884465.02,Modeled
+1378,North America,Canada,Ambiguous,Fisher assistance,240697699.1,14757689.58,Modeled
+1379,North America,Canada,Ambiguous,Vessel buyback,0,0,NA
+1380,North America,Canada,Ambiguous,Rural fisher communities,30057408.62,30057408.62,Reported
+1381,North America,Mexico,Beneficial,Fisheries mangt.,14263871.06,7210119.209,Modeled
+1382,North America,Mexico,Beneficial,Fishery R&D,8012475.488,3222549.912,Modeled
+1383,North America,Mexico,Beneficial,MPAs,35935636.06,15165605.5,Modeled
+1384,North America,Mexico,Capacity-enhancing,Boat constsruct. & renov.,11882190.44,6590755.395,Reported
+1385,North America,Mexico,Capacity-enhancing,Fisheries dev. projects,9647077.022,1486311.641,Modeled
+1386,North America,Mexico,Capacity-enhancing,Fishing port develop.,0,0,NA
+1387,North America,Mexico,Capacity-enhancing,Markt. & storage infrast.,14807664.6,14807664.6,Modeled
+1388,North America,Mexico,Capacity-enhancing,Tax exemption,130530799.4,19387935.02,Reported
+1389,North America,Mexico,Capacity-enhancing,Fishing access,323782.64,0,Reported
+1390,North America,Mexico,Capacity-enhancing,Fuel subsidies,23585488.95,3304793.062,Reported
+1391,North America,Mexico,Ambiguous,Fisher assistance,24293424.24,9770610.241,Modeled
+1392,North America,Mexico,Ambiguous,Vessel buyback,0,0,NA
+1393,North America,Mexico,Ambiguous,Rural fisher communities,0,0,NA
+1394,North America,USA,Beneficial,Fisheries mangt.,1956419781,575403576.7,Reported
+1395,North America,USA,Beneficial,Fishery R&D,40127780.2,11347821.97,Reported
+1396,North America,USA,Beneficial,MPAs,190570703,50918714.2,Modeled
+1397,North America,USA,Capacity-enhancing,Boat constsruct. & renov.,2659142.906,0,Modeled
+1398,North America,USA,Capacity-enhancing,Boat constsruct. & renov.,145180302.4,0,Modeled
+1399,North America,USA,Capacity-enhancing,Fisheries dev. projects,336524.2479,91868.68404,Reported
+1400,North America,USA,Capacity-enhancing,Fishing port develop.,0,0,NA
+1401,North America,USA,Capacity-enhancing,Markt. & storage infrast.,231130019.7,105409880.8,Reported
+1402,North America,USA,Capacity-enhancing,Tax exemption,505507564.2,98441278.27,Modeled
+1403,North America,USA,Capacity-enhancing,Fishing access,50418583.06,0,Reported
+1404,North America,USA,Capacity-enhancing,Fuel subsidies,200996603.5,14742711.74,Modeled
+1405,North America,USA,Ambiguous,Fisher assistance,349000,67963.39832,Modeled
+1406,North America,USA,Ambiguous,Vessel buyback,105792164.9,0,Modeled
+1407,North America,USA,Ambiguous,Rural fisher communities,0,0,NA
+1408,Oceania,Australia,Beneficial,Fisheries mangt.,103315416.4,20106721.19,Modeled
+1409,Oceania,Australia,Beneficial,Fishery R&D,53391595.81,9154583.884,Modeled
+1410,Oceania,Australia,Beneficial,MPAs,181232631.4,35270574.24,Modeled
+1411,Oceania,Australia,Capacity-enhancing,Boat constsruct. & renov.,12903829.25,2212505.919,Modeled
+1412,Oceania,Australia,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1413,Oceania,Australia,Capacity-enhancing,Fishing port develop.,0,0,NA
+1414,Oceania,Australia,Capacity-enhancing,Markt. & storage infrast.,344832.0795,65518.09511,Reported
+1415,Oceania,Australia,Capacity-enhancing,Tax exemption,0,0,NA
+1416,Oceania,Australia,Capacity-enhancing,Fishing access,2845893.93,0,Reported
+1417,Oceania,Australia,Capacity-enhancing,Fuel subsidies,12218003.96,1026312.333,Reported
+1418,Oceania,Australia,Ambiguous,Fisher assistance,19086634.93,19086634.93,Modeled
+1419,Oceania,Australia,Ambiguous,Vessel buyback,9402956.25,0,Modeled
+1420,Oceania,Australia,Ambiguous,Rural fisher communities,2477287.567,2477287.567,Reported
+1421,Oceania,Fiji,Beneficial,Fisheries mangt.,13292325.35,0,Modeled
+1422,Oceania,Fiji,Beneficial,Fishery R&D,0,0,NA
+1423,Oceania,Fiji,Beneficial,MPAs,21420911.46,8588871.722,Modeled
+1424,Oceania,Fiji,Capacity-enhancing,Boat constsruct. & renov.,1795164.478,71666.13443,Modeled
+1425,Oceania,Fiji,Capacity-enhancing,Fisheries dev. projects,5309747.58,2626627.899,Modeled
+1426,Oceania,Fiji,Capacity-enhancing,Fishing port develop.,0,0,NA
+1427,Oceania,Fiji,Capacity-enhancing,Markt. & storage infrast.,4032921.305,0,Modeled
+1428,Oceania,Fiji,Capacity-enhancing,Tax exemption,6250635.984,0,Reported
+1429,Oceania,Fiji,Capacity-enhancing,Fishing access,216026.71,0,Reported
+1430,Oceania,Fiji,Capacity-enhancing,Fuel subsidies,7198192.866,7198192.866,Reported
+1431,Oceania,Fiji,Ambiguous,Fisher assistance,0,0,NA
+1432,Oceania,Fiji,Ambiguous,Vessel buyback,0,0,NA
+1433,Oceania,Fiji,Ambiguous,Rural fisher communities,1665754.406,1665754.406,Modeled
+1434,Oceania,Kiribati,Beneficial,Fisheries mangt.,51239495.47,0,Modeled
+1435,Oceania,Kiribati,Beneficial,Fishery R&D,0,0,NA
+1436,Oceania,Kiribati,Beneficial,MPAs,5196945,0,Modeled
+1437,Oceania,Kiribati,Capacity-enhancing,Boat constsruct. & renov.,532375.7763,0,Modeled
+1438,Oceania,Kiribati,Capacity-enhancing,Fisheries dev. projects,6280953.725,1466538.346,Modeled
+1439,Oceania,Kiribati,Capacity-enhancing,Fishing port develop.,0,0,NA
+1440,Oceania,Kiribati,Capacity-enhancing,Markt. & storage infrast.,8879105.887,0,Modeled
+1441,Oceania,Kiribati,Capacity-enhancing,Tax exemption,0,0,NA
+1442,Oceania,Kiribati,Capacity-enhancing,Fishing access,1083381.27,0,Reported
+1443,Oceania,Kiribati,Capacity-enhancing,Fuel subsidies,639435.9828,10870.41171,Reported
+1444,Oceania,Kiribati,Ambiguous,Fisher assistance,0,0,NA
+1445,Oceania,Kiribati,Ambiguous,Vessel buyback,0,0,NA
+1446,Oceania,Kiribati,Ambiguous,Rural fisher communities,0,0,NA
+1447,Oceania,Marshall Is,Beneficial,Fisheries mangt.,20402368.99,0,Modeled
+1448,Oceania,Marshall Is,Beneficial,Fishery R&D,4780335.514,398973.2889,Modeled
+1449,Oceania,Marshall Is,Beneficial,MPAs,2972441.8,492942.0198,Modeled
+1450,Oceania,Marshall Is,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1451,Oceania,Marshall Is,Capacity-enhancing,Fisheries dev. projects,2089377.51,622098.6834,Modeled
+1452,Oceania,Marshall Is,Capacity-enhancing,Fishing port develop.,1217256.091,0,Modeled
+1453,Oceania,Marshall Is,Capacity-enhancing,Markt. & storage infrast.,1586948.334,0,Modeled
+1454,Oceania,Marshall Is,Capacity-enhancing,Tax exemption,0,0,NA
+1455,Oceania,Marshall Is,Capacity-enhancing,Fishing access,1928764.83,0,Reported
+1456,Oceania,Marshall Is,Capacity-enhancing,Fuel subsidies,0,0,NA
+1457,Oceania,Marshall Is,Ambiguous,Fisher assistance,0,0,NA
+1458,Oceania,Marshall Is,Ambiguous,Vessel buyback,0,0,NA
+1459,Oceania,Marshall Is,Ambiguous,Rural fisher communities,0,0,NA
+1460,Oceania,Micronesia,Beneficial,Fisheries mangt.,1944724.765,130733.3976,Reported
+1461,Oceania,Micronesia,Beneficial,Fishery R&D,959465.2049,41257.00285,Modeled
+1462,Oceania,Micronesia,Beneficial,MPAs,0,0,NA
+1463,Oceania,Micronesia,Capacity-enhancing,Boat constsruct. & renov.,406750.3119,0,Modeled
+1464,Oceania,Micronesia,Capacity-enhancing,Fisheries dev. projects,2126635.412,552925.2156,Modeled
+1465,Oceania,Micronesia,Capacity-enhancing,Fishing port develop.,3984136.3,0,Modeled
+1466,Oceania,Micronesia,Capacity-enhancing,Markt. & storage infrast.,552077.4232,0,Reported
+1467,Oceania,Micronesia,Capacity-enhancing,Tax exemption,0,0,NA
+1468,Oceania,Micronesia,Capacity-enhancing,Fishing access,1650680.35,0,Reported
+1469,Oceania,Micronesia,Capacity-enhancing,Fuel subsidies,0,0,NA
+1470,Oceania,Micronesia,Ambiguous,Fisher assistance,0,0,NA
+1471,Oceania,Micronesia,Ambiguous,Vessel buyback,0,0,NA
+1472,Oceania,Micronesia,Ambiguous,Rural fisher communities,0,0,NA
+1473,Oceania,Nauru,Beneficial,Fisheries mangt.,12155805,0,Modeled
+1474,Oceania,Nauru,Beneficial,Fishery R&D,981676.2714,5933.314212,Modeled
+1475,Oceania,Nauru,Beneficial,MPAs,0,0,NA
+1476,Oceania,Nauru,Capacity-enhancing,Boat constsruct. & renov.,4706.758548,0,Modeled
+1477,Oceania,Nauru,Capacity-enhancing,Fisheries dev. projects,55530.19869,55530.19869,Modeled
+1478,Oceania,Nauru,Capacity-enhancing,Fishing port develop.,46102.89664,0,Modeled
+1479,Oceania,Nauru,Capacity-enhancing,Markt. & storage infrast.,78500.58059,0,Modeled
+1480,Oceania,Nauru,Capacity-enhancing,Tax exemption,0,0,NA
+1481,Oceania,Nauru,Capacity-enhancing,Fishing access,382.52,0,Reported
+1482,Oceania,Nauru,Capacity-enhancing,Fuel subsidies,0,0,NA
+1483,Oceania,Nauru,Ambiguous,Fisher assistance,0,0,NA
+1484,Oceania,Nauru,Ambiguous,Vessel buyback,0,0,NA
+1485,Oceania,Nauru,Ambiguous,Rural fisher communities,0,0,NA
+1486,Oceania,New Zealand,Beneficial,Fisheries mangt.,44594142.07,6215611.211,Modeled
+1487,Oceania,New Zealand,Beneficial,Fishery R&D,0,0,NA
+1488,Oceania,New Zealand,Beneficial,MPAs,32027483.06,4464047.053,Modeled
+1489,Oceania,New Zealand,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1490,Oceania,New Zealand,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1491,Oceania,New Zealand,Capacity-enhancing,Fishing port develop.,0,0,NA
+1492,Oceania,New Zealand,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1493,Oceania,New Zealand,Capacity-enhancing,Tax exemption,0,0,NA
+1494,Oceania,New Zealand,Capacity-enhancing,Fishing access,785595.88,0,Reported
+1495,Oceania,New Zealand,Capacity-enhancing,Fuel subsidies,28166225.58,0,Modeled
+1496,Oceania,New Zealand,Ambiguous,Fisher assistance,710516.42,710516.42,Modeled
+1497,Oceania,New Zealand,Ambiguous,Vessel buyback,0,0,NA
+1498,Oceania,New Zealand,Ambiguous,Rural fisher communities,0,0,NA
+1499,Oceania,Palau,Beneficial,Fisheries mangt.,20965574.91,0,Modeled
+1500,Oceania,Palau,Beneficial,Fishery R&D,0,0,NA
+1501,Oceania,Palau,Beneficial,MPAs,2189035.707,84580.20901,Modeled
+1502,Oceania,Palau,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1503,Oceania,Palau,Capacity-enhancing,Fisheries dev. projects,330695.8366,330695.8366,Modeled
+1504,Oceania,Palau,Capacity-enhancing,Fishing port develop.,0,0,NA
+1505,Oceania,Palau,Capacity-enhancing,Markt. & storage infrast.,251173.9522,0,Modeled
+1506,Oceania,Palau,Capacity-enhancing,Tax exemption,0,0,NA
+1507,Oceania,Palau,Capacity-enhancing,Fishing access,0,0,NA
+1508,Oceania,Palau,Capacity-enhancing,Fuel subsidies,0,0,NA
+1509,Oceania,Palau,Ambiguous,Fisher assistance,0,0,NA
+1510,Oceania,Palau,Ambiguous,Vessel buyback,0,0,NA
+1511,Oceania,Palau,Ambiguous,Rural fisher communities,0,0,NA
+1512,Oceania,Papua New Guinea,Beneficial,Fisheries mangt.,1371457.476,0,Modeled
+1513,Oceania,Papua New Guinea,Beneficial,Fishery R&D,2668531.609,125420.999,Modeled
+1514,Oceania,Papua New Guinea,Beneficial,MPAs,2526622.26,237640.9918,Modeled
+1515,Oceania,Papua New Guinea,Capacity-enhancing,Boat constsruct. & renov.,1618814.763,0,Modeled
+1516,Oceania,Papua New Guinea,Capacity-enhancing,Fisheries dev. projects,3947720.413,0,Reported
+1517,Oceania,Papua New Guinea,Capacity-enhancing,Fishing port develop.,2158991.842,1079495.921,Reported
+1518,Oceania,Papua New Guinea,Capacity-enhancing,Markt. & storage infrast.,11036631.22,0,Modeled
+1519,Oceania,Papua New Guinea,Capacity-enhancing,Tax exemption,3180825.179,0,Modeled
+1520,Oceania,Papua New Guinea,Capacity-enhancing,Fishing access,5799581.92,0,Reported
+1521,Oceania,Papua New Guinea,Capacity-enhancing,Fuel subsidies,0,0,NA
+1522,Oceania,Papua New Guinea,Ambiguous,Fisher assistance,0,0,NA
+1523,Oceania,Papua New Guinea,Ambiguous,Vessel buyback,0,0,NA
+1524,Oceania,Papua New Guinea,Ambiguous,Rural fisher communities,323848.7763,323848.7763,Reported
+1525,Oceania,Samoa,Beneficial,Fisheries mangt.,5429992.747,567197.4944,Modeled
+1526,Oceania,Samoa,Beneficial,Fishery R&D,1272263.392,134476.5052,Modeled
+1527,Oceania,Samoa,Beneficial,MPAs,0,0,NA
+1528,Oceania,Samoa,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1529,Oceania,Samoa,Capacity-enhancing,Fisheries dev. projects,1209606.603,505327.2612,Modeled
+1530,Oceania,Samoa,Capacity-enhancing,Fishing port develop.,0,0,NA
+1531,Oceania,Samoa,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1532,Oceania,Samoa,Capacity-enhancing,Tax exemption,1423949.151,0,Modeled
+1533,Oceania,Samoa,Capacity-enhancing,Fishing access,46131.3,0,Reported
+1534,Oceania,Samoa,Capacity-enhancing,Fuel subsidies,108738.5762,0,Modeled
+1535,Oceania,Samoa,Ambiguous,Fisher assistance,0,0,NA
+1536,Oceania,Samoa,Ambiguous,Vessel buyback,0,0,NA
+1537,Oceania,Samoa,Ambiguous,Rural fisher communities,680470.4297,212292.6489,Modeled
+1538,Oceania,Solomon Is,Beneficial,Fisheries mangt.,10500444.82,0,Modeled
+1539,Oceania,Solomon Is,Beneficial,Fishery R&D,0,0,NA
+1540,Oceania,Solomon Is,Beneficial,MPAs,3873055.895,357737.6854,Modeled
+1541,Oceania,Solomon Is,Capacity-enhancing,Boat constsruct. & renov.,809079.3353,26873.69796,Modeled
+1542,Oceania,Solomon Is,Capacity-enhancing,Fisheries dev. projects,9545494.163,3928707.371,Modeled
+1543,Oceania,Solomon Is,Capacity-enhancing,Fishing port develop.,0,0,NA
+1544,Oceania,Solomon Is,Capacity-enhancing,Markt. & storage infrast.,13494042.01,0,Modeled
+1545,Oceania,Solomon Is,Capacity-enhancing,Tax exemption,0,0,NA
+1546,Oceania,Solomon Is,Capacity-enhancing,Fishing access,0,0,NA
+1547,Oceania,Solomon Is,Capacity-enhancing,Fuel subsidies,245481.5216,0,Modeled
+1548,Oceania,Solomon Is,Ambiguous,Fisher assistance,0,0,NA
+1549,Oceania,Solomon Is,Ambiguous,Vessel buyback,0,0,NA
+1550,Oceania,Solomon Is,Ambiguous,Rural fisher communities,436274.3025,436274.3025,Modeled
+1551,Oceania,Tonga,Beneficial,Fisheries mangt.,1777871.014,160994.6119,Modeled
+1552,Oceania,Tonga,Beneficial,Fishery R&D,416560.447,38170.11317,Modeled
+1553,Oceania,Tonga,Beneficial,MPAs,729858.8946,243742.3539,Modeled
+1554,Oceania,Tonga,Capacity-enhancing,Boat constsruct. & renov.,95685.21244,9588.443958,Modeled
+1555,Oceania,Tonga,Capacity-enhancing,Fisheries dev. projects,283018.259,133830.8772,Modeled
+1556,Oceania,Tonga,Capacity-enhancing,Fishing port develop.,164884.3724,0,Modeled
+1557,Oceania,Tonga,Capacity-enhancing,Markt. & storage infrast.,214961.3233,0,Modeled
+1558,Oceania,Tonga,Capacity-enhancing,Tax exemption,0,0,NA
+1559,Oceania,Tonga,Capacity-enhancing,Fishing access,0,0,NA
+1560,Oceania,Tonga,Capacity-enhancing,Fuel subsidies,653444.7528,0,Modeled
+1561,Oceania,Tonga,Ambiguous,Fisher assistance,0,0,NA
+1562,Oceania,Tonga,Ambiguous,Vessel buyback,0,0,NA
+1563,Oceania,Tonga,Ambiguous,Rural fisher communities,0,0,NA
+1564,Oceania,Tuvalu,Beneficial,Fisheries mangt.,4900690.95,0,Modeled
+1565,Oceania,Tuvalu,Beneficial,Fishery R&D,0,0,NA
+1566,Oceania,Tuvalu,Beneficial,MPAs,725575.4824,0,Modeled
+1567,Oceania,Tuvalu,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1568,Oceania,Tuvalu,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1569,Oceania,Tuvalu,Capacity-enhancing,Fishing port develop.,0,0,NA
+1570,Oceania,Tuvalu,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1571,Oceania,Tuvalu,Capacity-enhancing,Tax exemption,0,0,NA
+1572,Oceania,Tuvalu,Capacity-enhancing,Fishing access,395113.66,0,Reported
+1573,Oceania,Tuvalu,Capacity-enhancing,Fuel subsidies,0,0,NA
+1574,Oceania,Tuvalu,Ambiguous,Fisher assistance,0,0,NA
+1575,Oceania,Tuvalu,Ambiguous,Vessel buyback,0,0,NA
+1576,Oceania,Tuvalu,Ambiguous,Rural fisher communities,0,0,NA
+1577,Oceania,Vanuatu,Beneficial,Fisheries mangt.,1342666.452,0,Reported
+1578,Oceania,Vanuatu,Beneficial,Fishery R&D,176709.1654,9918.028626,Modeled
+1579,Oceania,Vanuatu,Beneficial,MPAs,440034.5529,93735.22054,Modeled
+1580,Oceania,Vanuatu,Capacity-enhancing,Boat constsruct. & renov.,345888.6784,23672.98572,Modeled
+1581,Oceania,Vanuatu,Capacity-enhancing,Fisheries dev. projects,632468.3205,632468.3205,Reported
+1582,Oceania,Vanuatu,Capacity-enhancing,Fishing port develop.,0,0,NA
+1583,Oceania,Vanuatu,Capacity-enhancing,Markt. & storage infrast.,5768824.086,0,Modeled
+1584,Oceania,Vanuatu,Capacity-enhancing,Tax exemption,679640.0942,0,Modeled
+1585,Oceania,Vanuatu,Capacity-enhancing,Fishing access,911866.76,0,Reported
+1586,Oceania,Vanuatu,Capacity-enhancing,Fuel subsidies,4008640.934,0,Reported
+1587,Oceania,Vanuatu,Ambiguous,Fisher assistance,0,0,NA
+1588,Oceania,Vanuatu,Ambiguous,Vessel buyback,0,0,NA
+1589,Oceania,Vanuatu,Ambiguous,Rural fisher communities,0,0,NA
+1590,"South, Central America and Carribbean",Antigua Barb,Beneficial,Fisheries mangt.,1113301.419,1014177.724,Modeled
+1591,"South, Central America and Carribbean",Antigua Barb,Beneficial,Fishery R&D,260849.8215,260849.8215,Modeled
+1592,"South, Central America and Carribbean",Antigua Barb,Beneficial,MPAs,1520416.488,1340131.046,Modeled
+1593,"South, Central America and Carribbean",Antigua Barb,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1594,"South, Central America and Carribbean",Antigua Barb,Capacity-enhancing,Fisheries dev. projects,439688.0711,439688.0711,Modeled
+1595,"South, Central America and Carribbean",Antigua Barb,Capacity-enhancing,Fishing port develop.,0,0,NA
+1596,"South, Central America and Carribbean",Antigua Barb,Capacity-enhancing,Markt. & storage infrast.,333957.0032,311933.1894,Modeled
+1597,"South, Central America and Carribbean",Antigua Barb,Capacity-enhancing,Tax exemption,517600.8911,517600.8911,Modeled
+1598,"South, Central America and Carribbean",Antigua Barb,Capacity-enhancing,Fishing access,0,0,NA
+1599,"South, Central America and Carribbean",Antigua Barb,Capacity-enhancing,Fuel subsidies,0,0,NA
+1600,"South, Central America and Carribbean",Antigua Barb,Ambiguous,Fisher assistance,0,0,NA
+1601,"South, Central America and Carribbean",Antigua Barb,Ambiguous,Vessel buyback,0,0,NA
+1602,"South, Central America and Carribbean",Antigua Barb,Ambiguous,Rural fisher communities,0,0,NA
+1603,"South, Central America and Carribbean",Argentina,Beneficial,Fisheries mangt.,23293779.61,0,Modeled
+1604,"South, Central America and Carribbean",Argentina,Beneficial,Fishery R&D,14683734.48,1081057.487,Modeled
+1605,"South, Central America and Carribbean",Argentina,Beneficial,MPAs,12357904.98,2061918.423,Modeled
+1606,"South, Central America and Carribbean",Argentina,Capacity-enhancing,Boat constsruct. & renov.,16076972.61,0,Modeled
+1607,"South, Central America and Carribbean",Argentina,Capacity-enhancing,Fisheries dev. projects,47552559.92,17284002.79,Modeled
+1608,"South, Central America and Carribbean",Argentina,Capacity-enhancing,Fishing port develop.,250863.5151,250863.5151,Reported
+1609,"South, Central America and Carribbean",Argentina,Capacity-enhancing,Markt. & storage infrast.,36117673.98,0,Modeled
+1610,"South, Central America and Carribbean",Argentina,Capacity-enhancing,Tax exemption,55978883.69,0,Modeled
+1611,"South, Central America and Carribbean",Argentina,Capacity-enhancing,Fishing access,5988.41,0,Reported
+1612,"South, Central America and Carribbean",Argentina,Capacity-enhancing,Fuel subsidies,86845934.37,2257994.294,Reported
+1613,"South, Central America and Carribbean",Argentina,Ambiguous,Fisher assistance,10756897.04,0,Modeled
+1614,"South, Central America and Carribbean",Argentina,Ambiguous,Vessel buyback,11715210.05,0,Modeled
+1615,"South, Central America and Carribbean",Argentina,Ambiguous,Rural fisher communities,0,0,NA
+1616,"South, Central America and Carribbean",Bahamas,Beneficial,Fisheries mangt.,2291412,467284.0237,Modeled
+1617,"South, Central America and Carribbean",Bahamas,Beneficial,Fishery R&D,1700000,422697.9098,Modeled
+1618,"South, Central America and Carribbean",Bahamas,Beneficial,MPAs,9394835.37,1853746.385,Modeled
+1619,"South, Central America and Carribbean",Bahamas,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1620,"South, Central America and Carribbean",Bahamas,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1621,"South, Central America and Carribbean",Bahamas,Capacity-enhancing,Fishing port develop.,0,0,NA
+1622,"South, Central America and Carribbean",Bahamas,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1623,"South, Central America and Carribbean",Bahamas,Capacity-enhancing,Tax exemption,4625550.542,795594.6932,Reported
+1624,"South, Central America and Carribbean",Bahamas,Capacity-enhancing,Fishing access,0,0,NA
+1625,"South, Central America and Carribbean",Bahamas,Capacity-enhancing,Fuel subsidies,0,0,NA
+1626,"South, Central America and Carribbean",Bahamas,Ambiguous,Fisher assistance,0,0,NA
+1627,"South, Central America and Carribbean",Bahamas,Ambiguous,Vessel buyback,0,0,NA
+1628,"South, Central America and Carribbean",Bahamas,Ambiguous,Rural fisher communities,0,0,NA
+1629,"South, Central America and Carribbean",Barbados,Beneficial,Fisheries mangt.,563755.073,361370.5684,Modeled
+1630,"South, Central America and Carribbean",Barbados,Beneficial,Fishery R&D,132089.4842,103236.6705,Modeled
+1631,"South, Central America and Carribbean",Barbados,Beneficial,MPAs,134486.0094,83410.90172,Modeled
+1632,"South, Central America and Carribbean",Barbados,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1633,"South, Central America and Carribbean",Barbados,Capacity-enhancing,Fisheries dev. projects,0,0,NA
+1634,"South, Central America and Carribbean",Barbados,Capacity-enhancing,Fishing port develop.,0,0,NA
+1635,"South, Central America and Carribbean",Barbados,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1636,"South, Central America and Carribbean",Barbados,Capacity-enhancing,Tax exemption,274698.9505,137349.4753,Reported
+1637,"South, Central America and Carribbean",Barbados,Capacity-enhancing,Fishing access,650.19,0,Reported
+1638,"South, Central America and Carribbean",Barbados,Capacity-enhancing,Fuel subsidies,2301463.332,1150731.666,Reported
+1639,"South, Central America and Carribbean",Barbados,Ambiguous,Fisher assistance,0,0,NA
+1640,"South, Central America and Carribbean",Barbados,Ambiguous,Vessel buyback,0,0,NA
+1641,"South, Central America and Carribbean",Barbados,Ambiguous,Rural fisher communities,70648.09745,53748.63068,Modeled
+1642,"South, Central America and Carribbean",Belize,Beneficial,Fisheries mangt.,4217228.85,4217228.85,Reported
+1643,"South, Central America and Carribbean",Belize,Beneficial,Fishery R&D,307326.5328,307326.5328,Modeled
+1644,"South, Central America and Carribbean",Belize,Beneficial,MPAs,9721373.393,8912754.92,Modeled
+1645,"South, Central America and Carribbean",Belize,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1646,"South, Central America and Carribbean",Belize,Capacity-enhancing,Fisheries dev. projects,14255767.19,147401.6961,Modeled
+1647,"South, Central America and Carribbean",Belize,Capacity-enhancing,Fishing port develop.,0,0,NA
+1648,"South, Central America and Carribbean",Belize,Capacity-enhancing,Markt. & storage infrast.,332505.625,332505.625,Reported
+1649,"South, Central America and Carribbean",Belize,Capacity-enhancing,Tax exemption,16781892.18,150826.8468,Modeled
+1650,"South, Central America and Carribbean",Belize,Capacity-enhancing,Fishing access,15723894.71,0,Reported
+1651,"South, Central America and Carribbean",Belize,Capacity-enhancing,Fuel subsidies,0,0,NA
+1652,"South, Central America and Carribbean",Belize,Ambiguous,Fisher assistance,0,0,NA
+1653,"South, Central America and Carribbean",Belize,Ambiguous,Vessel buyback,0,0,NA
+1654,"South, Central America and Carribbean",Belize,Ambiguous,Rural fisher communities,164373.6818,12219.37705,Modeled
+1655,"South, Central America and Carribbean",Brazil,Beneficial,Fisheries mangt.,42571102.79,17856828.77,Modeled
+1656,"South, Central America and Carribbean",Brazil,Beneficial,Fishery R&D,53552010.3,11893074.17,Modeled
+1657,"South, Central America and Carribbean",Brazil,Beneficial,MPAs,149979343.5,76880028.49,Modeled
+1658,"South, Central America and Carribbean",Brazil,Capacity-enhancing,Boat constsruct. & renov.,27928835.92,0,Modeled
+1659,"South, Central America and Carribbean",Brazil,Capacity-enhancing,Fisheries dev. projects,8257499.848,8257499.848,Modeled
+1660,"South, Central America and Carribbean",Brazil,Capacity-enhancing,Fishing port develop.,332049.0338,312056.8751,Modeled
+1661,"South, Central America and Carribbean",Brazil,Capacity-enhancing,Markt. & storage infrast.,121220212.9,0,Reported
+1662,"South, Central America and Carribbean",Brazil,Capacity-enhancing,Tax exemption,92115717.9,0,Reported
+1663,"South, Central America and Carribbean",Brazil,Capacity-enhancing,Fishing access,54151.86,0,Reported
+1664,"South, Central America and Carribbean",Brazil,Capacity-enhancing,Fuel subsidies,6181967.382,0,Reported
+1665,"South, Central America and Carribbean",Brazil,Ambiguous,Fisher assistance,30063729.48,30063729.48,Reported
+1666,"South, Central America and Carribbean",Brazil,Ambiguous,Vessel buyback,0,0,NA
+1667,"South, Central America and Carribbean",Brazil,Ambiguous,Rural fisher communities,28642307.64,28642307.64,Modeled
+1668,"South, Central America and Carribbean",Chile,Beneficial,Fisheries mangt.,9716384.638,36856.91088,Modeled
+1669,"South, Central America and Carribbean",Chile,Beneficial,Fishery R&D,3718790.778,1193707.431,Modeled
+1670,"South, Central America and Carribbean",Chile,Beneficial,MPAs,105515451.2,73220279.86,Modeled
+1671,"South, Central America and Carribbean",Chile,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1672,"South, Central America and Carribbean",Chile,Capacity-enhancing,Fisheries dev. projects,27012637.31,27012637.31,Modeled
+1673,"South, Central America and Carribbean",Chile,Capacity-enhancing,Fishing port develop.,0,0,NA
+1674,"South, Central America and Carribbean",Chile,Capacity-enhancing,Markt. & storage infrast.,84617424.84,0,Modeled
+1675,"South, Central America and Carribbean",Chile,Capacity-enhancing,Tax exemption,0,0,NA
+1676,"South, Central America and Carribbean",Chile,Capacity-enhancing,Fishing access,21449833.87,0,Reported
+1677,"South, Central America and Carribbean",Chile,Capacity-enhancing,Fuel subsidies,0,0,NA
+1678,"South, Central America and Carribbean",Chile,Ambiguous,Fisher assistance,2887593.75,0,Reported
+1679,"South, Central America and Carribbean",Chile,Ambiguous,Vessel buyback,0,0,NA
+1680,"South, Central America and Carribbean",Chile,Ambiguous,Rural fisher communities,44923.2585,44923.2585,Reported
+1681,"South, Central America and Carribbean",Colombia,Beneficial,Fisheries mangt.,8458096.937,1862953.557,Modeled
+1682,"South, Central America and Carribbean",Colombia,Beneficial,Fishery R&D,1981757.177,354986.1157,Modeled
+1683,"South, Central America and Carribbean",Colombia,Beneficial,MPAs,10066398.66,4869471.148,Modeled
+1684,"South, Central America and Carribbean",Colombia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1685,"South, Central America and Carribbean",Colombia,Capacity-enhancing,Fisheries dev. projects,6445303.315,6293458.539,Modeled
+1686,"South, Central America and Carribbean",Colombia,Capacity-enhancing,Fishing port develop.,0,0,NA
+1687,"South, Central America and Carribbean",Colombia,Capacity-enhancing,Markt. & storage infrast.,4895411.818,471192.6108,Modeled
+1688,"South, Central America and Carribbean",Colombia,Capacity-enhancing,Tax exemption,0,0,NA
+1689,"South, Central America and Carribbean",Colombia,Capacity-enhancing,Fishing access,139765.55,0,Reported
+1690,"South, Central America and Carribbean",Colombia,Capacity-enhancing,Fuel subsidies,0,0,NA
+1691,"South, Central America and Carribbean",Colombia,Ambiguous,Fisher assistance,0,0,NA
+1692,"South, Central America and Carribbean",Colombia,Ambiguous,Vessel buyback,0,0,NA
+1693,"South, Central America and Carribbean",Colombia,Ambiguous,Rural fisher communities,1059943.378,1059943.378,Modeled
+1694,"South, Central America and Carribbean",Costa Rica,Beneficial,Fisheries mangt.,3903926.682,3903926.682,Modeled
+1695,"South, Central America and Carribbean",Costa Rica,Beneficial,Fishery R&D,914701.5904,260110.617,Modeled
+1696,"South, Central America and Carribbean",Costa Rica,Beneficial,MPAs,5899001.736,1495414.602,Modeled
+1697,"South, Central America and Carribbean",Costa Rica,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1698,"South, Central America and Carribbean",Costa Rica,Capacity-enhancing,Fisheries dev. projects,2417657.052,0,Modeled
+1699,"South, Central America and Carribbean",Costa Rica,Capacity-enhancing,Fishing port develop.,0,0,NA
+1700,"South, Central America and Carribbean",Costa Rica,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1701,"South, Central America and Carribbean",Costa Rica,Capacity-enhancing,Tax exemption,433.2264065,0,Reported
+1702,"South, Central America and Carribbean",Costa Rica,Capacity-enhancing,Fishing access,52601.06,0,Reported
+1703,"South, Central America and Carribbean",Costa Rica,Capacity-enhancing,Fuel subsidies,1461305.522,1461305.522,Modeled
+1704,"South, Central America and Carribbean",Costa Rica,Ambiguous,Fisher assistance,0,0,NA
+1705,"South, Central America and Carribbean",Costa Rica,Ambiguous,Vessel buyback,0,0,NA
+1706,"South, Central America and Carribbean",Costa Rica,Ambiguous,Rural fisher communities,489228.4006,489228.4006,Modeled
+1707,"South, Central America and Carribbean",Cuba,Beneficial,Fisheries mangt.,5557819.788,5253092.445,Modeled
+1708,"South, Central America and Carribbean",Cuba,Beneficial,Fishery R&D,0,0,NA
+1709,"South, Central America and Carribbean",Cuba,Beneficial,MPAs,18255231.62,16447963.67,Modeled
+1710,"South, Central America and Carribbean",Cuba,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1711,"South, Central America and Carribbean",Cuba,Capacity-enhancing,Fisheries dev. projects,2295544.844,2295544.844,Modeled
+1712,"South, Central America and Carribbean",Cuba,Capacity-enhancing,Fishing port develop.,0,0,NA
+1713,"South, Central America and Carribbean",Cuba,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1714,"South, Central America and Carribbean",Cuba,Capacity-enhancing,Tax exemption,0,0,NA
+1715,"South, Central America and Carribbean",Cuba,Capacity-enhancing,Fishing access,175422.27,0,Reported
+1716,"South, Central America and Carribbean",Cuba,Capacity-enhancing,Fuel subsidies,0,0,NA
+1717,"South, Central America and Carribbean",Cuba,Ambiguous,Fisher assistance,0,0,NA
+1718,"South, Central America and Carribbean",Cuba,Ambiguous,Vessel buyback,0,0,NA
+1719,"South, Central America and Carribbean",Cuba,Ambiguous,Rural fisher communities,0,0,NA
+1720,"South, Central America and Carribbean",Dominica,Beneficial,Fisheries mangt.,704419.6289,704419.6289,Modeled
+1721,"South, Central America and Carribbean",Dominica,Beneficial,Fishery R&D,98275.76796,98275.76796,Modeled
+1722,"South, Central America and Carribbean",Dominica,Beneficial,MPAs,374478.626,374478.626,Modeled
+1723,"South, Central America and Carribbean",Dominica,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1724,"South, Central America and Carribbean",Dominica,Capacity-enhancing,Fisheries dev. projects,111111.111,12204.56081,Modeled
+1725,"South, Central America and Carribbean",Dominica,Capacity-enhancing,Fishing port develop.,189495.9257,33018.72634,Modeled
+1726,"South, Central America and Carribbean",Dominica,Capacity-enhancing,Markt. & storage infrast.,1018670.364,79188.95678,Modeled
+1727,"South, Central America and Carribbean",Dominica,Capacity-enhancing,Tax exemption,0,0,NA
+1728,"South, Central America and Carribbean",Dominica,Capacity-enhancing,Fishing access,1717399.91,0,Reported
+1729,"South, Central America and Carribbean",Dominica,Capacity-enhancing,Fuel subsidies,548107.8327,27376.59763,Modeled
+1730,"South, Central America and Carribbean",Dominica,Ambiguous,Fisher assistance,0,0,NA
+1731,"South, Central America and Carribbean",Dominica,Ambiguous,Vessel buyback,0,0,NA
+1732,"South, Central America and Carribbean",Dominica,Ambiguous,Rural fisher communities,52562.82189,5076.706443,Modeled
+1733,"South, Central America and Carribbean",Dominican Rp,Beneficial,Fisheries mangt.,8879078.531,8879078.531,Modeled
+1734,"South, Central America and Carribbean",Dominican Rp,Beneficial,Fishery R&D,0,0,NA
+1735,"South, Central America and Carribbean",Dominican Rp,Beneficial,MPAs,8528779.034,8528779.034,Modeled
+1736,"South, Central America and Carribbean",Dominican Rp,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1737,"South, Central America and Carribbean",Dominican Rp,Capacity-enhancing,Fisheries dev. projects,3509195.507,3509195.507,Modeled
+1738,"South, Central America and Carribbean",Dominican Rp,Capacity-enhancing,Fishing port develop.,0,0,NA
+1739,"South, Central America and Carribbean",Dominican Rp,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1740,"South, Central America and Carribbean",Dominican Rp,Capacity-enhancing,Tax exemption,0,0,NA
+1741,"South, Central America and Carribbean",Dominican Rp,Capacity-enhancing,Fishing access,3680.69,0,Reported
+1742,"South, Central America and Carribbean",Dominican Rp,Capacity-enhancing,Fuel subsidies,0,0,NA
+1743,"South, Central America and Carribbean",Dominican Rp,Ambiguous,Fisher assistance,0,0,NA
+1744,"South, Central America and Carribbean",Dominican Rp,Ambiguous,Vessel buyback,0,0,NA
+1745,"South, Central America and Carribbean",Dominican Rp,Ambiguous,Rural fisher communities,0,0,NA
+1746,"South, Central America and Carribbean",Ecuador,Beneficial,Fisheries mangt.,48220288.01,10560243.07,Reported
+1747,"South, Central America and Carribbean",Ecuador,Beneficial,Fishery R&D,11298156.38,747958.3007,Modeled
+1748,"South, Central America and Carribbean",Ecuador,Beneficial,MPAs,8043056.299,1761430.351,Modeled
+1749,"South, Central America and Carribbean",Ecuador,Capacity-enhancing,Boat constsruct. & renov.,9619420.083,0,Modeled
+1750,"South, Central America and Carribbean",Ecuador,Capacity-enhancing,Fisheries dev. projects,533553.6537,362645.725,Modeled
+1751,"South, Central America and Carribbean",Ecuador,Capacity-enhancing,Fishing port develop.,0,0,NA
+1752,"South, Central America and Carribbean",Ecuador,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1753,"South, Central America and Carribbean",Ecuador,Capacity-enhancing,Tax exemption,0,0,NA
+1754,"South, Central America and Carribbean",Ecuador,Capacity-enhancing,Fishing access,162267.81,0,Reported
+1755,"South, Central America and Carribbean",Ecuador,Capacity-enhancing,Fuel subsidies,0,0,NA
+1756,"South, Central America and Carribbean",Ecuador,Ambiguous,Fisher assistance,388302.4654,273781.8614,Modeled
+1757,"South, Central America and Carribbean",Ecuador,Ambiguous,Vessel buyback,0,0,NA
+1758,"South, Central America and Carribbean",Ecuador,Ambiguous,Rural fisher communities,0,0,NA
+1759,"South, Central America and Carribbean",El Salvador,Beneficial,Fisheries mangt.,933407.0301,933407.0301,Modeled
+1760,"South, Central America and Carribbean",El Salvador,Beneficial,Fishery R&D,75379.91379,39227.26028,Modeled
+1761,"South, Central America and Carribbean",El Salvador,Beneficial,MPAs,1312573.218,570641.7197,Modeled
+1762,"South, Central America and Carribbean",El Salvador,Capacity-enhancing,Boat constsruct. & renov.,142460.4372,42498.22398,Modeled
+1763,"South, Central America and Carribbean",El Salvador,Capacity-enhancing,Fisheries dev. projects,1680744.041,257859.1726,Modeled
+1764,"South, Central America and Carribbean",El Salvador,Capacity-enhancing,Fishing port develop.,0,0,NA
+1765,"South, Central America and Carribbean",El Salvador,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1766,"South, Central America and Carribbean",El Salvador,Capacity-enhancing,Tax exemption,0,0,NA
+1767,"South, Central America and Carribbean",El Salvador,Capacity-enhancing,Fishing access,0,0,NA
+1768,"South, Central America and Carribbean",El Salvador,Capacity-enhancing,Fuel subsidies,0,0,NA
+1769,"South, Central America and Carribbean",El Salvador,Ambiguous,Fisher assistance,272285.8215,118356.4028,Modeled
+1770,"South, Central America and Carribbean",El Salvador,Ambiguous,Vessel buyback,0,0,NA
+1771,"South, Central America and Carribbean",El Salvador,Ambiguous,Rural fisher communities,38781.35719,38781.35719,Modeled
+1772,"South, Central America and Carribbean",Grenada,Beneficial,Fisheries mangt.,435003.55,420658.6655,Modeled
+1773,"South, Central America and Carribbean",Grenada,Beneficial,Fishery R&D,101922.6208,101922.6208,Modeled
+1774,"South, Central America and Carribbean",Grenada,Beneficial,MPAs,711462.2905,665690.4366,Modeled
+1775,"South, Central America and Carribbean",Grenada,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1776,"South, Central America and Carribbean",Grenada,Capacity-enhancing,Fisheries dev. projects,208505.8053,208505.8053,Modeled
+1777,"South, Central America and Carribbean",Grenada,Capacity-enhancing,Fishing port develop.,121473.9606,121473.9606,Modeled
+1778,"South, Central America and Carribbean",Grenada,Capacity-enhancing,Markt. & storage infrast.,158366.7569,118618.5973,Modeled
+1779,"South, Central America and Carribbean",Grenada,Capacity-enhancing,Tax exemption,0,0,NA
+1780,"South, Central America and Carribbean",Grenada,Capacity-enhancing,Fishing access,104324.85,0,Reported
+1781,"South, Central America and Carribbean",Grenada,Capacity-enhancing,Fuel subsidies,1182511.559,569084.3837,Modeled
+1782,"South, Central America and Carribbean",Grenada,Ambiguous,Fisher assistance,0,0,NA
+1783,"South, Central America and Carribbean",Grenada,Ambiguous,Vessel buyback,0,0,NA
+1784,"South, Central America and Carribbean",Grenada,Ambiguous,Rural fisher communities,0,0,NA
+1785,"South, Central America and Carribbean",Guatemala,Beneficial,Fisheries mangt.,2482618.247,2482618.247,Modeled
+1786,"South, Central America and Carribbean",Guatemala,Beneficial,Fishery R&D,200490.8292,164050.5893,Modeled
+1787,"South, Central America and Carribbean",Guatemala,Beneficial,MPAs,755668.1982,516561.5402,Modeled
+1788,"South, Central America and Carribbean",Guatemala,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1789,"South, Central America and Carribbean",Guatemala,Capacity-enhancing,Fisheries dev. projects,3460672.042,787778.4932,Modeled
+1790,"South, Central America and Carribbean",Guatemala,Capacity-enhancing,Fishing port develop.,0,0,NA
+1791,"South, Central America and Carribbean",Guatemala,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1792,"South, Central America and Carribbean",Guatemala,Capacity-enhancing,Tax exemption,576362.5862,114042.123,Modeled
+1793,"South, Central America and Carribbean",Guatemala,Capacity-enhancing,Fishing access,128126.93,0,Reported
+1794,"South, Central America and Carribbean",Guatemala,Capacity-enhancing,Fuel subsidies,0,0,NA
+1795,"South, Central America and Carribbean",Guatemala,Ambiguous,Fisher assistance,0,0,NA
+1796,"South, Central America and Carribbean",Guatemala,Ambiguous,Vessel buyback,0,0,NA
+1797,"South, Central America and Carribbean",Guatemala,Ambiguous,Rural fisher communities,103148.2535,103148.2535,Modeled
+1798,"South, Central America and Carribbean",Guyana,Beneficial,Fisheries mangt.,1089360.147,459991.8279,Modeled
+1799,"South, Central America and Carribbean",Guyana,Beneficial,Fishery R&D,354359.2825,77252.95762,Modeled
+1800,"South, Central America and Carribbean",Guyana,Beneficial,MPAs,54977.83476,54977.83476,Modeled
+1801,"South, Central America and Carribbean",Guyana,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1802,"South, Central America and Carribbean",Guyana,Capacity-enhancing,Fisheries dev. projects,4357676.346,0,Modeled
+1803,"South, Central America and Carribbean",Guyana,Capacity-enhancing,Fishing port develop.,0,0,NA
+1804,"South, Central America and Carribbean",Guyana,Capacity-enhancing,Markt. & storage infrast.,975530.0605,180352.828,Modeled
+1805,"South, Central America and Carribbean",Guyana,Capacity-enhancing,Tax exemption,0,0,NA
+1806,"South, Central America and Carribbean",Guyana,Capacity-enhancing,Fishing access,0,0,NA
+1807,"South, Central America and Carribbean",Guyana,Capacity-enhancing,Fuel subsidies,0,0,NA
+1808,"South, Central America and Carribbean",Guyana,Ambiguous,Fisher assistance,0,0,NA
+1809,"South, Central America and Carribbean",Guyana,Ambiguous,Vessel buyback,0,0,NA
+1810,"South, Central America and Carribbean",Guyana,Ambiguous,Rural fisher communities,182310.2895,182310.2895,Modeled
+1811,"South, Central America and Carribbean",Haiti,Beneficial,Fisheries mangt.,1237916.176,1225537.014,Reported
+1812,"South, Central America and Carribbean",Haiti,Beneficial,Fishery R&D,247911.0515,245431.941,Reported
+1813,"South, Central America and Carribbean",Haiti,Beneficial,MPAs,0,0,NA
+1814,"South, Central America and Carribbean",Haiti,Capacity-enhancing,Boat constsruct. & renov.,21922.71282,21730.12076,Reported
+1815,"South, Central America and Carribbean",Haiti,Capacity-enhancing,Fisheries dev. projects,891694.0509,891694.0509,Reported
+1816,"South, Central America and Carribbean",Haiti,Capacity-enhancing,Fishing port develop.,59211.81313,59211.81313,Reported
+1817,"South, Central America and Carribbean",Haiti,Capacity-enhancing,Markt. & storage infrast.,722732.425,722732.425,Reported
+1818,"South, Central America and Carribbean",Haiti,Capacity-enhancing,Tax exemption,0,0,NA
+1819,"South, Central America and Carribbean",Haiti,Capacity-enhancing,Fishing access,77.21,0,Reported
+1820,"South, Central America and Carribbean",Haiti,Capacity-enhancing,Fuel subsidies,0,0,NA
+1821,"South, Central America and Carribbean",Haiti,Ambiguous,Fisher assistance,23306.2033,23306.2033,Reported
+1822,"South, Central America and Carribbean",Haiti,Ambiguous,Vessel buyback,0,0,NA
+1823,"South, Central America and Carribbean",Haiti,Ambiguous,Rural fisher communities,0,0,NA
+1824,"South, Central America and Carribbean",Honduras,Beneficial,Fisheries mangt.,3070215.089,3070215.089,Modeled
+1825,"South, Central America and Carribbean",Honduras,Beneficial,Fishery R&D,247943.8672,246010.5056,Modeled
+1826,"South, Central America and Carribbean",Honduras,Beneficial,MPAs,5537122.062,4589781.59,Modeled
+1827,"South, Central America and Carribbean",Honduras,Capacity-enhancing,Boat constsruct. & renov.,256310.0706,169870.1532,Modeled
+1828,"South, Central America and Carribbean",Honduras,Capacity-enhancing,Fisheries dev. projects,3023938.662,1030691.945,Modeled
+1829,"South, Central America and Carribbean",Honduras,Capacity-enhancing,Fishing port develop.,0,0,NA
+1830,"South, Central America and Carribbean",Honduras,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1831,"South, Central America and Carribbean",Honduras,Capacity-enhancing,Tax exemption,503626.1994,149207.2945,Modeled
+1832,"South, Central America and Carribbean",Honduras,Capacity-enhancing,Fishing access,3170.57,0,Reported
+1833,"South, Central America and Carribbean",Honduras,Capacity-enhancing,Fuel subsidies,0,0,NA
+1834,"South, Central America and Carribbean",Honduras,Ambiguous,Fisher assistance,0,0,NA
+1835,"South, Central America and Carribbean",Honduras,Ambiguous,Vessel buyback,0,0,NA
+1836,"South, Central America and Carribbean",Honduras,Ambiguous,Rural fisher communities,127561.8291,127561.8291,Modeled
+1837,"South, Central America and Carribbean",Jamaica,Beneficial,Fisheries mangt.,7177468.856,7177468.856,Reported
+1838,"South, Central America and Carribbean",Jamaica,Beneficial,Fishery R&D,0,0,NA
+1839,"South, Central America and Carribbean",Jamaica,Beneficial,MPAs,2341910.645,2341910.415,Modeled
+1840,"South, Central America and Carribbean",Jamaica,Capacity-enhancing,Boat constsruct. & renov.,564819.901,564819.901,Modeled
+1841,"South, Central America and Carribbean",Jamaica,Capacity-enhancing,Fisheries dev. projects,1670627.477,1670627.477,Modeled
+1842,"South, Central America and Carribbean",Jamaica,Capacity-enhancing,Fishing port develop.,0,0,NA
+1843,"South, Central America and Carribbean",Jamaica,Capacity-enhancing,Markt. & storage infrast.,1268894.433,1185213.216,Modeled
+1844,"South, Central America and Carribbean",Jamaica,Capacity-enhancing,Tax exemption,1987893.211,1987893.211,Reported
+1845,"South, Central America and Carribbean",Jamaica,Capacity-enhancing,Fishing access,0,0,NA
+1846,"South, Central America and Carribbean",Jamaica,Capacity-enhancing,Fuel subsidies,16499732.15,9902170.507,Modeled
+1847,"South, Central America and Carribbean",Jamaica,Ambiguous,Fisher assistance,0,0,NA
+1848,"South, Central America and Carribbean",Jamaica,Ambiguous,Vessel buyback,0,0,NA
+1849,"South, Central America and Carribbean",Jamaica,Ambiguous,Rural fisher communities,294526.7207,294526.7207,Reported
+1850,"South, Central America and Carribbean",Nicaragua,Beneficial,Fisheries mangt.,6190010.012,4912426.817,Modeled
+1851,"South, Central America and Carribbean",Nicaragua,Beneficial,Fishery R&D,499891.6936,374918.8162,Modeled
+1852,"South, Central America and Carribbean",Nicaragua,Beneficial,MPAs,822950.7543,259286.0836,Modeled
+1853,"South, Central America and Carribbean",Nicaragua,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1854,"South, Central America and Carribbean",Nicaragua,Capacity-enhancing,Fisheries dev. projects,7802142.821,1702552.109,Modeled
+1855,"South, Central America and Carribbean",Nicaragua,Capacity-enhancing,Fishing port develop.,0,0,NA
+1856,"South, Central America and Carribbean",Nicaragua,Capacity-enhancing,Markt. & storage infrast.,11029543.49,11029543.49,Modeled
+1857,"South, Central America and Carribbean",Nicaragua,Capacity-enhancing,Tax exemption,1299419.061,0,Modeled
+1858,"South, Central America and Carribbean",Nicaragua,Capacity-enhancing,Fishing access,6772.18,0,Reported
+1859,"South, Central America and Carribbean",Nicaragua,Capacity-enhancing,Fuel subsidies,0,0,NA
+1860,"South, Central America and Carribbean",Nicaragua,Ambiguous,Fisher assistance,0,0,NA
+1861,"South, Central America and Carribbean",Nicaragua,Ambiguous,Vessel buyback,0,0,NA
+1862,"South, Central America and Carribbean",Nicaragua,Ambiguous,Rural fisher communities,0,0,NA
+1863,"South, Central America and Carribbean",Panama,Beneficial,Fisheries mangt.,8772484,7272293.468,Modeled
+1864,"South, Central America and Carribbean",Panama,Beneficial,Fishery R&D,785741.5,143487.2631,Modeled
+1865,"South, Central America and Carribbean",Panama,Beneficial,MPAs,5674465.09,930611.8322,Modeled
+1866,"South, Central America and Carribbean",Panama,Capacity-enhancing,Boat constsruct. & renov.,2804049.567,378546.6915,Reported
+1867,"South, Central America and Carribbean",Panama,Capacity-enhancing,Fisheries dev. projects,785741.5,106255.6989,Modeled
+1868,"South, Central America and Carribbean",Panama,Capacity-enhancing,Fishing port develop.,0,0,NA
+1869,"South, Central America and Carribbean",Panama,Capacity-enhancing,Markt. & storage infrast.,6299429.037,0,Modeled
+1870,"South, Central America and Carribbean",Panama,Capacity-enhancing,Tax exemption,9763502.642,1634525.374,Modeled
+1871,"South, Central America and Carribbean",Panama,Capacity-enhancing,Fishing access,830060.96,0,Reported
+1872,"South, Central America and Carribbean",Panama,Capacity-enhancing,Fuel subsidies,0,0,NA
+1873,"South, Central America and Carribbean",Panama,Ambiguous,Fisher assistance,0,0,NA
+1874,"South, Central America and Carribbean",Panama,Ambiguous,Vessel buyback,0,0,NA
+1875,"South, Central America and Carribbean",Panama,Ambiguous,Rural fisher communities,8200052,8200052,Reported
+1876,"South, Central America and Carribbean",Peru,Beneficial,Fisheries mangt.,19736523.14,5526226.479,Reported
+1877,"South, Central America and Carribbean",Peru,Beneficial,Fishery R&D,21835433.3,4148732.327,Reported
+1878,"South, Central America and Carribbean",Peru,Beneficial,MPAs,3039490.031,259948.1965,Modeled
+1879,"South, Central America and Carribbean",Peru,Capacity-enhancing,Boat constsruct. & renov.,38599299.87,9649824.89,Modeled
+1880,"South, Central America and Carribbean",Peru,Capacity-enhancing,Fisheries dev. projects,8312520.556,5661484.824,Reported
+1881,"South, Central America and Carribbean",Peru,Capacity-enhancing,Fishing port develop.,66514157.97,66514157.97,Modeled
+1882,"South, Central America and Carribbean",Peru,Capacity-enhancing,Markt. & storage infrast.,31899962.53,10357114.85,Reported
+1883,"South, Central America and Carribbean",Peru,Capacity-enhancing,Tax exemption,134400037.2,0,Modeled
+1884,"South, Central America and Carribbean",Peru,Capacity-enhancing,Fishing access,63405.52,0,Reported
+1885,"South, Central America and Carribbean",Peru,Capacity-enhancing,Fuel subsidies,0,0,NA
+1886,"South, Central America and Carribbean",Peru,Ambiguous,Fisher assistance,2699781.99,0,Reported
+1887,"South, Central America and Carribbean",Peru,Ambiguous,Vessel buyback,0,0,NA
+1888,"South, Central America and Carribbean",Peru,Ambiguous,Rural fisher communities,1370490.006,1370490.006,Reported
+1889,"South, Central America and Carribbean",St Kitts Nev,Beneficial,Fisheries mangt.,583528.4046,583528.4046,Modeled
+1890,"South, Central America and Carribbean",St Kitts Nev,Beneficial,Fishery R&D,0,0,NA
+1891,"South, Central America and Carribbean",St Kitts Nev,Beneficial,MPAs,0,0,NA
+1892,"South, Central America and Carribbean",St Kitts Nev,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1893,"South, Central America and Carribbean",St Kitts Nev,Capacity-enhancing,Fisheries dev. projects,230459.1319,230459.1319,Modeled
+1894,"South, Central America and Carribbean",St Kitts Nev,Capacity-enhancing,Fishing port develop.,0,0,NA
+1895,"South, Central America and Carribbean",St Kitts Nev,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1896,"South, Central America and Carribbean",St Kitts Nev,Capacity-enhancing,Tax exemption,271296.5393,271296.5393,Modeled
+1897,"South, Central America and Carribbean",St Kitts Nev,Capacity-enhancing,Fishing access,0,0,NA
+1898,"South, Central America and Carribbean",St Kitts Nev,Capacity-enhancing,Fuel subsidies,0,0,NA
+1899,"South, Central America and Carribbean",St Kitts Nev,Ambiguous,Fisher assistance,0,0,NA
+1900,"South, Central America and Carribbean",St Kitts Nev,Ambiguous,Vessel buyback,0,0,NA
+1901,"South, Central America and Carribbean",St Kitts Nev,Ambiguous,Rural fisher communities,0,0,NA
+1902,"South, Central America and Carribbean",St Lucia,Beneficial,Fisheries mangt.,339108.6508,221785.7291,Modeled
+1903,"South, Central America and Carribbean",St Lucia,Beneficial,Fishery R&D,79454.16178,63359.9474,Modeled
+1904,"South, Central America and Carribbean",St Lucia,Beneficial,MPAs,1428882.624,904221.1826,Modeled
+1905,"South, Central America and Carribbean",St Lucia,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1906,"South, Central America and Carribbean",St Lucia,Capacity-enhancing,Fisheries dev. projects,211513.099,211513.099,Modeled
+1907,"South, Central America and Carribbean",St Lucia,Capacity-enhancing,Fishing port develop.,0,0,NA
+1908,"South, Central America and Carribbean",St Lucia,Capacity-enhancing,Markt. & storage infrast.,160650.8917,129048.9663,Modeled
+1909,"South, Central America and Carribbean",St Lucia,Capacity-enhancing,Tax exemption,248993.2653,195573.525,Modeled
+1910,"South, Central America and Carribbean",St Lucia,Capacity-enhancing,Fishing access,65746.23,0,Reported
+1911,"South, Central America and Carribbean",St Lucia,Capacity-enhancing,Fuel subsidies,783123.5832,404188.7347,Modeled
+1912,"South, Central America and Carribbean",St Lucia,Ambiguous,Fisher assistance,0,0,NA
+1913,"South, Central America and Carribbean",St Lucia,Ambiguous,Vessel buyback,0,0,NA
+1914,"South, Central America and Carribbean",St Lucia,Ambiguous,Rural fisher communities,42496.08058,42412.38475,Modeled
+1915,"South, Central America and Carribbean",St Vincent,Beneficial,Fisheries mangt.,432421.1095,389591.3525,Modeled
+1916,"South, Central America and Carribbean",St Vincent,Beneficial,Fishery R&D,101317.5474,101317.5474,Modeled
+1917,"South, Central America and Carribbean",St Vincent,Beneficial,MPAs,0,0,NA
+1918,"South, Central America and Carribbean",St Vincent,Capacity-enhancing,Boat constsruct. & renov.,98982.20049,33087.99311,Modeled
+1919,"South, Central America and Carribbean",St Vincent,Capacity-enhancing,Fisheries dev. projects,292770.1088,115919.0048,Modeled
+1920,"South, Central America and Carribbean",St Vincent,Capacity-enhancing,Fishing port develop.,0,0,NA
+1921,"South, Central America and Carribbean",St Vincent,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1922,"South, Central America and Carribbean",St Vincent,Capacity-enhancing,Tax exemption,344649.0345,94432.68351,Modeled
+1923,"South, Central America and Carribbean",St Vincent,Capacity-enhancing,Fishing access,352578.65,0,Reported
+1924,"South, Central America and Carribbean",St Vincent,Capacity-enhancing,Fuel subsidies,0,0,NA
+1925,"South, Central America and Carribbean",St Vincent,Ambiguous,Fisher assistance,0,0,NA
+1926,"South, Central America and Carribbean",St Vincent,Ambiguous,Vessel buyback,0,0,NA
+1927,"South, Central America and Carribbean",St Vincent,Ambiguous,Rural fisher communities,54189.71845,18866.16002,Modeled
+1928,"South, Central America and Carribbean",Suriname,Beneficial,Fisheries mangt.,9538126.847,4050138.964,Modeled
+1929,"South, Central America and Carribbean",Suriname,Beneficial,Fishery R&D,0,0,NA
+1930,"South, Central America and Carribbean",Suriname,Beneficial,MPAs,635676.8274,329864.619,Modeled
+1931,"South, Central America and Carribbean",Suriname,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1932,"South, Central America and Carribbean",Suriname,Capacity-enhancing,Fisheries dev. projects,3144078.478,3144078.478,Modeled
+1933,"South, Central America and Carribbean",Suriname,Capacity-enhancing,Fishing port develop.,0,0,NA
+1934,"South, Central America and Carribbean",Suriname,Capacity-enhancing,Markt. & storage infrast.,2388027.093,2388027.093,Modeled
+1935,"South, Central America and Carribbean",Suriname,Capacity-enhancing,Tax exemption,0,0,NA
+1936,"South, Central America and Carribbean",Suriname,Capacity-enhancing,Fishing access,21155.13,0,Reported
+1937,"South, Central America and Carribbean",Suriname,Capacity-enhancing,Fuel subsidies,0,0,NA
+1938,"South, Central America and Carribbean",Suriname,Ambiguous,Fisher assistance,0,0,NA
+1939,"South, Central America and Carribbean",Suriname,Ambiguous,Vessel buyback,0,0,NA
+1940,"South, Central America and Carribbean",Suriname,Ambiguous,Rural fisher communities,1195289.492,1195289.492,Modeled
+1941,"South, Central America and Carribbean",Trinidad Tob,Beneficial,Fisheries mangt.,444198.93,257635.3794,Reported
+1942,"South, Central America and Carribbean",Trinidad Tob,Beneficial,Fishery R&D,174718.2458,101336.5826,Reported
+1943,"South, Central America and Carribbean",Trinidad Tob,Beneficial,MPAs,128045.2879,90805.92509,Modeled
+1944,"South, Central America and Carribbean",Trinidad Tob,Capacity-enhancing,Boat constsruct. & renov.,527124.5623,444285.4195,Modeled
+1945,"South, Central America and Carribbean",Trinidad Tob,Capacity-enhancing,Fisheries dev. projects,1559131.992,1556489.8,Modeled
+1946,"South, Central America and Carribbean",Trinidad Tob,Capacity-enhancing,Fishing port develop.,5019447.909,4612265.557,Reported
+1947,"South, Central America and Carribbean",Trinidad Tob,Capacity-enhancing,Markt. & storage infrast.,388674.0638,225430.957,Reported
+1948,"South, Central America and Carribbean",Trinidad Tob,Capacity-enhancing,Tax exemption,1835410.514,1267984.578,Modeled
+1949,"South, Central America and Carribbean",Trinidad Tob,Capacity-enhancing,Fishing access,576929.86,0,Reported
+1950,"South, Central America and Carribbean",Trinidad Tob,Capacity-enhancing,Fuel subsidies,3702848.982,1680924.437,Modeled
+1951,"South, Central America and Carribbean",Trinidad Tob,Ambiguous,Fisher assistance,68257.32882,39589.25072,Reported
+1952,"South, Central America and Carribbean",Trinidad Tob,Ambiguous,Vessel buyback,0,0,NA
+1953,"South, Central America and Carribbean",Trinidad Tob,Ambiguous,Rural fisher communities,888397.86,888397.86,Reported
+1954,"South, Central America and Carribbean",Uruguay,Beneficial,Fisheries mangt.,12282171.54,4136149.917,Modeled
+1955,"South, Central America and Carribbean",Uruguay,Beneficial,Fishery R&D,0,0,NA
+1956,"South, Central America and Carribbean",Uruguay,Beneficial,MPAs,1842534.997,1362746.762,Modeled
+1957,"South, Central America and Carribbean",Uruguay,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1958,"South, Central America and Carribbean",Uruguay,Capacity-enhancing,Fisheries dev. projects,4883492.399,4749969.556,Modeled
+1959,"South, Central America and Carribbean",Uruguay,Capacity-enhancing,Fishing port develop.,0,0,NA
+1960,"South, Central America and Carribbean",Uruguay,Capacity-enhancing,Markt. & storage infrast.,0,0,NA
+1961,"South, Central America and Carribbean",Uruguay,Capacity-enhancing,Tax exemption,0,0,NA
+1962,"South, Central America and Carribbean",Uruguay,Capacity-enhancing,Fishing access,58430.64,0,Reported
+1963,"South, Central America and Carribbean",Uruguay,Capacity-enhancing,Fuel subsidies,0,0,NA
+1964,"South, Central America and Carribbean",Uruguay,Ambiguous,Fisher assistance,0,0,NA
+1965,"South, Central America and Carribbean",Uruguay,Ambiguous,Vessel buyback,0,0,NA
+1966,"South, Central America and Carribbean",Uruguay,Ambiguous,Rural fisher communities,0,0,NA
+1967,"South, Central America and Carribbean",Venezuela,Beneficial,Fisheries mangt.,21934463.03,16927533.54,Modeled
+1968,"South, Central America and Carribbean",Venezuela,Beneficial,Fishery R&D,0,0,NA
+1969,"South, Central America and Carribbean",Venezuela,Beneficial,MPAs,5072774.676,4784150.852,Modeled
+1970,"South, Central America and Carribbean",Venezuela,Capacity-enhancing,Boat constsruct. & renov.,0,0,NA
+1971,"South, Central America and Carribbean",Venezuela,Capacity-enhancing,Fisheries dev. projects,13751828.34,13751828.34,Modeled
+1972,"South, Central America and Carribbean",Venezuela,Capacity-enhancing,Fishing port develop.,0,0,NA
+1973,"South, Central America and Carribbean",Venezuela,Capacity-enhancing,Markt. & storage infrast.,10444948.78,0,Modeled
+1974,"South, Central America and Carribbean",Venezuela,Capacity-enhancing,Tax exemption,16188655.25,0,Modeled
+1975,"South, Central America and Carribbean",Venezuela,Capacity-enhancing,Fishing access,3368879.93,0,Reported
+1976,"South, Central America and Carribbean",Venezuela,Capacity-enhancing,Fuel subsidies,0,0,NA
+1977,"South, Central America and Carribbean",Venezuela,Ambiguous,Fisher assistance,0,0,NA
+1978,"South, Central America and Carribbean",Venezuela,Ambiguous,Vessel buyback,0,0,NA
+1979,"South, Central America and Carribbean",Venezuela,Ambiguous,Rural fisher communities,2748761.219,2748761.219,Modeled

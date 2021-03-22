@@ -1,0 +1,14 @@
+category,category_name,type,old_type_name,type_name
+A,Beneficial,A1,Fisheries mangt.,Fisheries management
+A,Beneficial,A2,Fishery R&D,Fishery research and development
+A,Beneficial,A3,MPAs,Marine protected areas
+B,Capacity-enhancing,B1,Boat constsruct. & renov.,Boat construction and renovation
+B,Capacity-enhancing,B2,Fisheries dev. projects,Fisheries development projects
+B,Capacity-enhancing,B3,Fishing port develop.,Fishing port development
+B,Capacity-enhancing,B4,Markt. & storage infrast.,Marketing and storage infrastructure
+B,Capacity-enhancing,B5,Tax exemption,Non-fuel tax exemption
+B,Capacity-enhancing,B6,Fishing access,Fishing access agreements
+B,Capacity-enhancing,B7,Fuel subsidies,Fuel subsidies
+C,Ambiguous,C1,Fisher assistance,Fisher assistance
+C,Ambiguous,C2,Vessel buyback,Vessel buyback programs
+C,Ambiguous,C3,Rural fisher communities,Rural fisher communities

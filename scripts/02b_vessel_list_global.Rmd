@@ -1,0 +1,871 @@
+---
+output:
+  html_document: default
+
+title: "Distant Water Fishing Atlas - Global Vessel List"
+author: "Kat Millage, Matt Warham"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+# Chunk options
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load packages
+library(knitr) 
+library(countrycode) # country name matching
+library(bigrquery) # access Bigquery from R
+#devtools::install_github("r-dbi/bigrquery")
+library(tidyverse)
+
+# Path to cleaned subsidies data file (2018)
+subsidy_dat_sumaila_path <- here::here("data", "edited", "sumaila_et_al_2019_subsidies_tidy.csv")
+subsidy_year <- 2018
+
+# Path to cleaned ssf subsidy data file (2018)
+ssf_subsidy_prop_dat_path <- here::here("data", "edited", "schuhbauer_ssf_subsidies_proportions.csv")
+
+### Set run options
+# Bigquery project
+bq_project <-  "emlab-gcp"
+vessel_year <- 2018
+
+### Create results directories
+results_dir <- here::here("results/02b-vessel-list-global/")
+  if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
+
+# Temporary solution to bigrquery error (August 5, 2020) - see https://github.com/r-dbi/bigrquery/issues/395 for details
+options(scipen = 20)
+```
+
+# Introduction 
+
+This script creates the global vessel list used in the Distant Water Fishing Atlas toolkit. It requires access to the raw Global Fishing Watch (GFW) data stored on BigQuery (not-publically available), as well as a valid Google Cloud Console billing account. It creates and outputs the raw 2018 global vessel list (`r paste0(results_dir, "vessel_list_2018_raw.csv")`) with effort by vessel aggregated to the EEZ and/or FAO statistical region.  
+
+At this phase, the process of pulling this data is identical to the process used to create the dataset underlying the SubsidyExplorer toolkit. 
+
+# Extract good fishing vessels from existing vessel info table
+
+This section describes the process of linking to the most recent version of the GFW vessel information table, and pulling information on all likely fishing vessels represented in that dataset. This process was last performed on `r format(Sys.time(), '%B %d, %Y')`. 
+
+The vessel info table we're using (`world-fishing-827.gfw_research.vi_ssvid_byyear_v20190430`) has all sorts of stuff in it, so there are some basic filters we need to apply. 
+
+First, we remove all transmissions from objects that are likely fishing gear (buoys, nets, etc.), rather than vessels. 
+
+Second, we apply a number of filters to remove ids associated with non-fishing, inactive, and spoofing vessels:
+- MMSI must be on the best fishing vessel list
+- MMSI cannot be used by 2+ vessels with different names simultaneously
+- MMSI cannot be used by multiple vessels simultaneously for more than 3 days
+- MMSI has not been found to be offsetting its position
+- MMSI vessel class can be inferred by the neural net (i.e. it is an active vessel)
+- MMSI was active for at least 1 day and fished for at least 1 hour in a year
+- MMSI is associated with fewer than five shipnames
+
+Finally, GFW has manually compiled a list of vessel IDs that are bad, so we exclude those. 
+
+```{r}
+sql <- "WITH
+  # This query identifies fishing vessels that meet annual quality criteria
+  # e.g. not spoofing/offsetting/too many identities/etc.
+  good_fishing_vessels AS (
+  SELECT
+      ssvid,
+      year,
+      best.best_vessel_class vessel_class,
+      best.best_flag flag_iso3
+    FROM
+      `world-fishing-827.gfw_research.vi_ssvid_byyear_v20190430`
+    WHERE
+      on_fishing_list_best # MMSI must be on best fishing list
+      AND (activity.overlap_hours_multinames = 0 OR activity.overlap_hours_multinames IS NULL) # MMSI cannot be used by 2+ vessels with different names simultaneously
+      AND activity.overlap_hours < 24*3 # MMSI cannot be used by multiple vessels simultaneously for more than 3 days
+      AND activity.offsetting IS FALSE # MMSI not offsetting position
+      AND inferred.inferred_vessel_class_byyear IS NOT NULL # MMSI vessel class can be inferred by the neural net (active)
+      # MMSI active for at least 1 days and fished for at least 1 hours in the year.
+      AND activity.fishing_hours > 1
+      AND activity.active_hours > 24*1
+      AND 5 >= ( # MMSI associated with fewer than five shipnames
+        SELECT
+          COUNT(*)
+        FROM (
+          SELECT
+            value,
+            SUM(count) AS count
+          FROM
+            UNNEST(ais_identity.n_shipname)
+          WHERE
+            value IS NOT NULL
+          GROUP BY
+            value)
+        WHERE
+          count >= 10)
+      AND ssvid NOT IN (
+        SELECT
+          ssvid
+        FROM
+          `ucsb-gfw.SubsidyExplorer.likely_gear`)),
+          
+  # This subquery identifies MMSI that offset a lot
+  nast_ssvid AS (
+  SELECT
+    ssvid,
+    SUM( positions) positions
+  FROM `world-fishing-827.gfw_research.pipe_v20190502_segs`
+  WHERE
+    (dist_avg_pos_sat_vessel_km > 3000 AND sat_positions_known > 5)
+    AND first_timestamp < timestamp('2018-12-31')
+    AND last_timestamp > timestamp('2018-01-01')
+  GROUP BY ssvid)
+
+# Filter so manually determined bad mmsi and those ofsetting a lot are excluded and return
+SELECT
+  ssvid,
+  year,
+  vessel_class,
+  flag_iso3
+FROM
+  good_fishing_vessels
+WHERE
+  CAST(ssvid AS int64) NOT IN (
+    SELECT
+      ssvid
+    FROM
+      `world-fishing-827.gfw_research.bad_mmsi`
+    CROSS JOIN
+      UNNEST(ssvid) AS ssvid)
+  AND ssvid NOT IN (SELECT ssvid FROM nast_ssvid)"
+
+fv_table <- bq_table(project = bq_project, 
+                     table = "all_good_fishing_vessels",
+                     dataset = "distant_water_fishing_atlas")
+
+if(bq_table_exists(fv_table)){
+  
+  bq_table_delete(fv_table)
+  bq_project_query(bq_project, 
+                   sql, 
+                   destination_table = fv_table, 
+                   use_legacy_sql = FALSE, 
+                   allowLargeResults = TRUE)
+  
+}else {
+  bq_table_create(fv_table)
+  bq_project_query(bq_project, 
+                   query = sql, 
+                   destination_table = fv_table,
+                   use_legacy_sql = FALSE, 
+                   allowLargeResults = TRUE)
+}
+```
+
+# Extract fishing effort for good fishing vessels
+
+## By binned latititude/longitude 
+
+We first extract the number of hours spent fishing by each of our good fishing vessels in each latitude/longitude bin from the raw fishing effort table (`world-fishing-827.gfw_research.pipe_v20190502_fishing`). 
+
+To identify valid fishing effort here, we apply the following filters: 
+- The fishing activity must have occured during a valid segment as identified by GFW.
+- The fishing activity must have occured during a segment with more than 10 positions that was not concurrently overlapping with another, longer, segment for the same MMSI.  
+- The vessel performing the fishing activity must appear on the list of good fishing vessels created above
+
+We then extract a vessel table with the the following attributes: 
+- year (int): Year. Matches our data year specified above.
+- lat_bin_center (int): latitude bin, coordinates refer to the center of the bin
+- lon_bin_center (int): longitude bin, coordinates refer to the center of the bin
+- eez_id (chr): MRGID for the EEZ area to which this corresponds
+- fao_region (int): Major FAO statistical region
+- ssvid (chr): Unique vessel identification number given by GFW (MMSI number for most vessels)
+- flag (chr): Best flag state of the vessel
+- engine_power_kw (int): Best engine power of the vessel
+- fishing_hours_lat_lon: Total annual fishing hours in the specified lat/lon bin by the vessel
+- fishing_KWh_lat_lon: Total annual fishing KWh in the specified lat/lon bin by the vessel
+
+```{r}
+bin_size <- 0.1 # 0.1 degree for this - at this phase, CANNOT BE STORED LOCALLY. WAY TOO BIG. 
+
+sql2 <- paste0('
+WITH
+  # This subquery identifies good segments
+  good_segments AS (
+  SELECT
+    seg_id
+  FROM
+    `world-fishing-827.gfw_research.pipe_v20190502_segs`
+  WHERE
+    good_seg
+    AND positions > 10
+    AND NOT overlapping_and_short),
+  
+  # This subquery identifies good fishing vessels from our previous query
+  good_vessels AS (
+  SELECT
+    *
+  FROM
+    `emlab-gcp.SubsidyExplorer.all_good_fishing_vessels`),
+    
+  # This subquery identifies vessel information that we want to keep
+  vessel_info AS (
+  SELECT
+    ssvid,
+    year,
+    best.best_flag as flag,
+    best.best_engine_power_kw as engine_power_kw
+  FROM
+    `world-fishing-827.gfw_research.vi_ssvid_byyear_v20190430`
+  WHERE
+    year =', vessel_year, '),
+    
+  # This subquery gets all fishing effort by ssvid, eez, and fao region in 2018 cooresponding to good segments and good vessels
+  fishing_by_lat_lon AS (
+    SELECT
+      EXTRACT(year FROM date) AS year,
+      ssvid,
+      FLOOR(lat/', bin_size, ')*', bin_size,' + ', bin_size/2, ' lat_bin_center,
+      FLOOR(lon/', bin_size, ')*', bin_size, ' + ', bin_size/2, ' lon_bin_center, 
+      if(ARRAY_LENGTH(regions.eez)=0, "0000", regions.eez[ordinal(1)]) AS eez_id,
+      if(ARRAY_LENGTH(regions.major_fao)=0, "0", regions.major_fao[ordinal(1)]) AS fao_region,
+      sum(hours) AS fishing_hours_lat_lon
+    FROM
+      `world-fishing-827.gfw_research.pipe_v20190502_fishing`
+    WHERE
+      date > timestamp("', vessel_year, '-01-01")
+      AND date < timestamp("', vessel_year, '-12-31")
+      AND ARRAY_LENGTH(regions.major_fao) > 0 # removes fishing inland
+      AND nnet_score2 > .5
+      AND seg_id IN (
+        SELECT
+          seg_id
+        FROM
+          good_segments)
+      AND ssvid IN (
+        SELECT
+          ssvid
+        FROM
+          good_vessels
+        WHERE
+          year =', vessel_year, ')
+    GROUP BY
+      year,
+      ssvid,
+      lat_bin_center,
+      lon_bin_center,
+      eez_id,
+      fao_region
+    ORDER BY
+      year,
+      ssvid,
+      fishing_hours_lat_lon DESC)
+        
+SELECT
+  *,
+  CASE
+    WHEN engine_power_kw IS NULL THEN fishing_hours_lat_lon*400
+    ELSE fishing_hours_lat_lon*engine_power_kw
+  END AS fishing_KWh_lat_lon
+FROM
+  fishing_by_lat_lon
+LEFT JOIN
+  vessel_info
+USING
+  (ssvid,
+  year)')
+
+binned_effort_table <- bq_table(project = bq_project, 
+                                table = paste0("effort_01x01_good_fishing_vessels_2018_raw"),
+                                dataset = "distant_water_fishing_atlas")
+
+if(bq_table_exists(binned_effort_table)){
+  
+    bq_table_delete(binned_effort_table)
+    bq_project_query(bq_project, 
+                    sql2, 
+                    destination_table = binned_effort_table, 
+                    use_legacy_sql = FALSE, 
+                    allowLargeResults = TRUE)
+    # bq_table_download()
+  
+}else {
+  bq_table_create(binned_effort_table)
+  bq_project_query(bq_project, 
+                   query = sql2, 
+                   destination_table = binned_effort_table,
+                   use_legacy_sql = FALSE, 
+                   allowLargeResults = TRUE)
+  }
+```
+
+## By EEZ and/or FAO region
+
+We then extract the number of hours spent fishing by each of our good fishing vessels in different EEZs and/or FAO regions from the raw fishing effort table (`world-fishing-827.gfw_research.pipe_v20190502_fishing`).
+
+To identify valid fishing effort, we apply the following filters:
+- The fishing activity must have occured during a valid segment as identified by GFW.
+- The fishing activity must have occured during a segment with more than 10 positions that was not concurrently overlapping with another, longer, segment for the same MMSI.  
+- The vessel performing the fishing activity must appear on the list of good fishing vessels created above
+
+We then extract a vessel table with the the following attributes: 
+- year (int): Year. Matches our data year specified above.
+- eez_id (chr): EEZ identifier. 
+- eez_territory1_iso3 (chr) : Three letter code cooresponding to the administering territory of the EEZ
+- eez_territory2_iso3 (chr) : Three letter code cooresponding to the second administering territory of the EEZ (disputed and/or joint regime areas only)
+- eez_territory3_iso3 (chr) : Three letter code cooresponding to the third administering territory of the EEZ (disputed and/or joint regime areas only)
+- eez_sovereign1_iso3 (chr) : Three letter code cooresponding to the sovereign state of the EEZ
+- eez_sovereign2_iso3 (chr) : Three letter code cooresponding to the second sovereign state of the EEZ (disputed and/or joint regime areas only)
+- eez_sovereign3_iso3 (chr) : Three letter code cooresponding to the third sovereign state of the EEZ (disputed and/or joint regime areas only)
+- is_territorial (bln): Did the fishing activity occur within 12nm of shore? (This is an approximation of a country's territorial waters)
+- fao_region (int): Major FAO statistical region
+- ssvid (chr): Unique vessel identification number given by GFW (MMSI number for most vessels)
+- flag_iso3 (chr): Best flag state of the vessel. 
+- vessel_class (chr): Best vessel type. 
+- length_m (dbl): Best vessel length in meters.
+- tonnage_gt (dbl): Best vessel tonnage in gross tons. 
+- engine_power_kw (dbl): Best engine power in killowatt hours. 
+- broadcast_shipname (chr): Most common ship name broadcast by the vessel.
+- broadcast_callsign (chr): Most common ship callsign broadcast by the vessel.
+- broadcast_imo (chr): Most common imo number broadcast by the vessel.
+- fishing_hours_eez_fao_ter: Total annual fishing hours in the specified eez and/or FAO statistical region and/or territorial seas by the vessel
+- fishing_KWh_eez_fao_ter: Total annual fishing KWh hours in the specified eez and/or FAO statistical region and/or territorial seas by the vessel
+
+```{r}
+sql3 <- paste0('
+WITH
+  # This subquery identifies good segments
+  good_segments AS (
+  SELECT
+    seg_id
+  FROM
+    `world-fishing-827.gfw_research.pipe_v20190502_segs`
+  WHERE
+    good_seg
+    AND positions > 10
+    AND NOT overlapping_and_short),
+  
+  # This subquery identifies good fishing vessels from our previous query
+  good_vessels AS (
+  SELECT
+    *
+  FROM
+    `emlab-gcp.SubsidyExplorer.all_good_fishing_vessels`),
+    
+  # This subquery identifies vessel information that we want to keep
+  vessel_info AS (
+  SELECT
+    ssvid,
+    year,
+    best.best_flag as flag_iso3,
+    best.best_vessel_class as vessel_class,
+    best.best_length_m as length_m,
+    best.best_tonnage_gt as tonnage_gt,
+    best.best_engine_power_kw as engine_power_kw,
+    ais_identity.n_shipname_mostcommon.value as broadcast_shipname,
+    ais_identity.n_callsign_mostcommon.value as broadcast_callsign,
+    ais_identity.n_imo_mostcommon.value as broadcast_imo
+  FROM
+    `world-fishing-827.gfw_research.vi_ssvid_byyear_v20190430`
+  WHERE
+    year =', vessel_year, '),
+    
+  # This subquery identifies eez information that we want to keep
+  eez_info AS (
+  SELECT
+    CAST(eez_id as string) as eez_id,
+    territory1_iso3 as eez_territory1_iso3,
+    territory2_iso3 as eez_territory2_iso3,
+    territory3_iso3 as eez_territory3_iso3,
+    sovereign1_iso3 as eez_sovereign1_iso3,
+    sovereign2_iso3 as eez_sovereign2_iso3,
+    sovereign3_iso3 as eez_sovereign3_iso3
+  FROM
+    `world-fishing-827.gfw_research.eez_info`),
+  
+  # This subquery gets all fishing effort by ssvid, eez, and fao region in 2018 cooresponding to good segments and good vessels
+  fishing_by_eez_and_fao AS (
+    SELECT
+      EXTRACT(year FROM date) AS year,
+      ssvid,
+      if(ARRAY_LENGTH(regions.eez)=0, "0000", regions.eez[ordinal(1)]) AS eez_id,
+      if(distance_from_shore_m <= 22224, TRUE, FALSE) AS is_territorial,
+      if(ARRAY_LENGTH(regions.major_fao)=0, "0", regions.major_fao[ordinal(1)]) AS fao_region,
+      sum(hours) AS fishing_hours_eez_fao_ter
+    FROM
+      `world-fishing-827.gfw_research.pipe_v20190502_fishing`
+    WHERE
+      date > timestamp("', vessel_year, '-01-01")
+      AND date < timestamp("', vessel_year, '-12-31")
+      AND ARRAY_LENGTH(regions.major_fao) > 0 # removes fishing inland
+      AND nnet_score2 > .5
+      AND seg_id IN (
+        SELECT
+          seg_id
+        FROM
+          good_segments)
+      AND ssvid IN (
+        SELECT
+          ssvid
+        FROM
+          good_vessels
+        WHERE
+          year = ', vessel_year, ')
+    GROUP BY
+      year,
+      ssvid,
+      eez_id,
+      is_territorial,
+      fao_region
+    ORDER BY
+      year,
+      ssvid,
+      fishing_hours_eez_fao_ter DESC)
+        
+SELECT
+  *,
+  CASE
+    WHEN engine_power_kw IS NULL THEN fishing_hours_eez_fao_ter*400
+    ELSE fishing_hours_eez_fao_ter*engine_power_kw
+  END AS fishing_KWh_eez_fao_ter
+FROM
+  fishing_by_eez_and_fao
+LEFT JOIN
+  vessel_info
+USING
+  (ssvid,
+  year)
+LEFT JOIN
+  eez_info
+USING
+  (eez_id)')
+
+eez_effort_table <- bq_table(project = bq_project, 
+                     table = paste0("effort_eez_fao_ter_good_fishing_vessels_", vessel_year, "_raw"),
+                     dataset = "distant_water_fishing_atlas")
+
+if(bq_table_exists(eez_effort_table)){
+  
+  bq_table_delete(eez_effort_table)
+  effort_good_fishing_vessels_eez <- 
+    bq_project_query(bq_project, 
+                    query = sql3, 
+                    destination_table = eez_effort_table, 
+                    use_legacy_sql = FALSE, 
+                    allowLargeResults = TRUE) %>%
+     bq_table_download()
+  
+}else {
+  bq_table_create(eez_effort_table)
+  effort_good_fishing_vessels_eez <- 
+    bq_project_query(bq_project, 
+                   query = sql3, 
+                   destination_table = eez_effort_table,
+                   use_legacy_sql = FALSE, 
+                   allowLargeResults = TRUE) %>%
+    bq_table_download()
+}
+
+# Save locally
+eez_effort_table_local <- paste0(results_dir, "effort_eez_fao_ter_good_fishing_vessels_", vessel_year, "_raw.csv")
+
+if(file.exists(eez_effort_table_local)){
+  unlink(eez_effort_table_local)
+  write_csv(effort_good_fishing_vessels_eez, eez_effort_table_local)
+}else{
+  write_csv(effort_good_fishing_vessels_eez, eez_effort_table_local)
+}
+```
+
+# Correct outdated flag codes and Identify EU and USA dependent vessels
+
+Before allocating catches and subsidies across vessels, we need to do some manual corrections for incorrect flag codes and we need to identify vessels flagged to states that are overseas dependencies of the EU or USA. We assume that these vessels recieve subsidies from their sovereign states. 
+
+```{r}
+# Load country dependencies helper file
+country_dependencies <- read_csv(here::here("data", "lookup-tables", "country_dependencies.csv")) %>%
+  dplyr::select(flag_iso3 = iso3, flag_sovereign_iso3 = sovereign_iso3, is_EU, is_dependency = is_overseas_territory)
+
+```
+
+```{r}
+# Get table of all flag states in the data to check for weird flag codes
+gfw_flags <- effort_good_fishing_vessels_eez %>%
+  distinct(flag_iso3) %>%
+  mutate(flag_name = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+  arrange(flag_iso3)
+
+# Only three we need to fix: GCA (outdated code for Guatemala), ROM (outdated code for Romania), and UNK (unknown, for some reason not just NA)
+vessel_list <- effort_good_fishing_vessels_eez
+vessel_list$flag_iso3[vessel_list$flag_iso3 == "GCA"] <- "GTM"
+vessel_list$flag_iso3[vessel_list$flag_iso3 == "ROM"] <- "ROU"
+vessel_list$flag_iso3[vessel_list$flag_iso3 == "UNK"] <- NA
+```
+
+# Allocating Subsidies
+
+Before we allocate subsidies, we need to get total fishing kWh by flag. 
+
+```{r}
+# Effort by flag
+effort_flag <- vessel_list %>%
+  group_by(flag_iso3) %>%
+  summarize(fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T)) %>%
+  ungroup()
+```
+
+The process for allocating subsidies is slightly more straightforard as we only have data by flag. 
+
+Let's first assign sovereigns to all of our flags
+```{r}
+# Now lets add sovereign flags
+vessel_list <- vessel_list %>%
+  left_join(country_dependencies, by = c("flag_iso3" = "flag_iso3"))
+
+# And manually correct two - Clipperton Atoll and Western Sahara
+vessel_list$flag_iso3[vessel_list$flag_iso3 == "CPT"] <- "FRA"
+vessel_list$flag_iso3[vessel_list$flag_iso3 == "ESH"] <- "MAR"
+```
+
+
+```{r}
+# Load subsidy data
+subsidies_dat <- read_csv(subsidy_dat_sumaila_path) %>%
+  dplyr::filter(year == subsidy_year)
+
+# Load proportions going to SSF, and remove
+subsidies_dat_lsf <- read_csv(ssf_subsidy_prop_dat_path) %>%
+  dplyr::select(-source) %>%
+  left_join(subsidies_dat, by = c("iso3", "category", "category_name", "type", "type_name")) %>%
+  mutate(value_lsf = value*(1-prop_ssf))
+
+# Summarize total subsidies by type and flag
+subsidies_flag <- subsidies_dat_lsf %>%
+  group_by(iso3, type) %>%
+  summarize(value = sum(value_lsf, na.rm = T)) %>%
+  spread(type, value)
+
+subsidy_types <- unique(subsidies_dat$type)
+good_subsidy_types <- c("A1", "A2", "A3")
+ugly_subsidy_types <- c("C1", "C2", "C3")
+bad_subsidy_types <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7")
+
+# Resummarize effort including overseas territories with their sovereign
+effort_sovereign_flag <- vessel_list %>%
+  group_by(flag_sovereign_iso3) %>%
+  summarize(fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T)) %>%
+  ungroup()
+                          
+# Calculate subsidy rates by flag
+subsidy_rates_flag <- effort_sovereign_flag %>%
+  inner_join(subsidies_flag, by = c("flag_sovereign_iso3" = "iso3")) %>%
+  group_by(flag_sovereign_iso3) %>%
+  summarize_at(subsidy_types, list(per_fishing_KWh = ~./fishing_KWh))
+subsidy_rates_flag[is.na(subsidy_rates_flag)] <- 0
+
+# Join back to vessel_list
+vessel_list <- vessel_list %>%
+  left_join(subsidy_rates_flag, by = c("flag_sovereign_iso3"))
+```
+
+Now we can calculate total subsidies by type for each vessel
+
+```{r}
+rename_me <- function(x){
+  str_replace(x, "_per_fishing_KWh", "")
+}
+
+vessel_list_out <- vessel_list %>%
+  mutate_at(paste0(subsidy_types, "_per_fishing_KWh"), list(subs = ~.*fishing_KWh_eez_fao_ter)) %>%
+  rename_at(paste0(subsidy_types, "_per_fishing_KWh_subs"), rename_me) %>%
+  dplyr::select_at(vars(-contains("_per_fishing_KWh"))) %>%
+  mutate(good_subs = rowSums(select(., one_of(paste0(good_subsidy_types, "_subs")))),
+         bad_subs = rowSums(select(., one_of(paste0(bad_subsidy_types, "_subs")))),
+         ugly_subs = rowSums(select(., one_of(paste0(ugly_subsidy_types, "_subs")))))
+
+write_csv(vessel_list_out, paste0(results_dir, "vessel_list_2018_raw.csv"))
+```
+
+# OLD
+
+## Flag state fishing totals by year
+
+For the purposes of allocating subsidies to individual vessels, we need the total number of fishing hours for each flag state in a given year, as we assume that subsidies are allocated proportionally based on fishing effort. 
+
+```{r}
+# sql2 <- "
+# SELECT
+#   year,
+#   flag,
+#   COUNT(DISTINCT ssvid) AS vessels_total,
+#   SUM(fishing_hours_year_eez) fishing_hours_total,
+#   SUM(fishing_KWh_year_eez) fishing_KWh_total,
+#   SUM(fishing_days_year_eez) fishing_days_total
+# FROM
+#   `ucsb-gfw.subsidy_atlas.all_fishing_effort_by_eez`
+# GROUP BY
+#   year,
+#   flag
+# ORDER BY
+#   year DESC,
+#   flag"
+# 
+#   # Identify BQ table for this query
+#   flag_totals_table <- bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas") 
+# 
+#   # Check if that table already exists. If not, create it. Otherwise clear it. 
+#   if(bq_table_exists(flag_totals_table) == FALSE){
+#     bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas") %>%
+#       bq_table_create()
+#   }else{
+#     bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas") %>%
+#       bq_table_delete()
+#   }
+# 
+#   # Run query
+#   flag_totals <- bq_project_query(bq_project, sql2, destination_table = bq_table(project = bq_project, table = "fishing_effort_totals_by_flag", dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+#     bq_table_download(max_results = Inf)
+#   
+#   write_csv(flag_totals, path = paste0(results_dir, "fishing_effort_totals_by_flag.csv"))
+#   
+```
+
+## Identify distant water fishing vessels
+
+Since the purpose of this analysis relates to distant water fishing effort, we need to separate out fishing effort considered to be "distant water" from the rest. This is done in a series of steps. 
+
+In the first step, the following is not considered to be "distant water fishing" and is therefore removed:
+- All fishing effort occuring on the high seas;
+- All fishing effort occuring in an EEZ when the flag state of the vessel is the same as the administering state of the EEZ in which it is fishing.
+
+
+```{r}
+# sql3 <- "
+# SELECT
+#   *
+# FROM
+#   `ucsb-gfw.subsidy_atlas.all_fishing_effort_by_eez`
+# WHERE 
+# eez_territory_iso3 != 'High Seas'
+# AND flag != eez_territory_iso3"
+# 
+#   # Identify BQ table for this query
+#   all_dw_fishing_effort_by_eez_table <- bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas")
+#   
+#   # Check if that table already exists. If not, create it. Otherwise clear it. 
+#   if(bq_table_exists(all_dw_fishing_effort_by_eez_table) == FALSE){
+#     bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas") %>%
+#       bq_table_create()
+#   }else{
+#     bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas") %>%
+#       bq_table_delete()
+#   }
+#   
+#   # Run query and download results (~100,000 rows: ~25MB)
+#   all_dw_fishing_effort_by_eez <- bq_project_query(bq_project, sql3, destination_table = bq_table(project = bq_project, table = "all_dw_fishing_effort_by_eez", dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+#   bq_table_download(max_results = Inf)
+#   
+#   # Correct interpretation of NAs
+#   dw_effort_raw <- all_dw_fishing_effort_by_eez
+#   dw_effort_raw[dw_effort_raw == "NA"] <- NA
+#     
+#   # Save file locally
+#   write_csv(dw_effort_raw, path = paste0(results_dir, "RAW_dw_effort_by_eez.csv"))
+```
+
+## Determine the sovereign states of each flag state
+
+In order to further parse out distant water fishing effort, we will need to take sovereignty into consideration. GFW has done a lot of this work for us, therefore we use the sovereign states assigned to each eez iso3 for flag states as well. Let's create a table matching all of these up. 
+
+```{r}
+# Get a list of sovereignty pairings from GFW eez data as a starting point
+# sovereign_pairings <- dw_effort_raw %>%
+#   distinct(eez_sovereign_iso3, eez_territory_iso3) %>%
+#   rename(sovereign_iso3 = eez_sovereign_iso3, iso3 = eez_territory_iso3) %>%
+#   na.omit() %>% # there's one entry where flag = CHN, and sovereign = NA
+#   arrange(iso3)
+# sovereign_pairings$sovereign_iso3[sovereign_pairings$iso3 == "TWN"] <- "CHN"
+# 
+# # Custom sovereignty pairings that are missing
+# c_sovereign_pairings <- tibble(iso3 = c("BLZ", # Belize
+#                                         "ARM", # Armenia
+#                                         "AUT", # Austria
+#                                         "SRB", # Serbia
+#                                         "CHE", # Switzerland
+#                                         "LIE", # Liechtenstein
+#                                         "UNK", # Unknown
+#                                         "SVK", # Slovakia
+#                                         "MNG", # Mongolia
+#                                         "JOR", # Jordan
+#                                         "HKG", # Hong Kong - not sovereign (!!!)
+#                                         "NER", # Niger
+#                                         "BOL", # Bolivia, Plurinational State of 
+#                                         "LSO", # Lesotho
+#                                         "HUN", # Hungary
+#                                         "KHM", # Cambodia
+#                                         "AFG", # Afghanistan
+#                                         "BTN", # Bhutan
+#                                         "CAF", # Central African Republic
+#                                         "MDA", # Moldova, Republic of 
+#                                         "MWI", # Malawi
+#                                         "RWA", # Rwanda
+#                                         "SMR", # San Marino
+#                                         "SWZ", # Swaziland
+#                                         "VAT", # Holy See (Vatican City State) 
+#                                         "BDI", # Burundi
+#                                         "KAZ", # Kazakhstan
+#                                         "KGZ", # Kyrgyzstan
+#                                         "LUX", # Luxembourg
+#                                         "PRY", # Paraguay
+#                                         "UGA", # Uganda
+#                                         "UZB" # Uzbekistan
+#                                         )) %>%
+#   mutate(name = case_when(iso3 == "UNK" ~ "Unknown",
+#                           TRUE ~ countrycode::countrycode(iso3, "iso3c", "country.name")),
+#          sovereign_iso3 = case_when(iso3 == "HKG" ~ "CHN", # of that list above, Hong Kong is the only state that isn't its own sovereign
+#                                     TRUE ~ iso3))
+# 
+# # Put them all back together
+# sovereign_pairings_all <- sovereign_pairings %>%
+#   bind_rows(c_sovereign_pairings %>% distinct(sovereign_iso3, iso3)) %>%
+#   arrange(sovereign_iso3)
+# 
+# # Save for future reference just in case
+# write_csv(sovereign_pairings_all, path = paste0(results_dir, "sovereign_pairings_all.csv"))
+
+```
+
+We then assign these names to the flag states of vessels, as well as to the EEZ states and sovereigns in the GFW database by matching ISO-3 character codes of each entity. 
+
+```{r}
+# Add sovereign state to each vessel in GFW
+# dw_effort <- dw_effort_raw %>%
+#   left_join(sovereign_pairings_all, by = c("flag" = "iso3"))
+# 
+# # Add names 
+# dw_effort <- dw_effort %>%
+#   mutate(flag_name = case_when(flag == "UNK" ~ "Unknown",
+#                                TRUE ~ countrycode::countrycode(flag, "iso3c", "country.name")),
+#          sovereign_name = case_when(sovereign_iso3 == "UNK" ~ "Unknown",
+#                                TRUE ~ countrycode::countrycode(sovereign_iso3, "iso3c", "country.name")),
+#          eez_territory_name = case_when(eez_territory_iso3 == "ASC" | eez_territory_iso3 == "TAA" ~ countrycode::countrycode("SHN", "iso3c", "country.name"),
+#                                         eez_territory_iso3 == "CPT" ~ "Clipperton Island",
+#                                         TRUE ~ countrycode::countrycode(eez_territory_iso3, "iso3c", "country.name")),
+#          eez_sovereign_name = countrycode::countrycode(eez_sovereign_iso3, "iso3c", "country.name"),
+#          eez_sovereign2_name = countrycode::countrycode(eez_sovereign2_iso3, "iso3c", "country.name"),
+#          eez_sovereign3_name = countrycode::countrycode(eez_sovereign3_iso3, "iso3c", "country.name"))
+
+```
+
+## European Union vessels
+
+Vessels flagged to EU member states have the right to fish in the EEZs of other EU member states, therefore we do not include these instances as "distant water fishing". In order to remove these from our dataset, we first need create a list of EU member states, as well as non-member states with with the EU has fishing agreements as part of the northern agreement (i.e. Norway and Iceland). 
+
+We define "intra-EU fishing" as fishing activity that meets one of the following criteria: 
+1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a French-flagged vessel fishing in the EEZ of Spain);
+2. The sovereign of the vessel's flag state is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a XXX-flagged vessel fishing in the EEZ of Spain).
+
+We do not consider the following to be "intra-EU fishing": 
+1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing belongs to a territory or distant region of an EU member state (e.g. a French-flagged vessel fishing in the EEZ of French Polynesia). 
+
+```{r}
+# # EU member states
+# # Austria, Belgium, Bulgaria, Croatia, Cyprus, Czechia, Denmark, Estonia, Finland, France, Germany, Greece, Hungary, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, Netherlands, Poland, Portugal, Romania, Slovakia, Slovenia, Spain, Sweden, United Kingdom
+# eu_states <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+# 
+# # States with which the EU has free fishing agreements 
+# # Norway, Svalbard and Jan Mayen, Iceland
+# eu_northern_agreement <- c("NOR", "SJM", "ISL")
+# 
+# # Identify flag/eez pairings which we're excluding from "distant water" because of the EU relationship between nations
+# dw_effort <- dw_effort %>%
+#   mutate(is_EU = ifelse(flag %in% c(eu_states, eu_northern_agreement) & eez_territory_iso3 %in% c(eu_states, eu_northern_agreement) |
+#                       sovereign_iso3 %in% c(eu_states, eu_northern_agreement) & eez_territory_iso3 %in% c(eu_states, eu_northern_agreement), 
+#                       TRUE, 
+#                       FALSE)) %>%
+#   dplyr::filter(!is_EU)
+```
+
+For the purposes of this analysis, we do not consider "intra-EU fishing" to be distant-water fishing and it is therefore removed. 
+
+## Dealing with sovereignty
+
+If the sovereign flag state of a vessel is the same as the sovereign state of the EEZ in which it's fishing, this connection may still be considered to be distant water fishing (e.g. US vessel fishing in Palmyra Atoll), though this is generally not considered to be foreign distant water fishing. Let's add a field identifying effort in which this is the case. Though we aren't making any distinctions between foreign distant water fishing and distant water fishing right now, it might be helpful later on to have this distinction available. 
+
+We descibe "sovereign fishing" as fishing activity that meets one of the following criteria: 
+1. The flag state of the vessel is the same as the sovereign of the administering territory of the EEZ in which it is fishing (e.g. a US flagged vessel fishing in the EEZ of Palmyra Atoll).
+2. The sovereign of the flag state of the vessel is the same as the sovereign of the administering territory of the EEZ in which it is fishing (e.g. a Puerto-Rican flagged vessel fishing in the EEZ of Palmyra Atoll);
+
+```{r}
+# # 4,922 connections are not foreign
+# dw_effort <- dw_effort %>%
+#   mutate(is_foreign = case_when(flag == eez_sovereign_iso3 | 
+#                                     flag == eez_sovereign2_iso3 | 
+#                                     flag == eez_sovereign3_iso3 |
+#                                     sovereign_iso3 == eez_sovereign_iso3 | 
+#                                     sovereign_iso3 == eez_sovereign2_iso3 |
+#                                     sovereign_iso3 == eez_sovereign3_iso3 ~ FALSE,
+#                                   TRUE ~ TRUE))
+
+```
+
+There are some cases in which there may be connections that are not foreign and that because of their particular situation should not be considered distant water. An example of this are disputed and joint regime EEZ.  These are listed and removed here:
+
+```{r}
+# # Identify non-foreign connections
+# sovereign_connections <- dw_effort %>%
+#   filter(!is_foreign) %>%
+#   distinct(flag_name, sovereign_name, eez_code, eez_name, eez_type, eez_territory_name , eez_sovereign_name, eez_sovereign2_name, eez_sovereign3_name) %>%
+#   arrange(desc(sovereign_name))
+# 
+# # Specific cases that aren't DW fishing
+# non_distant_water_connections <- sovereign_connections %>%
+#   filter(!(flag_name == "United States" & eez_code %in% c("8442", "8443", "8444", "8451", "8452", "33179", "33180", "48980"))) %>%
+#   filter(!(flag_name == "Falkland Islands" & eez_territory_name == "St. Helena")) %>%
+#   filter(!(sovereign_name == "United Kingdom" & eez_territory_name == "South Georgia & South Sandwich Islands")) %>%
+#   filter(!(sovereign_name == "United Kingdom" & eez_territory_name == "Falkland Islands")) %>%
+#   filter(!(flag_name == "United Kingdom" & eez_territory_name == "Montserrat")) %>%
+#   filter(!(sovereign_name == "New Zealand")) %>%
+#   filter(!(sovereign_name == "France")) %>%
+#   filter(!(sovereign_name == "Australia" & eez_type == "200NM"))
+# 
+# dw_effort <- dw_effort %>%
+#   anti_join(non_distant_water_connections)
+```
+
+For the purposes of this analysis, we include both "sovereign distant water fishing" and "foreign distant water fishing" as distant water fishing. 
+
+# Make last manual changes and save
+
+```{r}
+# ### Do some manual corrections for fishing that shouldn't be there
+# dw_effort_final <- dw_effort %>%
+#   mutate(is_weird = case_when((flag == "CAN" & eez_territory_iso3 == "GUY") ~ T,
+#                            (flag == "ZAF" & eez_territory_iso3 == "COD") ~ T,
+#                            (flag == "SYC" & eez_territory_iso3 == "COD") ~ T,
+#                            TRUE ~ FALSE)) %>%
+#   dplyr::filter(!is_weird)
+# 
+# # Save
+#   dw_effort_final_table <- bq_table(project = bq_project, table = paste0("FINAL_dw_effort_by_eez_", analysis_year), dataset = "subsidy_atlas")
+#   
+# # Check if that table already exists. If not, create it. Otherwise clear it. 
+#   if(bq_table_exists(dw_effort_final_table)){
+#     
+#       dw_effort_final_table %>%
+#       bq_table_delete()
+#     
+#       dw_effort_final_table %>%
+#       bq_table_create() %>%
+#       bq_table_upload(values = dw_effort_final, fields = dw_effort_final)
+#     
+#   }else{
+#     
+#       dw_effort_final_table %>%
+#       bq_table_create() %>%
+#       bq_table_upload(values = dw_effort_final, fields = dw_effort_final)
+# 
+#   }
+# 
+# write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez_", analysis_year, ".csv"))
+
+```
+
+
