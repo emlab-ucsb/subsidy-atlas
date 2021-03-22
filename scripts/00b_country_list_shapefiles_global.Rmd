@@ -69,11 +69,15 @@ eez_sf_simple <- st_read(paste0(data_dir, "world_eez_v11_simple.gpkg")) %>%
 ```{r}
 # Extract attributes we want to keep
 eez_attrib_all <- eez_sf_simple %>%
-  st_drop_geometry() %>%
+  st_drop_geometry()
+  
+write_csv(eez_attrib_all, paste0(data_dir, "eez_attributes.csv"))
+
+eez_attrib_all <- eez_attrib_all %>%
   rowwise() %>%
   mutate(iso_ter_all = list(c(iso_ter1, iso_ter2, iso_ter3)),
          iso_sov_all = list(c(iso_sov1, iso_sov2, iso_sov3))) %>%
-  dplyr::select(mrgid, pol_type, geoname, iso_ter_all, iso_sov_all)
+  dplyr::select(mrgid, pol_type, geoname, iso_ter_all, iso_sov_all, x_cen = x_1, y_cen = y_1)
 
 # Create some new country names
 eez_attrib_expanded <- eez_attrib_all %>%
@@ -104,7 +108,6 @@ eez_attrib_expanded <- eez_attrib_expanded %>%
 write_csv(eez_attrib_expanded, paste0(data_dir, "eez_attributes_expanded.csv"))
 write_csv(eez_attrib_expanded, paste0(app_dir, "eez_attributes_expanded.csv"))
 ```
-
 
 ## Create expanded version of polygons (-360 to 360 degrees)
 
@@ -180,16 +183,17 @@ st_write(region_sf, paste0(app_dir, "world_eez_regions_neg360_360.gpkg"), delete
 # Territory aggregation (200nm areas only)
 territory_sf <- eez_sf_out %>%
   dplyr::filter(pol_type == "200NM") %>%
-  #mutate(geoname_simple = str_replace(geoname, "\\([^()]{0,}\\)", ""))
   mutate(geoname_new = paste0("Exclusive Economic Zone: ", name_ter)) %>%
   group_by(region, name_ter, iso_ter, name_sov, iso_sov, pol_type, geoname_new) %>%
-  summarize(geom = st_union(geom)) %>%
+  summarize(x_cen = mean(x_cen, na.rm = T),
+            y_cen = mean(y_cen, na.rm = T),
+            geom = st_union(geom)) %>%
   ungroup()
 
 others_sf <- eez_sf_out %>%
   dplyr::filter(pol_type != "200NM") %>%
   mutate(geoname_new = geoname) %>%
-  dplyr::select(region, name_ter, iso_ter, name_sov, iso_sov, pol_type, geoname_new, geom)
+  dplyr::select(region, name_ter, iso_ter, name_sov, iso_sov, pol_type, geoname_new, x_cen, y_cen, geom)
 
 territory_sf_out <- territory_sf %>%
   rbind(others_sf)

@@ -7,9 +7,9 @@
 
 shinyServer(function(input, output, session) {
   
-  ### ------------------ 
+  ### ------------------------------- 
   ### Header / Navigation -----------
-  ### ------------------
+  ### -------------------------------
   
   ### Navigation button on the top header
   observeEvent(input$ab_home, {
@@ -47,32 +47,6 @@ shinyServer(function(input, output, session) {
     ## Get regional dat
     regional_dat <- eez_region_360
     
-#     # Formatting for semi-transparent title box over map
-#     intro_overlay_formatting <- tags$style(HTML("
-#   .leaflet-control.map-title {
-# 
-#     transform: translate(0, 10%);
-#     position: fixed !important;
-#     left: 10%;
-#     right: 10%;
-#     text-align: center;
-#     padding: 20px;
-#     background: rgba(255,255,255,0.6);
-#     color:black;
-# 
-#     -webkit-box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
-#     box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
-#   }
-# "))
-    # 
-    # # Load text for title box
-    # intro_top_overlay_text <- includeHTML("./text/01_intro_overlay.html")
-    # 
-    # # Combine formatting and text for semi-transparent title box over map
-    # intro_overlay <- tags$div(
-    #   intro_overlay_formatting, 
-    #   intro_top_overlay_text)
-      
     # Leaflet map
     leaflet("regional_map", 
             options = leafletOptions(minZoom = 2, zoomControl = FALSE,
@@ -83,11 +57,6 @@ shinyServer(function(input, output, session) {
       
       addProviderTiles("Esri.OceanBasemap") %>% 
       
-      # # Title box
-      # addControl(intro_overlay, 
-      #            position = "topleft", 
-      #            className = "map-title") %>%
-       
       addPolygons(data = regional_dat, 
                   fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
@@ -140,37 +109,32 @@ shinyServer(function(input, output, session) {
     
   }) 
   
-  
   ###------------------------------------------------------------------
   ### East Asia & Pacific ---------------------------------------------
   ###------------------------------------------------------------------
+  
+  ### Data Container
+  east_asia_pacific_rv <- reactiveValues(eezs = eez_ter_360 %>% 
+                                           dplyr::filter(region == "East Asia & Pacific"),
+                                         map_lng = 175,
+                                         map_lat = -5,
+                                         map_zoom = 1)
   
   ### Leaflet output: Navigational map for the region ---------
   
   output$east_asia_pacific_nav_map <- renderLeaflet({
     
     # Extract East Asia & Pacific EEZs
-    east_asia_pacific_eezs <- eez_ter_360 %>%
-      dplyr::filter(region == "East Asia & Pacific") %>%
+    east_asia_pacific_eezs <- east_asia_pacific_rv$eezs %>%
       dplyr::filter(pol_type == "200NM")
     
-    east_asia_pacific_disputed <- eez_ter_360 %>%
-      dplyr::filter(region == "East Asia & Pacific") %>%
+    east_asia_pacific_disputed <- east_asia_pacific_rv$eezs %>%
       dplyr::filter(pol_type != "200NM")
-    
-    # # Merge non-contiguous EEZs for the same coastal state (South Africa)
-    # africa_eezs_merged <- africa_eezs %>%
-    #   group_by(iso_ter, geoname, region) %>%
-    #   summarize(geometry = st_union(geometry))
-    
-    # Also extract disputed areas/joint management areas involving ACP coastal states in Africa
-    # africa_disputed_joint <- africa_eez_map %>%
-    #   dplyr::filter(pol_type != "200NM" & iso_ter %in% africa_eezs$iso_ter) %>%
-    #   mutate(region = "Africa")
     
     # Map
     leaflet('east_asia_pacific_nav_map', 
-            options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
+            options = leafletOptions(minZoom = 1, zoomControl = FALSE, 
+                                     attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
@@ -210,8 +174,13 @@ shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng= 175, lat = -5, zoom = 1) %>%
-      setMaxBounds(lng1 = 90, lat1 = -90, lng2 = 270, lat2 = 90)
+      setView(lng = east_asia_pacific_rv$map_lng, 
+              lat = east_asia_pacific_rv$map_lat, 
+              zoom = east_asia_pacific_rv$map_zoom) %>%
+      setMaxBounds(lng1 = east_asia_pacific_rv$map_lng - 90, 
+                   lat1 = -90, 
+                   lng2 = east_asia_pacific_rv$map_lng + 90, 
+                   lat2 = 90)
     
 })
   
@@ -242,16 +211,16 @@ shinyServer(function(input, output, session) {
       east_asia_pacific_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      east_asia_pacific_nav_map_proxy %>% setView(lng= 175, lat = -5, zoom = 1)
+      east_asia_pacific_nav_map_proxy %>% 
+        setView(lng = east_asia_pacific_rv$map_lng, 
+                lat = east_asia_pacific_rv$map_lat, 
+                zoom = east_asia_pacific_rv$map_zoom)
       
     }else{
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
                              eez_ter_360$iso_ter == input$east_asia_pacific_eez_select)
-      
-      # selected_eez_centroid <- st_centroid(selected_eez) %>%
-      #   st_coordinates()
 
       # Remove any previously highlighted polygon
       east_asia_pacific_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -272,10 +241,9 @@ shinyServer(function(input, output, session) {
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
-                                                direction = "auto")) 
-      
-      # %>%
-      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+                                                direction = "auto")) %>%
+      setView(lng=mean(selected_eez$x_cen, na.rm = T), 
+              lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
     }
     
   }) # close observe event
@@ -284,17 +252,22 @@ shinyServer(function(input, output, session) {
   ### Europe & Central Asia ---------------------------------------------
   ###------------------------------------------------------------------
   
+  ### Data Container ----------
+  europe_central_asia_rv <- reactiveValues(eezs = eez_ter_360 %>%
+                                             dplyr::filter(region == "Europe & Central Asia"),
+                                           map_lng = 0,
+                                           map_lat = 40,
+                                           map_zoom = 2)
+  
   ### Leaflet output: Navigational map for the region ---------
   
   output$europe_central_asia_nav_map <- renderLeaflet({
     
     # Extract Europe & Central Asia EEZs
-    europe_central_asia_eezs <- eez_ter_360 %>%
-      dplyr::filter(region == "Europe & Central Asia") %>%
+    europe_central_asia_eezs <- europe_central_asia_rv$eezs %>%
       dplyr::filter(pol_type == "200NM")
     
-    europe_central_asia_disputed <- eez_ter_360 %>%
-      dplyr::filter(region == "Europe & Central Asia") %>%
+    europe_central_asia_disputed <- europe_central_asia_rv$eezs %>%
       dplyr::filter(pol_type != "200NM")
 
     # Map
@@ -339,8 +312,13 @@ shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng= 0, lat = 40, zoom = 2) %>%
-      setMaxBounds(lng1 = -90, lat1 = -90, lng2 = 90, lat2 = 90)
+      setView(lng = europe_central_asia_rv$map_lng, 
+              lat = europe_central_asia_rv$map_lat, 
+              zoom = europe_central_asia_rv$map_zoom) %>%
+      setMaxBounds(lng1 = europe_central_asia_rv$map_lng - 90, 
+                   lat1 = -90, 
+                   lng2 = europe_central_asia_rv$map_lng + 90, 
+                   lat2 = 90)
     
   })
   
@@ -371,7 +349,10 @@ shinyServer(function(input, output, session) {
       europe_central_asia_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      europe_central_asia_nav_map_proxy %>% setView(lng= 0, lat = 40, zoom = 2)
+      europe_central_asia_nav_map_proxy %>% 
+        setView(lng = europe_central_asia_rv$map_lng, 
+                lat = europe_central_asia_rv$map_lat,
+                zoom = europe_central_asia_rv$map_zoom)
       
     }else{
       
@@ -401,29 +382,33 @@ shinyServer(function(input, output, session) {
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
-                                                direction = "auto")) 
-      
-      # %>%
-      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+                                                direction = "auto")) %>%
+        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
+                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
     }
     
   }) # close observe event
   
   ###------------------------------------------------------------------
-  ### Latin America & Caribbean ---------------------------------------------
+  ### Latin America & Caribbean ---------------------------------------
   ###------------------------------------------------------------------
+  
+  ### Data Container ----------
+  latin_america_caribbean_rv <- reactiveValues(eezs = eez_ter_360 %>%
+                                             dplyr::filter(region == "Latin America & Caribbean"),
+                                             map_lng = -70,
+                                             map_lat = -15,
+                                             map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
   
   output$latin_america_caribbean_nav_map <- renderLeaflet({
     
     # Extract Latin America & Caribbean EEZs
-    latin_america_caribbean_eezs <- eez_ter_360 %>%
-      dplyr::filter(region == "Latin America & Caribbean") %>%
+    latin_america_caribbean_eezs <- latin_america_caribbean_rv$eezs %>%
       dplyr::filter(pol_type == "200NM")
     
-    latin_america_caribbean_disputed <- eez_ter_360 %>%
-      dplyr::filter(region == "Latin America & Caribbean") %>%
+    latin_america_caribbean_disputed <- latin_america_caribbean_rv$eezs %>%
       dplyr::filter(pol_type != "200NM")
     
     # Map
@@ -468,8 +453,13 @@ shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng = -70, lat = -15, zoom = 2) %>%
-      setMaxBounds(lng1 = -160, lat1 = -90, lng2 = 20, lat2 = 90)
+      setView(lng = latin_america_caribbean_rv$map_lng, 
+              lat = latin_america_caribbean_rv$map_lat, 
+              zoom = latin_america_caribbean_rv$map_zoom) %>%
+      setMaxBounds(lng1 = latin_america_caribbean_rv$map_lng - 90, 
+                   lat1 = -90, 
+                   lng2 = latin_america_caribbean_rv$map_lng + 90, 
+                   lat2 = 90)
     
   })
   
@@ -500,16 +490,16 @@ shinyServer(function(input, output, session) {
       latin_america_caribbean_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      latin_america_caribbean_nav_map_proxy %>% setView(lng = -70, lat = -15, zoom = 2)
+      latin_america_caribbean_nav_map_proxy %>%
+        setView(lng = latin_america_caribbean_rv$map_lng, 
+                lat = latin_america_caribbean_rv$map_lat, 
+                zoom = latin_america_caribbean_rv$map_zoom)
       
     }else{
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
                              eez_ter_360$iso_ter == input$latin_america_caribbean_eez_select)
-      
-      # selected_eez_centroid <- st_centroid(selected_eez) %>%
-      #   st_coordinates()
       
       # Remove any previously highlighted polygon
       latin_america_caribbean_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -530,29 +520,33 @@ shinyServer(function(input, output, session) {
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
-                                                direction = "auto")) 
-      
-      # %>%
-      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+                                                direction = "auto")) %>%
+        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
+                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
     }
     
   }) # close observe event
   
   ###------------------------------------------------------------------
-  ### Middle East & North Africa ---------------------------------------------
+  ### Middle East & North Africa --------------------------------------
   ###------------------------------------------------------------------
+  
+  ### Data Container ----------
+  middle_east_north_africa_rv <- reactiveValues(eezs = eez_ter_360 %>%
+                                                  dplyr::filter(region == "Middle East & North Africa"),
+                                                map_lng = 30,
+                                                map_lat = 0,
+                                                map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
   
   output$middle_east_north_africa_nav_map <- renderLeaflet({
     
     # Extract Middle East & North Africa EEZs
-    middle_east_north_africa_eezs <- eez_ter_360 %>%
-      dplyr::filter(region == "Middle East & North Africa") %>%
+    middle_east_north_africa_eezs <- middle_east_north_africa_rv$eezs %>%
       dplyr::filter(pol_type == "200NM")
     
-    middle_east_north_africa_disputed <- eez_ter_360 %>%
-      dplyr::filter(region == "Middle East & North Africa") %>%
+    middle_east_north_africa_disputed <- middle_east_north_africa_rv$eezs %>%
       dplyr::filter(pol_type != "200NM")
     
     # Map
@@ -597,8 +591,13 @@ shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng = 30, lat = 0, zoom = 2) %>%
-      setMaxBounds(lng1 = -60, lat1 = -90, lng2 = 120, lat2 = 90)
+      setView(lng = middle_east_north_africa_rv$map_lng, 
+              lat = middle_east_north_africa_rv$map_lat, 
+              zoom = middle_east_north_africa_rv$map_zoom) %>%
+      setMaxBounds(lng1 = middle_east_north_africa_rv$map_lng - 90, 
+                   lat1 = -90, 
+                   lng2 = middle_east_north_africa_rv$map_lng + 90, 
+                   lat2 = 90)
     
   })
   
@@ -629,16 +628,16 @@ shinyServer(function(input, output, session) {
       middle_east_north_africa_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      middle_east_north_africa_nav_map_proxy %>% setView(lng = 30, lat = 0, zoom = 2)
+      middle_east_north_africa_nav_map_proxy %>%
+        setView(lng = middle_east_north_africa_rv$map_lng, 
+                lat = middle_east_north_africa_rv$map_lat, 
+                zoom = middle_east_north_africa_rv$map_zoom)
       
     }else{
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
                              eez_ter_360$iso_ter == input$middle_east_north_africa_eez_select)
-      
-      # selected_eez_centroid <- st_centroid(selected_eez) %>%
-      #   st_coordinates()
       
       # Remove any previously highlighted polygon
       middle_east_north_africa_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -659,29 +658,33 @@ shinyServer(function(input, output, session) {
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
-                                                direction = "auto")) 
-      
-      # %>%
-      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+                                                direction = "auto")) %>%
+        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
+                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
     }
     
   }) # close observe event
   
-  ###------------------------------------------------------------------
+  ###------------------------------------------------------------
   ### North America ---------------------------------------------
-  ###------------------------------------------------------------------
+  ###------------------------------------------------------------
+  
+  ### Data Container ----------
+  north_america_rv <- reactiveValues(eezs = eez_ter_360 %>%
+                                       dplyr::filter(region == "North America"),
+                                     map_lng = -90,
+                                     map_lat = 20,
+                                     map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
   
   output$north_america_nav_map <- renderLeaflet({
     
     # Extract North America EEZs
-    north_america_eezs <- eez_ter_360 %>%
-      dplyr::filter(region == "North America") %>%
+    north_america_eezs <- north_america_rv$eezs %>%
       dplyr::filter(pol_type == "200NM")
     
-    north_america_disputed <- eez_ter_360 %>%
-      dplyr::filter(region == "North America") %>%
+    north_america_disputed <- north_america_rv$eezs %>%
       dplyr::filter(pol_type != "200NM")
     
     # Map
@@ -726,8 +729,13 @@ shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng = -90, lat = 20, zoom = 2) %>%
-      setMaxBounds(lng1 = -180, lat1 = -90, lng2 = 0, lat2 = 90)
+      setView(lng = north_america_rv$map_lng, 
+              lat = north_america_rv$map_lat, 
+              zoom = north_america_rv$map_zoom) %>%
+      setMaxBounds(lng1 = north_america_rv$map_lng - 90, 
+                   lat1 = -90, 
+                   lng2 = north_america_rv$map_lng + 90, 
+                   lat2 = 90)
     
   })
   
@@ -758,16 +766,16 @@ shinyServer(function(input, output, session) {
       north_america_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      north_america_nav_map_proxy %>% setView(lng = -90, lat = 20, zoom = 2)
+      north_america_nav_map_proxy %>% 
+        setView(lng = north_america_rv$map_lng, 
+                lat = north_america_rv$map_lat, 
+                zoom = north_america_rv$map_zoom)
       
     }else{
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
                              eez_ter_360$iso_ter == input$north_america_eez_select)
-      
-      # selected_eez_centroid <- st_centroid(selected_eez) %>%
-      #   st_coordinates()
       
       # Remove any previously highlighted polygon
       north_america_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -788,25 +796,29 @@ shinyServer(function(input, output, session) {
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
-                                                direction = "auto")) 
-      
-      # %>%
-      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+                                                direction = "auto")) %>%
+        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
+                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
     }
     
   }) # close observe event
   
-  ###------------------------------------------------------------------
+  ###---------------------------------------------------------
   ### South Asia ---------------------------------------------
-  ###------------------------------------------------------------------
+  ###---------------------------------------------------------
+  
+  ### Data Container ----------
+  south_asia_rv <- reactiveValues(eezs = eez_ter_360 %>%
+                                       dplyr::filter(region == "South Asia"),
+                                     map_lng = 70,
+                                     map_lat = 0,
+                                     map_zoom = 3)
   
   ### Leaflet output: Navigational map for the region ---------
-  
   output$south_asia_nav_map <- renderLeaflet({
     
     # Extract South Asia EEZs
-    south_asia_eezs <- eez_ter_360 %>%
-      dplyr::filter(region == "South Asia") %>%
+    south_asia_eezs <- south_asia_rv$eezs %>%
       dplyr::filter(pol_type == "200NM")
     
     # south_asia_disputed <- eez_ter_360 %>%
@@ -855,8 +867,13 @@ shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng = 70, lat = 0, zoom = 3) %>%
-      setMaxBounds(lng1 = -20, lat1 = -90, lng2 = 160, lat2 = 90)
+      setView(lng = south_asia_rv$map_lng, 
+              lat = south_asia_rv$map_lat, 
+              zoom = south_asia_rv$map_zoom) %>%
+      setMaxBounds(lng1 = south_asia_rv$map_lng - 90, 
+                   lat1 = -90, 
+                   lng2 = south_asia_rv$map_lng + 90, 
+                   lat2 = 90)
     
   })
   
@@ -887,16 +904,16 @@ shinyServer(function(input, output, session) {
       south_asia_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      south_asia_nav_map_proxy %>% setView(lng = 70, lat = 0, zoom = 3) 
+      south_asia_nav_map_proxy %>% 
+        setView(lng = south_asia_rv$map_lng, 
+                lat = south_asia_rv$map_lat, 
+                zoom = south_asia_rv$map_zoom)
       
     }else{
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
                              eez_ter_360$iso_ter == input$south_asia_eez_select)
-      
-      # selected_eez_centroid <- st_centroid(selected_eez) %>%
-      #   st_coordinates()
       
       # Remove any previously highlighted polygon
       south_asia_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -917,29 +934,32 @@ shinyServer(function(input, output, session) {
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
-                                                direction = "auto")) 
-      
-      # %>%
-      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+                                                direction = "auto")) %>%
+        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
+                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
     }
     
   }) # close observe event
   
-  ###------------------------------------------------------------------
+  ###-----------------------------------------------------------------
   ### Sub-Saharan Africa ---------------------------------------------
-  ###------------------------------------------------------------------
+  ###-----------------------------------------------------------------
+  
+  ### Data Container ----------
+  sub_saharan_africa_rv <- reactiveValues(eezs = eez_ter_360 %>%
+                                            dplyr::filter(region == "Sub-Saharan Africa"),
+                                          map_lng = 10,
+                                          map_lat = -20,
+                                          map_zoom = 2)
   
   ### Leaflet output: Navigational map for the region ---------
-  
   output$sub_saharan_africa_nav_map <- renderLeaflet({
     
     # Extract Sub-Saharan Africa EEZs
-    sub_saharan_africa_eezs <- eez_ter_360 %>%
-      dplyr::filter(region == "Sub-Saharan Africa") %>%
+    sub_saharan_africa_eezs <- sub_saharan_africa_rv$eezs %>%
       dplyr::filter(pol_type == "200NM")
     
-    sub_saharan_africa_disputed <- eez_ter_360 %>%
-      dplyr::filter(region == "Sub-Saharan Africa") %>%
+    sub_saharan_africa_disputed <- sub_saharan_africa_rv$eezs %>%
       dplyr::filter(pol_type != "200NM")
     
     # Map
@@ -984,8 +1004,13 @@ shinyServer(function(input, output, session) {
                                               textsize = "13px",
                                               direction = "auto")
       ) %>%
-      setView(lng = 10, lat = -20, zoom = 2) %>%
-      setMaxBounds(lng1 = -85, lat1 = -90, lng2 = 95, lat2 = 90)
+      setView(lng = sub_saharan_africa_rv$map_lng, 
+              lat = sub_saharan_africa_rv$map_lat, 
+              zoom = sub_saharan_africa_rv$map_zoom) %>%
+      setMaxBounds(lng1 = sub_saharan_africa_rv$map_lng - 90, 
+                   lat1 = -90, 
+                   lng2 = sub_saharan_africa_rv$map_lng + 90, 
+                   lat2 = 90)
     
   })
   
@@ -1016,16 +1041,16 @@ shinyServer(function(input, output, session) {
       sub_saharan_africa_nav_map_proxy %>% clearGroup("highlighted_eez")  
       
       # Reset view to entire region
-      sub_saharan_africa_nav_map_proxy %>% setView(lng = 10, lat = -20, zoom = 2)
+      sub_saharan_africa_nav_map_proxy %>% 
+        setView(lng = sub_saharan_africa_rv$map_lng, 
+                lat = sub_saharan_africa_rv$map_lat, 
+                zoom = sub_saharan_africa_rv$map_zoom)
       
     }else{
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
                              eez_ter_360$iso_ter == input$sub_saharan_africa_eez_select)
-      
-      # selected_eez_centroid <- st_centroid(selected_eez) %>%
-      #   st_coordinates()
       
       # Remove any previously highlighted polygon
       sub_saharan_africa_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -1046,10 +1071,9 @@ shinyServer(function(input, output, session) {
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
-                                                direction = "auto")) 
-      
-      # %>%
-      # setView(lng=mean(selected_eez$x_1, na.rm = T), lat=mean(selected_eez$y_1, na.rm = T), zoom=3)
+                                                direction = "auto")) %>%
+        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
+                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
     }
     
   }) # close observe event

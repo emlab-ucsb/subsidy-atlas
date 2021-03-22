@@ -15,14 +15,16 @@ eez_ter_360 <- st_read("./data/world_eez_ter_neg360_360.gpkg")
 
 eez_region_360 <- st_read("./data/world_eez_regions_neg360_360.gpkg")
 
-### MOVE TO DATA PROCESSING SCRIPT EVENTUALLY
+### Aggregate EU Polygons
 eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
   
 eez_eu_360 <- eez_ter_360 %>%
   dplyr::filter((iso_ter %in% eu_countries) & pol_type == "200NM") %>%
   mutate(iso_sov = "EU") %>%
   group_by(iso_sov, pol_type) %>%
-  summarize(geom = st_union(geom)) %>%
+  summarize(x_cen = mean(x_cen, na.rm = T),
+            y_cen = mean(y_cen, na.rm = T),
+            geom = st_union(geom)) %>%
   ungroup() %>%
   mutate(region = "Europe & Central Asia",
          name_ter = "European Union",
@@ -34,7 +36,7 @@ eez_ter_360 <- eez_ter_360 %>%
   dplyr::filter(!(iso_ter %in% eu_countries) | pol_type != "200NM") %>%
   rbind(eez_eu_360)
 
-### REPLACE WITH ACTUAL DATA
+### REPLACE WITH ACTUAL CONNECTIVITY DATA EVENTUALLY
 ter_flag_connectivity_data <- eez_ter_360 %>%
   st_drop_geometry() %>%
   dplyr::filter(!(iso_ter %in% eu_countries)) %>%
