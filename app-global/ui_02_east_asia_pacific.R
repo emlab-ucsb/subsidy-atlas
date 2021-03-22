@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
+EastAsiaPacific = function(flag_state_choices)
   fluidPage(
             
             # Page style
@@ -51,11 +51,12 @@ EastAsiaPacific = function(east_asia_pacific_eezs, flag_state_choices)
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("east_asia_pacific_eez_select",
-                                                         label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", east_asia_pacific_eezs),
-                                                         selected = "Select a coastal state...",
-                                                         width = "100%")
+                                          uiOutput("east_asia_pacific_eez_select")
+                                          # selectizeInput("east_asia_pacific_eez_select",
+                                          #                label = tags$b("Select a coastal state:"),
+                                          #                choices = c("Select..." = "Select a coastal state...", east_asia_pacific_eezs),
+                                          #                selected = "Select a coastal state...",
+                                          #                width = "100%")
     
                                    )
                           )

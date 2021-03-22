@@ -45,8 +45,8 @@ ter_flag_connectivity_data <- eez_ter_360 %>%
 
 ### EEZ choices for each region
 # East Asia & Pacific
-east_asia_pacific_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
-names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+# east_asia_pacific_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+# names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
 
 # Europe & Central Asia
 europe_central_asia_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Europe & Central Asia"]

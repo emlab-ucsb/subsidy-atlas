@@ -113,12 +113,33 @@ shinyServer(function(input, output, session) {
   ### East Asia & Pacific ---------------------------------------------
   ###------------------------------------------------------------------
   
-  ### Data Container
+  ### Data Container -----------
   east_asia_pacific_rv <- reactiveValues(eezs = eez_ter_360 %>% 
                                            dplyr::filter(region == "East Asia & Pacific"),
                                          map_lng = 175,
                                          map_lat = -5,
                                          map_zoom = 1)
+  
+  ### UI output: Select coastal state widget --------
+  output$east_asia_pacific_eez_select <- renderUI({
+    
+    # Get regional data
+    region_data <- east_asia_pacific_rv$eezs %>%
+      st_drop_geometry() %>%
+      distinct(region, name_ter, iso_ter, name_sov, iso_sov) %>%
+      arrange(region, name_ter)
+    
+    # Unique choices
+    east_asia_pacific_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+    names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+    
+    selectizeInput("east_asia_pacific_eez_select",
+                   label = tags$b("Select a coastal state:"),
+                   choices = c("Select..." = "Select a coastal state...", east_asia_pacific_eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  })
   
   ### Leaflet output: Navigational map for the region ---------
   
@@ -192,7 +213,6 @@ shinyServer(function(input, output, session) {
     req(!is.null(input$east_asia_pacific_nav_map_shape_click$id))
     
     updateSelectizeInput(session, "east_asia_pacific_eez_select",
-                         choices = east_asia_pacific_eezs,
                          selected = input$east_asia_pacific_nav_map_shape_click$id)
     
   })
@@ -219,8 +239,8 @@ shinyServer(function(input, output, session) {
     }else{
       
       # Get code for selected EEZ
-      selected_eez <- subset(eez_ter_360, 
-                             eez_ter_360$iso_ter == input$east_asia_pacific_eez_select)
+      selected_eez <- subset(east_asia_pacific_rv$eezs, 
+                             east_asia_pacific_rv$eezs$iso_ter == input$east_asia_pacific_eez_select)
 
       # Remove any previously highlighted polygon
       east_asia_pacific_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -1078,6 +1098,8 @@ shinyServer(function(input, output, session) {
     
   }) # close observe event
   
+  ### -------------------------------------------------------------------------
+  ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
   
   
