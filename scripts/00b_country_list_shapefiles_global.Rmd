@@ -38,18 +38,23 @@ app_dir <- here::here("app-global/data/")
 
 # Marine Regions EEZs (v11) GeoPackage
 
+This datafile is freely available from https://www.marineregions.org/downloads.php. For this analysis, we're using the World EEZ v11 (2019-11-18, 127 MB) GeoPackage. Due to size, this file is not contained in this repository (but a simplified version is). 
+
 ## Simplify polygons
 
+This code block is commented out because the raw data is not contained in this repository due to size constraints.
+
 ```{r}
-# Load dataset
-# eez_path <- here::here("data/raw/World_EEZ_v11_20191118_gpkg/eez_v11.gpkg")
+# Path where the raw data file lives - NOT IN THIS REPOSITORY
+# eez_path <- "/Volumes/GoogleDrive/Shared\ drives/emlab/data/marine-regions-eez-v11/World_EEZ_v11_20191118_gpkg/eez_v11.gpkg"
+# 
 # eez_sf <- st_read(eez_path) %>%
 #   clean_names()
 # 
-# # Simplify polygons to make working with them easier and faster - we don't need high resolution
+# # Simplify polygons to make working with them easier and faster - we don't need high resolution here as we're just using these for visualization purposes
 # eez_sf_simple <- st_make_valid(rmapshaper::ms_simplify(eez_sf, keep_shapes = TRUE, keep = 0.01))
 # 
-# # Save simplified object so this chunk doesn't have to be run every time
+# # Save simplified object so we have a version of the data in this repository
 # st_write(eez_sf_simple, paste0(data_dir, "world_eez_v11_simple.gpkg"), delete_layer = T)
 
 ```
