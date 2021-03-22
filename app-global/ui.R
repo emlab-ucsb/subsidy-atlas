@@ -117,7 +117,7 @@ shinyUI(
                     sidebarMenu(id = "tabs",
                                 
                                 # Introduction/select a region
-                                menuItem("Select a region",
+                                menuItem("Select a Region",
                                          tabName = "selectregion",
                                          icon = NULL,
                                          selected = TRUE),
