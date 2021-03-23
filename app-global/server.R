@@ -286,135 +286,20 @@ shinyServer(function(input, output, session) {
   })
   
   ### Leaflet output: Connectivity map for selected state -----------
-
   output$east_asia_pacific_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
     req(input$east_asia_pacific_eez_select != "Select a coastal state...")
     
-    # Connectivity data for the whole region
-    region_connectivity_data <- subset(east_asia_pacific_rv$connect,
-                                       east_asia_pacific_rv$connect$flag_iso3 != "UNK")
-    
-    # Connectivity data for the selected coastal state
-    selected_eez_connectivity_data <- region_connectivity_data %>%
-      dplyr::filter(eez_ter_iso3 == input$east_asia_pacific_eez_select) %>%
-      arrange(admin)
+    # Make connectivity map
+    VesselOriginsMap(region_dat = east_asia_pacific_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$east_asia_pacific_eez_select,
+                     input_fill_variable = input$east_asia_pacific_vessel_origins_fill,
+                     input_fill_scale = input$east_asia_pacific_vessel_origins_fill_rescale,
+                     region_pal_light = region_pal_light,
+                     map_id = "east_asia_pacific_vessel_origins_map")
 
-    # EEZ polygons for selected coastal state
-    selected_eez <- east_asia_pacific_rv$eezs %>%
-      dplyr::filter(eez_ter_iso3 == input$east_asia_pacific_eez_select)
-    
-    # Country polygons for flag states
-    flag_states_for_selected_eez <- land_ter_360 %>%
-      dplyr::filter(admin_iso3 %in% selected_eez_connectivity_data$flag_iso3) %>%
-      rename(flag_iso3 = admin_iso3) %>% 
-      arrange(flag_iso3)
-    
-    # Connectivity stats by flag state (attached to land polygons)
-    flag_state_summary_dat <- selected_eez_connectivity_data %>%
-      st_drop_geometry() %>%
-      group_by(flag_iso3, eez_ter_iso3) %>%
-      summarize(n_vessels = sum(n_vessels, na.rm = T),
-                mean_length = mean(mean_length, na.rm = T),
-                mean_tonnage = mean(mean_tonnage, na.rm = T),
-                mean_engine_power = mean(mean_engine_power, na.rm = T),
-                fishing_hours = sum(fishing_hours, na.rm = T),
-                fishing_KWh = sum(fishing_KWh, na.rm = T),
-                bad_subs = sum(bad_subs, na.rm = T)) %>%
-      ungroup()
-      
-    flag_state_summary <- flag_states_for_selected_eez %>%
-      left_join(flag_state_summary_dat, by = "flag_iso3")
-    
-    flag_state_summary_text <- paste0(
-      "<b>", "Flag state: ", "</b>", flag_state_summary$admin,
-      "<br/>",
-      "<b>", "# of DW vessels: ", "</b>", flag_state_summary$n_vessels,
-      "</br>",
-      "<b>", "Avg. engine capacity (kW): ", "</b>", format(round(flag_state_summary$mean_engine_power, 0), big.mark = ","), 
-      "</br>",
-      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_hours, 0), big.mark = ","), 
-      "</br>",
-      "<b>", "DW effort in selected EEZ (kW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
-      lapply(htmltools::HTML)
-    
-    ### Interactive color palette ---
-    
-    # Set fill variable for map
-    fill_scale <- switch(input$east_asia_pacific_vessel_origins_fill,
-                         "n_vessels" = list("n_vessels", region_connectivity_data$n_vessels, flag_state_summary$n_vessels),
-                         "mean_engine_power" = list("mean_engine_power", region_connectivity_data$mean_engine_power, flag_state_summary$mean_engine_power),
-                         "mean_tonnage" = list("mean_tonnage", region_connectivity_data$mean_tonnage, flag_state_summary$mean_tonnage),
-                         "mean_length" = list("mean_length", region_connectivity_data$mean_length, flag_state_summary$mean_length),
-                         "fishing_hours" = list("fishing_hours", region_connectivity_data$fishing_hours, flag_state_summary$fishing_hours),
-                         "fishing_KWh" = list("fishing_KWh", region_connectivity_data$fishing_KWh, flag_state_summary$fishing_KWh))
-    
-    # Make color palette
-    domain <- switch(input$east_asia_pacific_vessel_origins_fill_rescale,
-                     "region" = 2,
-                     "selected_eez" = 3)
-    
-    pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
-    
-    ### Leaflet map ---
-    
-    leaflet('east_asia_pacific_vessel_origins_map', 
-            options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
-      
-      htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
-      
-      addProviderTiles("CartoDB.PositronNoLabels", group = "basemap") %>% 
-      
-      addPolygons(data = flag_state_summary,
-                  fillColor = ~pal(get(fill_scale[[1]])),
-                  fillOpacity = 0.8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = flag_state_summary_text,
-                  layerId = flag_state_summary$flag_iso3,
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>%
-      addPolygons(data = selected_eez, 
-                  fillColor = ~region_pal_light(region),
-                  fillOpacity = 0.8,
-                  color= "white",
-                  group = "eez",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = (paste0("<b>", selected_eez$geoname_new, "</b>") %>%
-                             lapply(htmltools::HTML)),
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>%
-      
-      addPolylines(data = selected_eez_connectivity_data,
-                   fillColor = "goldenrod",
-                   fillOpacity = 1,
-                   weight = 1,
-                   color = "darkgoldenrod",
-                   group = "lines") %>% 
-      
-      addLegend(pal = pal, 
-                values = fill_scale[[domain]], 
-                opacity=0.9, 
-                title = names(input$east_asia_pacific_vessel_origins_fill), 
-                position = "bottomleft" ) %>%
-      setView(lng= east_asia_pacific_rv$map_lng, 
-              lat = east_asia_pacific_rv$map_lat, 
-              zoom = east_asia_pacific_rv$map_zoom-1)
-    
   })
   
   ###------------------------------------------------------------------
@@ -435,6 +320,16 @@ shinyServer(function(input, output, session) {
     
     WidgetEEZSelect(region_dat = europe_central_asia_rv,
                     widget_id = "europe_central_asia_eez_select")
+    
+  })
+  
+  ### UI output: Selected coastal state stats -----------
+  output$europe_central_asia_eez_select_stats <- renderUI({
+    
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    
+    StateInfo(region_dat = europe_central_asia_rv,
+              input_selected_eez = input$europe_central_asia_eez_select)
     
   })
   
@@ -485,6 +380,23 @@ shinyServer(function(input, output, session) {
     
   }) 
   
+  ### Leaflet output: Connectivity map for selected state -----------
+  output$europe_central_asia_vessel_origins_map <- renderLeaflet({
+    
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    
+    # Make connectivity map
+    VesselOriginsMap(region_dat = europe_central_asia_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$europe_central_asia_eez_select,
+                     input_fill_variable = input$europe_central_asia_vessel_origins_fill,
+                     input_fill_scale = input$europe_central_asia_vessel_origins_fill_rescale,
+                     region_pal_light = region_pal_light,
+                     map_id = "europe_central_asia_vessel_origins_map")
+    
+  })
+  
   ###------------------------------------------------------------------
   ### Latin America & Caribbean ---------------------------------------
   ###------------------------------------------------------------------
@@ -503,6 +415,16 @@ shinyServer(function(input, output, session) {
     
     WidgetEEZSelect(region_dat = latin_america_caribbean_rv,
                     widget_id = "latin_america_caribbean_eez_select")
+    
+  })
+  
+  ### UI output: Selected coastal state stats -----------
+  output$latin_america_caribbean_eez_select_stats <- renderUI({
+    
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    
+    StateInfo(region_dat = latin_america_caribbean_rv,
+              input_selected_eez = input$latin_america_caribbean_eez_select)
     
   })
   
@@ -554,6 +476,23 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Leaflet output: Connectivity map for selected state -----------
+  output$latin_america_caribbean_vessel_origins_map <- renderLeaflet({
+    
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    
+    # Make connectivity map
+    VesselOriginsMap(region_dat = latin_america_caribbean_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$latin_america_caribbean_eez_select,
+                     input_fill_variable = input$latin_america_caribbean_vessel_origins_fill,
+                     input_fill_scale = input$latin_america_caribbean_vessel_origins_fill_rescale,
+                     region_pal_light = region_pal_light,
+                     map_id = "latin_america_caribbean_vessel_origins_map")
+    
+  })
+  
   ###------------------------------------------------------------------
   ### Middle East & North Africa --------------------------------------
   ###------------------------------------------------------------------
@@ -572,6 +511,16 @@ shinyServer(function(input, output, session) {
     
     WidgetEEZSelect(region_dat = middle_east_north_africa_rv,
                     widget_id = "middle_east_north_africa_eez_select")
+    
+  })
+  
+  ### UI output: Selected coastal state stats -----------
+  output$middle_east_north_africa_eez_select_stats <- renderUI({
+    
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    
+    StateInfo(region_dat = middle_east_north_africa_rv,
+              input_selected_eez = input$middle_east_north_africa_eez_select)
     
   })
   
@@ -623,6 +572,23 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Leaflet output: Connectivity map for selected state -----------
+  output$middle_east_north_africa_vessel_origins_map <- renderLeaflet({
+    
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    
+    # Make connectivity map
+    VesselOriginsMap(region_dat = middle_east_north_africa_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$middle_east_north_africa_eez_select,
+                     input_fill_variable = input$middle_east_north_africa_vessel_origins_fill,
+                     input_fill_scale = input$middle_east_north_africa_vessel_origins_fill_rescale,
+                     region_pal_light = region_pal_light,
+                     map_id = "middle_east_north_africa_vessel_origins_map")
+    
+  })
+  
   ###------------------------------------------------------------
   ### North America ---------------------------------------------
   ###------------------------------------------------------------
@@ -641,6 +607,16 @@ shinyServer(function(input, output, session) {
     
     WidgetEEZSelect(region_dat = north_america_rv,
                     widget_id = "north_america_eez_select")
+    
+  })
+  
+  ### UI output: Selected coastal state stats -----------
+  output$north_america_eez_select_stats <- renderUI({
+    
+    req(input$north_america_eez_select != "Select a coastal state...")
+    
+    StateInfo(region_dat = north_america_rv,
+              input_selected_eez = input$north_america_eez_select)
     
   })
   
@@ -692,6 +668,23 @@ shinyServer(function(input, output, session) {
     
   }) 
   
+  ### Leaflet output: Connectivity map for selected state -----------
+  output$north_america_vessel_origins_map <- renderLeaflet({
+    
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...")
+    
+    # Make connectivity map
+    VesselOriginsMap(region_dat = north_america_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$north_america_eez_select,
+                     input_fill_variable = input$north_america_vessel_origins_fill,
+                     input_fill_scale = input$north_america_vessel_origins_fill_rescale,
+                     region_pal_light = region_pal_light,
+                     map_id = "north_america_vessel_origins_map")
+    
+  })
+  
   ###---------------------------------------------------------
   ### South Asia ---------------------------------------------
   ###---------------------------------------------------------
@@ -711,6 +704,16 @@ shinyServer(function(input, output, session) {
     WidgetEEZSelect(region_dat = south_asia_rv,
                     widget_id = "south_asia_eez_select")
 
+  })
+  
+  ### UI output: Selected coastal state stats -----------
+  output$south_asia_eez_select_stats <- renderUI({
+    
+    req(input$south_asia_eez_select != "Select a coastal state...")
+    
+    StateInfo(region_dat = south_asia_rv,
+              input_selected_eez = input$south_asia_eez_select)
+    
   })
   
   ### Leaflet output: Navigational map for the region ---------
@@ -761,6 +764,23 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Leaflet output: Connectivity map for selected state -----------
+  output$south_asia_vessel_origins_map <- renderLeaflet({
+    
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...")
+    
+    # Make connectivity map
+    VesselOriginsMap(region_dat = south_asia_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$south_asia_eez_select,
+                     input_fill_variable = input$south_asia_vessel_origins_fill,
+                     input_fill_scale = input$south_asia_vessel_origins_fill_rescale,
+                     region_pal_light = region_pal_light,
+                     map_id = "south_asia_vessel_origins_map")
+    
+  })
+  
   ###-----------------------------------------------------------------
   ### Sub-Saharan Africa ---------------------------------------------
   ###-----------------------------------------------------------------
@@ -779,6 +799,16 @@ shinyServer(function(input, output, session) {
     
     WidgetEEZSelect(region_dat = sub_saharan_africa_rv,
                     widget_id = "sub_saharan_africa_eez_select")
+    
+  })
+  
+  ### UI output: Selected coastal state stats -----------
+  output$sub_saharan_africa_eez_select_stats <- renderUI({
+    
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    
+    StateInfo(region_dat = sub_saharan_africa_rv,
+              input_selected_eez = input$sub_saharan_africa_eez_select)
     
   })
   
@@ -821,150 +851,33 @@ shinyServer(function(input, output, session) {
     }else{
       
       # Highlight and center EEZ(s) corresponding to selected coastal state
-      NavMapHighlight(region_dat = south_asia_rv,
+      NavMapHighlight(region_dat = sub_saharan_africa_rv,
                       region_pal_light = region_pal_light,
-                      proxy_map = south_asia_nav_map_proxy,
-                      input_selected_eez = input$south_asia_eez_select)
+                      proxy_map = sub_saharan_africa_nav_map_proxy,
+                      input_selected_eez = input$sub_saharan_africa_eez_select)
     }
     
   })
   
-  ### -------------------------------------------------------------------------
-  ### -------------------------------------------------------------------------
-  ### -------------------------------------------------------------------------
-  
-  
-  ### -----
-  ### UI output: Links and summary statistics for the selected ACP Africa state
-  ### -----
-  
-  output$africa_country_profile <- renderUI({
+  ### Leaflet output: Connectivity map for selected state -----------
+  output$sub_saharan_africa_vessel_origins_map <- renderLeaflet({
     
-    req(input$africa_eez_select != "Select a coastal state...")
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
     
-    ### Data wrangling
-    # Filter connectivity data
-    connectivity_data_filter_africa <- connectivity_data %>% # load this in up above
-      dplyr::filter(eez_territory_iso3 == input$africa_eez_select) %>%
-      mutate(eez_nam = str_replace(eez_nam, " \\(.*\\)", ""))
-    
-    # Distant water fishing summary
-    total_stats_africa <- connectivity_data_filter_africa %>%
-      as.data.frame() %>%
-      group_by(eez_territory_iso3, eez_nam) %>%
-      summarize(vessels = sum(vessels, na.rm = T),
-                capacity = sum(capacity, na.rm = T),
-                fishing_h = sum(fishing_h, na.rm = T),
-                fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
-      arrange(eez_territory_iso3)
-    
-
-    # Filter and format Country profile data
-    ACP_codes_links <- ACP_codes %>%
-      dplyr::filter(territory_iso3 == input$africa_eez_select)
-    
-    ACP_fao_membership <- ACP_codes_links %>%
-      separate_rows(fao_memberships, sep = ",")
-    
-    RFMO_links_eez <- RFMO_links %>%
-      dplyr::filter(rfmo_abbr %in% ACP_fao_membership$fao_memberships)
-    
-    ### Make HTML sections with links for each type of information
-    # Fisheries management agency
-    fisheries_mgmt_agency <- ifelse(
-      length(unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)])) > 0,
-      # Create link if we have one
-      paste0("<a href='", unique(ACP_codes_links$fishery_org_link[!is.na(ACP_codes_links$fishery_org_link)]), "' target='_blank'>", ACP_codes_links$fishery_org_eng, "</a>"),
-      # Otherwise just paste name of the agency
-      paste0(ACP_codes_links$fishery_org_eng)
-    )
-    
-    # FAO country profile
-    country_profiles <- paste0(
-      # FAO
-      "<a href='", unique(ACP_codes_links$fao_country_profile[!is.na(ACP_codes_links$fao_country_profile)]), "' target='_blank'>", "FAO", "</a>", " | ",
-      # World Bank
-      ifelse(
-        length(unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)])) > 0,
-        paste0("<a href='", unique(ACP_codes_links$world_bank_profile[!is.na(ACP_codes_links$world_bank_profile)]), "' target='_blank'>", "World Bank", "</a>"),
-        "World Bank"
-      ), " | ",
-      # UN
-      ifelse(
-        length(unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)])) > 0,
-        paste0("<a href='", unique(ACP_codes_links$UN_profile[!is.na(ACP_codes_links$UN_profile)]), "' target='_blank'>", "United Nations", "</a>"),
-        "United Nations"
-      )
-    ) # close paste
-    
-    
-    # Treaties and Conventions
-    treaties_conventions <- paste0(
-      "<a href= '",
-      unique(ACP_codes_links$treaties_conventions[!is.na(ACP_codes_links$treaties_conventions)]),
-      "' target='_blank'>",
-      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$treaties_conventions)]),
-      "</a>",
-      collapse = " | "
-    )
-    
-    # Foreign access agreements by EEZ sector
-    foreign_access_agreements <- paste0(
-      "<a href= '", 
-      unique(ACP_codes_links$internal_fishing_access_agreements[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
-      "' target='_blank'>", 
-      unique(ACP_codes_links$territory[!is.na(ACP_codes_links$internal_fishing_access_agreements)]), 
-      "</a>", 
-      collapse = " | ")
-    
-    # FAO Regional Fisheries Body Memberships
-    regional_body_memberships <- paste0(
-      "<a href= '", 
-      unique(RFMO_links_eez$link[!is.na(RFMO_links_eez$link)]),
-      "' target='_blank'>",
-      unique(RFMO_links_eez$rfmo_name[!is.na(RFMO_links_eez$link)]),
-      "</a>",
-      collapse = " | ")
-    
-    ### Combine into country profile/summary of DW fishing
-    EEZ_info <- paste0("<h3 style = 'margin-top: 0px;'>", names(africa_eez_choices[africa_eez_choices == input$africa_eez_select]), "</h3>",
-                       
-                       "Fisheries management agency:  ", 
-                       fisheries_mgmt_agency,
-                       "<br>",
-                       
-                       "Country profile: ",
-                       country_profiles,
-                       "<br>",
-                       
-                       "Treaties and conventions: ",
-                       treaties_conventions,
-                       "<br>",
-                       
-                       "Foreign access agreements: ",
-                       foreign_access_agreements,
-                       "<br>",
-                       
-                       "FAO Regional Fisheries Body Memberships: ",
-                       regional_body_memberships,
-                       "<br>",
-                       
-                       "<hr>",
-                       "<b>", "AIS-observed distant water fishing in the ", total_stats_africa$eez_nam, " (2018)", "</b>",
-                       "<br>",
-                       "Vessels: ", format(round(total_stats_africa$vessels, 0), big.mark = ","),
-                       "<br>",
-                       "Total engine capacity (KW): ", format(round(total_stats_africa$capacity, 0), big.mark = ","),
-                       "<br>",
-                       "Fishing effort (hours): ", format(round(total_stats_africa$fishing_h, 0), big.mark = ","),
-                       "<br>",
-                       "Fishing effort (KWh): ", format(round(total_stats_africa$fishing_KWh, 0), big.mark = ",")) %>%
-      lapply(htmltools::HTML)
-    
-    # Return
-    EEZ_info
-    
+    # Make connectivity map
+    VesselOriginsMap(region_dat = sub_saharan_africa_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$sub_saharan_africa_eez_select,
+                     input_fill_variable = input$sub_saharan_africa_vessel_origins_fill,
+                     input_fill_scale = input$sub_saharan_africa_vessel_origins_fill_rescale,
+                     region_pal_light = region_pal_light,
+                     map_id = "sub_saharan_africa_vessel_origins_map")
   })
+  
+  ### -------------------------------------------------------------------------
+  ### -------------------------------------------------------------------------
+  ### -------------------------------------------------------------------------
   
   ### -----
   ### Update tab and selectInput: Register clicks on Africa connectivity map and change tab ans flag state input widgets accordingly

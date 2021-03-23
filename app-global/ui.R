@@ -207,27 +207,27 @@ shinyUI(
        
        # Latin America & Caribbean
        tabItem(tabName = "latin-america-caribbean",
-               LatinAmericaCaribbean(flag_state_choices)
+               LatinAmericaCaribbean(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
        ),
        
        # Middle East & North Africa
        tabItem(tabName = "middle-east-north-africa",
-               MiddleEastNorthAfrica(flag_state_choices)
+               MiddleEastNorthAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
        ),
        
        # North America
        tabItem(tabName = "north-america",
-               NorthAmerica(flag_state_choices)
+               NorthAmerica(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
        ),
        
        # South Asisa
        tabItem(tabName = "south-asia",
-               SouthAsia(flag_state_choices)
+               SouthAsia(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
        ),
        
        # South Asisa
        tabItem(tabName = "sub-saharan-africa",
-               SubSaharanAfrica(flag_state_choices)
+               SubSaharanAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
        )
        
      ) # close tabItems
