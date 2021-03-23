@@ -19,11 +19,11 @@ system('fc-cache -f ~/.fonts')
 ### Load packages -----
 
 library(shiny)
-library(shinyjs)
 library(shinydashboard)
 library(leaflet)
 library(shinyBS)
 library(shinyjs)
+library(shinyalert)
 
 library(tidyverse)
 library(sf)
@@ -45,7 +45,6 @@ library(scales) # scales for plotting
 library(ggpubr) # plot arranging
 library(gridExtra)
 library(grid)
-library(countrycode)
 
 # Silence new dplyr grouping messages
 options(dplyr.summarise.inform=F)
@@ -59,6 +58,13 @@ source("00_initialize_app.R")
 sapply(list.files(
   pattern = "^ui_.*\\.R$",
   path = ".",
+  full.names = TRUE
+),
+source)
+
+# The server functions are stored in separate files - Source all .R files in the functions directory:  
+sapply(list.files(
+  path = "./functions/",
   full.names = TRUE
 ),
 source)
@@ -177,6 +183,9 @@ shinyUI(
      
      # Allow js functionality
      useShinyjs(),
+     
+     # Allow for popups
+     useShinyalert(),
      
      # Tabs
      tabItems(
