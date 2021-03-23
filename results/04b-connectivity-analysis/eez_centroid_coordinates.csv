@@ -165,7 +165,7 @@ eez_id,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regi
 8450,200NM,Kiribati Exclusive Economic Zone (Phoenix Islands),KIR,Kiribati,KIR,Kiribati,East Asia & Pacific,187.54593758546656,-3.7319196595532547
 8451,200NM,Howland and Baker Islands Exclusive Economic Zone,UMI,United States Minor Outlying Islands (the),USA,United States,East Asia & Pacific,183.27297486665358,0.790716133574159
 8452,200NM,Johnston Atoll Exclusive Economic Zone,UMI,United States Minor Outlying Islands (the),USA,United States,East Asia & Pacific,190.49390622925992,16.75119877089934
-8453,200NM,United States Exclusive Economic Zone (Hawaii),USA,United States,USA,United States,North America,-166.4059473798099,24.040743285892102
+8453,200NM,United States Exclusive Economic Zone (Hawaii),USA,United States,USA,United States,North America,-151.06924620317741,24.040743285892095
 8454,200NM,Wallis and Futuna Exclusive Economic Zone,WLF,Wallis & Futuna,FRA,France,East Asia & Pacific,183.05094709645786,-12.797045368491775
 8455,200NM,New Zealand Exclusive Economic Zone,NZL,New Zealand,NZL,New Zealand,East Asia & Pacific,175.14772028882575,-42.76611696733245
 8456,200NM,United States Exclusive Economic Zone,USA,United States,USA,United States,North America,-95.82234964782506,34.75472963699378
@@ -174,7 +174,7 @@ eez_id,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regi
 8460,200NM,Guyanese Exclusive Economic Zone,GUY,Guyana,GUY,Guyana,Latin America & Caribbean,-57.641609425451186,8.612451240190266
 8461,200NM,Surinamese Exclusive Economic Zone,SUR,Suriname,SUR,Suriname,Latin America & Caribbean,-54.773628009360976,7.591084839684024
 8462,200NM,French Guiana Exclusive Economic Zone,GUF,French Guiana,FRA,France,Latin America & Caribbean,-51.75509635961726,6.691084421183808
-8463,200NM,United States Exclusive Economic Zone (Alaska),USA,United States,USA,United States,North America,-163.93359264265916,59.0119914676053
+8463,200NM,United States Exclusive Economic Zone (Alaska),USA,United States,USA,United States,North America,-119.98458566535594,59.011991467605306
 8464,200NM,Brazilian Exclusive Economic Zone,BRA,Brazil,BRA,Brazil,Latin America & Caribbean,-39.457078502593944,-11.09170578649266
 8465,200NM,Chilean Exclusive Economic Zone,CHL,Chile,CHL,Chile,Latin America & Caribbean,-75.62638162366174,-40.99005994085683
 8466,200NM,Argentinean Exclusive Economic Zone,ARG,Argentina,ARG,Argentina,Latin America & Caribbean,-62.15844950417256,-47.08218175852057
@@ -308,7 +308,7 @@ eez_id,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regi
 48977,Joint regime,Joint regime area Sweden / Norway,NOR,Norway,NOR,Norway,Europe & Central Asia,10.5009537,58.80998146666667
 48977,Joint regime,Joint regime area Sweden / Norway,SWE,Sweden,SWE,Sweden,Europe & Central Asia,10.5009537,58.80998146666667
 48978,Joint regime,Joint regime area United States / Russia,RUS,Russia,RUS,Russia,Europe & Central Asia,-17.40000398457593,61.19939819052244
-48978,Joint regime,Joint regime area United States / Russia,USA,United States,USA,United States,North America,-178.66254161371924,61.199398190522466
+48978,Joint regime,Joint regime area United States / Russia,USA,United States,USA,United States,North America,-17.40000398457593,61.19939819052244
 48980,200NM,Northern Mariana Exclusive Economic Zone,MNP,Northern Mariana Islands,USA,United States,East Asia & Pacific,145.73899366445804,18.286166791131954
 48982,Overlapping claim,Overlapping claim: Puerto Rico / Dominican Republic,DOM,Dominican Republic,DOM,Dominican Republic,Latin America & Caribbean,-66.8414374563535,20.893701322548207
 48982,Overlapping claim,Overlapping claim: Puerto Rico / Dominican Republic,PRI,Puerto Rico,USA,United States,Latin America & Caribbean,-66.8414374563535,20.893701322548207
