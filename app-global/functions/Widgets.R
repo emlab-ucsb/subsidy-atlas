@@ -13,8 +13,8 @@ WidgetEEZSelect <- function(region_dat,
   names(eezs) <- region_eez_data$eez_ter_name
   
   selectizeInput(widget_id,
-                 label = tags$b("Select a coastal state:"),
-                 choices = c("Select..." = "Select a coastal state...", eezs),
+                 label = NULL,
+                 choices = c("Select a coastal state..." = "Select a coastal state...", eezs),
                  selected = "Select a coastal state...",
                  width = "100%")
   

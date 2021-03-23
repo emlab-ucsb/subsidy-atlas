@@ -202,7 +202,7 @@ shinyUI(
        
        # Europe & Central Asia
        tabItem(tabName = "europe-central-asia",
-               EuropeCentralAsia(flag_state_choices)
+               EuropeCentralAsia(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
        ),
        
        # Latin America & Caribbean

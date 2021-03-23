@@ -229,6 +229,16 @@ shinyServer(function(input, output, session) {
 
   })
   
+  ### UI output: Selected coastal state stats -----------
+  output$east_asia_pacific_eez_select_stats <- renderUI({
+    
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    
+    StateInfo(region_dat = east_asia_pacific_rv,
+              input_selected_eez = input$east_asia_pacific_eez_select)
+    
+  })
+  
   ### Leaflet output: Navigational map for the region ---------
   output$east_asia_pacific_nav_map <- renderLeaflet({
     
@@ -956,198 +966,26 @@ shinyServer(function(input, output, session) {
     
   })
   
-  
-  ### -----
-  ### Leaflet output: Connectivity map for selected ACP Africa state
-  ### -----
-  
-  output$africa_connection_map <- renderLeaflet({
-    
-    # Require coastal state selection
-    req(input$africa_eez_select != "Select a coastal state...")
-    
-    # Connectivity data for the entire region
-    connectivity_data_region <- connectivity_data %>% # load this in up above
-      dplyr::filter(region == "Africa")
-
-    ### Selected ACP coastal state ---
-    
-    # Selected Africa ACP coastal state
-    selected_eez <- africa_eez_map %>% 
-      dplyr::filter(iso_ter == input$africa_eez_select) %>%
-      rename(territory_iso3 = iso_ter)
-    
-    # Connectivity data for the EEZ of the selected ACP coastal state
-    connectivity_data_for_selected_eez <- connectivity_data_region %>% # load this in up above
-      dplyr::filter(eez_territory_iso3 == input$africa_eez_select) %>% 
-      arrange(flag)%>%
-      dplyr::filter(flag != "UNK")
-    
-    ### Polygons of flag states --- 
-    
-    # Get polygons of flag states
-    flag_states_for_selected_eez <- africa_land_map %>%
-      dplyr::filter(admin_iso3 %in% connectivity_data_for_selected_eez$flag) %>%
-      rename(flag = admin_iso3) %>% 
-      arrange(flag)
-
-    # Get polygons of flag state boundaries merged with EEZ boundaries
-    flag_states_combined_for_selected_eez <- africa_land_eez_map %>% 
-      dplyr::filter(iso3 %in% connectivity_data_for_selected_eez$flag) %>% 
-      rename(flag = iso3) %>% 
-      arrange(flag)
-    
-    
-    # if(all(ifelse(unique(flag_states_for_selected_eez$flag) == unique(flag_states_combined_for_selected_eez$flag), TRUE, FALSE)) == F){
-    #   warning("Check flag states")
-    #   
-    # }
-      
-    # Connectivity stats with no geometry
-    connectivity_data_no_geometry <- connectivity_data_for_selected_eez %>%
-      group_by(eez_territory_iso3, flag) %>%
-      summarize(vessels = sum(vessels, na.rm = T),
-                capacity = sum(capacity, na.rm = T),
-                fishing_h = sum(fishing_h, na.rm = T),
-                fishing_KWh = sum(fishing_KWh, na.rm = T))
-    st_geometry(connectivity_data_no_geometry) <- NULL
-    
-    #  Create summary polygons with hover text for flag states
-    flag_state_summary <- flag_states_for_selected_eez %>% 
-      left_join(connectivity_data_no_geometry, by = "flag")
-    
-    flag_state_summary_text <- paste0(
-      "<b>", "Flag state: ", "</b>", flag_state_summary$display_name,
-      "<br/>",
-      "<b>", "# of DW vessels: ", "</b>", flag_state_summary$vessels,
-      "</br>",
-      "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary$capacity, 0), big.mark = ","), 
-      "</br>",
-      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_h, 0), big.mark = ","), 
-      "</br>",
-      "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
-      lapply(htmltools::HTML)
-    
-    #  Create summary polygons with hover text for flag states merged with EEZ boundaries
-    flag_state_summary_combined <- flag_states_combined_for_selected_eez %>% 
-      left_join(connectivity_data_no_geometry, by = "flag")
-    
-    flag_state_summary_combined_text <- paste0(
-      "<b>", "Flag state: ", "</b>", flag_state_summary_combined$display_name,
-      "<br/>",
-      "<b>", "# of DW vessels: ", "</b>", flag_state_summary_combined$vessels,
-      "</br>",
-      "<b>", "Total capacity of DW vessels: ", "</b>", format(round(flag_state_summary_combined$capacity, 0), big.mark = ","), 
-      "</br>",
-      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary_combined$fishing_h, 0), big.mark = ","), 
-      "</br>",
-      "<b>", "DW effort in selected EEZ (KW hours): ", "</b>", format(round(flag_state_summary_combined$fishing_KWh, 0), big.mark = ",")) %>% 
-      lapply(htmltools::HTML)
-    
-    ### Interactive color palette ---
-    
-    # Set fill variable for map
-    fill_scale <- switch(input$africa_connection_fill,
-                         "# of Different Vessels" = list("vessels", connectivity_data_region$vessels, flag_state_summary$vessels),
-                         "Total Engine Capacity (KW)" = list("capacity", connectivity_data_region$capacity, flag_state_summary$capacity),
-                         "Total Fishing Effort (hours)" = list("fishing_h", connectivity_data_region$fishing_h, flag_state_summary$fishing_h),
-                         "Total Fishing Effort (KWh)" = list("fishing_KWh", connectivity_data_region$fishing_KWh, flag_state_summary$fishing_KWh))
-    
-    # Make color palette
-    domain <- switch(input$africa_connection_fill_rescale,
-                     "All distant water fishing in the region (default)" = 2,
-                     "Selected EEZ only" = 3)
-    
-    pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
-    
-    
-    ### Leaflet map ---
-    
-    leaflet('africa_connection_map', options = leafletOptions(minZoom = 2, zoomControl = FALSE)) %>% 
-      htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
-      addProviderTiles("CartoDB.DarkMatterNoLabels", group = "basemap") %>% 
-      
-      addPolygons(data = flag_state_summary_combined,
-                  fillColor = ~pal(get(fill_scale[[1]])),
-                  fillOpacity = 0.3,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = FALSE),
-                  label = flag_state_summary_combined_text,
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>%
-      
-      addPolygons(data = flag_state_summary,
-                  fillColor = ~pal(get(fill_scale[[1]])),
-                  fillOpacity = 0.8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = flag_state_summary_text,
-                  layerId = flag_state_summary$flag,
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>%
-      addPolygons(data = selected_eez, 
-                  fillColor = ~region_pal_light(region),
-                  fillOpacity = 0.8,
-                  color= "white",
-                  group = "eez",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = (paste0("<b>", selected_eez$geoname, "</b>") %>%
-                             lapply(htmltools::HTML)),
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")) %>%
-      
-      addPolylines(data = connectivity_data_for_selected_eez,
-                   fillColor = "goldenrod",
-                   fillOpacity = 1,
-                   weight = 1,
-                   color = "darkgoldenrod",
-                   group = "lines") %>% 
-      
-      addLegend(pal = pal, values = fill_scale[[domain]], 
-                opacity=0.9, title = input$africa_connection_fill, position = "bottomleft" ) %>%
-      setView(lng= 15, lat = 0, zoom = 2)
-    
-})
-  
   ### -----
   ### Update tab and selectInput: Register clicks on Africa connectivity map and change tab ans flag state input widgets accordingly
   ### -----
   
-  ### Register user clicks on connectivity map - change select input from widget
-  observeEvent(input$africa_connection_map_shape_click, {
-    
-    req(input$africa_connection_map_shape_click$id != input$africa_eez_select)
-    
-    updateTabItems(session, "africa_tabs", "Distant water fishing effort")
-    
-    updateSelectizeInput(session, "africa_flag_state_select_effort",
-                         selected = input$africa_connection_map_shape_click$id
-    )
-    
-    updateSelectizeInput(session, "africa_flag_state_select_subsidy",
-                         selected = input$africa_connection_map_shape_click$id
-    )
-    
-  })
+  # ### Register user clicks on connectivity map - change select input from widget
+  # observeEvent(input$africa_connection_map_shape_click, {
+  #   
+  #   req(input$africa_connection_map_shape_click$id != input$africa_eez_select)
+  #   
+  #   updateTabItems(session, "africa_tabs", "Distant water fishing effort")
+  #   
+  #   updateSelectizeInput(session, "africa_flag_state_select_effort",
+  #                        selected = input$africa_connection_map_shape_click$id
+  #   )
+  #   
+  #   updateSelectizeInput(session, "africa_flag_state_select_subsidy",
+  #                        selected = input$africa_connection_map_shape_click$id
+  #   )
+  #   
+  # })
   
   ### -----
   ### Reactive DF: Load 0.1 x 0.1 degree effort/subsidy data for selected ACP Africa state
