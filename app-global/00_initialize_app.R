@@ -9,68 +9,65 @@
 ### This script loads data needed for the app and performs some final data wrangling
 ### --------------------------------------------------------------------
 
+# Should the EEZs of EU countries be visualized as a unit
+merge_EU <- FALSE
+
+eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+
 ### Load GeoPackages 
-# Note the first contains duplicate polygons for disputed and joint areas attributed to each territory individually - additionally, all non-contiguous EEZ regions have been unionized for each territory. 
+
+# 1) EEZ Polygons - Merged by territory
+# Note this file contains duplicate polygons for disputed and joint areas attributed to each territory individually - additionally, all non-contiguous EEZ regions have been unionized for each territory. Also contains a merged EU polygon. 
 eez_ter_360 <- st_read("./data/world_eez_ter_neg360_360.gpkg")
 
+# 2) EEZ Polygons - Merged by region
 eez_region_360 <- st_read("./data/world_eez_regions_neg360_360.gpkg")
 
-### Aggregate EU Polygons
-eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+# 3) Country Polygons
+# Contains a merged EU polygon. 
+land_ter_360 <- st_read("./data/ne_50m_admin_neg360_360.gpkg")
+
+# 4) EEZ / Flag State Connectivity Lines
+eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines.gpkg")
+
+### Deal with the EU
+if(merge_EU){
   
-eez_eu_360 <- eez_ter_360 %>%
-  dplyr::filter((iso_ter %in% eu_countries) & pol_type == "200NM") %>%
-  mutate(iso_sov = "EU") %>%
-  group_by(iso_sov, pol_type) %>%
-  summarize(x_cen = mean(x_cen, na.rm = T),
-            y_cen = mean(y_cen, na.rm = T),
-            geom = st_union(geom)) %>%
-  ungroup() %>%
-  mutate(region = "Europe & Central Asia",
-         name_ter = "European Union",
-         iso_ter = "EU",
-         name_sov = "European Union",
-         geoname_new = "Exclusive Economic Zone: European Union")
+  eez_ter_360 <- eez_ter_360 %>%
+    dplyr::filter(!(eez_ter_iso3 %in% eu_countries) | pol_type != "200NM")
 
-eez_ter_360 <- eez_ter_360 %>%
-  dplyr::filter(!(iso_ter %in% eu_countries) | pol_type != "200NM") %>%
-  rbind(eez_eu_360)
+}else{
+  
+  eez_ter_360 <- eez_ter_360 %>%
+    dplyr::filter(eez_ter_iso3 != "EU")
+  
+}
 
-### REPLACE WITH ACTUAL CONNECTIVITY DATA EVENTUALLY
-ter_flag_connectivity_data <- eez_ter_360 %>%
-  st_drop_geometry() %>%
-  dplyr::filter(!(iso_ter %in% eu_countries)) %>%
-  distinct(region, name_ter, iso_ter, name_sov, iso_sov) %>%
-  arrange(region, name_ter)
+### Widget choices that are shared across all pages -----
+vessel_origins_fill_choices <- c("# of different vessels" = "n_vessels", 
+                                   "Avg. engine capacity (kW)" = "mean_engine_power",
+                                   "Avg. tonnage (gt)" = "mean_tonnage",
+                                   "Avg. length (m)" = "mean_length",
+                                   "Total fishing effort (hours)" = "fishing_hours",
+                                   "Total fishing effort (kW hours)" = "fishing_KWh")
 
-### EEZ choices for each region
-# East Asia & Pacific
-# east_asia_pacific_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
-# names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+vessel_origins_fill_scale <- c("All distant water fishing in the region (default)" = "region",
+                               "Selected coastal state only" = "selected_eez")
 
-# Europe & Central Asia
-europe_central_asia_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Europe & Central Asia"]
-names(europe_central_asia_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Europe & Central Asia"]
-
-# Latin America & Caribbean
-latin_america_caribbean_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Latin America & Caribbean"]
-names(latin_america_caribbean_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Latin America & Caribbean"]
-
-# Middle East & North Africa
-middle_east_north_africa_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Middle East & North Africa"]
-names(middle_east_north_africa_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Middle East & North Africa"]
-
-# North America
-north_america_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "North America"]
-names(north_america_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "North America"]
-
-# South Asia
-south_asia_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "South Asia"]
-names(south_asia_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "South Asia"]
-
-# Sub-Saharan Africa
-sub_saharan_africa_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "Sub-Saharan Africa"]
-names(sub_saharan_africa_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "Sub-Saharan Africa"]
+### Plot Themes ---------
+eezmaptheme <- theme_minimal()+
+  theme(strip.background = element_rect(fill = "#262626", color = NA),
+        plot.background = element_rect(fill = "#262626", color = NA),
+        panel.background = element_rect(fill = "#262626", color = NA),
+        panel.grid.major = element_line(colour = "#262626"),
+        text = element_text(color = "white"),
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_rect(color = "#262626", fill = NA),
+        plot.margin = margin(t = 0.2, r = 0.1, b = 0, l = 0, unit = "cm"),
+        legend.margin = margin(t = 0.1, r = 0, b = 0.2, l = 0, unit = "cm"),
+        legend.position = "bottom",
+        legend.box = "horizontal",
+        axis.text = element_text(color = "white"))
 
 ### Data -----
 
@@ -166,35 +163,9 @@ pacific_land_eez_map <- land_eez_map %>%
   st_crop(c(xmin=0, xmax=360, ymin=-90, ymax=90)) %>%
   st_collection_extract(type = c("POLYGON"))
 
-### Widget choice values that depend on a dataset -----
-
-# Define EEZ and flag state choices
-africa_eez_choices <- unique(ACP_codes$territory_iso3[ACP_codes$region == "Africa" & !is.na(ACP_codes$mrgid)])
-names(africa_eez_choices) <- unique(ACP_codes$flag[ACP_codes$region == "Africa" & !is.na(ACP_codes$mrgid)])
-
-caribbean_eez_choices <- unique(ACP_codes$territory_iso3[ACP_codes$region == "Caribbean" & !is.na(ACP_codes$mrgid)])  
-names(caribbean_eez_choices) <- unique(ACP_codes$flag[ACP_codes$region == "Caribbean" & !is.na(ACP_codes$mrgid)])
-
-pacific_eez_choices <- unique(ACP_codes$territory_iso3[ACP_codes$region == "Pacific" & !is.na(ACP_codes$mrgid)])
-names(pacific_eez_choices) <- unique(ACP_codes$flag[ACP_codes$region == "Pacific" & !is.na(ACP_codes$mrgid)])
-
 flag_state_choices <- unique(connectivity_data$flag)
 names(flag_state_choices) <- countrycode(flag_state_choices, "iso3c", "country.name")
 names(flag_state_choices)[is.na(names(flag_state_choices))] <- "Unknown flag"
 
 ### Themes -----
 
-# Standard map ggplot theme
-eezmaptheme <- theme_minimal()+
-  theme(strip.background = element_rect(fill = "#262626", color = NA),
-        plot.background = element_rect(fill = "#262626", color = NA),
-        panel.background = element_rect(fill = "#262626", color = NA),
-        panel.grid.major = element_line(colour = "#262626"),
-        text = element_text(color = "white"),
-        plot.title = element_text(hjust = 0.5),
-        panel.border = element_rect(color = "#262626", fill = NA),
-        plot.margin = margin(t = 0.2, r = 0.1, b = 0, l = 0, unit = "cm"),
-        legend.margin = margin(t = 0.1, r = 0, b = 0.2, l = 0, unit = "cm"),
-        legend.position = "bottom",
-        legend.box = "horizontal",
-        axis.text = element_text(color = "white"))

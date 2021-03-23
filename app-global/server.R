@@ -40,6 +40,8 @@ shinyServer(function(input, output, session) {
                                   na.color = "grey"
   )
   
+  #connectivity_fill_scale
+  
   ## Leaflet output: map of ACP countries aggregated by region -------------
   
   output$regional_map <- renderLeaflet({
@@ -55,7 +57,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("Esri.WorldPhysical") %>% 
       
       addPolygons(data = regional_dat, 
                   fillColor = ~region_pal(region),
@@ -118,20 +120,22 @@ shinyServer(function(input, output, session) {
                                            dplyr::filter(region == "East Asia & Pacific"),
                                          map_lng = 170,
                                          map_lat = -5,
-                                         map_zoom = 2)
+                                         map_zoom = 1,
+                                         connect = eez_flag_state_connectivity %>%
+                                           dplyr::filter(region == "East Asia & Pacific"))
   
   ### UI output: Select coastal state widget --------
   output$east_asia_pacific_eez_select <- renderUI({
     
-    # Get regional data
-    region_data <- east_asia_pacific_rv$eezs %>%
+    # Get data
+    region_eez_data <- east_asia_pacific_rv$connect %>%
       st_drop_geometry() %>%
-      distinct(region, name_ter, iso_ter, name_sov, iso_sov) %>%
-      arrange(region, name_ter)
+      distinct(region, eez_ter_iso3, eez_ter_name) %>%
+      arrange(eez_ter_name)
     
     # Unique choices
-    east_asia_pacific_eezs <- ter_flag_connectivity_data$iso_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
-    names(east_asia_pacific_eezs) <- ter_flag_connectivity_data$name_ter[ter_flag_connectivity_data$region == "East Asia & Pacific"]
+    east_asia_pacific_eezs <- region_eez_data$eez_ter_iso3
+    names(east_asia_pacific_eezs) <- region_eez_data$eez_ter_name
     
     selectizeInput("east_asia_pacific_eez_select",
                    label = tags$b("Select a coastal state:"),
@@ -160,7 +164,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("Esri.WorldPhysical") %>% 
       
       addPolygons(data = east_asia_pacific_disputed, 
                   fillColor = "grey",
@@ -189,7 +193,7 @@ shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = east_asia_pacific_eezs$geoname_new,
-                  layerId = east_asia_pacific_eezs$iso_ter, #need this to select input below
+                  layerId = east_asia_pacific_eezs$eez_ter_iso3, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -240,8 +244,10 @@ shinyServer(function(input, output, session) {
       
       # Get code for selected EEZ
       selected_eez <- subset(east_asia_pacific_rv$eezs, 
-                             east_asia_pacific_rv$eezs$iso_ter == input$east_asia_pacific_eez_select)
+                             east_asia_pacific_rv$eezs$eez_ter_iso3 == input$east_asia_pacific_eez_select)
 
+      req(nrow(selected_eez) > 0)
+      
       # Remove any previously highlighted polygon
       east_asia_pacific_nav_map_proxy %>% clearGroup("highlighted_eez")
       
@@ -262,11 +268,144 @@ shinyServer(function(input, output, session) {
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
-      setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-              lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
+      setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
+              lat=mean(selected_eez$eez_lat, na.rm = T), 
+              zoom=east_asia_pacific_rv$map_zoom+1)
     }
     
   }) # close observe event
+  
+  ### Leaflet output: Connectivity map for selected state -----------
+
+  output$east_asia_pacific_vessel_origins_map <- renderLeaflet({
+    
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    
+    # Connectivity data for the whole region
+    region_connectivity_data <- subset(east_asia_pacific_rv$connect,
+                                       east_asia_pacific_rv$connect$flag_iso3 != "UNK")
+    
+    # Connectivity data for the selected coastal state
+    selected_eez_connectivity_data <- region_connectivity_data %>%
+      dplyr::filter(eez_ter_iso3 == input$east_asia_pacific_eez_select) %>%
+      arrange(admin)
+
+    # EEZ polygons for selected coastal state
+    selected_eez <- east_asia_pacific_rv$eezs %>%
+      dplyr::filter(eez_ter_iso3 == input$east_asia_pacific_eez_select)
+    
+    # Country polygons for flag states
+    flag_states_for_selected_eez <- land_ter_360 %>%
+      dplyr::filter(admin_iso3 %in% selected_eez_connectivity_data$flag_iso3) %>%
+      rename(flag_iso3 = admin_iso3) %>% 
+      arrange(flag_iso3)
+    
+    # Connectivity stats by flag state (attached to land polygons)
+    flag_state_summary_dat <- selected_eez_connectivity_data %>%
+      st_drop_geometry() %>%
+      group_by(flag_iso3, eez_ter_iso3) %>%
+      summarize(n_vessels = sum(n_vessels, na.rm = T),
+                mean_length = mean(mean_length, na.rm = T),
+                mean_tonnage = mean(mean_tonnage, na.rm = T),
+                mean_engine_power = mean(mean_engine_power, na.rm = T),
+                fishing_hours = sum(fishing_hours, na.rm = T),
+                fishing_KWh = sum(fishing_KWh, na.rm = T),
+                bad_subs = sum(bad_subs, na.rm = T)) %>%
+      ungroup()
+      
+    flag_state_summary <- flag_states_for_selected_eez %>%
+      left_join(flag_state_summary_dat, by = "flag_iso3")
+    
+    flag_state_summary_text <- paste0(
+      "<b>", "Flag state: ", "</b>", flag_state_summary$admin,
+      "<br/>",
+      "<b>", "# of DW vessels: ", "</b>", flag_state_summary$n_vessels,
+      "</br>",
+      "<b>", "Avg. engine capacity (kW): ", "</b>", format(round(flag_state_summary$mean_engine_power, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_hours, 0), big.mark = ","), 
+      "</br>",
+      "<b>", "DW effort in selected EEZ (kW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
+      lapply(htmltools::HTML)
+    
+    ### Interactive color palette ---
+    
+    # Set fill variable for map
+    fill_scale <- switch(input$east_asia_pacific_vessel_origins_fill,
+                         "n_vessels" = list("n_vessels", region_connectivity_data$n_vessels, flag_state_summary$n_vessels),
+                         "mean_engine_power" = list("mean_engine_power", region_connectivity_data$mean_engine_power, flag_state_summary$mean_engine_power),
+                         "mean_tonnage" = list("mean_tonnage", region_connectivity_data$mean_tonnage, flag_state_summary$mean_tonnage),
+                         "mean_length" = list("mean_length", region_connectivity_data$mean_length, flag_state_summary$mean_length),
+                         "fishing_hours" = list("fishing_hours", region_connectivity_data$fishing_hours, flag_state_summary$fishing_hours),
+                         "fishing_KWh" = list("fishing_KWh", region_connectivity_data$fishing_KWh, flag_state_summary$fishing_KWh))
+    
+    # Make color palette
+    domain <- switch(input$east_asia_pacific_vessel_origins_fill_rescale,
+                     "region" = 2,
+                     "selected_eez" = 3)
+    
+    pal <- colorBin("YlOrRd", domain = fill_scale[[domain]], bins = 7)
+    
+    ### Leaflet map ---
+    
+    leaflet('east_asia_pacific_vessel_origins_map', 
+            options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
+      
+      htmlwidgets::onRender("function(el, x) {
+                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
+      
+      addProviderTiles("CartoDB.PositronNoLabels", group = "basemap") %>% 
+      
+      addPolygons(data = flag_state_summary,
+                  fillColor = ~pal(get(fill_scale[[1]])),
+                  fillOpacity = 0.8,
+                  color= "white",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = flag_state_summary_text,
+                  layerId = flag_state_summary$flag_iso3,
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
+      addPolygons(data = selected_eez, 
+                  fillColor = ~region_pal_light(region),
+                  fillOpacity = 0.8,
+                  color= "white",
+                  group = "eez",
+                  weight = 0.3,
+                  highlight = highlightOptions(weight = 5,
+                                               color = "#666",
+                                               fillOpacity = 1,
+                                               bringToFront = TRUE),
+                  label = (paste0("<b>", selected_eez$geoname_new, "</b>") %>%
+                             lapply(htmltools::HTML)),
+                  labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                           padding = "3px 8px"),
+                                              textsize = "13px",
+                                              direction = "auto")) %>%
+      
+      addPolylines(data = selected_eez_connectivity_data,
+                   fillColor = "goldenrod",
+                   fillOpacity = 1,
+                   weight = 1,
+                   color = "darkgoldenrod",
+                   group = "lines") %>% 
+      
+      addLegend(pal = pal, 
+                values = fill_scale[[domain]], 
+                opacity=0.9, 
+                title = names(input$east_asia_pacific_vessel_origins_fill), 
+                position = "bottomleft" ) %>%
+      setView(lng= east_asia_pacific_rv$map_lng, 
+              lat = east_asia_pacific_rv$map_lat, 
+              zoom = east_asia_pacific_rv$map_zoom-1)
+    
+  })
   
   ###------------------------------------------------------------------
   ### Europe & Central Asia ---------------------------------------------
@@ -277,7 +416,30 @@ shinyServer(function(input, output, session) {
                                              dplyr::filter(region == "Europe & Central Asia"),
                                            map_lng = 0,
                                            map_lat = 50,
-                                           map_zoom = 2)
+                                           map_zoom = 2,
+                                           connect = eez_flag_state_connectivity %>%
+                                             dplyr::filter(region == "Europe & Central Asia"))
+  
+  ### UI output: Select coastal state widget --------
+  output$europe_central_asia_eez_select <- renderUI({
+    
+    # Get data
+    region_eez_data <- europe_central_asia_rv$connect %>%
+      st_drop_geometry() %>%
+      distinct(region, eez_ter_iso3, eez_ter_name) %>%
+      arrange(eez_ter_name)
+    
+    # Unique choices
+    europe_central_asia_eezs <- region_eez_data$eez_ter_iso3
+    names(europe_central_asia_eezs) <- region_eez_data$eez_ter_name
+    
+    selectizeInput("europe_central_asia_eez_select",
+                   label = tags$b("Select a coastal state:"),
+                   choices = c("Select..." = "Select a coastal state...", europe_central_asia_eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  })
   
   ### Leaflet output: Navigational map for the region ---------
   
@@ -297,7 +459,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("CartoDB.PositronNoLabels") %>% 
       
       addPolygons(data = europe_central_asia_disputed, 
                   fillColor = "grey",
@@ -326,7 +488,7 @@ shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = europe_central_asia_eezs$geoname_new,
-                  layerId = europe_central_asia_eezs$iso_ter, #need this to select input below
+                  layerId = europe_central_asia_eezs$eez_ter_iso3, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -350,7 +512,6 @@ shinyServer(function(input, output, session) {
     req(!is.null(input$europe_central_asia_nav_map_shape_click$id))
     
     updateSelectizeInput(session, "europe_central_asia_eez_select",
-                         choices = europe_central_asia_eezs,
                          selected = input$europe_central_asia_nav_map_shape_click$id)
     
   })
@@ -378,10 +539,9 @@ shinyServer(function(input, output, session) {
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
-                             eez_ter_360$iso_ter == input$europe_central_asia_eez_select)
+                             eez_ter_360$eez_ter_iso3 == input$europe_central_asia_eez_select)
       
-      # selected_eez_centroid <- st_centroid(selected_eez) %>%
-      #   st_coordinates()
+      req(nrow(selected_eez) > 0)
       
       # Remove any previously highlighted polygon
       europe_central_asia_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -403,8 +563,8 @@ shinyServer(function(input, output, session) {
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
-        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
+        setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
+                lat=mean(selected_eez$eez_lat, na.rm = T), zoom=3)
     }
     
   }) # close observe event
@@ -418,7 +578,30 @@ shinyServer(function(input, output, session) {
                                              dplyr::filter(region == "Latin America & Caribbean"),
                                              map_lng = -70,
                                              map_lat = -15,
-                                             map_zoom = 2)
+                                             map_zoom = 2,
+                                             connect = eez_flag_state_connectivity %>%
+                                               dplyr::filter(region == "Latin America & Caribbean"))
+  
+  ### UI output: Select coastal state widget --------
+  output$latin_america_caribbean_eez_select <- renderUI({
+    
+    # Get data
+    region_eez_data <- latin_america_caribbean_rv$connect %>%
+      st_drop_geometry() %>%
+      distinct(region, eez_ter_iso3, eez_ter_name) %>%
+      arrange(eez_ter_name)
+    
+    # Unique choices
+    latin_america_caribbean_eezs <- region_eez_data$eez_ter_iso3
+    names(latin_america_caribbean_eezs) <- region_eez_data$eez_ter_name
+    
+    selectizeInput("latin_america_caribbean_eez_select",
+                   label = tags$b("Select a coastal state:"),
+                   choices = c("Select..." = "Select a coastal state...", latin_america_caribbean_eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  })
   
   ### Leaflet output: Navigational map for the region ---------
   
@@ -438,7 +621,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("CartoDB.PositronNoLabels") %>% 
       
       addPolygons(data = latin_america_caribbean_disputed, 
                   fillColor = "grey",
@@ -467,7 +650,7 @@ shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = latin_america_caribbean_eezs$geoname_new,
-                  layerId = latin_america_caribbean_eezs$iso_ter, #need this to select input below
+                  layerId = latin_america_caribbean_eezs$eez_ter_iso3, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -491,7 +674,6 @@ shinyServer(function(input, output, session) {
     req(!is.null(input$latin_america_caribbean_nav_map_shape_click$id))
     
     updateSelectizeInput(session, "latin_america_caribbean_eez_select",
-                         choices = latin_america_caribbean_eezs,
                          selected = input$latin_america_caribbean_nav_map_shape_click$id)
     
   })
@@ -519,7 +701,9 @@ shinyServer(function(input, output, session) {
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
-                             eez_ter_360$iso_ter == input$latin_america_caribbean_eez_select)
+                             eez_ter_360$eez_ter_iso3 == input$latin_america_caribbean_eez_select)
+      
+      req(nrow(selected_eez) > 0)
       
       # Remove any previously highlighted polygon
       latin_america_caribbean_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -541,8 +725,8 @@ shinyServer(function(input, output, session) {
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
-        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
+        setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
+                lat=mean(selected_eez$eez_lat, na.rm = T), zoom=3)
     }
     
   }) # close observe event
@@ -556,7 +740,30 @@ shinyServer(function(input, output, session) {
                                                   dplyr::filter(region == "Middle East & North Africa"),
                                                 map_lng = 25,
                                                 map_lat = 10,
-                                                map_zoom = 2)
+                                                map_zoom = 2,
+                                                connect = eez_flag_state_connectivity %>%
+                                                  dplyr::filter(region == "Middle East & North Africa"))
+  
+  ### UI output: Select coastal state widget --------
+  output$middle_east_north_africa_eez_select <- renderUI({
+    
+    # Get data
+    region_eez_data <- middle_east_north_africa_rv$connect %>%
+      st_drop_geometry() %>%
+      distinct(region, eez_ter_iso3, eez_ter_name) %>%
+      arrange(eez_ter_name)
+    
+    # Unique choices
+    middle_east_north_africa_eezs <- region_eez_data$eez_ter_iso3
+    names(middle_east_north_africa_eezs) <- region_eez_data$eez_ter_name
+    
+    selectizeInput("middle_east_north_africa_eez_select",
+                   label = tags$b("Select a coastal state:"),
+                   choices = c("Select..." = "Select a coastal state...", middle_east_north_africa_eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  })
   
   ### Leaflet output: Navigational map for the region ---------
   
@@ -576,7 +783,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("CartoDB.PositronNoLabels") %>% 
       
       addPolygons(data = middle_east_north_africa_disputed, 
                   fillColor = "grey",
@@ -605,7 +812,7 @@ shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = middle_east_north_africa_eezs$geoname_new,
-                  layerId = middle_east_north_africa_eezs$iso_ter, #need this to select input below
+                  layerId = middle_east_north_africa_eezs$eez_ter_iso3, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -629,7 +836,6 @@ shinyServer(function(input, output, session) {
     req(!is.null(input$middle_east_north_africa_nav_map_shape_click$id))
     
     updateSelectizeInput(session, "middle_east_north_africa_eez_select",
-                         choices = middle_east_north_africa_eezs,
                          selected = input$middle_east_north_africa_nav_map_shape_click$id)
     
   })
@@ -657,7 +863,9 @@ shinyServer(function(input, output, session) {
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
-                             eez_ter_360$iso_ter == input$middle_east_north_africa_eez_select)
+                             eez_ter_360$eez_ter_iso3 == input$middle_east_north_africa_eez_select)
+      
+      req(nrow(selected_eez) > 0)
       
       # Remove any previously highlighted polygon
       middle_east_north_africa_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -679,8 +887,8 @@ shinyServer(function(input, output, session) {
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
-        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
+        setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
+                lat=mean(selected_eez$eez_lat, na.rm = T), zoom=3)
     }
     
   }) # close observe event
@@ -694,7 +902,30 @@ shinyServer(function(input, output, session) {
                                        dplyr::filter(region == "North America"),
                                      map_lng = -100,
                                      map_lat = 40,
-                                     map_zoom = 2)
+                                     map_zoom = 2,
+                                     connect = eez_flag_state_connectivity %>%
+                                       dplyr::filter(region == "North America"))
+  
+  ### UI output: Select coastal state widget --------
+  output$north_america_eez_select <- renderUI({
+    
+    # Get data
+    region_eez_data <- north_america_rv$connect %>%
+      st_drop_geometry() %>%
+      distinct(region, eez_ter_iso3, eez_ter_name) %>%
+      arrange(eez_ter_name)
+    
+    # Unique choices
+    north_america_eezs <- region_eez_data$eez_ter_iso3
+    names(north_america_eezs) <- region_eez_data$eez_ter_name
+    
+    selectizeInput("north_america_eez_select",
+                   label = tags$b("Select a coastal state:"),
+                   choices = c("Select..." = "Select a coastal state...", north_america_eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  })
   
   ### Leaflet output: Navigational map for the region ---------
   
@@ -714,7 +945,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("CartoDB.PositronNoLabels") %>% 
       
       addPolygons(data = north_america_disputed, 
                   fillColor = "grey",
@@ -743,7 +974,7 @@ shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = north_america_eezs$geoname_new,
-                  layerId = north_america_eezs$iso_ter, #need this to select input below
+                  layerId = north_america_eezs$eez_ter_iso3, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -767,7 +998,6 @@ shinyServer(function(input, output, session) {
     req(!is.null(input$north_america_nav_map_shape_click$id))
     
     updateSelectizeInput(session, "north_america_eez_select",
-                         choices = north_america_eezs,
                          selected = input$north_america_nav_map_shape_click$id)
     
   })
@@ -795,7 +1025,9 @@ shinyServer(function(input, output, session) {
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
-                             eez_ter_360$iso_ter == input$north_america_eez_select)
+                             eez_ter_360$eez_ter_iso3 == input$north_america_eez_select)
+      
+      req(nrow(selected_eez) > 0)
       
       # Remove any previously highlighted polygon
       north_america_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -817,8 +1049,8 @@ shinyServer(function(input, output, session) {
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
-        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-                lat=mean(selected_eez$y_cen, na.rm = T), zoom=2)
+        setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
+                lat=mean(selected_eez$eez_lat, na.rm = T), zoom=2)
     }
     
   }) # close observe event
@@ -830,9 +1062,32 @@ shinyServer(function(input, output, session) {
   ### Data Container ----------
   south_asia_rv <- reactiveValues(eezs = eez_ter_360 %>%
                                        dplyr::filter(region == "South Asia"),
-                                     map_lng = 80,
-                                     map_lat = 15,
-                                     map_zoom = 3)
+                                  map_lng = 80,
+                                  map_lat = 15,
+                                  map_zoom = 3,
+                                  connect = eez_flag_state_connectivity %>%
+                                    dplyr::filter(region == "South Asia"))
+  
+  ### UI output: Select coastal state widget --------
+  output$south_asia_eez_select <- renderUI({
+    
+    # Get data
+    region_eez_data <- south_asia_rv$connect %>%
+      st_drop_geometry() %>%
+      distinct(region, eez_ter_iso3, eez_ter_name) %>%
+      arrange(eez_ter_name)
+    
+    # Unique choices
+    south_asia_eezs <- region_eez_data$eez_ter_iso3
+    names(south_asia_eezs) <- region_eez_data$eez_ter_name
+    
+    selectizeInput("south_asia_eez_select",
+                   label = tags$b("Select a coastal state:"),
+                   choices = c("Select..." = "Select a coastal state...", south_asia_eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  })
   
   ### Leaflet output: Navigational map for the region ---------
   output$south_asia_nav_map <- renderLeaflet({
@@ -852,7 +1107,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("CartoDB.PositronNoLabels") %>% 
       
       # addPolygons(data = south_asia_disputed, 
       #             fillColor = "grey",
@@ -881,7 +1136,7 @@ shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = south_asia_eezs$geoname_new,
-                  layerId = south_asia_eezs$iso_ter, #need this to select input below
+                  layerId = south_asia_eezs$eez_ter_iso3, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -905,7 +1160,6 @@ shinyServer(function(input, output, session) {
     req(!is.null(input$south_asia_nav_map_shape_click$id))
     
     updateSelectizeInput(session, "south_asia_eez_select",
-                         choices = south_asia_eezs,
                          selected = input$south_asia_nav_map_shape_click$id)
     
   })
@@ -933,8 +1187,9 @@ shinyServer(function(input, output, session) {
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
-                             eez_ter_360$iso_ter == input$south_asia_eez_select)
+                             eez_ter_360$eez_ter_iso3 == input$south_asia_eez_select)
       
+      req(nrow(selected_eez) > 0)
       # Remove any previously highlighted polygon
       south_asia_nav_map_proxy %>% clearGroup("highlighted_eez")
       
@@ -955,8 +1210,8 @@ shinyServer(function(input, output, session) {
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
-        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
+        setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
+                lat=mean(selected_eez$eez_lat, na.rm = T), zoom=3)
     }
     
   }) # close observe event
@@ -970,7 +1225,30 @@ shinyServer(function(input, output, session) {
                                             dplyr::filter(region == "Sub-Saharan Africa"),
                                           map_lng = 25,
                                           map_lat = -15,
-                                          map_zoom = 2)
+                                          map_zoom = 2,
+                                          connect = eez_flag_state_connectivity %>%
+                                            dplyr::filter(region == "Sub-Saharan Africa"))
+  
+  ### UI output: Select coastal state widget --------
+  output$sub_saharan_africa_eez_select <- renderUI({
+    
+    # Get data
+    region_eez_data <- sub_saharan_africa_rv$connect %>%
+      st_drop_geometry() %>%
+      distinct(region, eez_ter_iso3, eez_ter_name) %>%
+      arrange(eez_ter_name)
+    
+    # Unique choices
+    sub_saharan_africa_eezs <- region_eez_data$eez_ter_iso3
+    names(sub_saharan_africa_eezs) <- region_eez_data$eez_ter_name
+    
+    selectizeInput("south_asia_eez_select",
+                   label = tags$b("Select a coastal state:"),
+                   choices = c("Select..." = "Select a coastal state...", sub_saharan_africa_eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  })
   
   ### Leaflet output: Navigational map for the region ---------
   output$sub_saharan_africa_nav_map <- renderLeaflet({
@@ -989,7 +1267,7 @@ shinyServer(function(input, output, session) {
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.OceanBasemap") %>% 
+      addProviderTiles("CartoDB.PositronNoLabels") %>% 
       
       addPolygons(data = sub_saharan_africa_disputed, 
                   fillColor = "grey",
@@ -1018,7 +1296,7 @@ shinyServer(function(input, output, session) {
                                                fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = sub_saharan_africa_eezs$geoname_new,
-                  layerId = sub_saharan_africa_eezs$iso_ter, #need this to select input below
+                  layerId = sub_saharan_africa_eezs$eez_ter_iso3, #need this to select input below
                   labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                            padding = "3px 8px"),
                                               textsize = "13px",
@@ -1042,7 +1320,6 @@ shinyServer(function(input, output, session) {
     req(!is.null(input$sub_saharan_africa_nav_map_shape_click$id))
     
     updateSelectizeInput(session, "sub_saharan_africa_eez_select",
-                         choices = sub_saharan_africa_eezs,
                          selected = input$sub_saharan_africa_nav_map_shape_click$id)
     
   })
@@ -1070,7 +1347,9 @@ shinyServer(function(input, output, session) {
       
       # Get code for selected EEZ
       selected_eez <- subset(eez_ter_360, 
-                             eez_ter_360$iso_ter == input$sub_saharan_africa_eez_select)
+                             eez_ter_360$eez_ter_iso3 == input$sub_saharan_africa_eez_select)
+      
+      req(nrow(selected_eez) > 0)
       
       # Remove any previously highlighted polygon
       sub_saharan_africa_nav_map_proxy %>% clearGroup("highlighted_eez")
@@ -1092,8 +1371,8 @@ shinyServer(function(input, output, session) {
                                                              padding = "3px 8px"),
                                                 textsize = "13px",
                                                 direction = "auto")) %>%
-        setView(lng=mean(selected_eez$x_cen, na.rm = T), 
-                lat=mean(selected_eez$y_cen, na.rm = T), zoom=3)
+        setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
+                lat=mean(selected_eez$eez_lat, na.rm = T), zoom=3)
     }
     
   }) # close observe event

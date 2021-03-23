@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-EastAsiaPacific = function(flag_state_choices)
+EastAsiaPacific = function(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
   fluidPage(
             
             # Page style
@@ -44,7 +44,7 @@ EastAsiaPacific = function(flag_state_choices)
                                    column(12, id = "tb-spaced-div",
                                           
                                           # Africa map with selectable EEZs
-                                          leafletOutput("east_asia_pacific_nav_map", width = "auto", height = "350px")
+                                          leafletOutput("east_asia_pacific_nav_map", width = "auto", height = "200px")
 
                                    ),
                                    
@@ -52,11 +52,6 @@ EastAsiaPacific = function(flag_state_choices)
                                    column(12, id = "b-spaced-div",
                                           
                                           uiOutput("east_asia_pacific_eez_select")
-                                          # selectizeInput("east_asia_pacific_eez_select",
-                                          #                label = tags$b("Select a coastal state:"),
-                                          #                choices = c("Select..." = "Select a coastal state...", east_asia_pacific_eezs),
-                                          #                selected = "Select a coastal state...",
-                                          #                width = "100%")
     
                                    )
                           )
@@ -130,12 +125,10 @@ EastAsiaPacific = function(flag_state_choices)
                                                                  selectizeInput(
                                                                    "east_asia_pacific_vessel_origins_fill",
                                                                    label = "Fill flag state(s) by...",
-                                                                   choices = c("# of Different Vessels", 
-                                                                               "Total Engine Capacity (KW)",
-                                                                               "Total Fishing Effort (hours)",
-                                                                               "Total Fishing Effort (KWh)"),
-                                                                   selected = "Total Fishing Effort (KWh)",
+                                                                   choices = vessel_origins_fill_choices,
+                                                                   selected = "n_vessels",
                                                                    width = "100%")
+                                                                 
                                                           ),
                                                    
                                                           column(6, align = "center",
@@ -143,9 +136,8 @@ EastAsiaPacific = function(flag_state_choices)
                                                                  radioButtons(
                                                                    "east_asia_pacific_vessel_origins_fill_rescale",
                                                                    label = "Fill scale is based on...",
-                                                                   choices = c("All distant water fishing in the region (default)",
-                                                                               "Selected EEZ only"),
-                                                                   selected = "All distant water fishing in the region (default)",
+                                                                   choices = vessel_origins_fill_scale,
+                                                                   selected = "region",
                                                                    inline = T,
                                                                    width = "100%")
                                                                  

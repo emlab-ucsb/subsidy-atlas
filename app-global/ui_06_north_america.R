@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-NorthAmerica = function(north_america_eezs, flag_state_choices)
+NorthAmerica = function(flag_state_choices)
   fluidPage(
             
             # Page style
@@ -51,12 +51,8 @@ NorthAmerica = function(north_america_eezs, flag_state_choices)
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("north_america_eez_select",
-                                                         label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", north_america_eezs),
-                                                         selected = "Select a coastal state...",
-                                                         width = "100%")
-    
+                                          uiOutput("north_america_eez_select")
+
                                    )
                           )
                           

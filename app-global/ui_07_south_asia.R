@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-SouthAsia = function(south_asia_eezs, flag_state_choices)
+SouthAsia = function(flag_state_choices)
   fluidPage(
             
             # Page style
@@ -51,12 +51,8 @@ SouthAsia = function(south_asia_eezs, flag_state_choices)
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("south_asia_eez_select",
-                                                         label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", south_asia_eezs),
-                                                         selected = "Select a coastal state...",
-                                                         width = "100%")
-    
+                                          uiOutput("south_asia_eez_select")
+
                                    )
                           )
                           

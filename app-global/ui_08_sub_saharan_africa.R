@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-SubSaharanAfrica = function(sub_saharan_africa_eezs, flag_state_choices)
+SubSaharanAfrica = function(flag_state_choices)
   fluidPage(
             
             # Page style
@@ -51,12 +51,8 @@ SubSaharanAfrica = function(sub_saharan_africa_eezs, flag_state_choices)
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("sub_saharan_africa_eez_select",
-                                                         label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", sub_saharan_africa_eezs),
-                                                         selected = "Select a coastal state...",
-                                                         width = "100%")
-    
+                                          uiOutput("sub_saharan_africa_eez_select")
+                                          
                                    )
                           )
                           

@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-LatinAmericaCaribbean = function(latin_america_caribbean_eezs, flag_state_choices)
+LatinAmericaCaribbean = function(flag_state_choices)
   fluidPage(
             
             # Page style
@@ -51,11 +51,7 @@ LatinAmericaCaribbean = function(latin_america_caribbean_eezs, flag_state_choice
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("latin_america_caribbean_eez_select",
-                                                         label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", latin_america_caribbean_eezs),
-                                                         selected = "Select a coastal state...",
-                                                         width = "100%")
+                                          uiOutput("latin_america_caribbean_eez_select")
     
                                    )
                           )

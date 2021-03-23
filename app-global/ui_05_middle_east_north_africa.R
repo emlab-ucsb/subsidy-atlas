@@ -6,7 +6,7 @@
 ### ------------------------------------
 
 ### Function
-MiddleEastNorthAfrica = function(middle_east_north_africa_eezs, flag_state_choices)
+MiddleEastNorthAfrica = function(flag_state_choices)
   fluidPage(
             
             # Page style
@@ -51,11 +51,7 @@ MiddleEastNorthAfrica = function(middle_east_north_africa_eezs, flag_state_choic
                                    # Select coastal state widget
                                    column(12, id = "b-spaced-div",
                                           
-                                          selectizeInput("middle_east_north_africa_eez_select",
-                                                         label = tags$b("Select a coastal state:"),
-                                                         choices = c("Select..." = "Select a coastal state...", middle_east_north_africa_eezs),
-                                                         selected = "Select a coastal state...",
-                                                         width = "100%")
+                                          uiOutput("middle_east_north_africa_eez_select")
     
                                    )
                           )
