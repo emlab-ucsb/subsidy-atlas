@@ -29,6 +29,7 @@ library(tidyverse)
 library(sf)
 library(png)
 library(htmltools)
+library(DT)
 
 library(sf) # spatial manipulation
 library(lwgeom) # needed for curved lines

@@ -94,7 +94,10 @@ RegionPageLayout <- function(region_name,
                                            column(12, id = "tblr-spaced-div",
 
                                                   # Interactive text
-                                                  uiOutput(paste0(region_name, "_country_profile"))
+                                                  uiOutput(paste0(region_name, "_summary_ui")),
+                                                  
+                                                  # Data table
+                                                  dataTableOutput(paste0(region_name, "_summary_dt"))
 
                                            )
                                   ),

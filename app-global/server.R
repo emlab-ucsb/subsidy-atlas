@@ -285,6 +285,30 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### UI output: Distant water summary for selected state -------------
+  output$east_asia_pacific_summary_ui <- renderUI({
+    
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryUI(region_dat = east_asia_pacific_rv,
+              input_selected_eez = input$east_asia_pacific_eez_select)
+    
+  })
+  
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$east_asia_pacific_summary_dt <- renderDataTable({
+    
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryDT(region_dat = east_asia_pacific_rv,
+              input_selected_eez = input$east_asia_pacific_eez_select)
+    
+  })
+  
   ### Leaflet output: Connectivity map for selected state -----------
   output$east_asia_pacific_vessel_origins_map <- renderLeaflet({
     
@@ -380,6 +404,30 @@ shinyServer(function(input, output, session) {
     
   }) 
   
+  ### UI output: Distant water summary for selected state -------------
+  output$europe_central_asia_summary_ui <- renderUI({
+    
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryUI(region_dat = europe_central_asia_rv,
+              input_selected_eez = input$europe_central_asia_eez_select)
+    
+  })
+  
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$europe_central_asia_summary_dt <- renderDataTable({
+    
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryDT(region_dat = europe_central_asia_rv,
+              input_selected_eez = input$europe_central_asia_eez_select)
+    
+  })
+  
   ### Leaflet output: Connectivity map for selected state -----------
   output$europe_central_asia_vessel_origins_map <- renderLeaflet({
     
@@ -473,6 +521,30 @@ shinyServer(function(input, output, session) {
                       proxy_map = latin_america_caribbean_nav_map_proxy,
                       input_selected_eez = input$latin_america_caribbean_eez_select)
     }
+    
+  })
+  
+  ### UI output: Distant water summary for selected state -------------
+  output$latin_america_caribbean_summary_ui <- renderUI({
+    
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryUI(region_dat = latin_america_caribbean_rv,
+              input_selected_eez = input$latin_america_caribbean_eez_select)
+    
+  })
+  
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$latin_america_caribbean_summary_dt <- renderDataTable({
+    
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryDT(region_dat = latin_america_caribbean_rv,
+              input_selected_eez = input$latin_america_caribbean_eez_select)
     
   })
   
@@ -572,6 +644,30 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### UI output: Distant water summary for selected state -------------
+  output$middle_east_north_africa_summary_ui <- renderUI({
+    
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryUI(region_dat = middle_east_north_africa_rv,
+              input_selected_eez = input$middle_east_north_africa_eez_select)
+    
+  })
+  
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$middle_east_north_africa_summary_dt <- renderDataTable({
+    
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryDT(region_dat = middle_east_north_africa_rv,
+              input_selected_eez = input$middle_east_north_africa_eez_select)
+    
+  })
+  
   ### Leaflet output: Connectivity map for selected state -----------
   output$middle_east_north_africa_vessel_origins_map <- renderLeaflet({
     
@@ -667,6 +763,30 @@ shinyServer(function(input, output, session) {
     }
     
   }) 
+  
+  ### UI output: Distant water summary for selected state -------------
+  output$north_america_summary_ui <- renderUI({
+    
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryUI(region_dat = north_america_rv,
+              input_selected_eez = input$north_america_eez_select)
+    
+  })
+  
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$north_america_summary_dt <- renderDataTable({
+    
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryDT(region_dat = north_america_rv,
+              input_selected_eez = input$north_america_eez_select)
+    
+  })
   
   ### Leaflet output: Connectivity map for selected state -----------
   output$north_america_vessel_origins_map <- renderLeaflet({
@@ -764,6 +884,30 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### UI output: Distant water summary for selected state -------------
+  output$south_asia_summary_ui <- renderUI({
+    
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryUI(region_dat = south_asia_rv,
+              input_selected_eez = input$south_asia_eez_select)
+    
+  })
+  
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$south_asia_summary_dt <- renderDataTable({
+    
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryDT(region_dat = south_asia_rv,
+              input_selected_eez = input$south_asia_eez_select)
+    
+  })
+  
   ### Leaflet output: Connectivity map for selected state -----------
   output$south_asia_vessel_origins_map <- renderLeaflet({
     
@@ -856,6 +1000,30 @@ shinyServer(function(input, output, session) {
                       proxy_map = sub_saharan_africa_nav_map_proxy,
                       input_selected_eez = input$sub_saharan_africa_eez_select)
     }
+    
+  })
+  
+  ### UI output: Distant water summary for selected state -------------
+  output$sub_saharan_africa_summary_ui <- renderUI({
+    
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryUI(region_dat = sub_saharan_africa_rv,
+              input_selected_eez = input$sub_saharan_africa_eez_select)
+    
+  })
+  
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$sub_saharan_africa_summary_dt <- renderDataTable({
+    
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    
+    # Generate summary
+    SummaryDT(region_dat = sub_saharan_africa_rv,
+              input_selected_eez = input$sub_saharan_africa_eez_select)
     
   })
   

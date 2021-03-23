@@ -94,30 +94,5 @@ StateInfo <- function(region_dat,
 
 }
 
-Summary <- function(region_dat,
-                    input_selected_eez){
-  
-  # "<hr>",
-  # "<b>", "AIS-observed distant water fishing in the ", total_stats_africa$eez_nam, " (2018)", "</b>",
-  # "<br>",
-  # "Vessels: ", format(round(total_stats_africa$vessels, 0), big.mark = ","),
-  # "<br>",
-  # "Total engine capacity (KW): ", format(round(total_stats_africa$capacity, 0), big.mark = ","),
-  # "<br>",
-  # "Fishing effort (hours): ", format(round(total_stats_africa$fishing_h, 0), big.mark = ","),
-  # "<br>",
-  # "Fishing effort (KWh): ", format(round(total_stats_africa$fishing_KWh, 0), big.mark = ",")) %>%
-  
-  # # Distant water fishing summary
-  # total_stats <- connectivity_data_filter_africa %>%
-  #   as.data.frame() %>%
-  #   group_by(eez_territory_iso3, eez_nam) %>%
-  #   summarize(vessels = sum(vessels, na.rm = T),
-  #             capacity = sum(capacity, na.rm = T),
-  #             fishing_h = sum(fishing_h, na.rm = T),
-  #             fishing_KWh = sum(fishing_KWh, na.rm = T)) %>%
-  #   arrange(eez_territory_iso3)
-  # 
-}
   
   
