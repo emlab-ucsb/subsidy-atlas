@@ -68,46 +68,50 @@ eez_sf_simple <- st_read(paste0(data_dir, "world_eez_v11_simple.gpkg")) %>%
 ```
 
 ```{r}
-# Extract attributes we want to keep
-eez_attrib <- eez_sf_simple %>%
-  st_drop_geometry()
-  
-write_csv(eez_attrib, paste0(data_dir, "eez_attributes.csv"))
+# # Extract attributes we want to keep
+# eez_attrib <- eez_sf_simple %>%
+#   st_drop_geometry()
+#   
+# write_csv(eez_attrib, paste0(data_dir, "eez_attributes.csv"))
+# 
+# # Now let's do some editing
+# eez_attrib_all <- eez_attrib %>%
+#   rowwise() %>%
+#   mutate(iso_ter_all = list(c(iso_ter1, iso_ter2, iso_ter3)),
+#          iso_sov_all = list(c(iso_sov1, iso_sov2, iso_sov3))) %>%
+#   dplyr::select(mrgid, pol_type, geoname, iso_ter_all, iso_sov_all)
+# 
+# # Create some new country names
+# eez_attrib_expanded <- eez_attrib_all %>%
+#   unnest(cols = c("iso_ter_all", "iso_sov_all")) %>%
+#   mutate(iso_ter = ifelse(!is.na(iso_ter_all), iso_ter_all, iso_sov_all)) %>%
+#   dplyr::filter(!is.na(iso_ter)) %>%
+#   mutate(name_ter = countrycode(iso_ter, "iso3c", 'country.name.en'),
+#          name_sov = countrycode(iso_sov_all, "iso3c", 'country.name.en'),
+#          region = countrycode(iso_ter, "iso3c", "region"))
+# 
+# # region, continent, un.region.name
+# eez_attrib_expanded <- eez_attrib_expanded %>%
+#   mutate(region_custom = case_when(iso_ter == "ATA" ~ "NA",
+#                                    iso_ter == "ATF" ~ "Sub-Saharan Africa",
+#                                    iso_ter == "ESH" ~ "Middle East & North Africa",
+#                                    iso_ter == "MYT" ~ "Sub-Saharan Africa",
+#                                    iso_ter == "REU" ~ "Sub-Saharan Africa",
+#                                    iso_ter == "SHN" ~ "Sub-Saharan Africa",
+#                                    iso_ter == "SJM" ~ "Europe & Central Asia",
+#                                    iso_ter == "UMI" ~ "East Asia & Pacific",
+#                                    iso_ter == "WLF" ~ "East Asia & Pacific",
+#                                    TRUE ~ region)) %>%
+#   dplyr::select(-region, -iso_ter_all) %>%
+#   rename(iso_sov = iso_sov_all,
+#          region = region_custom) %>%
+#   arrange(region, name_ter)
+# 
+# write_csv(eez_attrib_expanded, paste0(data_dir, "eez_attributes_expanded.csv"))
+# write_csv(eez_attrib_expanded, paste0(app_dir, "eez_attributes_expanded.csv"))
 
-eez_attrib_all <- eez_attrib %>%
-  rowwise() %>%
-  mutate(iso_ter_all = list(c(iso_ter1, iso_ter2, iso_ter3)),
-         iso_sov_all = list(c(iso_sov1, iso_sov2, iso_sov3))) %>%
-  dplyr::select(mrgid, pol_type, geoname, iso_ter_all, iso_sov_all, x_cen = x_1, y_cen = y_1)
-
-# Create some new country names
-eez_attrib_expanded <- eez_attrib_all %>%
-  unnest(cols = c("iso_ter_all", "iso_sov_all")) %>%
-  mutate(iso_ter = ifelse(!is.na(iso_ter_all), iso_ter_all, iso_sov_all)) %>%
-  dplyr::filter(!is.na(iso_ter)) %>%
-  mutate(name_ter = countrycode(iso_ter, "iso3c", 'country.name.en'),
-         name_sov = countrycode(iso_sov_all, "iso3c", 'country.name.en'),
-         region = countrycode(iso_ter, "iso3c", "region"))
-
-# region, continent, un.region.name
-eez_attrib_expanded <- eez_attrib_expanded %>%
-  mutate(region_custom = case_when(iso_ter == "ATA" ~ "NA",
-                                   iso_ter == "ATF" ~ "Sub-Saharan Africa",
-                                   iso_ter == "ESH" ~ "Middle East & North Africa",
-                                   iso_ter == "MYT" ~ "Sub-Saharan Africa",
-                                   iso_ter == "REU" ~ "Sub-Saharan Africa",
-                                   iso_ter == "SHN" ~ "Sub-Saharan Africa",
-                                   iso_ter == "SJM" ~ "Europe & Central Asia",
-                                   iso_ter == "UMI" ~ "East Asia & Pacific",
-                                   iso_ter == "WLF" ~ "East Asia & Pacific",
-                                   TRUE ~ region)) %>%
-  dplyr::select(-region, -iso_ter_all) %>%
-  rename(iso_sov = iso_sov_all,
-         region = region_custom) %>%
-  arrange(region, name_ter)
-
-write_csv(eez_attrib_expanded, paste0(data_dir, "eez_attributes_expanded.csv"))
-write_csv(eez_attrib_expanded, paste0(app_dir, "eez_attributes_expanded.csv"))
+# Load eez atributes and coordinates created elsewhere
+eez_centroid_coordinates <- read_csv(here::here("results", "04b-connectivity-analysis", "eez_centroid_coordinates.csv"))
 ```
 
 ## Create expanded version of polygons (-360 to 360 degrees)
@@ -155,8 +159,9 @@ st_write(eez_sf_polygon, paste0(data_dir, "world_eez_v11_simple_neg360_360.gpkg"
 
 # Save duplicated version
 # Add attributes back in there
-eez_sf_out <- eez_sf_polygon %>%
-  right_join(eez_attrib_expanded, by = c("mrgid"))
+eez_sf_out <- eez_centroid_coordinates %>%
+  full_join(eez_sf_polygon, by = c("eez_id" = "mrgid")) %>%
+  dplyr::filter(!is.na(geoname))
 
 st_write(eez_sf_out, paste0(data_dir, "world_eez_v11_simple_neg360_360_ter_duplicates.gpkg"), delete_layer = T)
 st_write(eez_sf_out, paste0(app_dir, "world_eez_v11_simple_neg360_360_ter_duplicates.gpkg"), delete_layer = T)
@@ -180,24 +185,50 @@ st_write(region_sf, paste0(app_dir, "world_eez_regions_neg360_360.gpkg"), delete
 
 ## Create territory aggregated polygons
 
+Before we aggregate by territory, let's also create an aggregated EU polygon. 
+
+```{r}
+### Aggregate EU Polygons
+eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+  
+eu_aggregated <- eez_sf_out %>%
+  dplyr::filter((eez_ter_iso3 %in% eu_countries) & pol_type == "200NM") %>%
+  mutate(eez_sov_iso3 = "EU") %>%
+  group_by(eez_sov_iso3, pol_type) %>%
+  summarize(eez_lon = mean(eez_lon, na.rm = T),
+            eez_lat = mean(eez_lat, na.rm = T),
+            eez_id = paste0(eez_id, collapse = ", "),
+            geom = st_union(geom)) %>%
+  ungroup() %>%
+  mutate(region = "Europe & Central Asia",
+         geoname_new = "Exclusive Economic Zone:\nEuropean Union",
+         eez_ter_iso3 = "EU",
+         eez_ter_name = "European Union",
+         eez_sov_name = "European Union")
+
+```
+
+
 ```{r}
 # Territory aggregation (200nm areas only)
 territory_sf <- eez_sf_out %>%
   dplyr::filter(pol_type == "200NM") %>%
-  mutate(geoname_new = paste0("Exclusive Economic Zone: ", name_ter)) %>%
-  group_by(region, name_ter, iso_ter, name_sov, iso_sov, pol_type, geoname_new) %>%
-  summarize(x_cen = mean(x_cen, na.rm = T),
-            y_cen = mean(y_cen, na.rm = T),
+  mutate(geoname_new = paste0("Exclusive Economic Zone:\n", eez_ter_name)) %>%
+  group_by(region, eez_ter_name, eez_ter_iso3, eez_sov_name, eez_sov_iso3, pol_type, geoname_new) %>%
+  summarize(eez_lon = mean(eez_lon, na.rm = T),
+            eez_lat = mean(eez_lat, na.rm = T),
+            eez_id = paste0(eez_id, collapse = ", "),
             geom = st_union(geom)) %>%
   ungroup()
 
 others_sf <- eez_sf_out %>%
   dplyr::filter(pol_type != "200NM") %>%
   mutate(geoname_new = geoname) %>%
-  dplyr::select(region, name_ter, iso_ter, name_sov, iso_sov, pol_type, geoname_new, x_cen, y_cen, geom)
+  dplyr::select(region, eez_ter_name, eez_ter_iso3, eez_sov_name, eez_sov_iso3, pol_type, geoname_new, eez_lon, eez_lat, eez_id, geom)
 
 territory_sf_out <- territory_sf %>%
-  rbind(others_sf)
+  rbind(others_sf) %>%
+  rbind(eu_aggregated)
   
 st_write(territory_sf_out, paste0(data_dir, "world_eez_ter_neg360_360.gpkg"), delete_layer = T)
 st_write(territory_sf_out, paste0(app_dir, "world_eez_ter_neg360_360.gpkg"), delete_layer = T)
@@ -529,22 +560,29 @@ land_out <- land_out_raw %>%
                                 admin == "Madeira" ~ "PRT",
                                 admin == "Saint Martin" ~ "MAF",
                                 TRUE ~ countrycode(admin, "country.name", "iso3c")))
-
-st_write(land_out, paste0(data_dir, "ne_50m_admin_neg360_360.gpkg"), delete_layer = T)
-mapview(land_out)
 ```
 
-Since we were a bit more thoughtful about the administering vs. sovereign states for our land polygons, let's use this to create a new lookup table of administering states and their corresponding sovereigns - we can also apply this to our EEZ file later to create one that encompasses both
+Let's also do an aggregated EU polygon just in case we need it
 
 ```{r}
-land_admin_sov_lookup <- land_out %>%
-  arrange(sovereign, admin, type) %>%
-  st_drop_geometry()
-
-eez_ter_sov_lookup <- eez_sf_out %>%
-  st_drop_geometry() %>%
-  group_by(iso_ter, name_ter, iso_sov, name_sov) %>%
-  summarize(all_eez_ids = paste0(mrgid, collapse = ","))
+land_eu <- land_out %>%
+  dplyr::filter(admin_iso3 %in% eu_countries) %>%
+  mutate(sov_iso3 = "EU") %>%
+  group_by(sov_iso3) %>%
+  summarize(geometry = st_union(geometry)) %>%
+  ungroup() %>%
+  mutate(type = "Political Entity",
+         sovereign = "European Union",
+         admin = "European Union",
+         notes = NA,
+         admin_iso3 = "EU")
   
+land_out <- land_out %>%
+  rbind(land_eu)
+
+mapview(land_out)
+
+st_write(land_out, paste0(data_dir, "ne_50m_admin_neg360_360.gpkg"), delete_layer = T)
+st_write(land_out, paste0(app_dir, "ne_50m_admin_neg360_360.gpkg"), delete_layer = T)
 ```
 
