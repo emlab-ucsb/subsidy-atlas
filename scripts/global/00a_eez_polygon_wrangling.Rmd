@@ -2,7 +2,7 @@
 output:
   html_document: default
 
-title: "Distant Water Fishing Atlas - Country List & Shapefile Creation"
+title: "Distant Water Fishing Atlas - EEZ Shapefile Wrangling"
 author: "Kat Millage, Matt Warham"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 fontsize: 11pt
@@ -10,9 +10,8 @@ fontsize: 11pt
 
 # Introduction
 
-This script creates the global country list used in the Distant Water Fishing Atlas, as well as all necessary GeoDatabase files used in the tool. This relies upon the following data sources: 
+This script wrangles the EEZ GeoDatabase file used in the tool. A key part of the later connectivity analysis is having central coordinates applied to each polygon, so that is done here as well. This relies upon the following data sources: 
 - Flanders Marine Institute (2019). Maritime Boundaries Geodatabase: Maritime Boundaries and Exclusive Economic Zones (200NM), version 11. Available online at https://www.marineregions.org/. https://doi.org/10.14284/386
-- World shapefile from the 
 
 
 ```{r setup, include=FALSE}
