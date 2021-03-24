@@ -1,0 +1,143 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+# Pull data from GFW if necessary
+ if(rerun_gfw == T){
+   
+    # What bin size do we want to use (degrees)?  
+    bin_size <- 0.1
+    
+    # Voodoo to deal with some territories having multiple EEZs
+    if(length(run_eez_codes) > 1){
+      run_eez_codes_string <- toString(sprintf("'%s'", run_eez_codes))
+      run_eez_text <- paste0("eez_code IN (", run_eez_codes_string, ")")
+    }else {
+      run_eez_codes_string <- run_eez_codes
+      run_eez_text <- paste0("eez_code = '", run_eez_codes_string, "'")
+      
+    }
+    
+sql4 <- paste0(
+  "WITH
+  eez_lookup AS (
+    SELECT
+      CAST(eez_id AS string) eez_code,
+      territory1_iso3 eez_territory_iso3
+    FROM
+      `world-fishing-827.gfw_research.eez_info`),
+
+  selected_vi AS (
+    SELECT
+       year,
+       ssvid,
+       engine_power_kw,
+       flag,
+       eez_code
+    FROM
+       `ucsb-gfw.subsidy_atlas.FINAL_dw_effort_by_eez_", analysis_year, "`),
+   
+  eez_info AS (
+     SELECT
+       EXTRACT(year FROM _partitiontime) year,
+       if(ARRAY_LENGTH(regions.eez)=0, '0000', regions.eez[ordinal(1)]) eez_code,
+       ssvid,
+       FLOOR(lat/", bin_size,") * ", bin_size, " + ", bin_size/2, " AS lat_cen,
+       FLOOR(lon/", bin_size, ") * ", bin_size, " + ", bin_size/2, " AS lon_cen,
+      CASE WHEN COUNT(DISTINCT _partitiontime) IS NULL THEN 0 ELSE COUNT(DISTINCT _partitiontime) END fishing_days,
+      CASE WHEN SUM(hours) IS NULL THEN 0 ELSE SUM(hours) END fishing_hours
+     FROM
+       `world-fishing-827.gfw_research.pipe_production_b_fishing`
+     WHERE
+       nnet_score2 > .5
+       AND seg_id IN (
+          SELECT
+            seg_id
+          FROM
+            `world-fishing-827.gfw_research.pipe_production_b_segs`
+          WHERE
+            good_seg)
+    GROUP BY
+      year,
+      eez_code,
+      ssvid,
+      lat_cen,
+      lon_cen
+    HAVING
+      year = ", analysis_year, 
+      " AND ", run_eez_text, 
+      " AND fishing_hours >= 1)
+      
+ SELECT
+    a.year,
+    a.eez_code,
+    eez_territory_iso3,
+    flag,
+    lat_cen,
+    lon_cen,
+    SUM(a.fishing_hours) as fishing_hours,
+    SUM(a.fishing_days) as fishing_days,
+    SUM(a.fishing_hours * b.engine_power_kw) as fishing_KWh,
+    SUM(a.fishing_hours * b.engine_power_kw * c.subs_per_fishing_KWh) as subs
+  FROM
+    eez_info a
+  INNER JOIN 
+    selected_vi b 
+  ON 
+    a.ssvid = b.ssvid AND 
+    a.eez_code = b.eez_code
+  LEFT JOIN
+    `ucsb-gfw.subsidy_atlas.subsidy_rates_flag` c
+  USING
+    (flag)
+  LEFT JOIN
+    eez_lookup d
+  ON
+    a.eez_code = d.eez_code
+  GROUP BY
+    year,
+    eez_code,
+    eez_territory_iso3,
+    flag,
+    lat_cen,
+    lon_cen
+  ORDER BY
+    flag"
+  )
+
+  eez_table <- bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") 
+
+  if(bq_table_exists(eez_table) == FALSE){
+    
+    bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
+      bq_table_create()
+    
+  }else{
+    
+    bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
+      bq_table_delete()
+    
+  }
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

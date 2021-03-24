@@ -31,10 +31,10 @@ library(ggalt) # transform to robinson projection
 vessel_list_path <- here::here("results", "03b-distant-water-fishing", "vessel_list_2018_distant_water.csv")
 
 # Path to eez file
-eez_path <- here::here("data", "edited", "world_eez_v11_simple_neg360_360_ter_duplicates.gpkg")
+eez_centroid_path <- here::here("results", "00a-eez-polygon-wrangling", "eez_centroid_coordinates.csv")
 
 # Path to land file
-land_path <- here::here("data", "edited", "ne_50m_admin_neg360_360.gpkg")
+land_centroid_path <- here::here("results", "00b-land-polygon-wrangling", "land_centroid_coordinates.csv")
 
 ### Create results directories
 results_dir <- here::here("results/04b-connectivity-analysis/")
@@ -47,7 +47,7 @@ app_dir <- here::here("app-global/data/")
 
 # Flag state / EEZ summaries
 
-Since our vessel list of distant water fishing (and subsidies) is currently at the individual vessel level, we first want to aggregate this by flag state/eez. 
+Since our vessel list of distant water fishing (and subsidies) is currently at the individual vessel level, we first want to aggregate this by flag state/coastal state. 
 
 ```{r}
 # Load vessel list
@@ -55,338 +55,155 @@ vessel_list_raw <- read.csv(vessel_list_path, stringsAsFactors = F)
 ```
 
 ```{r}
-flag_eez_summary <- vessel_list_raw %>%
-  group_by(eez_id, flag_iso3, is_EU) %>%
+# Let's duplicate entries for EEZs with multiple administering territories
+vessel_list_expanded <- vessel_list_raw %>%
+  rowwise() %>%
+  mutate(eez_ter_iso3_all = list(c(eez_territory1_iso3, eez_territory2_iso3, eez_territory3_iso3)),
+         eez_sov_iso3_all = list(c(eez_sovereign1_iso3, eez_sovereign2_iso3, eez_sovereign3_iso3))) %>%
+  dplyr::select(-eez_territory1_iso3, -eez_territory2_iso3, -eez_territory3_iso3, -eez_sovereign1_iso3, -eez_sovereign2_iso3, -eez_sovereign3_iso3) %>%
+  unnest(cols = c("eez_ter_iso3_all", "eez_sov_iso3_all")) %>%
+  mutate(eez_ter_iso3 = ifelse(!is.na(eez_ter_iso3_all), eez_ter_iso3_all, eez_sov_iso3_all)) %>%
+  rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
+  dplyr::select(-eez_ter_iso3_all) %>%
+  dplyr::filter(!is.na(eez_ter_iso3))
+
+# Now calculate summaries for each coastal territory
+flag_eez_summary <- vessel_list_expanded %>%
+  group_by(eez_ter_iso3, flag_iso3, is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
-            mean_engine_power = mean(engine_power_kw),
+            tot_tonnage = sum(tonnage_gt, na.rm = T),
+            mean_engine_power = mean(engine_power_kw, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T),
+            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
+            bad_subs = sum(bad_subs, na.rm = T),
+            ugly_subs = sum(ugly_subs, na.rm = T),
+            eez_id = list(unique(eez_id))) %>%
+  ungroup() %>%
+  unnest(cols = eez_id) %>%
+  arrange(flag_iso3, desc(eez_ter_iso3))
+
+# Create an entry for the EU as a whole just because
+eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+
+eu_summary <- vessel_list_expanded %>%
+  dplyr::filter(eez_ter_iso3 %in% eu_countries) %>%
+  mutate(eez_ter_iso3 = "EU") %>%
+  group_by(eez_ter_iso3, flag_iso3, is_EU) %>%
+  summarize(n_vessels = n_distinct(ssvid),
+            mean_length = mean(length_m, na.rm = T),
+            mean_tonnage = mean(tonnage_gt, na.rm = T),
+            tot_tonnage = sum(tonnage_gt, na.rm = T),
+            mean_engine_power = mean(engine_power_kw, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T),
             fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
             ugly_subs = sum(ugly_subs, na.rm = T)) %>%
   ungroup() %>%
-  arrange(flag_iso3, desc(eez_id))
+  arrange(flag_iso3, desc(eez_ter_iso3)) %>%
+  dplyr::filter(is_EU != T | is.na(is_EU)) %>%
+  mutate(eez_id = 9999)
+
+# Join back together
+flag_eez_summary <- flag_eez_summary %>%
+  bind_rows(eu_summary)
 ```
 
-Now let's load in our world and EEZ polygons so we can start matching them up and finding their centroids. 
+Now let's load in our land and EEZ centroids so we can start matching them up. 
 
 ```{r}
-land_sf <- st_read(land_path) %>%
-  st_set_crs(4326)
+land_centroids <- read_csv(land_centroid_path)
 
-eez_sf <- st_read(eez_path) %>%
-  st_set_crs(4326) %>%
+eez_centroids <- read_csv(eez_centroid_path) %>%
   rename(eez_id = mrgid)
+
+eez_eu_centroid <- eez_centroids %>%
+  dplyr::filter(eez_ter_iso3 %in% eu_countries & pol_type == "200NM") %>%
+  mutate(eez_ter_iso3 = "EU", eez_sov_iso3 = "EU") %>%
+  group_by(eez_ter_iso3, eez_sov_iso3, pol_type) %>%
+  summarize(eez_lon = mean(eez_lon, na.rm = T),
+            eez_lat = mean(eez_lat, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(eez_id = 9999,
+         region = "Europe & Central Asia",
+         geoname = "Exclusive Economic Zone:\nEuropean Union",
+         eez_ter_name = "European Union",
+         eez_sov_name = "European Union")
+
+eez_centroids <- eez_centroids %>%
+  bind_rows(eez_eu_centroid)
 ```
 
 Starting with the EEZ file, let's attach our summary statistics directly to it to check that things match up. 
 
 ```{r}
-# Match all rows (1442 obs)
-eez_dw_sf <- eez_sf %>%
-  full_join(flag_eez_summary, by = "eez_id")
-
-# First extract rows with both a geoname and stats (1337 rows)
-eez_dw_sf_match <- eez_dw_sf %>%
-  dplyr::filter(!is.na(geoname) & !is.na(n_vessels))
-
-# Let's find EEZs with no distant water fishing (97 entries)
-# Most appear to belong to either EU states, 
-eez_no_dw <- eez_dw_sf %>%
-  dplyr::filter(is.na(n_vessels) & !is.na(geoname))
-
-# Let's see if we have any outdated EEZ codes with distant water fishing, but no EEZ info (8 entries)
-# Not ideal, but they all correspond to two EZZ codes: "8344" (Chagos Archipelago - UK/Mauritius) and "8399" (Bouvet Island - Norway). 
-# Leaving these for now. 
-eez_no_sf <- eez_dw_sf %>%
-  dplyr::filter(!is.na(n_vessels) & is.na(geoname))
-
-# Let's save all but the last category
-eez_dw_sf <- eez_dw_sf %>%
-  dplyr::filter((!is.na(n_vessels) & !is.na(geoname)) | (is.na(n_vessels) & !is.na(geoname)))
-```
-
-Now let's do something similar with our land file. 
-
-```{r}
-# Match all rows (1407 obs)
-land_flag_sf <- land_sf %>%
-  full_join(flag_eez_summary, by = c("admin_iso3" = "flag_iso3"))
-
-# First extract rows with both an admin name and stats (1289 rows)
-land_flag_sf_match <- land_flag_sf %>%
-  dplyr::filter(!is.na(admin) & !is.na(n_vessels))
-
-# Then find countries with no dw fishing vessels (112 rows)
-land_no_dw <- land_flag_sf %>%
-  dplyr::filter(!is.na(admin) & is.na(n_vessels))
-
-# Any vessel flags with no matching land? (6 entries)
-# All coorespond to "TUV" - "Tuvalu" doesn't appear on our map for some reason. Appears to only be one vessel, probably not a big deal. 
-land_no_sf <- land_flag_sf %>%
-  dplyr::filter(is.na(admin) & !is.na(n_vessels))
-
-# Save all but the last
-land_flag_sf <- land_flag_sf %>%
-  dplyr::filter((!is.na(admin) & !is.na(n_vessels)) | (!is.na(admin) & is.na(n_vessels)))
+# # Match all rows (1442 obs)
+# eez_dw_sf <- eez_sf %>%
+#   full_join(flag_eez_summary, by = "eez_id")
+# 
+# # First extract rows with both a geoname and stats (1337 rows)
+# eez_dw_sf_match <- eez_dw_sf %>%
+#   dplyr::filter(!is.na(geoname) & !is.na(n_vessels))
+# 
+# # Let's find EEZs with no distant water fishing (97 entries)
+# # Most appear to belong to either EU states, 
+# eez_no_dw <- eez_dw_sf %>%
+#   dplyr::filter(is.na(n_vessels) & !is.na(geoname))
+# 
+# # Let's see if we have any outdated EEZ codes with distant water fishing, but no EEZ info (8 entries)
+# # Not ideal, but they all correspond to two EZZ codes: "8344" (Chagos Archipelago - UK/Mauritius) and "8399" (Bouvet Island - Norway). 
+# # Leaving these for now. 
+# eez_no_sf <- eez_dw_sf %>%
+#   dplyr::filter(!is.na(n_vessels) & is.na(geoname))
+# 
+# # Let's save all but the last category
+# eez_dw_sf <- eez_dw_sf %>%
+#   dplyr::filter((!is.na(n_vessels) & !is.na(geoname)) | (is.na(n_vessels) & !is.na(geoname)))
+# ```
+# 
+# Now let's do something similar with our land file. 
+# 
+# ```{r}
+# # Match all rows (1407 obs)
+# land_flag_sf <- land_sf %>%
+#   full_join(flag_eez_summary, by = c("admin_iso3" = "flag_iso3"))
+# 
+# # First extract rows with both an admin name and stats (1289 rows)
+# land_flag_sf_match <- land_flag_sf %>%
+#   dplyr::filter(!is.na(admin) & !is.na(n_vessels))
+# 
+# # Then find countries with no dw fishing vessels (112 rows)
+# land_no_dw <- land_flag_sf %>%
+#   dplyr::filter(!is.na(admin) & is.na(n_vessels))
+# 
+# # Any vessel flags with no matching land? (6 entries)
+# # All coorespond to "TUV" - "Tuvalu" doesn't appear on our map for some reason. Appears to only be one vessel, probably not a big deal. 
+# land_no_sf <- land_flag_sf %>%
+#   dplyr::filter(is.na(admin) & !is.na(n_vessels))
+# 
+# # Save all but the last
+# land_flag_sf <- land_flag_sf %>%
+#   dplyr::filter((!is.na(admin) & !is.na(n_vessels)) | (!is.na(admin) & is.na(n_vessels)))
 
 ```
 
 # Connectivity plots
 
-## EEZ Centroids 
-
-In order to make our connection plots, we need to find the centroids of each EEZ and flag state so we can create the connectivity lines. In the Distant Water Fishing Atlas, this gets a little tricky because we want our plots to be centered on each EEZ of interest, depending on the region. 
-
-This is why we have created files with our EEZ and country polygons duplicated and extended such that the total extent ranges from -360 to 360 degrees. We can then clip these to the appropriate extents for each of our seven regions, such that no polygons (and connectivity) lines should be getting bifurcated. 
-
-For the purposes of plotting the EEZs in which the fishing activity is taking place, we're using a simplified form of the Maritime Boundaries - World EEZs (v11) from MarineRegions.org.
-
-For our seven regions, we're using the following regional centroids: 
-- East Asia & Pacific: (170, -5)
-- Europe & Central Asia: (0, 50)
-- Latin America & Caribbean: (-70, -15)
-- Middle East & North Africa: (25, 10)
-- North America: (-100, 40)
-- South Asia: (80, 15)
-- Sub-Saharan Africa: (25, -15) 
-
-As a starting point, we'll therefore try creating our regional extents by going +/- 180 degrees from those points: 
-- East Asia & Pacific: (-10, 350)
-- Europe & Central Asia: (-180, 180)
-- Latin America & Caribbean: (-250, -110)
-- Middle East & North Africa: (-155, 205)
-- North America: (-280, 80)
-- South Asia: (-100, 260)
-- Sub-Saharan Africa: (-155, 205) 
-
-```{r}
-map_coord <- list(east_asia_pacific = c(0, 360),
-                  europe_central_asia = c(-180, 180),
-                  latin_america_caribbean = c(-180, 180),
-                  middle_east_north_africa = c(-180, 180),
-                  north_america = c(-180, 180),
-                  south_asia = c(-180, 180),
-                  sub_saharan_africa = c(-180, 180))
-```
-
-
-```{r}
-  # East Asia & Pacific
-  east_asia_pacific_eez_sf <- st_crop(eez_sf, c(xmin = map_coord$east_asia_pacific[1],
-                                                xmax = map_coord$east_asia_pacific[2],
-                                                ymin=-90, ymax=90))
-  east_asia_pacific_eez_centroids <- east_asia_pacific_eez_sf %>%
-    st_centroid() %>%
-    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-    mutate(region = "East Asia & Pacific")
-  
-  # Europe & Central Asia
-  europe_central_asia_eez_sf <- st_crop(eez_sf, c(xmin = map_coord$europe_central_asia[1],
-                                                xmax = map_coord$europe_central_asia[2],
-                                                ymin=-90, ymax=90))
-  europe_central_asia_eez_centroids <- europe_central_asia_eez_sf %>%
-    st_centroid() %>%
-    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-    mutate(region = "Europe & Central Asia")
-  
-  # Latin America & Caribbean
-  latin_america_caribbean_eez_sf <- st_crop(eez_sf, c(xmin = map_coord$latin_america_caribbean[1],
-                                                xmax = map_coord$latin_america_caribbean[2],
-                                                ymin=-90, ymax=90))
-  latin_america_caribbean_eez_centroids <- latin_america_caribbean_eez_sf %>%
-    st_centroid() %>%
-    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-    mutate(region = "Latin America & Caribbean")
-  
-  # Middle East & North Africa
-  middle_east_north_africa_eez_sf <- st_crop(eez_sf, c(xmin = map_coord$middle_east_north_africa[1],
-                                                xmax = map_coord$middle_east_north_africa[2],
-                                                ymin=-90, ymax=90))
-  middle_east_north_africa_eez_centroids <- middle_east_north_africa_eez_sf %>%
-    st_centroid() %>%
-    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-    mutate(region = "Middle East & North Africa")
-  
-  # North America
-  north_america_eez_sf <- st_crop(eez_sf, c(xmin = map_coord$north_america[1],
-                                                xmax = map_coord$north_america[2],
-                                                ymin=-90, ymax=90))
-  north_america_eez_centroids <- north_america_eez_sf %>%
-    st_centroid() %>%
-    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-    mutate(region = "North America")
-  
-  # South Asia
-  south_asia_eez_sf <- st_crop(eez_sf, c(xmin = map_coord$south_asia[1],
-                                                xmax = map_coord$south_asia[2],
-                                                ymin=-90, ymax=90))
-  south_asia_eez_centroids <- south_asia_eez_sf %>%
-    st_centroid() %>%
-    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-    mutate(region = "South Asia")
-  
-  # Sub Saharan Africa
-  sub_saharan_africa_eez_sf <- st_crop(eez_sf, c(xmin = map_coord$sub_saharan_africa[1],
-                                                xmax = map_coord$sub_saharan_africa[2],
-                                                ymin=-90, ymax=90))
-  sub_saharan_africa_eez_centroids <- sub_saharan_africa_eez_sf %>%
-    st_centroid() %>%
-    dplyr::select(eez_id, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-    mutate(region = "Sub-Saharan Africa")
-  
-  # Bind together 
-  eez_centroids <- east_asia_pacific_eez_centroids %>%
-    rbind(europe_central_asia_eez_centroids) %>%
-    rbind(latin_america_caribbean_eez_centroids) %>%
-    rbind(middle_east_north_africa_eez_centroids) %>%
-    rbind(north_america_eez_centroids) %>%
-    rbind(south_asia_eez_centroids) %>%
-    rbind(sub_saharan_africa_eez_centroids)
-  
-  # Put centroids in lon/lat columns
-  eez_centroid_coordinates <- tibble(eez_id = eez_centroids$eez_id,
-                                     pol_type = eez_centroids$pol_type,
-                                     geoname = eez_centroids$geoname,
-                                     eez_ter_iso3 = eez_centroids$eez_ter_iso3,
-                                     eez_ter_name = eez_centroids$eez_ter_name,
-                                     eez_sov_iso3 = eez_centroids$eez_sov_iso3,
-                                     eez_sov_name = eez_centroids$eez_sov_name,
-                                     region = eez_centroids$region) %>% 
-    bind_cols(do.call(rbind, st_geometry(eez_centroids)) %>%
-                as_tibble() %>%
-                setNames(c("eez_lon", "eez_lat"))) %>%
-    arrange(eez_id)
-  
-  # We only need one set of EEZ coordinates for each EEZ - let's figure out which region each EEZ is being displayed in. 
-  eez_centroid_coordinates_keep <- eez_centroid_coordinates %>%
-    mutate(region_to_keep = case_when(eez_ter_iso3 == "ATA" ~ "NA",
-                                   eez_ter_iso3 == "ATF" ~ "Sub-Saharan Africa",
-                                   eez_ter_iso3 == "ESH" ~ "Middle East & North Africa",
-                                   eez_ter_iso3 == "MYT" ~ "Sub-Saharan Africa",
-                                   eez_ter_iso3 == "REU" ~ "Sub-Saharan Africa",
-                                   eez_ter_iso3 == "SHN" ~ "Sub-Saharan Africa",
-                                   eez_ter_iso3 == "SJM" ~ "Europe & Central Asia",
-                                   eez_ter_iso3 == "UMI" ~ "East Asia & Pacific",
-                                   eez_ter_iso3 == "WLF" ~ "East Asia & Pacific",
-                                   TRUE ~ countrycode(eez_ter_iso3, "iso3c", "region"))) %>%
-    dplyr::filter(region == region_to_keep) %>%
-    dplyr::select(-region_to_keep)
-  
-  write_csv(eez_centroid_coordinates_keep, paste0(results_dir, "eez_centroid_coordinates.csv"))
-```
-
-## Flag State Centroids 
-
-We'll now repeat the process for our flag states. 
-
-```{r}
-  # East Asia & Pacific
-  east_asia_pacific_land_sf <- st_crop(land_sf, c(xmin = map_coord$east_asia_pacific[1],
-                                                xmax = map_coord$east_asia_pacific[2],
-                                                ymin=-90, ymax=90))
-  east_asia_pacific_land_centroids <- east_asia_pacific_land_sf %>%
-    st_centroid() %>%
-    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
-    mutate(region = "East Asia & Pacific")
-  
-  # Europe & Central Asia
-  europe_central_asia_land_sf <- st_crop(land_sf, c(xmin = map_coord$europe_central_asia[1],
-                                                xmax = map_coord$europe_central_asia[2],
-                                                ymin=-90, ymax=90))
-  europe_central_asia_land_centroids <- europe_central_asia_land_sf %>%
-    st_centroid() %>%
-    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
-    mutate(region = "Europe & Central Asia")
-  
-  # Latin America & Caribbean
-  latin_america_caribbean_land_sf <- st_crop(land_sf, c(xmin = map_coord$latin_america_caribbean[1],
-                                                xmax = map_coord$latin_america_caribbean[2],
-                                                ymin=-90, ymax=90))
-  latin_america_caribbean_land_centroids <- latin_america_caribbean_land_sf %>%
-    st_centroid() %>%
-    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
-    mutate(region = "Latin America & Caribbean")
-  
-  # Middle East & North Africa
-  middle_east_north_africa_land_sf <- st_crop(land_sf, c(xmin = map_coord$middle_east_north_africa[1],
-                                                xmax = map_coord$middle_east_north_africa[2],
-                                                ymin=-90, ymax=90))
-  middle_east_north_africa_land_centroids <- middle_east_north_africa_land_sf %>%
-    st_centroid() %>%
-    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
-    mutate(region = "Middle East & North Africa")
-  
-  # North America
-  north_america_land_sf <- st_crop(land_sf, c(xmin = map_coord$north_america[1],
-                                                xmax = map_coord$north_america[2],
-                                                ymin=-90, ymax=90))
-  north_america_land_centroids <- north_america_land_sf %>%
-    st_centroid() %>%
-    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
-    mutate(region = "North America")
-  
-  # South Asia
-  south_asia_land_sf <- st_crop(land_sf, c(xmin = map_coord$south_asia[1],
-                                                xmax = map_coord$south_asia[2],
-                                                ymin=-90, ymax=90))
-  south_asia_land_centroids <- south_asia_land_sf %>%
-    st_centroid() %>%
-    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
-    mutate(region = "South Asia")
-  
-  # Sub Saharan Africa
-  sub_saharan_africa_land_sf <- st_crop(land_sf, c(xmin = map_coord$sub_saharan_africa[1],
-                                                xmax = map_coord$sub_saharan_africa[2],
-                                                ymin=-90, ymax=90))
-  sub_saharan_africa_land_centroids <- sub_saharan_africa_land_sf %>%
-    st_centroid() %>%
-    dplyr::select(admin_iso3, admin, sov_iso3, sovereign, notes) %>%
-    mutate(region = "Sub-Saharan Africa")
-  
-  # Bind together
-  land_centroids <- east_asia_pacific_land_centroids %>%
-    rbind(europe_central_asia_land_centroids) %>%
-    rbind(latin_america_caribbean_land_centroids) %>%
-    rbind(middle_east_north_africa_land_centroids) %>%
-    rbind(north_america_land_centroids) %>%
-    rbind(south_asia_land_centroids) %>%
-    rbind(sub_saharan_africa_land_centroids)
-  
-  # Put centroids in lon/lat columns
-  land_centroid_coordinates <- tibble(admin_iso3 = land_centroids$admin_iso3,
-                                      admin = land_centroids$admin,
-                                      sov_iso3 = land_centroids$sov_iso3,
-                                      sovereign = land_centroids$sovereign,
-                                      region = land_centroids$region) %>% 
-    bind_cols(do.call(rbind, st_geometry(land_centroids)) %>%
-                as_tibble() %>%
-                setNames(c("flag_lon", "flag_lat"))) %>%
-    arrange(admin_iso3) %>%
-    na.omit() # removes Somaliland
-  
-  write_csv(land_centroid_coordinates, paste0(results_dir, "land_centroid_coordinates.csv"))
-
-  
-   # #Manually correct certain centroids
-   # manual_coordinates_flags <- read_csv(paste0(results_dir, "corrected_flag_centroids.csv"))
-   # 
-   # land_eez_map_centroid_coordinates <- land_eez_map_centroid_coordinates %>%
-   #   left_join(manual_coordinates_flags, by = c("flag", "region")) %>%
-   #   mutate(flag_lon = ifelse(!is.na(flag_lon_edit), flag_lon_edit, flag_lon),
-   #          flag_lat = ifelse(!is.na(flag_lat_edit), flag_lat_edit, flag_lat)) %>%
-   #   dplyr::select(-flag_lon_edit, -flag_lat_edit)
-
-```
-
-
 ## Add centroids to our EEZ/flag state distant water summary
 
 ```{r}
 flag_eez_summary_centroids <- flag_eez_summary %>%
-  left_join(eez_centroid_coordinates_keep, by = c("eez_id")) %>%
-  left_join(land_centroid_coordinates, by = c("region", "flag_iso3" = "admin_iso3"))
+  left_join(eez_centroids, by = c("eez_id", "eez_ter_iso3")) %>%
+  dplyr::filter(!is.na(eez_lon)) %>%
+  left_join(land_centroids, by = c("region", "flag_iso3" = "admin_iso3"))
+
+# Manually correct for Tuvalu - for some reason it's not in the land file
+flag_eez_summary_centroids$flag_lon[flag_eez_summary_centroids$flag_iso3 == "TUV"] <- 177.6493
+flag_eez_summary_centroids$flag_lat[flag_eez_summary_centroids$flag_iso3 == "TUV"] <- -7.1095
+
 ```
 
 ### East Asia & Pacific
@@ -395,7 +212,7 @@ flag_eez_summary_centroids <- flag_eez_summary %>%
 # Let's do a test run with East Asia (-10, 350)
 eez_mapping_wlines_east_asia_pacific <- flag_eez_summary_centroids %>%
   ungroup() %>%
-  dplyr::filter(!is.na(flag_lon)) %>%
+  dplyr::filter(!is.na(flag_lon)) %>% # remove NA flagged
   dplyr::filter(region == "East Asia & Pacific") %>%
   select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
   purrr::transpose() %>% 
@@ -410,15 +227,12 @@ eez_mapping_wlines_east_asia_pacific <- flag_eez_summary_centroids %>%
   st_shift_longitude() %>%
   sf::st_sf(crs = 4326) 
 
-test_dat_1 <- eez_mapping_wlines_east_asia_pacific %>%
-  dplyr::filter(eez_id == 8455)
-
 test_plot_east_asia_pacific <- ggplot()+
-  geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
-  geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
-  geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat_1$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
-  geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat_1$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = test_dat_1, col = "darkgoldenrod", size = 0.25) +
+  # geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  # geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  # geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat_1$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  # geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat_1$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_east_asia_pacific, col = "darkgoldenrod", size = 0.25) +
   coord_sf(xlim = c(-10,350), ylim = c(-90,90))+
   scale_x_continuous(expand = c(0,0))+
   scale_y_continuous(expand = c(0,0))
@@ -445,15 +259,12 @@ eez_mapping_wlines_all_others <- flag_eez_summary_centroids %>%
   st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
   sf::st_sf(crs = 4326) 
 
-test_dat_2 <- eez_mapping_wlines_all_others %>%
-  dplyr::filter(eez_id == 8364)
-
 test_plot_all_others <- ggplot()+
-  geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
-  geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
-  geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat_2$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
-  geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat_2$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
-  geom_sf(data = test_dat_2, col = "darkgoldenrod", size = 0.25) +
+  # geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  # geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  # geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat_2$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  # geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat_2$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_all_others, col = "darkgoldenrod", size = 0.25) +
   coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
   scale_x_continuous(expand = c(0,0))+
   scale_y_continuous(expand = c(0,0))
@@ -467,9 +278,6 @@ eez_mapping_wlines <- eez_mapping_wlines_east_asia_pacific %>%
 st_write(eez_mapping_wlines, paste0(results_dir, "eez_flag_state_connectivity_lines.gpkg"), delete_layer = T)
 st_write(eez_mapping_wlines, paste0(app_dir, "eez_flag_state_connectivity_lines.gpkg"), delete_layer = T)
 ```
-
-
-
 
 
 ```{r}

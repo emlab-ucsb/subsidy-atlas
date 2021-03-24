@@ -31,6 +31,9 @@ library(tidyverse) # data manipulation
 data_dir <- here::here("data/edited/")
   if (dir.exists(data_dir) == F) { dir.create(data_dir, recursive = T) }
 
+results_dir <- here::here("results/00a-eez-polygon-wrangling/")
+  if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
+
 ### Also save to app data directory
 app_dir <- here::here("app-global/data/")
   if (dir.exists(app_dir) == F) { dir.create(app_dir, recursive = T) }
@@ -42,7 +45,7 @@ This datafile is freely available from https://www.marineregions.org/downloads.p
 
 ## Simplify polygons
 
-This code block is commented out because the raw data is not contained in this repository due to size constraints.
+We first simplify the EEZ polygons because they are much higher resolution than we need for visualization purposes. This code block is commented out because the raw data is not contained in this repository due to size constraints, and this process is time consuming. The simplified version is available in this repository and is instead read in below. 
 
 ```{r}
 # Path where the raw data file lives - NOT IN THIS REPOSITORY
@@ -59,58 +62,9 @@ This code block is commented out because the raw data is not contained in this r
 
 ```
 
-## Create sovereign country list and designate all EEZs
-
 ```{r}
 eez_sf_simple <- st_read(paste0(data_dir, "world_eez_v11_simple.gpkg")) %>%
   st_set_crs(4326)
-```
-
-```{r}
-# # Extract attributes we want to keep
-# eez_attrib <- eez_sf_simple %>%
-#   st_drop_geometry()
-#   
-# write_csv(eez_attrib, paste0(data_dir, "eez_attributes.csv"))
-# 
-# # Now let's do some editing
-# eez_attrib_all <- eez_attrib %>%
-#   rowwise() %>%
-#   mutate(iso_ter_all = list(c(iso_ter1, iso_ter2, iso_ter3)),
-#          iso_sov_all = list(c(iso_sov1, iso_sov2, iso_sov3))) %>%
-#   dplyr::select(mrgid, pol_type, geoname, iso_ter_all, iso_sov_all)
-# 
-# # Create some new country names
-# eez_attrib_expanded <- eez_attrib_all %>%
-#   unnest(cols = c("iso_ter_all", "iso_sov_all")) %>%
-#   mutate(iso_ter = ifelse(!is.na(iso_ter_all), iso_ter_all, iso_sov_all)) %>%
-#   dplyr::filter(!is.na(iso_ter)) %>%
-#   mutate(name_ter = countrycode(iso_ter, "iso3c", 'country.name.en'),
-#          name_sov = countrycode(iso_sov_all, "iso3c", 'country.name.en'),
-#          region = countrycode(iso_ter, "iso3c", "region"))
-# 
-# # region, continent, un.region.name
-# eez_attrib_expanded <- eez_attrib_expanded %>%
-#   mutate(region_custom = case_when(iso_ter == "ATA" ~ "NA",
-#                                    iso_ter == "ATF" ~ "Sub-Saharan Africa",
-#                                    iso_ter == "ESH" ~ "Middle East & North Africa",
-#                                    iso_ter == "MYT" ~ "Sub-Saharan Africa",
-#                                    iso_ter == "REU" ~ "Sub-Saharan Africa",
-#                                    iso_ter == "SHN" ~ "Sub-Saharan Africa",
-#                                    iso_ter == "SJM" ~ "Europe & Central Asia",
-#                                    iso_ter == "UMI" ~ "East Asia & Pacific",
-#                                    iso_ter == "WLF" ~ "East Asia & Pacific",
-#                                    TRUE ~ region)) %>%
-#   dplyr::select(-region, -iso_ter_all) %>%
-#   rename(iso_sov = iso_sov_all,
-#          region = region_custom) %>%
-#   arrange(region, name_ter)
-# 
-# write_csv(eez_attrib_expanded, paste0(data_dir, "eez_attributes_expanded.csv"))
-# write_csv(eez_attrib_expanded, paste0(app_dir, "eez_attributes_expanded.csv"))
-
-# Load eez atributes and coordinates created elsewhere
-eez_centroid_coordinates <- read_csv(here::here("results", "04b-connectivity-analysis", "eez_centroid_coordinates.csv"))
 ```
 
 ## Create expanded version of polygons (-360 to 360 degrees)
@@ -144,7 +98,7 @@ eez_sf_all <- eez_sf_simple %>%
 eez_sf_crop <- eez_sf_all %>%
   st_crop(xmin = -360, ymin = -90, xmax = 360, ymax = 90)
 
-# Keep only multipolygons
+# Keep only polygons
 eez_sf_polygon <- st_collection_extract(
   eez_sf_crop,
   type = c("POLYGON"),
@@ -155,16 +109,156 @@ ggplot() + geom_sf(data = eez_sf_polygon, aes(fill = mrgid))
 
 # Save
 st_write(eez_sf_polygon, paste0(data_dir, "world_eez_v11_simple_neg360_360.gpkg"), delete_layer = T)
+```
 
-# Save duplicated version
-# Add attributes back in there
-eez_sf_out <- eez_centroid_coordinates %>%
-  full_join(eez_sf_polygon, by = c("eez_id" = "mrgid")) %>%
+## EEZ Attributes
+
+```{r}
+# Extract attributes we want to keep
+eez_attrib <- eez_sf_simple %>%
+  st_drop_geometry()
+
+write_csv(eez_attrib, paste0(results_dir, "eez_attributes.csv"))
+
+# Now let's do some editing so we have one row for each territory (dealing with joing regime and disputed areas)
+eez_attrib_all <- eez_attrib %>%
+  rowwise() %>%
+  mutate(iso_ter_all = list(c(iso_ter1, iso_ter2, iso_ter3)),
+         iso_sov_all = list(c(iso_sov1, iso_sov2, iso_sov3))) %>%
+  dplyr::select(mrgid, pol_type, geoname, iso_ter_all, iso_sov_all)
+
+# Asign country names
+eez_attrib_expanded <- eez_attrib_all %>%
+  unnest(cols = c("iso_ter_all", "iso_sov_all")) %>%
+  mutate(iso_ter = ifelse(!is.na(iso_ter_all), iso_ter_all, iso_sov_all)) %>%
+  dplyr::filter(!is.na(iso_ter)) %>%
+  mutate(name_ter = countrycode(iso_ter, "iso3c", 'country.name.en'),
+         name_sov = countrycode(iso_sov_all, "iso3c", 'country.name.en'),
+         region = countrycode(iso_ter, "iso3c", "region"))
+
+# Manually assign regions for those that are missing
+eez_attrib_expanded <- eez_attrib_expanded %>%
+  mutate(region_custom = case_when(iso_ter == "ATA" ~ "NA",
+                                   iso_ter == "ATF" ~ "Sub-Saharan Africa",
+                                   iso_ter == "ESH" ~ "Middle East & North Africa",
+                                   iso_ter == "MYT" ~ "Sub-Saharan Africa",
+                                   iso_ter == "REU" ~ "Sub-Saharan Africa",
+                                   iso_ter == "SHN" ~ "Sub-Saharan Africa",
+                                   iso_ter == "SJM" ~ "Europe & Central Asia",
+                                   iso_ter == "UMI" ~ "East Asia & Pacific",
+                                   iso_ter == "WLF" ~ "East Asia & Pacific",
+                                   TRUE ~ region)) %>%
+  dplyr::select(-region, -iso_ter_all) %>%
+  rename(iso_sov = iso_sov_all,
+         region = region_custom) %>%
+  arrange(region, name_ter)
+
+write_csv(eez_attrib_expanded, paste0(results_dir, "eez_attributes_expanded.csv"))
+```
+
+## Duplicate Polygons
+
+Since many of our polygons have multiple administering territories (e.g., joint regime and disputed areas), we want to duplicate these so we have a polygon associated with that area assigned to each territory. 
+
+```{r}
+# Add attributes back to our polygons
+eez_sf_out <- eez_sf_polygon %>%
+  full_join(eez_attrib_expanded, by = c("mrgid")) %>%
   dplyr::filter(!is.na(geoname))
+```
 
-st_write(eez_sf_out, paste0(data_dir, "world_eez_v11_simple_neg360_360_ter_duplicates.gpkg"), delete_layer = T)
-st_write(eez_sf_out, paste0(app_dir, "world_eez_v11_simple_neg360_360_ter_duplicates.gpkg"), delete_layer = T)
+## Find Centroids 
 
+In order to make our connectivity plots later on, we will need the centroids of each EEZ (and flag state) so we can create the connectivity lines. In the Distant Water Fishing Atlas, this gets a little tricky because we want our plots to be centered on each EEZ of interest, depending on the region. 
+
+This is why we duplicated and extended our polygons such that the total extent ranges from -360 to 360 degrees. We can then clip these to the appropriate extents for each of our seven regions, such that no polygons (or connectivity lines) should be getting bifurcated. 
+
+For our seven regions, we're using the following regional centroids: 
+- East Asia & Pacific: (170, -5)
+- Europe & Central Asia: (0, 50)
+- Latin America & Caribbean: (-70, -15)
+- Middle East & North Africa: (25, 10)
+- North America: (-100, 40)
+- South Asia: (80, 15)
+- Sub-Saharan Africa: (25, -15) 
+
+As a starting point, we'll therefore have our map extents set by going +/- 180 degrees from those points: 
+
+- East Asia & Pacific: (-10, 350)
+- Europe & Central Asia: (-180, 180)
+- Latin America & Caribbean: (-250, -110)
+- Middle East & North Africa: (-155, 205)
+- North America: (-280, 80)
+- South Asia: (-100, 260)
+- Sub-Saharan Africa: (-155, 205) 
+
+For simplicity, we should be able to get everthing we need by using 0 - 360 for the East Asia & Pacific Region, and -180 - 180 for everything else. 
+
+```{r}
+map_coord <- list(east_asia_pacific = c(0, 360),
+                  all_others = c(-180, 180))
+```
+
+```{r}
+  # East Asia & Pacific
+  east_asia_pacific_eez_sf <- st_crop(eez_sf_out, c(xmin = map_coord$east_asia_pacific[1],
+                                                xmax = map_coord$east_asia_pacific[2],
+                                                ymin=-90, ymax=90))
+  east_asia_pacific_eez_centroids <- east_asia_pacific_eez_sf %>%
+    st_centroid() %>%
+    dplyr::select(mrgid, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov, region) %>%
+    dplyr::filter(region == "East Asia & Pacific")
+  
+  # All other regions
+  all_others_eez_sf <- st_crop(eez_sf_out, c(xmin = map_coord$all_others[1],
+                                                xmax = map_coord$all_others[2],
+                                                ymin=-90, ymax=90))
+  all_other_eez_centroids <- all_others_eez_sf %>%
+    st_centroid() %>%
+    dplyr::select(mrgid, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov, region) %>%
+    dplyr::filter(region != "East Asia & Pacific")
+
+  # Bind together 
+  eez_centroids <- east_asia_pacific_eez_centroids %>%
+    rbind(all_other_eez_centroids)
+  
+  # Put centroids in lon/lat columns
+  eez_centroid_coordinates <- tibble(mrgid = eez_centroids$mrgid,
+                                     pol_type = eez_centroids$pol_type,
+                                     geoname = eez_centroids$geoname,
+                                     eez_ter_iso3 = eez_centroids$eez_ter_iso3,
+                                     eez_ter_name = eez_centroids$eez_ter_name,
+                                     eez_sov_iso3 = eez_centroids$eez_sov_iso3,
+                                     eez_sov_name = eez_centroids$eez_sov_name,
+                                     region = eez_centroids$region) %>% 
+    bind_cols(do.call(rbind, st_geometry(eez_centroids)) %>%
+                as_tibble() %>%
+                setNames(c("eez_lon", "eez_lat"))) %>%
+    arrange(eez_ter_iso3)
+  
+  # Save
+  write_csv(eez_centroid_coordinates, paste0(results_dir, "eez_centroid_coordinates.csv"))
+
+```
+
+## Add Centroids to polygons
+
+```{r}
+# Add Centroids
+eez_sf_out <- eez_sf_out %>%
+  rename(eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
+  left_join(eez_centroid_coordinates, by = c("mrgid", "pol_type", "geoname", "eez_ter_iso3", "eez_ter_name", "eez_sov_iso3", "eez_sov_name",  "region"))
+```
+
+## Manual Correction of Centroids
+
+There might be a few centroids we want to correct - Do that here. 
+
+```{r}
+# Manual centroid corrections
+
+# Save
+st_write(eez_sf_out, paste0(results_dir, "world_eez_v11_simple_neg360_360_centroids.gpkg"), delete_layer = T)
 ```
 
 ## Create region aggregated polygons for landing page
@@ -179,12 +273,13 @@ region_sf <- eez_sf_out %>%
 ggplot()+geom_sf(data = region_sf, aes(fill = region))
 
 st_write(region_sf, paste0(data_dir, "world_eez_regions_neg360_360.gpkg"), delete_layer = T)
+st_write(region_sf, paste0(results_dir, "world_eez_regions_neg360_360.gpkg"), delete_layer = T)
 st_write(region_sf, paste0(app_dir, "world_eez_regions_neg360_360.gpkg"), delete_layer = T)
 ```
 
 ## Create territory aggregated polygons
 
-Before we aggregate by territory, let's also create an aggregated EU polygon. 
+Before we aggregate by territory, we also need to create an aggregated EU polygon. 
 
 ```{r}
 ### Aggregate EU Polygons
@@ -196,7 +291,7 @@ eu_aggregated <- eez_sf_out %>%
   group_by(eez_sov_iso3, pol_type) %>%
   summarize(eez_lon = mean(eez_lon, na.rm = T),
             eez_lat = mean(eez_lat, na.rm = T),
-            eez_id = paste0(eez_id, collapse = ", "),
+            mrgid = paste0(mrgid, collapse = ", "),
             geom = st_union(geom)) %>%
   ungroup() %>%
   mutate(region = "Europe & Central Asia",
@@ -204,7 +299,6 @@ eu_aggregated <- eez_sf_out %>%
          eez_ter_iso3 = "EU",
          eez_ter_name = "European Union",
          eez_sov_name = "European Union")
-
 ```
 
 
@@ -216,372 +310,20 @@ territory_sf <- eez_sf_out %>%
   group_by(region, eez_ter_name, eez_ter_iso3, eez_sov_name, eez_sov_iso3, pol_type, geoname_new) %>%
   summarize(eez_lon = mean(eez_lon, na.rm = T),
             eez_lat = mean(eez_lat, na.rm = T),
-            eez_id = paste0(eez_id, collapse = ", "),
+            mrgid = paste0(mrgid, collapse = ", "),
             geom = st_union(geom)) %>%
   ungroup()
 
 others_sf <- eez_sf_out %>%
   dplyr::filter(pol_type != "200NM") %>%
   mutate(geoname_new = geoname) %>%
-  dplyr::select(region, eez_ter_name, eez_ter_iso3, eez_sov_name, eez_sov_iso3, pol_type, geoname_new, eez_lon, eez_lat, eez_id, geom)
+  dplyr::select(region, eez_ter_name, eez_ter_iso3, eez_sov_name, eez_sov_iso3, pol_type, geoname_new, eez_lon, eez_lat, mrgid, geom)
 
 territory_sf_out <- territory_sf %>%
   rbind(others_sf) %>%
-  rbind(eu_aggregated)
+  rbind(eu_aggregated) %>%
+  rename(eez_id = mrgid)
   
-st_write(territory_sf_out, paste0(data_dir, "world_eez_ter_neg360_360.gpkg"), delete_layer = T)
-st_write(territory_sf_out, paste0(app_dir, "world_eez_ter_neg360_360.gpkg"), delete_layer = T)
+st_write(territory_sf_out, paste0(results_dir, "world_eez_ter_neg360_360_subsidy_atlas.gpkg"), delete_layer = T)
+st_write(territory_sf_out, paste0(app_dir, "world_eez_ter_neg360_360_subsidy_atlas.gpkg"), delete_layer = T)
 ```
-
-# 50m World Political Units/Subunits (Land Map)
-
-## Preliminary edits
-
-Prior to making the edits detailed below, some edits were done to both shapefiles before importing a combined version into R. 
-
-We first imported `ne_50m_admin_0_map_subunits.shp` into QGIS (version 3.4.7-Madeira) and extracted the polygon for the Crimean Peninsula. We then imported the `ne_50m_admin_0_map_units.shp` into QGIS, deleted the portion of the Russian polygon cooresponding to the Crimean Peninsula and replaced it with the polygon extracted from the subunits shapefile. We then duplicated this layer twice and reprojected the duplicate layers so the total extent was from -540 to 540 degrees longitude. We then dissolved all polygons by all attributes. Some manual eliminations had to be made so that polygons with the same attributes did not have small slivers and/or dividing lines between them. We then clipped the layer extent to -360 to 360 degrees longitude and exported this file out of QGIS as a shapefile. This file can be found in 
-`./data/edited/ne_50m_admin_0_map_units_subunits_neg360_360/land_50m.shp`. 
-
-The final shapefile was outputted with the following CRS: WGS 84 (EPSG:4326).
-
-### Edits
-
-The edits done to this shapefile primarily relate to manually assigning some attributes, and joining some subunits back together.
-
-```{r}
-land_map <- read_sf(dsn = here::here("data", "edited", "ne_50m_admin_0_map_units_subunits_neg360_360"), 
-                    layer = "land_50m") %>%
-  st_transform(crs = 4326) %>%
-  setNames(tolower(names(.))) %>%
-  dplyr::select(sovereign = sovereignt,
-                sov_iso3 = sov_a3,
-                type,
-                admin,
-                admin_iso3 = adm0_a3,
-                geounit,
-                geo_iso3 = gu_a3,
-                subunit,
-                subunit_iso3 = su_a3,
-                notes = note_brk,
-                geometry) %>%
-  arrange(sov_iso3, admin_iso3, geo_iso3)
-```
-
-Let's first sort out those that have the same sovereign, admin, and geounit.
- 
-```{r}
-# Let's start with entries that have the same party listed as sovereign, admin, geounit, and subunit (193 entries)
-land_same <- land_map %>%
-  dplyr::filter(sovereign == admin & admin == geounit & geounit == subunit)
-
-# Northern Cyprus - self admin, but claimed by Turkey. International community considers it to be part of Cyprus. 
-land_same$sovereign[land_same$sov_iso3 == "CYN"] <- "Cyprus"
-land_same$type[land_same$sov_iso3 == "CYN"] <- "Disputed"
-
-# Kosovo - partially recognized state, claimed by Serbia. Much of international community recognizes its independance, but WTO maps include it with Serbia. We do this down below
-
-# Western Sahara - self admin, but claimed by Morocco. International community largely does not recognize Morocco's sovereignty, but WTO maps include it with Morocco. 
-land_same$sovereign[land_same$sov_iso3 == "SAH"] <- "Morocco"
-land_same$type[land_same$sov_iso3 == "SAH"] <- "Disputed"
-
-# Somaliland - self admin, but claimed by Somalia. International community considers it to be an autonomous region of Somalia
-land_same$sovereign[land_same$sov_iso3 == "SOL"] <- "Somalia"
-land_same$type[land_same$sov_iso3 == "SOL"] <- "Disputed"
-
-# Taiwan - self admin, but claimed by China. Is a non-member of the WTO, separate from China. 
-# Leaving as is. 
-
-# Let's now simplify to a sovereign state and an administering state/territory. 
-land_same_edit <- land_same %>%
-  dplyr::select(type, 
-                sovereign,
-                admin,
-                notes,
-                geometry) 
-
-mapview(land_same_edit)
-```
-
-Now let's look at those entries where subunit differs.
-
-```{r}
-# Entries that have the same party listed as sovereign, admin, and geounit, but have a different subunit (2 entries)
-land_subunits <- land_map %>%
-  dplyr::filter(sovereign == admin & admin == geounit & geounit != subunit)
-
-# Crimea - administered by Russia, claimed by Ukraine. International community largely recognizes Ukraine sovereignty over it
-land_subunits$type[land_subunits$subunit_iso3 == "RUC"] <- "Disputed"
-
-# United States - naming mistake? 
-land_subunits$subunit[land_subunits$subunit_iso3 == "USA"] <- "United States of America"
-
-# Let's now simplify to a sovereign state and an administering state/territory. 
-land_subunits_edit <- land_subunits %>%
-  dplyr::select(type, 
-                sovereign,
-                admin,
-                notes,
-                geometry) 
-
-mapview(land_subunits_edit)
-
-```
-
-Next entries where the geounit and the subunit differ.
-
-```{r}
-# Entries that have the same party listed as sovereign and admin, but have a different geounit and subunit (26 entries)
-land_geounits <- land_map %>%
-  dplyr::filter(sovereign == admin & admin != geounit)
-
-# Antigua and Barbuda - two separate islands. WTO displays the two together
-antiguabarbuda <- land_geounits %>%
-  dplyr::filter(sovereign == "Antigua and Barbuda") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-antiguabarbuda$notes <- "Islands of Antigua and Barbuda combined"
-
-# Belgium - officially has three regions: Brussels Capital Region, Flemish Region, and Walloon Region. WTO displays the three together
-belgium <- land_geounits %>%
-  dplyr::filter(sovereign == "Belgium") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-belgium$notes <- "Brussels Capital Region, Flemish Region, and Walloon Region combined"
-
-# Bosnia and Herzegovina (Republic Srpska) - WTO combines it with the rest of Bosnia and Herzegovina
-bosnia <- land_geounits %>%
-  dplyr::filter(sovereign == "Bosnia and Herzegovina") %>%
-  dplyr::select(type, sovereign, admin, notes, geometry) %>%
-  rbind(land_same_edit %>% dplyr::filter(sovereign == "Bosnia and Herzegovina")) %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-bosnia$notes <- "Includes Republic Srpska"
-
-# Guadeloupe - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
-land_geounits$admin[land_geounits$geounit == "Guadeloupe"] <- "Guadeloupe"
-
-# French Guiana - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
-land_geounits$admin[land_geounits$geounit == "French Guiana"] <- "French Guiana"
-
-# Martinique - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
-land_geounits$admin[land_geounits$geounit == "Martinique"] <- "Martinique"
-
-# Mayotte - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
-land_geounits$admin[land_geounits$geounit == "Mayotte"] <- "Mayotte"
-land_geounits$type[land_geounits$geounit == "Mayotte"] <- "Disputed"
-
-# Reunion - French overseas region. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
-land_geounits$admin[land_geounits$geounit == "Reunion"] <- "Reunion"
-
-# United Kingdom - comprised of England, Northern Ireland, Wales, and Scotland. WTO displays them together as the United Kingdom
-uk <- land_geounits %>%
-  dplyr::filter(sovereign == "United Kingdom") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-uk$notes <- "Includes England, Northern Ireland, Wales, and Scotland"
-
-# Caribbean Netherlands - special (overseas) municipalities of the Netherlands. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate
-land_geounits$admin[land_geounits$geounit == "Caribbean Netherlands"] <- "Caribbean Netherlands"
-
-# Svalbard and Jan Mayen - remote jurisdiction of Norway. WTO displays as part of continental norway, but for consistancy with EEZ map, will keep separate
-land_geounits$admin[land_geounits$geounit == "Svalbard"] <- "Svalbard"
-land_geounits$admin[land_geounits$geounit == "Jan Mayen"] <- "Jan Mayen"
-
-# Tokelau - dependancy of New Zealand. WTO does not diplay as part of New Zealand. 
-land_geounits$admin[land_geounits$geounit == "Tokelau"] <- "Tokelau"
-
-# Bougainville - autonomous region of Papua New Guina. WTO displays as part of Papua New Guina. 
-png <- land_geounits %>%
-  dplyr::filter(geounit == "Bougainville") %>%
-  dplyr::select(type, sovereign, admin, notes, geometry) %>%
-  rbind(land_same_edit %>% dplyr::filter(sovereign == "Papua New Guinea")) %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-png$notes <- "Includes the Autonomous Region of Bougainville"
-
-# Azores and Madeira - autonomous region of Portual. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate. 
-land_geounits$admin[land_geounits$geounit == "Azores"] <- "Azores"
-land_geounits$admin[land_geounits$geounit == "Madeira"] <- "Madeira"
-
-# Republic of Serbia (Vojvodina) - Autonomous region in Serbia. WTO combines it with the rest of Serbia. Also including Kosovo
-serbia <- land_geounits %>%
-  dplyr::filter(sovereign == "Republic of Serbia") %>%
-  dplyr::select(type, sovereign, admin, notes, geometry) %>%
-  rbind(land_same_edit %>% dplyr::filter(sovereign == "Republic of Serbia")) %>%
-  rbind(land_same_edit %>% dplyr::filter(sovereign == "Kosovo")) %>%
-  mutate(type = "Geo unit",
-         sovereign = "Republic of Serbia",
-         admin = "Republic of Serbia") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-serbia$notes <- "Includes Kosovo and the Autonomous Province of Vojvodina"
-
-# Zanzibar - semi-autonomous region of Tanzania. WTO combines it with the rest of Tanzania. 
-tanzania <- land_geounits %>%
-  dplyr::filter(sovereign == "United Republic of Tanzania") %>%
-  mutate(type = "Geo unit") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-tanzania$notes <- "Includes the semi-autonomous region of Zanzibar"
-
-# Now we combine again. 
-combined <- antiguabarbuda %>%
-  rbind(belgium) %>%
-  rbind(bosnia) %>%
-  rbind(uk) %>%
-  rbind(png) %>%
-  rbind(serbia) %>%
-  rbind(tanzania)
-
-land_geounits_edit <- land_geounits %>%
-  dplyr::filter(!(sovereign %in% combined$sovereign)) %>%
-  dplyr::select(type, 
-                sovereign,
-                admin,
-                notes,
-                geometry) %>%
-  rbind(combined)
-  
-mapview(land_geounits_edit)
-
-```
-
-And finally, entries where the sovereign and admin differ.
-
-```{r}
-# Entries that have different parties listed as sovereign and admin (44 entries)
-land_admin <- land_map %>%
-  dplyr::filter(sovereign != admin)
-
-# Ashmore and Cartier Islands - Australian Territory. Including with Australia
-australia <- land_admin %>%
-  dplyr::filter(admin == "Ashmore and Cartier Islands") %>%
-  dplyr::select(type, sovereign, admin, notes, geometry) %>%
-  rbind(land_same_edit %>% dplyr::filter(sovereign == "Australia")) %>%
-  mutate(type = "Geo unit",
-         admin = "Australia") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-australia$notes <- "Includes Ashmore and Cartier Islands"
-
-# Heard Island and McDonald Islands - Australian Territory. Have own EEZ, leaving for now.
-
-# Cocos (Keeling) Islands - Australian Territory, has own EEZ. Spliting apart from indian ocean territory
-land_admin$admin[land_admin$geounit == "Cocos (Keeling) Islands"] <- "Cocos (Keeling) Islands"
-
-# Christmas Island - Australian Territory, has own EEZ. Splitting apart from indian ocean territory
-land_admin$admin[land_admin$geounit == "Christmas Island"] <- "Christmas Island"
-
-# Norfolk Island - Australian Territory, has own EEZ, leaving for now.
-
-# Hong Kong S.A.R./Macao S.A.R - China. Leaving for now. Do not have their own EEZs but are WTO Members indpendantly (?)
-
-# Faroe Islands/Greenland - Denmark. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate. 
-
-# Aland - Finland. Displayed with Finland?
-finland <- land_admin %>%
-  dplyr::filter(sovereign == "Finland") %>%
-  dplyr::select(type, sovereign, admin, notes, geometry) %>%
-  mutate(admin = "Finland") %>%
-  rbind(land_same_edit %>% dplyr::filter(sovereign == "Finland")) %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-finland$notes <- "Includes the Aland Islands"
-
-# French dependancies. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate. 
-
-# United Kingdom dependancies. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate.
-
-# Palestine - Israel. WTO displays separately from Israel. Can combine Gaza and the West Bank? 
-palestine <- land_admin %>%
-  dplyr::filter(admin == "Palestine") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry)) 
-palestine$notes <- "Includes Gaza and the West Bank"
-
-# Siachen Glacier/Kashmir. WTO maps attribute the entire region to India... 
-india <- land_admin %>%
-  dplyr::filter(sovereign == "Kashmir") %>%
-  dplyr::select(type, sovereign, admin, notes, geometry) %>%
-  rbind(land_same_edit %>% dplyr::filter(sovereign == "India")) %>%
-  mutate(type = "Geo unit",
-         sovereign = "India",
-         admin = "India",
-         notes = "Includes the region of Kashmir. Also claimed by Pakistan") %>%
-  group_by(sovereign, type, admin, notes) %>%
-  summarize(geometry = st_union(geometry))
-
-# Combine
-combined2 <- finland %>%
-  rbind(palestine) %>%
-  rbind(india) %>%
-  rbind(australia)
-
-land_admin_edit <- land_admin %>%
-  dplyr::filter(admin != "Ashmore and Cartier Islands") %>%
-  dplyr::filter(sovereign != "Kashmir") %>%
-  dplyr::filter(admin != "Palestine") %>%
-  dplyr::filter(sovereign != "Finland") %>%
-  dplyr::select(type, 
-                sovereign,
-                admin,
-                notes,
-                geometry) %>%
-  rbind(combined2)
-
-```
-
-Now we need to put them all back together and export
-
-```{r}
-# Put them back together
-land_out_raw <- land_subunits_edit %>%
-  rbind(land_geounits_edit) %>%
-  rbind(land_admin_edit)
-
-# Exclude entries from our first cut that have been included elsewhere
-land_same_edit_condensed <- land_same_edit %>%
-  dplyr::filter(!(sovereign %in% c("Bosnia and Herzegovina",
-                                 "Papua New Guinea",
-                                 "Australia",
-                                 "Republic of Serbia",
-                                 "Kosovo",
-                                 "Finland",
-                                 "India")))
-
-land_out <- land_out_raw %>%
-  rbind(land_same_edit_condensed) %>%
-  mutate(sov_iso3 = case_when(sovereign == "eSwatini" ~ "SWZ",
-                                    TRUE ~ countrycode(sovereign, "country.name", "iso3c")),
-         admin_iso3 = case_when(admin == "eSwatini" ~ "SWZ",
-                                admin == "Azores" ~ "PRT",
-                                admin == "Jan Mayen" ~ "SJM",
-                                admin == "Madeira" ~ "PRT",
-                                admin == "Saint Martin" ~ "MAF",
-                                TRUE ~ countrycode(admin, "country.name", "iso3c")))
-```
-
-Let's also do an aggregated EU polygon just in case we need it
-
-```{r}
-land_eu <- land_out %>%
-  dplyr::filter(admin_iso3 %in% eu_countries) %>%
-  mutate(sov_iso3 = "EU") %>%
-  group_by(sov_iso3) %>%
-  summarize(geometry = st_union(geometry)) %>%
-  ungroup() %>%
-  mutate(type = "Political Entity",
-         sovereign = "European Union",
-         admin = "European Union",
-         notes = NA,
-         admin_iso3 = "EU")
-  
-land_out <- land_out %>%
-  rbind(land_eu)
-
-mapview(land_out)
-
-st_write(land_out, paste0(data_dir, "ne_50m_admin_neg360_360.gpkg"), delete_layer = T)
-st_write(land_out, paste0(app_dir, "ne_50m_admin_neg360_360.gpkg"), delete_layer = T)
-```
-
