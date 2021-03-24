@@ -1,143 +1,246 @@
 ---
-title: "Untitled"
-output: html_document
+output:
+  html_document: default
+
+title: "Distant Water Fishing Atlas - High Res EEZ Data Pulling"
+author: "Kat Millage, Matt Warham"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+fontsize: 11pt
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# Load packages
+library(knitr) 
+library(countrycode) # country name matching
+library(bigrquery) # access Bigquery from R
+library(tidyverse)
+
+### Path to vessel list
+vessel_list_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_distant_water.csv")
+
+### Set run options
+# Bigquery project
+bq_project <-  "emlab-gcp"
+vessel_year <- 2018
+
+### Create results directories
+results_dir <- here::here("results/global/05-eez-hi-res-data/")
+  if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
+
+app_dir <- here::here("app-global/data/eez-effort-subs/")
+  if (dir.exists(app_dir) == F) { dir.create(app_dir, recursive = T) }
+
+# Temporary solution to bigrquery error (August 5, 2020) - see https://github.com/r-dbi/bigrquery/issues/395 for details
+options(scipen = 20)
+
 ```
 
-## R Markdown
+# Introduction
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This script pulls high resolution distant water fishing effort data for each EEZ. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Get flag states to include data for each EEZ
 
 ```{r}
-# Pull data from GFW if necessary
- if(rerun_gfw == T){
-   
-    # What bin size do we want to use (degrees)?  
-    bin_size <- 0.1
+vessel_list <- read.csv(vessel_list_path, stringsAsFactors = F)
+
+# Let's duplicate entries again for EEZs with multiple administering territories
+vessel_list_expanded <- vessel_list %>%
+  rowwise() %>%
+  mutate(eez_ter_iso3_all = list(c(eez_territory1_iso3, eez_territory2_iso3, eez_territory3_iso3)),
+         eez_sov_iso3_all = list(c(eez_sovereign1_iso3, eez_sovereign2_iso3, eez_sovereign3_iso3))) %>%
+  dplyr::select(-eez_territory1_iso3, -eez_territory2_iso3, -eez_territory3_iso3, -eez_sovereign1_iso3, -eez_sovereign2_iso3, -eez_sovereign3_iso3) %>%
+  unnest(cols = c("eez_ter_iso3_all", "eez_sov_iso3_all")) %>%
+  mutate(eez_ter_iso3 = ifelse(!is.na(eez_ter_iso3_all), eez_ter_iso3_all, eez_sov_iso3_all)) %>%
+  rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
+  dplyr::select(-eez_ter_iso3_all) %>%
+  dplyr::filter(!is.na(eez_ter_iso3))
+```
+
+```{r}
+flags_by_eez_id <- vessel_list_expanded %>%
+  distinct(eez_ter_iso3, eez_id, flag_iso3) %>%
+  arrange(eez_ter_iso3, eez_id)
+
+# Save as lookup table to Bigquery
+eez_ter_flag_lookup_table <- bq_table(project = bq_project, 
+                                table = "eez_ter_flag_lookup", 
+                                dataset = "distant_water_fishing_atlas")
+
+  # Check if that table already exists. If not, create it. Otherwise clear it. 
+  if(bq_table_exists(eez_ter_flag_lookup_table)){
     
-    # Voodoo to deal with some territories having multiple EEZs
-    if(length(run_eez_codes) > 1){
-      run_eez_codes_string <- toString(sprintf("'%s'", run_eez_codes))
-      run_eez_text <- paste0("eez_code IN (", run_eez_codes_string, ")")
-    }else {
-      run_eez_codes_string <- run_eez_codes
-      run_eez_text <- paste0("eez_code = '", run_eez_codes_string, "'")
+    eez_ter_flag_lookup_table %>%
+      bq_table_delete() 
+    
+    eez_ter_flag_lookup_table %>%
+      bq_table_create() %>%
+      bq_table_upload(values = flags_by_eez_id, 
+                      fields = flags_by_eez_id)
+    
+  }else{
+    eez_ter_flag_lookup_table %>%
+      bq_table_create() %>%
+      bq_table_upload(values = flags_by_eez_id, 
+                      fields = flags_by_eez_id)
       
+  }
+```
+
+## Pull data
+
+```{r}
+eez_ter_to_pull <- unique(flags_by_eez_id$eez_ter_iso3) 
+i <- 1
+
+for(i in 1:length(eez_ter_to_pull)){
+  
+  run_ter_text <- paste0("eez_ter_iso3 = '", eez_ter_to_pull[i], "'")
+  
+  eez_id_codes_to_run <- unique(flags_by_eez_id$eez_id[flags_by_eez_id$eez_ter_iso3 == eez_ter_to_pull[i]])
+  
+  # Voodoo to deal with some administering teritories having multiple EEZs
+    if(length(eez_id_codes_to_run) > 1){
+      run_eez_codes_string <- toString(sprintf("'%s'", eez_id_codes_to_run))
+      run_eez_text <- paste0("eez_id IN (", run_eez_codes_string, ")")
+    }else {
+      run_eez_codes_string <- eez_id_codes_to_run
+      run_eez_text <- paste0("eez_id = '", run_eez_codes_string, "'")
     }
-    
-sql4 <- paste0(
+  
+  sql4 <- paste0(
   "WITH
   eez_lookup AS (
     SELECT
-      CAST(eez_id AS string) eez_code,
-      territory1_iso3 eez_territory_iso3
+      CAST(eez_id as string) as eez_id,
+      eez_ter_iso3,
+      flag_iso3
     FROM
-      `world-fishing-827.gfw_research.eez_info`),
-
-  selected_vi AS (
-    SELECT
-       year,
-       ssvid,
-       engine_power_kw,
-       flag,
-       eez_code
-    FROM
-       `ucsb-gfw.subsidy_atlas.FINAL_dw_effort_by_eez_", analysis_year, "`),
-   
-  eez_info AS (
+      `emlab-gcp.distant_water_fishing_atlas.eez_ter_flag_lookup`
+    WHERE ",
+       run_ter_text, "),
+      
+  subsidy_rates AS (
      SELECT
-       EXTRACT(year FROM _partitiontime) year,
-       if(ARRAY_LENGTH(regions.eez)=0, '0000', regions.eez[ordinal(1)]) eez_code,
-       ssvid,
-       FLOOR(lat/", bin_size,") * ", bin_size, " + ", bin_size/2, " AS lat_cen,
-       FLOOR(lon/", bin_size, ") * ", bin_size, " + ", bin_size/2, " AS lon_cen,
-      CASE WHEN COUNT(DISTINCT _partitiontime) IS NULL THEN 0 ELSE COUNT(DISTINCT _partitiontime) END fishing_days,
-      CASE WHEN SUM(hours) IS NULL THEN 0 ELSE SUM(hours) END fishing_hours
+        *
      FROM
-       `world-fishing-827.gfw_research.pipe_production_b_fishing`
-     WHERE
-       nnet_score2 > .5
-       AND seg_id IN (
-          SELECT
-            seg_id
-          FROM
-            `world-fishing-827.gfw_research.pipe_production_b_segs`
-          WHERE
-            good_seg)
+        `emlab-gcp.distant_water_fishing_atlas.subsidy_rates_flag_sov`),
+   
+  eez_dat AS (
+     SELECT
+       year,
+       CAST(eez_id as string) as eez_id,
+       lat_bin_center as lat_cen,
+       lon_bin_center as lon_cen,
+       flag,
+       sum(fishing_hours_lat_lon) AS fishing_hours,
+       sum(fishing_KWh_lat_lon) AS fishing_KWh
+     FROM
+       `emlab-gcp.distant_water_fishing_atlas.effort_01x01_good_fishing_vessels_2018_raw`
     GROUP BY
       year,
-      eez_code,
-      ssvid,
+      eez_id,
       lat_cen,
-      lon_cen
-    HAVING
-      year = ", analysis_year, 
-      " AND ", run_eez_text, 
-      " AND fishing_hours >= 1)
+      lon_cen,
+      flag
+    HAVING ",
+      run_eez_text, ")
       
  SELECT
     a.year,
-    a.eez_code,
-    eez_territory_iso3,
-    flag,
+    a.eez_id,
+    b.eez_ter_iso3,
     lat_cen,
     lon_cen,
+    a.flag as flag_iso3,
     SUM(a.fishing_hours) as fishing_hours,
-    SUM(a.fishing_days) as fishing_days,
-    SUM(a.fishing_hours * b.engine_power_kw) as fishing_KWh,
-    SUM(a.fishing_hours * b.engine_power_kw * c.subs_per_fishing_KWh) as subs
+    SUM(a.fishing_KWh) as fishing_KWh,
+    B1_per_fishing_KWh,
+    B2_per_fishing_KWh,
+    B3_per_fishing_KWh,
+    B4_per_fishing_KWh,
+    B5_per_fishing_KWh,
+    B6_per_fishing_KWh,
+    B7_per_fishing_KWh,
+    C1_per_fishing_KWh,
+    C2_per_fishing_KWh,
+    C3_per_fishing_KWh
   FROM
-    eez_info a
+    eez_dat a
   INNER JOIN 
-    selected_vi b 
+    eez_lookup b 
   ON 
-    a.ssvid = b.ssvid AND 
-    a.eez_code = b.eez_code
+    a.eez_id = b.eez_id AND 
+    a.flag = b.flag_iso3
   LEFT JOIN
-    `ucsb-gfw.subsidy_atlas.subsidy_rates_flag` c
-  USING
-    (flag)
-  LEFT JOIN
-    eez_lookup d
+    `emlab-gcp.distant_water_fishing_atlas.subsidy_rates_flag_sov` c
   ON
-    a.eez_code = d.eez_code
+    a.flag = c.flag_sovereign_iso3
   GROUP BY
     year,
-    eez_code,
-    eez_territory_iso3,
-    flag,
+    eez_id,
+    eez_ter_iso3,
     lat_cen,
-    lon_cen
+    lon_cen,
+    flag,
+    B1_per_fishing_KWh,
+    B2_per_fishing_KWh,
+    B3_per_fishing_KWh,
+    B4_per_fishing_KWh,
+    B5_per_fishing_KWh,
+    B6_per_fishing_KWh,
+    B7_per_fishing_KWh,
+    C1_per_fishing_KWh,
+    C2_per_fishing_KWh,
+    C3_per_fishing_KWh
   ORDER BY
     flag"
   )
 
-  eez_table <- bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") 
+  eez_table <- bq_table(project = bq_project, 
+                        table = paste0("fishing_effort_", eez_ter_to_pull[i]), 
+                        dataset = "distant_water_fishing_atlas") 
 
-  if(bq_table_exists(eez_table) == FALSE){
+  if(bq_table_exists(eez_table)){
     
-    bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
-      bq_table_create()
+    bq_table_delete(eez_table)
+  effort_eez_out <- 
+    bq_project_query(bq_project, 
+                    query = sql4, 
+                    destination_table = eez_table, 
+                    use_legacy_sql = FALSE, 
+                    allowLargeResults = TRUE) %>%
+     bq_table_download()
     
   }else{
     
-    bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
-      bq_table_delete()
+   bq_table_create(eez_table)
+  effort_eez_out <- 
+    bq_project_query(bq_project, 
+                   query = sql4, 
+                   destination_table = eez_table,
+                   use_legacy_sql = FALSE, 
+                   allowLargeResults = TRUE) %>%
+    bq_table_download()
     
-  }
+  }  
+  
+  # Do some last tweaks and save
+  bad_sub_columns <- paste0(c("B1", "B2", "B3", "B4", "B5", "B6", "B7"), "_per_fishing_KWh")
+  ugly_sub_columns <- paste0(c("C1", "C2", "C3"), "_per_fishing_KWh")
+  
+  effort_eez_save <- effort_eez_out %>%
+    mutate(bad_subs_per_fishing_KWh = rowSums(across(all_of(bad_sub_columns))),
+           ugly_subs_per_fishing_KWh = rowSums(across(all_of(ugly_sub_columns)))) %>%
+    dplyr::select(-bad_sub_columns, -ugly_sub_columns) %>%
+    mutate(bad_subs = bad_subs_per_fishing_KWh * fishing_KWh,
+           ugly_subs = ugly_subs_per_fishing_KWh * fishing_KWh)
+  
+  write_csv(effort_eez_save, paste0(results_dir, eez_ter_to_pull[i], "_eez_effort_subs_by_flag.csv"))
+  write_csv(effort_eez_save, paste0(app_dir, eez_ter_to_pull[i], "_eez_effort_subs_by_flag.csv"))
+  
+}
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

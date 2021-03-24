@@ -1,0 +1,401 @@
+---
+output:
+  html_document: default
+
+title: "Distant Water Fishing Atlas - Global Connectivity Analysis"
+author: "Kat Millage, Matt Warham"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+fontsize: 11pt
+---
+
+# Introduction
+
+This script uses our global list of distant water fishing vessels in 2018 to create the following summarized items: 
+- Summary table showing total distant water fishing activity by EEZ/flag state 
+- Connectivity lines for a given EEZ showing the origins of all distant water vessels
+
+```{r setup, include=FALSE}
+# Chunk options
+knitr::opts_chunk$set(echo = TRUE)
+
+### Load packages ------
+library(sf) # spatial manipulation
+library(lwgeom) # needed for curved lines
+library(here) # path names
+library(knitr) # knit document
+library(countrycode) # country names 
+library(tidyverse) # data manipulation
+library(ggalt) # transform to robinson projection
+
+# Path to vessel list
+vessel_list_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_distant_water.csv")
+
+# Path to eez file
+eez_centroid_path <- here::here("results", "global", "00a-eez-polygon-wrangling", "eez_centroid_coordinates.csv")
+
+# Path to land file
+land_centroid_path <- here::here("results", "global", "00b-land-polygon-wrangling", "land_centroid_coordinates.csv")
+
+### Create results directories
+results_dir <- here::here("results/global/04-connectivity-analysis/")
+  if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
+
+### Also save to app data directory
+app_dir <- here::here("app-global/data/")
+  if (dir.exists(app_dir) == F) { dir.create(app_dir, recursive = T) }
+```
+
+# Flag state / EEZ summaries
+
+Since our vessel list of distant water fishing (and subsidies) is currently at the individual vessel level, we first want to aggregate this by flag state/coastal state. 
+
+```{r}
+# Load vessel list
+vessel_list_raw <- read.csv(vessel_list_path, stringsAsFactors = F) 
+```
+
+```{r}
+# Let's duplicate entries for EEZs with multiple administering territories
+vessel_list_expanded <- vessel_list_raw %>%
+  rowwise() %>%
+  mutate(eez_ter_iso3_all = list(c(eez_territory1_iso3, eez_territory2_iso3, eez_territory3_iso3)),
+         eez_sov_iso3_all = list(c(eez_sovereign1_iso3, eez_sovereign2_iso3, eez_sovereign3_iso3))) %>%
+  dplyr::select(-eez_territory1_iso3, -eez_territory2_iso3, -eez_territory3_iso3, -eez_sovereign1_iso3, -eez_sovereign2_iso3, -eez_sovereign3_iso3) %>%
+  unnest(cols = c("eez_ter_iso3_all", "eez_sov_iso3_all")) %>%
+  mutate(eez_ter_iso3 = ifelse(!is.na(eez_ter_iso3_all), eez_ter_iso3_all, eez_sov_iso3_all)) %>%
+  rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
+  dplyr::select(-eez_ter_iso3_all) %>%
+  dplyr::filter(!is.na(eez_ter_iso3))
+
+# Now calculate summaries for each coastal territory
+flag_eez_summary <- vessel_list_expanded %>%
+  group_by(eez_ter_iso3, flag_iso3, is_EU) %>%
+  summarize(n_vessels = n_distinct(ssvid),
+            mean_length = mean(length_m, na.rm = T),
+            mean_tonnage = mean(tonnage_gt, na.rm = T),
+            tot_tonnage = sum(tonnage_gt, na.rm = T),
+            mean_engine_power = mean(engine_power_kw, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T),
+            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
+            bad_subs = sum(bad_subs, na.rm = T),
+            ugly_subs = sum(ugly_subs, na.rm = T),
+            eez_id = list(unique(eez_id))) %>%
+  ungroup() %>%
+  unnest(cols = eez_id) %>%
+  arrange(flag_iso3, desc(eez_ter_iso3))
+
+# Create an entry for the EU as a whole just because
+eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+
+eu_summary <- vessel_list_expanded %>%
+  dplyr::filter(eez_ter_iso3 %in% eu_countries) %>%
+  mutate(eez_ter_iso3 = "EU") %>%
+  group_by(eez_ter_iso3, flag_iso3, is_EU) %>%
+  summarize(n_vessels = n_distinct(ssvid),
+            mean_length = mean(length_m, na.rm = T),
+            mean_tonnage = mean(tonnage_gt, na.rm = T),
+            tot_tonnage = sum(tonnage_gt, na.rm = T),
+            mean_engine_power = mean(engine_power_kw, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T),
+            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
+            bad_subs = sum(bad_subs, na.rm = T),
+            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
+  ungroup() %>%
+  arrange(flag_iso3, desc(eez_ter_iso3)) %>%
+  dplyr::filter(is_EU != T | is.na(is_EU)) %>%
+  mutate(eez_id = 9999)
+
+# Join back together
+flag_eez_summary <- flag_eez_summary %>%
+  bind_rows(eu_summary)
+```
+
+Now let's load in our land and EEZ centroids so we can start matching them up. 
+
+```{r}
+land_centroids <- read_csv(land_centroid_path)
+
+eez_centroids <- read_csv(eez_centroid_path) %>%
+  rename(eez_id = mrgid)
+
+eez_eu_centroid <- eez_centroids %>%
+  dplyr::filter(eez_ter_iso3 %in% eu_countries & pol_type == "200NM") %>%
+  mutate(eez_ter_iso3 = "EU", eez_sov_iso3 = "EU") %>%
+  group_by(eez_ter_iso3, eez_sov_iso3, pol_type) %>%
+  summarize(eez_lon = mean(eez_lon, na.rm = T),
+            eez_lat = mean(eez_lat, na.rm = T)) %>%
+  ungroup() %>%
+  mutate(eez_id = 9999,
+         region = "Europe & Central Asia",
+         geoname = "Exclusive Economic Zone:\nEuropean Union",
+         eez_ter_name = "European Union",
+         eez_sov_name = "European Union")
+
+eez_centroids <- eez_centroids %>%
+  bind_rows(eez_eu_centroid)
+```
+
+Starting with the EEZ file, let's attach our summary statistics directly to it to check that things match up. 
+
+```{r}
+# # Match all rows (1442 obs)
+# eez_dw_sf <- eez_sf %>%
+#   full_join(flag_eez_summary, by = "eez_id")
+# 
+# # First extract rows with both a geoname and stats (1337 rows)
+# eez_dw_sf_match <- eez_dw_sf %>%
+#   dplyr::filter(!is.na(geoname) & !is.na(n_vessels))
+# 
+# # Let's find EEZs with no distant water fishing (97 entries)
+# # Most appear to belong to either EU states, 
+# eez_no_dw <- eez_dw_sf %>%
+#   dplyr::filter(is.na(n_vessels) & !is.na(geoname))
+# 
+# # Let's see if we have any outdated EEZ codes with distant water fishing, but no EEZ info (8 entries)
+# # Not ideal, but they all correspond to two EZZ codes: "8344" (Chagos Archipelago - UK/Mauritius) and "8399" (Bouvet Island - Norway). 
+# # Leaving these for now. 
+# eez_no_sf <- eez_dw_sf %>%
+#   dplyr::filter(!is.na(n_vessels) & is.na(geoname))
+# 
+# # Let's save all but the last category
+# eez_dw_sf <- eez_dw_sf %>%
+#   dplyr::filter((!is.na(n_vessels) & !is.na(geoname)) | (is.na(n_vessels) & !is.na(geoname)))
+# ```
+# 
+# Now let's do something similar with our land file. 
+# 
+# ```{r}
+# # Match all rows (1407 obs)
+# land_flag_sf <- land_sf %>%
+#   full_join(flag_eez_summary, by = c("admin_iso3" = "flag_iso3"))
+# 
+# # First extract rows with both an admin name and stats (1289 rows)
+# land_flag_sf_match <- land_flag_sf %>%
+#   dplyr::filter(!is.na(admin) & !is.na(n_vessels))
+# 
+# # Then find countries with no dw fishing vessels (112 rows)
+# land_no_dw <- land_flag_sf %>%
+#   dplyr::filter(!is.na(admin) & is.na(n_vessels))
+# 
+# # Any vessel flags with no matching land? (6 entries)
+# # All coorespond to "TUV" - "Tuvalu" doesn't appear on our map for some reason. Appears to only be one vessel, probably not a big deal. 
+# land_no_sf <- land_flag_sf %>%
+#   dplyr::filter(is.na(admin) & !is.na(n_vessels))
+# 
+# # Save all but the last
+# land_flag_sf <- land_flag_sf %>%
+#   dplyr::filter((!is.na(admin) & !is.na(n_vessels)) | (!is.na(admin) & is.na(n_vessels)))
+
+```
+
+# Connectivity plots
+
+## Add centroids to our EEZ/flag state distant water summary
+
+```{r}
+flag_eez_summary_centroids <- flag_eez_summary %>%
+  left_join(eez_centroids, by = c("eez_id", "eez_ter_iso3")) %>%
+  dplyr::filter(!is.na(eez_lon)) %>% # remove entries for outdated EEZ codes 
+  left_join(land_centroids, by = c("region", "flag_iso3" = "admin_iso3"))
+
+# Manually correct for Tuvalu - for some reason it's not in the land file
+flag_eez_summary_centroids$flag_lon[flag_eez_summary_centroids$flag_iso3 == "TUV"] <- 177.6493
+flag_eez_summary_centroids$flag_lat[flag_eez_summary_centroids$flag_iso3 == "TUV"] <- -7.1095
+
+```
+
+### East Asia & Pacific
+
+```{r}
+# Let's do a test run with East Asia (-10, 350)
+eez_mapping_wlines_east_asia_pacific <- flag_eez_summary_centroids %>%
+  ungroup() %>%
+  dplyr::filter(!is.na(flag_lon)) %>% # remove NA flagged
+  dplyr::filter(region == "East Asia & Pacific") %>%
+  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(flag_eez_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region == "East Asia & Pacific")) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
+  st_shift_longitude() %>%
+  sf::st_sf(crs = 4326) 
+
+test_plot_east_asia_pacific <- ggplot()+
+  # geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  # geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  # geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat_1$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  # geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat_1$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_east_asia_pacific, col = "darkgoldenrod", size = 0.25) +
+  coord_sf(xlim = c(-10,350), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
+
+test_plot_east_asia_pacific
+```
+### All Others
+
+```{r}
+# Europe & Central Asia should be straightforward
+eez_mapping_wlines_all_others <- flag_eez_summary_centroids %>%
+  ungroup() %>%
+  dplyr::filter(!is.na(flag_lon)) %>%
+  dplyr::filter(region != "East Asia & Pacific") %>%
+  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(flag_eez_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region != "East Asia & Pacific")) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
+  sf::st_sf(crs = 4326) 
+
+test_plot_all_others <- ggplot()+
+  # geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  # geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  # geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat_2$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  # geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat_2$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = eez_mapping_wlines_all_others, col = "darkgoldenrod", size = 0.25) +
+  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
+
+test_plot_all_others
+```
+```{r}
+eez_mapping_wlines <- eez_mapping_wlines_east_asia_pacific %>%
+  rbind(eez_mapping_wlines_all_others)
+
+st_write(eez_mapping_wlines, paste0(results_dir, "eez_flag_state_connectivity_lines.gpkg"), delete_layer = T)
+st_write(eez_mapping_wlines, paste0(app_dir, "eez_flag_state_connectivity_lines.gpkg"), delete_layer = T)
+```
+
+
+```{r}
+# sql4 <- paste0(
+#   "WITH
+#   eez_lookup AS (
+#     SELECT
+#       CAST(eez_id AS string) eez_code,
+#       territory1_iso3 eez_territory_iso3
+#     FROM
+#       `world-fishing-827.gfw_research.eez_info`),
+# 
+#   selected_vi AS (
+#     SELECT
+#        year,
+#        ssvid,
+#        engine_power_kw,
+#        flag,
+#        eez_code
+#     FROM
+#        `ucsb-gfw.subsidy_atlas.FINAL_dw_effort_by_eez_", analysis_year, "`),
+#    
+#   eez_info AS (
+#      SELECT
+#        EXTRACT(year FROM _partitiontime) year,
+#        if(ARRAY_LENGTH(regions.eez)=0, '0000', regions.eez[ordinal(1)]) eez_code,
+#        ssvid,
+#        FLOOR(lat/", bin_size,") * ", bin_size, " + ", bin_size/2, " AS lat_cen,
+#        FLOOR(lon/", bin_size, ") * ", bin_size, " + ", bin_size/2, " AS lon_cen,
+#       CASE WHEN COUNT(DISTINCT _partitiontime) IS NULL THEN 0 ELSE COUNT(DISTINCT _partitiontime) END fishing_days,
+#       CASE WHEN SUM(hours) IS NULL THEN 0 ELSE SUM(hours) END fishing_hours
+#      FROM
+#        `world-fishing-827.gfw_research.pipe_production_b_fishing`
+#      WHERE
+#        nnet_score2 > .5
+#        AND seg_id IN (
+#           SELECT
+#             seg_id
+#           FROM
+#             `world-fishing-827.gfw_research.pipe_production_b_segs`
+#           WHERE
+#             good_seg)
+#     GROUP BY
+#       year,
+#       eez_code,
+#       ssvid,
+#       lat_cen,
+#       lon_cen
+#     HAVING
+#       year = ", analysis_year, 
+#       " AND ", run_eez_text, 
+#       " AND fishing_hours >= 1)
+#       
+#  SELECT
+#     a.year,
+#     a.eez_code,
+#     eez_territory_iso3,
+#     flag,
+#     lat_cen,
+#     lon_cen,
+#     SUM(a.fishing_hours) as fishing_hours,
+#     SUM(a.fishing_days) as fishing_days,
+#     SUM(a.fishing_hours * b.engine_power_kw) as fishing_KWh,
+#     SUM(a.fishing_hours * b.engine_power_kw * c.subs_per_fishing_KWh) as subs
+#   FROM
+#     eez_info a
+#   INNER JOIN 
+#     selected_vi b 
+#   ON 
+#     a.ssvid = b.ssvid AND 
+#     a.eez_code = b.eez_code
+#   LEFT JOIN
+#     `ucsb-gfw.subsidy_atlas.subsidy_rates_flag` c
+#   USING
+#     (flag)
+#   LEFT JOIN
+#     eez_lookup d
+#   ON
+#     a.eez_code = d.eez_code
+#   GROUP BY
+#     year,
+#     eez_code,
+#     eez_territory_iso3,
+#     flag,
+#     lat_cen,
+#     lon_cen
+#   ORDER BY
+#     flag"
+#   )
+# 
+#   eez_table <- bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") 
+# 
+#   if(bq_table_exists(eez_table) == FALSE){
+#     
+#     bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
+#       bq_table_create()
+#     
+#   }else{
+#     
+#     bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas") %>%
+#       bq_table_delete()
+#     
+#   }
+#   
+#    eez_effort <- bq_project_query(bq_project, sql4, destination_table = bq_table(project = bq_project, table = paste0("fishing_effort_", eez_loop_iso3[i]), dataset = "subsidy_atlas"), use_legacy_sql = FALSE, allowLargeResults = TRUE) %>%
+#     bq_table_download(max_results = Inf)
+# 
+#   write_csv(eez_effort, path = paste0(eez_dat_dir, eez_loop_iso3[i], "_EEZ_effort_subs_by_flag.csv"))
+#   
+#   write_csv(eez_effort, path = paste0(eez_results_app_dir, eez_loop_iso3[i], "_EEZ_effort_subs_by_flag.csv"))
+# 
+#   # Load local data instead of rerunning global fishing watch pull 
+#   } else{
+#   
+#   eez_effort <- read_csv(paste0(eez_results_app_dir, eez_loop_iso3[i], "_EEZ_effort_subs_by_flag.csv"), col_types = "iccnnnnnnn")
+#     
+#   }
+
+```
+
+ 

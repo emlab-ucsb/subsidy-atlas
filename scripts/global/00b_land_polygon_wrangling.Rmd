@@ -30,7 +30,7 @@ library(tidyverse) # data manipulation
 data_dir <- here::here("data/edited/")
   if (dir.exists(data_dir) == F) { dir.create(data_dir, recursive = T) }
 
-results_dir <- here::here("results/00b_land_polygon_wrangling/")
+results_dir <- here::here("results/global/00b-land-polygon-wrangling/")
   if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
 
 ### Also save to app data directory
@@ -204,9 +204,9 @@ png <- land_geounits %>%
   summarize(geometry = st_union(geometry))
 png$notes <- "Includes the Autonomous Region of Bougainville"
 
-# Azores and Madeira - autonomous region of Portual. WTO does NOT display overseas regions of EU Member states as being part of the EU so these should be kept separate. 
-land_geounits$admin[land_geounits$geounit == "Azores"] <- "Azores"
-land_geounits$admin[land_geounits$geounit == "Madeira"] <- "Madeira"
+# Azores and Madeira - autonomous region of Portugal. We're including these as part of Portugal 
+land_geounits$admin[land_geounits$geounit == "Azores"] <- "Portugal"
+land_geounits$admin[land_geounits$geounit == "Madeira"] <- "Portugal"
 
 # Republic of Serbia (Vojvodina) - Autonomous region in Serbia. WTO combines it with the rest of Serbia. Also including Kosovo
 serbia <- land_geounits %>%

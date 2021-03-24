@@ -31,7 +31,7 @@ library(tidyverse) # data manipulation
 data_dir <- here::here("data/edited/")
   if (dir.exists(data_dir) == F) { dir.create(data_dir, recursive = T) }
 
-results_dir <- here::here("results/00a-eez-polygon-wrangling/")
+results_dir <- here::here("results/global/00a-eez-polygon-wrangling/")
   if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
 
 ### Also save to app data directory
