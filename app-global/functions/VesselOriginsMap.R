@@ -30,13 +30,13 @@ VesselOriginsMap <- function(region_dat,
   flag_state_summary_dat <- selected_eez_connectivity_data %>%
     st_drop_geometry() %>%
     group_by(flag_iso3, eez_ter_iso3) %>%
-    summarize(n_vessels = sum(n_vessels, na.rm = T),
-              mean_length = mean(mean_length, na.rm = T),
-              mean_tonnage = mean(mean_tonnage, na.rm = T),
-              mean_engine_power = mean(mean_engine_power, na.rm = T),
-              fishing_hours = sum(fishing_hours, na.rm = T),
-              fishing_KWh = sum(fishing_KWh, na.rm = T),
-              bad_subs = sum(bad_subs, na.rm = T)) %>%
+    summarize(n_vessels = unique(n_vessels),
+              mean_length = unique(mean_length),
+              tot_tonnage = unique(tot_tonnage),
+              tot_engine_power = unique(tot_engine_power),
+              fishing_hours = unique(fishing_hours),
+              fishing_KWh = unique(fishing_KWh),
+              bad_subs = unique(bad_subs)) %>%
     ungroup()
   
   flag_state_summary <- flag_states_for_selected_eez %>%
@@ -45,13 +45,15 @@ VesselOriginsMap <- function(region_dat,
   flag_state_summary_text <- paste0(
     "<b>", "Flag state: ", "</b>", flag_state_summary$admin,
     "<br/>",
-    "<b>", "# of DW vessels: ", "</b>", flag_state_summary$n_vessels,
+    "<b>", "Different vessels: ", "</b>", flag_state_summary$n_vessels,
     "</br>",
-    "<b>", "Avg. engine capacity (kW): ", "</b>", format(round(flag_state_summary$mean_engine_power, 0), big.mark = ","), 
+    "<b>", "Total vessel capacity (kW): ", "</b>", format(round(flag_state_summary$tot_engine_power, 0), big.mark = ","), 
     "</br>",
-    "<b>", "DW effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_hours, 0), big.mark = ","), 
+    "<b>", "Total vessel tonnage (gt): ", "</b>", format(round(flag_state_summary$tot_tonnage, 0), big.mark = ","), 
     "</br>",
-    "<b>", "DW effort in selected EEZ (kW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
+    "<b>", "Total fishing effort in selected EEZ (hours): ", "</b>",  format(round(flag_state_summary$fishing_hours, 2), big.mark = ","), 
+    "</br>",
+    "<b>", "Total fishing effort in selected EEZ (kW hours): ", "</b>", format(round(flag_state_summary$fishing_KWh, 0), big.mark = ",")) %>% 
     lapply(htmltools::HTML)
   
   ### Interactive color palette ---
@@ -59,9 +61,8 @@ VesselOriginsMap <- function(region_dat,
   # Set fill variable for map
   fill_scale <- switch(input_fill_variable,
                        "n_vessels" = list("n_vessels", region_connectivity_data$n_vessels, flag_state_summary$n_vessels),
-                       "mean_engine_power" = list("mean_engine_power", region_connectivity_data$mean_engine_power, flag_state_summary$mean_engine_power),
-                       "mean_tonnage" = list("mean_tonnage", region_connectivity_data$mean_tonnage, flag_state_summary$mean_tonnage),
-                       "mean_length" = list("mean_length", region_connectivity_data$mean_length, flag_state_summary$mean_length),
+                       "tot_engine_power" = list("tot_engine_power", region_connectivity_data$tot_engine_power, flag_state_summary$tot_engine_power),
+                       "tot_tonnage" = list("tot_tonnage", region_connectivity_data$tot_tonnage, flag_state_summary$tot_tonnage),
                        "fishing_hours" = list("fishing_hours", region_connectivity_data$fishing_hours, flag_state_summary$fishing_hours),
                        "fishing_KWh" = list("fishing_KWh", region_connectivity_data$fishing_KWh, flag_state_summary$fishing_KWh))
   

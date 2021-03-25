@@ -24,6 +24,7 @@ library(leaflet)
 library(shinyBS)
 library(shinyjs)
 library(shinyalert)
+library(shinyWidgets)
 
 library(tidyverse)
 library(sf)

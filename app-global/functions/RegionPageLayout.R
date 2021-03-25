@@ -225,6 +225,22 @@ RegionPageLayout <- function(region_name,
 
 
                                                            )
+                                                         ),
+                                                         
+                                                         fluidRow(
+                                                           
+                                                           column(12, align = "center",
+                                                                  
+                                                                  switchInput(
+                                                                    inputId = paste0(region_name, "_effort_high_seas"),
+                                                                    label = "Show high seas activity", 
+                                                                    labelWidth = "180px",
+                                                                    onLabel = "Yes",
+                                                                    offLabel = "No"
+                                                                  )
+                                                                  
+                                                           )
+                                                           
                                                          )
 
                                                   )
@@ -270,6 +286,7 @@ RegionPageLayout <- function(region_name,
 
                                                            )
                                                          )
+                                                         
 
                                                   ),
 
@@ -295,6 +312,22 @@ RegionPageLayout <- function(region_name,
                                                                     width = "auto")
 
                                                            )
+                                                         ),
+                                                         
+                                                         fluidRow(
+                                                           
+                                                           column(12, align = "center",
+                                                                  
+                                                                  switchInput(
+                                                                    inputId = paste0(region_name, "_subsidies_high_seas"),
+                                                                    label = "Show high seas activity", 
+                                                                    labelWidth = "180px",
+                                                                    onLabel = "Yes",
+                                                                    offLabel = "No"
+                                                                  )
+                                                                  
+                                                           )
+                                                           
                                                          )
 
                                                   ) # /heat maps
