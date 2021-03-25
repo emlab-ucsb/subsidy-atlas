@@ -330,7 +330,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (effort) --------
   output$east_asia_pacific_effort_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
+                          input_selected_eez = input$east_asia_pacific_eez_select,
                           widget_id = "east_asia_pacific_effort_select_flag_state")
     
   })
@@ -338,7 +342,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (subsidies) --------
   output$east_asia_pacific_subsidies_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
+                          input_selected_eez = input$east_asia_pacific_eez_select,
                           widget_id = "east_asia_pacific_subsidies_select_flag_state")
     
   })
@@ -355,20 +363,94 @@ shinyServer(function(input, output, session) {
     # Save to reactive object
     east_asia_pacific_rv$eez_dat <- eez_dat
     
-    # Get flag state choices for this coastal state and update widgets
-    flag_state_choices <- eez_dat %>%
-      distinct(flag_iso3) %>%
-      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
-      arrange(admin)
+  })
+  
+  ### Bounding box of selected coastal state ----------------
+  observe({
     
-    flags <- flag_state_choices$flag_iso3
-    names(flags) <- flag_state_choices$admin
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
     
-    updateSelectizeInput(session, "east_asia_pacific_effort_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    # Crop eez shapefile based on the region 
+    eez_region <- east_asia_pacific_rv$eezs %>%
+      st_crop(xmin = 0, ymin = -90, xmax = 360, ymax = 90) %>%
+      dplyr::filter(eez_ter_iso3 == input$east_asia_pacific_eez_select)
     
-    updateSelectizeInput(session, "east_asia_pacific_subsidies_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    east_asia_pacific_rv$eez_bb <- st_bbox(eez_region)
+    
+  })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
+  output$east_asia_pacific_effort_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+        nrow(east_asia_pacific_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = east_asia_pacific_rv,
+            input_selected_eez = input$east_asia_pacific_eez_select,
+            input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+            type = "total",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$east_asia_pacific_effort_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+        nrow(east_asia_pacific_rv$eez_dat) > 0,
+        input$east_asia_pacific_effort_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = east_asia_pacific_rv,
+            input_selected_eez = input$east_asia_pacific_eez_select,
+            input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+            type = "flag",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$east_asia_pacific_subsidies_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+        nrow(east_asia_pacific_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = east_asia_pacific_rv,
+            input_selected_eez = input$east_asia_pacific_eez_select,
+            input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+            type = "total",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$east_asia_pacific_subsidies_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+        nrow(east_asia_pacific_rv$eez_dat) > 0,
+        input$east_asia_pacific_subsidies_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = east_asia_pacific_rv,
+            input_selected_eez = input$east_asia_pacific_eez_select,
+            input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+            type = "flag",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
   })
   
@@ -384,7 +466,8 @@ shinyServer(function(input, output, session) {
                                            map_zoom = 2,
                                            connect = eez_flag_state_connectivity %>%
                                              dplyr::filter(region == "Europe & Central Asia"),
-                                           eez_dat = NULL)
+                                           eez_dat = NULL,
+                                           eez_bb = NULL)
   
   ### UI output: Select coastal state widget --------
   output$europe_central_asia_eez_select <- renderUI({
@@ -495,7 +578,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (effort) --------
   output$europe_central_asia_effort_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = europe_central_asia_rv,
+                          input_selected_eez = input$europe_central_asia_eez_select,
                           widget_id = "europe_central_asia_effort_select_flag_state")
     
   })
@@ -503,7 +590,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (subsidies) --------
   output$europe_central_asia_subsidies_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = europe_central_asia_rv,
+                          input_selected_eez = input$europe_central_asia_eez_select,
                           widget_id = "europe_central_asia_subsidies_select_flag_state")
     
   })
@@ -520,20 +611,94 @@ shinyServer(function(input, output, session) {
     # Save to reactive object
     europe_central_asia_rv$eez_dat <- eez_dat
     
-    # Get flag state choices for this coastal state and update widgets
-    flag_state_choices <- eez_dat %>%
-      distinct(flag_iso3) %>%
-      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
-      arrange(admin)
+  })
+  
+  ### Bounding box of selected coastal state ----------------
+  observe({
     
-    flags <- flag_state_choices$flag_iso3
-    names(flags) <- flag_state_choices$admin
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
     
-    updateSelectizeInput(session, "europe_central_asia_effort_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    # Crop eez shapefile based on the region 
+    eez_region <- europe_central_asia_rv$eezs %>%
+      st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
+      dplyr::filter(eez_ter_iso3 == input$europe_central_asia_eez_select)
     
-    updateSelectizeInput(session, "europe_central_asia_subsidies_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    europe_central_asia_rv$eez_bb <- st_bbox(eez_region)
+    
+  })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
+  output$europe_central_asia_effort_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+        nrow(europe_central_asia_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = europe_central_asia_rv,
+            input_selected_eez = input$europe_central_asia_eez_select,
+            input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+            type = "total",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$europe_central_asia_effort_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+        nrow(europe_central_asia_rv$eez_dat) > 0,
+        input$europe_central_asia_effort_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = europe_central_asia_rv,
+            input_selected_eez = input$europe_central_asia_eez_select,
+            input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+            type = "flag",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$europe_central_asia_subsidies_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+        nrow(europe_central_asia_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = europe_central_asia_rv,
+            input_selected_eez = input$europe_central_asia_eez_select,
+            input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+            type = "total",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$europe_central_asia_subsidies_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+        nrow(europe_central_asia_rv$eez_dat) > 0,
+        input$europe_central_asia_subsidies_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = europe_central_asia_rv,
+            input_selected_eez = input$europe_central_asia_eez_select,
+            input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+            type = "flag",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
   })
   
@@ -549,7 +714,8 @@ shinyServer(function(input, output, session) {
                                              map_zoom = 2,
                                              connect = eez_flag_state_connectivity %>%
                                                dplyr::filter(region == "Latin America & Caribbean"),
-                                             eez_dat = NULL)
+                                             eez_dat = NULL,
+                                             eez_bb = NULL)
   
   ### UI output: Select coastal state widget --------
   output$latin_america_caribbean_eez_select <- renderUI({
@@ -661,7 +827,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (effort) --------
   output$latin_america_caribbean_effort_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = latin_america_caribbean_rv,
+                          input_selected_eez = input$latin_america_caribbean_eez_select,
                           widget_id = "latin_america_caribbean_effort_select_flag_state")
     
   })
@@ -669,7 +839,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (subsidies) --------
   output$latin_america_caribbean_subsidies_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = latin_america_caribbean_rv,
+                          input_selected_eez = input$latin_america_caribbean_eez_select,
                           widget_id = "latin_america_caribbean_subsidies_select_flag_state")
     
   })
@@ -686,20 +860,94 @@ shinyServer(function(input, output, session) {
     # Save to reactive object
     latin_america_caribbean_rv$eez_dat <- eez_dat
     
-    # Get flag state choices for this coastal state and update widgets
-    flag_state_choices <- eez_dat %>%
-      distinct(flag_iso3) %>%
-      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
-      arrange(admin)
+  })
+  
+  ### Bounding box of selected coastal state ----------------
+  observe({
     
-    flags <- flag_state_choices$flag_iso3
-    names(flags) <- flag_state_choices$admin
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
     
-    updateSelectizeInput(session, "latin_america_caribbean_effort_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    # Crop eez shapefile based on the region 
+    eez_region <- latin_america_caribbean_rv$eezs %>%
+      st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
+      dplyr::filter(eez_ter_iso3 == input$latin_america_caribbean_eez_select)
     
-    updateSelectizeInput(session, "latin_america_caribbean_subsidies_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    latin_america_caribbean_rv$eez_bb <- st_bbox(eez_region)
+    
+  })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
+  output$latin_america_caribbean_effort_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+        nrow(latin_america_caribbean_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = latin_america_caribbean_rv,
+            input_selected_eez = input$latin_america_caribbean_eez_select,
+            input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+            type = "total",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$latin_america_caribbean_effort_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+        nrow(latin_america_caribbean_rv$eez_dat) > 0,
+        input$latin_america_caribbean_effort_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = latin_america_caribbean_rv,
+            input_selected_eez = input$latin_america_caribbean_eez_select,
+            input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+            type = "flag",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$latin_america_caribbean_subsidies_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+        nrow(latin_america_caribbean_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = latin_america_caribbean_rv,
+            input_selected_eez = input$latin_america_caribbean_eez_select,
+            input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+            type = "total",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$latin_america_caribbean_subsidies_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+        nrow(latin_america_caribbean_rv$eez_dat) > 0,
+        input$latin_america_caribbean_subsidies_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = latin_america_caribbean_rv,
+            input_selected_eez = input$latin_america_caribbean_eez_select,
+            input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+            type = "flag",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
   })
   
@@ -714,7 +962,9 @@ shinyServer(function(input, output, session) {
                                                 map_lat = 10,
                                                 map_zoom = 2,
                                                 connect = eez_flag_state_connectivity %>%
-                                                  dplyr::filter(region == "Middle East & North Africa"))
+                                                  dplyr::filter(region == "Middle East & North Africa"),
+                                                eez_dat = NULL,
+                                                eez_bb = NULL)
   
   ### UI output: Select coastal state widget --------
   output$middle_east_north_africa_eez_select <- renderUI({
@@ -826,7 +1076,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (effort) --------
   output$middle_east_north_africa_effort_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = middle_east_north_africa_rv,
+                          input_selected_eez = input$middle_east_north_africa_eez_select,
                           widget_id = "middle_east_north_africa_effort_select_flag_state")
     
   })
@@ -834,7 +1088,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (subsidies) --------
   output$middle_east_north_africa_subsidies_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = middle_east_north_africa_rv,
+                          input_selected_eez = input$middle_east_north_africa_eez_select,
                           widget_id = "middle_east_north_africa_subsidies_select_flag_state")
     
   })
@@ -851,20 +1109,94 @@ shinyServer(function(input, output, session) {
     # Save to reactive object
     middle_east_north_africa_rv$eez_dat <- eez_dat
     
-    # Get flag state choices for this coastal state and update widgets
-    flag_state_choices <- eez_dat %>%
-      distinct(flag_iso3) %>%
-      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
-      arrange(admin)
+  })
+  
+  ### Bounding box of selected coastal state ----------------
+  observe({
     
-    flags <- flag_state_choices$flag_iso3
-    names(flags) <- flag_state_choices$admin
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
     
-    updateSelectizeInput(session, "middle_east_north_africa_effort_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    # Crop eez shapefile based on the region 
+    eez_region <- middle_east_north_africa_rv$eezs %>%
+      st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
+      dplyr::filter(eez_ter_iso3 == input$middle_east_north_africa_eez_select)
     
-    updateSelectizeInput(session, "middle_east_north_africa_subsidies_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    middle_east_north_africa_rv$eez_bb <- st_bbox(eez_region)
+    
+  })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
+  output$middle_east_north_africa_effort_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+        nrow(middle_east_north_africa_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = middle_east_north_africa_rv,
+            input_selected_eez = input$middle_east_north_africa_eez_select,
+            input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+            type = "total",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$middle_east_north_africa_effort_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+        nrow(middle_east_north_africa_rv$eez_dat) > 0,
+        input$middle_east_north_africa_effort_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = middle_east_north_africa_rv,
+            input_selected_eez = input$middle_east_north_africa_eez_select,
+            input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+            type = "flag",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$middle_east_north_africa_subsidies_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+        nrow(middle_east_north_africa_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = middle_east_north_africa_rv,
+            input_selected_eez = input$middle_east_north_africa_eez_select,
+            input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+            type = "total",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$middle_east_north_africa_subsidies_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+        nrow(middle_east_north_africa_rv$eez_dat) > 0,
+        input$middle_east_north_africa_subsidies_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = middle_east_north_africa_rv,
+            input_selected_eez = input$middle_east_north_africa_eez_select,
+            input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+            type = "flag",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
   })
   
@@ -879,7 +1211,9 @@ shinyServer(function(input, output, session) {
                                      map_lat = 40,
                                      map_zoom = 2,
                                      connect = eez_flag_state_connectivity %>%
-                                       dplyr::filter(region == "North America"))
+                                       dplyr::filter(region == "North America"),
+                                     eez_dat = NULL,
+                                     eez_bb = NULL)
   
   ### UI output: Select coastal state widget --------
   output$north_america_eez_select <- renderUI({
@@ -991,7 +1325,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (effort) --------
   output$north_america_effort_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = north_america_rv,
+                          input_selected_eez = input$north_america_eez_select,
                           widget_id = "north_america_effort_select_flag_state")
     
   })
@@ -999,7 +1337,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (subsidies) --------
   output$north_america_subsidies_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = north_america_rv,
+                          input_selected_eez = input$north_america_eez_select,
                           widget_id = "north_america_subsidies_select_flag_state")
     
   })
@@ -1016,20 +1358,94 @@ shinyServer(function(input, output, session) {
     # Save to reactive object
     north_america_rv$eez_dat <- eez_dat
     
-    # Get flag state choices for this coastal state and update widgets
-    flag_state_choices <- eez_dat %>%
-      distinct(flag_iso3) %>%
-      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
-      arrange(admin)
+  })
+  
+  ### Bounding box of selected coastal state ----------------
+  observe({
     
-    flags <- flag_state_choices$flag_iso3
-    names(flags) <- flag_state_choices$admin
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...")
     
-    updateSelectizeInput(session, "north_america_effort_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    # Crop eez shapefile based on the region 
+    eez_region <- north_america_rv$eezs %>%
+      st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
+      dplyr::filter(eez_ter_iso3 == input$north_america_eez_select)
     
-    updateSelectizeInput(session, "north_america_subsidies_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    north_america_rv$eez_bb <- st_bbox(eez_region)
+    
+  })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
+  output$north_america_effort_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$north_america_eez_select != "Select a coastal state...",
+        nrow(north_america_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = north_america_rv,
+            input_selected_eez = input$north_america_eez_select,
+            input_selected_flag_state = input$north_america_effort_select_flag_state,
+            type = "total",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$north_america_effort_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$north_america_eez_select != "Select a coastal state...",
+        nrow(north_america_rv$eez_dat) > 0,
+        input$north_america_effort_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = north_america_rv,
+            input_selected_eez = input$north_america_eez_select,
+            input_selected_flag_state = input$north_america_effort_select_flag_state,
+            type = "flag",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$north_america_subsidies_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$north_america_eez_select != "Select a coastal state...",
+        nrow(north_america_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = north_america_rv,
+            input_selected_eez = input$north_america_eez_select,
+            input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+            type = "total",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$north_america_subsidies_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$north_america_eez_select != "Select a coastal state...",
+        nrow(north_america_rv$eez_dat) > 0,
+        input$north_america_subsidies_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = north_america_rv,
+            input_selected_eez = input$north_america_eez_select,
+            input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+            type = "flag",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
   })
   
@@ -1044,7 +1460,9 @@ shinyServer(function(input, output, session) {
                                   map_lat = 15,
                                   map_zoom = 3,
                                   connect = eez_flag_state_connectivity %>%
-                                    dplyr::filter(region == "South Asia"))
+                                    dplyr::filter(region == "South Asia"),
+                                  eez_dat = NULL,
+                                  eez_bb = NULL)
   
   ### UI output: Select coastal state widget --------
   output$south_asia_eez_select <- renderUI({
@@ -1156,7 +1574,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (effort) --------
   output$south_asia_effort_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = south_asia_rv,
+                          input_selected_eez = input$south_asia_eez_select,
                           widget_id = "south_asia_effort_select_flag_state")
     
   })
@@ -1164,7 +1586,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (subsidies) --------
   output$south_asia_subsidies_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = south_asia_rv,
+                          input_selected_eez = input$south_asia_eez_select,
                           widget_id = "south_asia_subsidies_select_flag_state")
     
   })
@@ -1181,20 +1607,94 @@ shinyServer(function(input, output, session) {
     # Save to reactive object
     south_asia_rv$eez_dat <- eez_dat
     
-    # Get flag state choices for this coastal state and update widgets
-    flag_state_choices <- eez_dat %>%
-      distinct(flag_iso3) %>%
-      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
-      arrange(admin)
+  })
+  
+  ### Bounding box of selected coastal state ----------------
+  observe({
     
-    flags <- flag_state_choices$flag_iso3
-    names(flags) <- flag_state_choices$admin
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...")
     
-    updateSelectizeInput(session, "south_asia_effort_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    # Crop eez shapefile based on the region 
+    eez_region <- south_asia_rv$eezs %>%
+      st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
+      dplyr::filter(eez_ter_iso3 == input$south_asia_eez_select)
     
-    updateSelectizeInput(session, "south_asia_subsidies_select_flag_state",
-                         choices = c("Select a flag state...", flags))
+    south_asia_rv$eez_bb <- st_bbox(eez_region)
+    
+  })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
+  output$south_asia_effort_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$south_asia_eez_select != "Select a coastal state...",
+        nrow(south_asia_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = south_asia_rv,
+            input_selected_eez = input$south_asia_eez_select,
+            input_selected_flag_state = input$south_asia_effort_select_flag_state,
+            type = "total",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$south_asia_effort_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$south_asia_eez_select != "Select a coastal state...",
+        nrow(south_asia_rv$eez_dat) > 0,
+        input$south_asia_effort_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = south_asia_rv,
+            input_selected_eez = input$south_asia_eez_select,
+            input_selected_flag_state = input$south_asia_effort_select_flag_state,
+            type = "flag",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$south_asia_subsidies_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$south_asia_eez_select != "Select a coastal state...",
+        nrow(south_asia_rv$eez_dat) > 0)
+    
+    EEZPlot(region_dat = south_asia_rv,
+            input_selected_eez = input$south_asia_eez_select,
+            input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+            type = "total",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+    
+  })
+  
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$south_asia_subsidies_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$south_asia_eez_select != "Select a coastal state...",
+        nrow(south_asia_rv$eez_dat) > 0,
+        input$south_asia_subsidies_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = south_asia_rv,
+            input_selected_eez = input$south_asia_eez_select,
+            input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+            type = "flag",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
   })
   
@@ -1209,7 +1709,9 @@ shinyServer(function(input, output, session) {
                                           map_lat = -15,
                                           map_zoom = 2,
                                           connect = eez_flag_state_connectivity %>%
-                                            dplyr::filter(region == "Sub-Saharan Africa"))
+                                            dplyr::filter(region == "Sub-Saharan Africa"),
+                                          eez_dat = NULL,
+                                          eez_bb = NULL)
   
   ### UI output: Select coastal state widget --------
   output$sub_saharan_africa_eez_select <- renderUI({
@@ -1319,7 +1821,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (effort) --------
   output$sub_saharan_africa_effort_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    
     WidgetFlagStateSelect(region_dat = sub_saharan_africa_rv,
+                          input_selected_eez = input$sub_saharan_africa_eez_select,
                           widget_id = "sub_saharan_africa_effort_select_flag_state")
     
   })
@@ -1327,7 +1833,11 @@ shinyServer(function(input, output, session) {
   ### UI output: Select flag state widget (subsidies) --------
   output$sub_saharan_africa_subsidies_select_flag_state <- renderUI({
     
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+
     WidgetFlagStateSelect(region_dat = sub_saharan_africa_rv,
+                          input_selected_eez = input$sub_saharan_africa_eez_select,
                           widget_id = "sub_saharan_africa_subsidies_select_flag_state")
     
   })
@@ -1344,34 +1854,94 @@ shinyServer(function(input, output, session) {
     # Save to reactive object
     sub_saharan_africa_rv$eez_dat <- eez_dat
     
-    # Get flag state choices for this coastal state and update widgets
-    flag_state_choices <- eez_dat %>%
-      distinct(flag_iso3) %>%
-      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
-      arrange(admin)
-    
-    flags <- flag_state_choices$flag_iso3
-    names(flags) <- flag_state_choices$admin
-    
-    updateSelectizeInput(session, "sub_saharan_africa_effort_select_flag_state",
-                         choices = c("Select a flag state...", flags))
-    
-    updateSelectizeInput(session, "sub_saharan_africa_subsidies_select_flag_state",
-                         choices = c("Select a flag state...", flags))
-    
   })
   
-  ### plotOutput: Effort plot (all flag states)
+  ### Bounding box of selected coastal state ----------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    
+    # Crop eez shapefile based on the region 
+    eez_region <- sub_saharan_africa_rv$eezs %>%
+      st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
+      dplyr::filter(eez_ter_iso3 == input$sub_saharan_africa_eez_select)
+
+    sub_saharan_africa_rv$eez_bb <- st_bbox(eez_region)
+
+  })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
   output$sub_saharan_africa_effort_map_all <- renderPlot({
     
     # Require coastal state selection & data
     req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
         nrow(sub_saharan_africa_rv$eez_dat) > 0)
+
+    EEZPlot(region_dat = sub_saharan_africa_rv,
+            input_selected_eez = input$sub_saharan_africa_eez_select,
+            input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
+            type = "total",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
+
+  })
+  
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$sub_saharan_africa_effort_map_selected <- renderPlot({
     
+    # Require coastal state selection & data
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+        nrow(sub_saharan_africa_rv$eez_dat) > 0,
+        input$sub_saharan_africa_effort_select_flag_state != "Select a flag state...")
+
+    EEZPlot(region_dat = sub_saharan_africa_rv,
+            input_selected_eez = input$sub_saharan_africa_eez_select,
+            input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
+            type = "flag",
+            plot_variable = "fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
+  })
+  
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$sub_saharan_africa_subsidies_map_all <- renderPlot({
     
+    # Require coastal state selection & data
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+        nrow(sub_saharan_africa_rv$eez_dat) > 0)
     
+    EEZPlot(region_dat = sub_saharan_africa_rv,
+            input_selected_eez = input$sub_saharan_africa_eez_select,
+            input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
+            type = "total",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
+  })
+  
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$sub_saharan_africa_subsidies_map_selected <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+        nrow(sub_saharan_africa_rv$eez_dat) > 0,
+        input$sub_saharan_africa_subsidies_select_flag_state != "Select a flag state...")
+    
+    EEZPlot(region_dat = sub_saharan_africa_rv,
+            input_selected_eez = input$sub_saharan_africa_eez_select,
+            input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
+            type = "flag",
+            plot_variable = "bad_subs_per_fishing_KWh",
+            eez_sf = eez_ter_360,
+            land_sf = land_ter_360,
+            map_theme = eezmaptheme)
     
   })
   

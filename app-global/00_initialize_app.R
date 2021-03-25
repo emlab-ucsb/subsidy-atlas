@@ -10,7 +10,7 @@
 ### --------------------------------------------------------------------
 
 # Should the EEZs of EU countries be visualized as a unit
-merge_EU <- TRUE
+merge_EU <- FALSE
 
 eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
 
@@ -67,18 +67,18 @@ vessel_origins_fill_scale <- c("All distant water fishing in the region (default
 
 ### Plot Themes ---------
 eezmaptheme <- theme_minimal()+
-  theme(strip.background = element_rect(fill = "#262626", color = NA),
-        plot.background = element_rect(fill = "#262626", color = NA),
-        panel.background = element_rect(fill = "#262626", color = NA),
-        panel.grid.major = element_line(colour = "#262626"),
-        text = element_text(color = "white"),
+  theme(#strip.background = element_rect(color = NA),
+        #plot.background = element_rect(fill = "#d4dadc", color = NA),
+        panel.background = element_rect(fill = "#d4dadc", color = NA),
+        panel.grid.major = element_line(colour = "#d4dadc"),
+        text = element_text(color = "black"),
         plot.title = element_text(hjust = 0.5),
-        panel.border = element_rect(color = "#262626", fill = NA),
-        plot.margin = margin(t = 0.2, r = 0.1, b = 0, l = 0, unit = "cm"),
+        panel.border = element_rect(color = "#d4dadc", fill = NA),
+        plot.margin = margin(t = 0.2, r = 0.2, b = 0, l = 0, unit = "cm"),
         legend.margin = margin(t = 0.1, r = 0, b = 0.2, l = 0, unit = "cm"),
         legend.position = "bottom",
         legend.box = "horizontal",
-        axis.text = element_text(color = "white"))
+        axis.text = element_text(color = "black"))
 
 ### Data -----
 

@@ -198,13 +198,6 @@ RegionPageLayout <- function(region_name,
                                                                   
                                                                   uiOutput(paste0(region_name, "_effort_select_flag_state"))
 
-                                                                  # selectizeInput(
-                                                                  #   paste0(region_name, "_effort_select_flag_state"),
-                                                                  #   label = "Filter fishing activity by flag state...",
-                                                                  #   choices = c("Select a flag state...", flag_state_choices),
-                                                                  #   selected = "Select a flag state...",
-                                                                  #   width = "100%")
-
                                                            )
                                                          )
 
@@ -220,10 +213,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_effort_map_all"),
-                                                                    width = "auto"),
-
-                                                                  uiOutput(
-                                                                    paste0(region_name, "_effort_summary_all"))
+                                                                    width = "auto")
 
                                                            ),
                                                            # Selected flag state
@@ -231,10 +221,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_effort_map_selected"),
-                                                                    width = "auto"),
-
-                                                                  uiOutput(
-                                                                    paste0(region_name, "_effort_summary_selected"))
+                                                                    width = "auto")
 
 
                                                            )
@@ -281,14 +268,6 @@ RegionPageLayout <- function(region_name,
                                                                   
                                                                   uiOutput(paste0(region_name, "_subsidies_select_flag_state"))
 
-                                                                  # selectizeInput(
-                                                                  #   paste0(region_name, "_subsidies_select_flag_state"),
-                                                                  #   label = "Filter fishing activity by flag state...",
-                                                                  #   choices = c("Select a flag state...", flag_state_choices),
-                                                                  #   selected = "Select a flag state...",
-                                                                  #   width = "100%"
-                                                                  # )
-
                                                            )
                                                          )
 
@@ -304,10 +283,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_subsidies_map_all"),
-                                                                    width = "auto"),
-
-                                                                  uiOutput(
-                                                                    paste0(region_name, "_subsidies_summary_all"))
+                                                                    width = "auto")
 
 
                                                            ),
@@ -316,11 +292,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_subsidies_map_selected"),
-                                                                    width = "auto"),
-
-                                                                  uiOutput(
-                                                                    paste0(region_name, "_subsidies_summary_selected"))
-
+                                                                    width = "auto")
 
                                                            )
                                                          )

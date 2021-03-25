@@ -21,11 +21,13 @@ WidgetEEZSelect <- function(region_dat,
 }
 
 WidgetFlagStateSelect <- function(region_dat,
+                                  input_selected_eez,
                                   widget_id){
   
   # Get data
   region_eez_data <- region_dat$connect %>%
     st_drop_geometry() %>%
+    dplyr::filter(eez_ter_iso3 == input_selected_eez) %>%
     distinct(region, flag_iso3, admin) %>%
     arrange(flag_iso3)
   
@@ -34,9 +36,9 @@ WidgetFlagStateSelect <- function(region_dat,
   names(flag_states) <- region_eez_data$admin
   
   selectizeInput(widget_id,
-                 label = "Filter fishing activity by flag state...",
-                 choices = c("Select a flag state..." = "Select a flag state...", flag_states),
+                 label = NULL,
+                 choices = c("Filter by flag state..." = "Select a flag state...", flag_states),
                  selected = "Select a flag state...",
-                 width = "100%")
+                 width = "80%")
 
 }
