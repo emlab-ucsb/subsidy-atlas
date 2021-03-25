@@ -1,0 +1,12 @@
+name: DistantWaterFishingAtlas
+title: DistantWaterFishingAtlas
+username:
+account: emlab-ucsb
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3848921
+bundleId: 4391893
+url: https://emlab-ucsb.shinyapps.io/DistantWaterFishingAtlas/
+when: 1616638940.19092
+asMultiple: FALSE
+asStatic: FALSE
