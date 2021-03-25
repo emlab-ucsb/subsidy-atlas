@@ -1,0 +1,2 @@
+year,eez_id,eez_ter_iso3,lat_cen,lon_cen,flag_iso3,fishing_hours,fishing_KWh,bad_subs_per_fishing_KWh,ugly_subs_per_fishing_KWh,bad_subs,ugly_subs
+2018,8495,MAF,18.05,-63.050000000000004,FRA,1.6216666666666666,1306.6020609632365,0.18103,0.023209999999999998,236.5341710961747,30.326233834956714
