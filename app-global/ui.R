@@ -198,37 +198,37 @@ shinyUI(
        
        # East Asia & Pacific
        tabItem(tabName = "east-asia-pacific",
-               EastAsiaPacific(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+               EastAsiaPacific(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
        # Europe & Central Asia
        tabItem(tabName = "europe-central-asia",
-               EuropeCentralAsia(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+               EuropeCentralAsia(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
        # Latin America & Caribbean
        tabItem(tabName = "latin-america-caribbean",
-               LatinAmericaCaribbean(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+               LatinAmericaCaribbean(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
        # Middle East & North Africa
        tabItem(tabName = "middle-east-north-africa",
-               MiddleEastNorthAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+               MiddleEastNorthAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
        # North America
        tabItem(tabName = "north-america",
-               NorthAmerica(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+               NorthAmerica(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
        # South Asisa
        tabItem(tabName = "south-asia",
-               SouthAsia(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+               SouthAsia(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
        # South Asisa
        tabItem(tabName = "sub-saharan-africa",
-               SubSaharanAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+               SubSaharanAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale)
        )
        
      ) # close tabItems

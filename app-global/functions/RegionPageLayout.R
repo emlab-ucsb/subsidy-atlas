@@ -1,8 +1,7 @@
 
 RegionPageLayout <- function(region_name, 
                              vessel_origins_fill_choices, 
-                             vessel_origins_fill_scale, 
-                             flag_state_choices){
+                             vessel_origins_fill_scale){
   
   fluidPage(
 
@@ -196,13 +195,15 @@ RegionPageLayout <- function(region_name,
 
                                                            # Select a flag state
                                                            column(6, align = "center",
+                                                                  
+                                                                  uiOutput(paste0(region_name, "_effort_select_flag_state"))
 
-                                                                  selectizeInput(
-                                                                    paste0(region_name, "_effort_select_flag_state"),
-                                                                    label = "Filter fishing activity by flag state...",
-                                                                    choices = c("Select a flag state...", flag_state_choices),
-                                                                    selected = "Select a flag state...",
-                                                                    width = "100%")
+                                                                  # selectizeInput(
+                                                                  #   paste0(region_name, "_effort_select_flag_state"),
+                                                                  #   label = "Filter fishing activity by flag state...",
+                                                                  #   choices = c("Select a flag state...", flag_state_choices),
+                                                                  #   selected = "Select a flag state...",
+                                                                  #   width = "100%")
 
                                                            )
                                                          )
@@ -277,14 +278,16 @@ RegionPageLayout <- function(region_name,
 
                                                            # Select a flag state
                                                            column(6, align = "center",
+                                                                  
+                                                                  uiOutput(paste0(region_name, "_subsidies_select_flag_state"))
 
-                                                                  selectizeInput(
-                                                                    paste0(region_name, "_subsidies_select_flag_state"),
-                                                                    label = "Filter fishing activity by flag state...",
-                                                                    choices = c("Select a flag state...", flag_state_choices),
-                                                                    selected = "Select a flag state...",
-                                                                    width = "100%"
-                                                                  )
+                                                                  # selectizeInput(
+                                                                  #   paste0(region_name, "_subsidies_select_flag_state"),
+                                                                  #   label = "Filter fishing activity by flag state...",
+                                                                  #   choices = c("Select a flag state...", flag_state_choices),
+                                                                  #   selected = "Select a flag state...",
+                                                                  #   width = "100%"
+                                                                  # )
 
                                                            )
                                                          )

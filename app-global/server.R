@@ -219,7 +219,8 @@ shinyServer(function(input, output, session) {
                                          map_lat = -5,
                                          map_zoom = 1,
                                          connect = eez_flag_state_connectivity %>%
-                                           dplyr::filter(region == "East Asia & Pacific"))
+                                           dplyr::filter(region == "East Asia & Pacific"),
+                                         eez_dat = NULL)
   
   ### UI output: Select coastal state widget --------
   output$east_asia_pacific_eez_select <- renderUI({
@@ -326,6 +327,51 @@ shinyServer(function(input, output, session) {
 
   })
   
+  ### UI output: Select flag state widget (effort) --------
+  output$east_asia_pacific_effort_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
+                          widget_id = "east_asia_pacific_effort_select_flag_state")
+    
+  })
+  
+  ### UI output: Select flag state widget (subsidies) --------
+  output$east_asia_pacific_subsidies_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
+                          widget_id = "east_asia_pacific_subsidies_select_flag_state")
+    
+  })
+  
+  ### Load Data -----------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    
+    # Load data
+    eez_dat <- LoadEEZData(input_selected_eez = input$east_asia_pacific_eez_select)
+    
+    # Save to reactive object
+    east_asia_pacific_rv$eez_dat <- eez_dat
+    
+    # Get flag state choices for this coastal state and update widgets
+    flag_state_choices <- eez_dat %>%
+      distinct(flag_iso3) %>%
+      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+      arrange(admin)
+    
+    flags <- flag_state_choices$flag_iso3
+    names(flags) <- flag_state_choices$admin
+    
+    updateSelectizeInput(session, "east_asia_pacific_effort_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+    updateSelectizeInput(session, "east_asia_pacific_subsidies_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+  })
+  
   ###------------------------------------------------------------------
   ### Europe & Central Asia ---------------------------------------------
   ###------------------------------------------------------------------
@@ -337,7 +383,8 @@ shinyServer(function(input, output, session) {
                                            map_lat = 50,
                                            map_zoom = 2,
                                            connect = eez_flag_state_connectivity %>%
-                                             dplyr::filter(region == "Europe & Central Asia"))
+                                             dplyr::filter(region == "Europe & Central Asia"),
+                                           eez_dat = NULL)
   
   ### UI output: Select coastal state widget --------
   output$europe_central_asia_eez_select <- renderUI({
@@ -445,6 +492,51 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### UI output: Select flag state widget (effort) --------
+  output$europe_central_asia_effort_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = europe_central_asia_rv,
+                          widget_id = "europe_central_asia_effort_select_flag_state")
+    
+  })
+  
+  ### UI output: Select flag state widget (subsidies) --------
+  output$europe_central_asia_subsidies_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = europe_central_asia_rv,
+                          widget_id = "europe_central_asia_subsidies_select_flag_state")
+    
+  })
+  
+  ### Load Data -----------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    
+    # Load data
+    eez_dat <- LoadEEZData(input_selected_eez = input$europe_central_asia_eez_select)
+    
+    # Save to reactive object
+    europe_central_asia_rv$eez_dat <- eez_dat
+    
+    # Get flag state choices for this coastal state and update widgets
+    flag_state_choices <- eez_dat %>%
+      distinct(flag_iso3) %>%
+      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+      arrange(admin)
+    
+    flags <- flag_state_choices$flag_iso3
+    names(flags) <- flag_state_choices$admin
+    
+    updateSelectizeInput(session, "europe_central_asia_effort_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+    updateSelectizeInput(session, "europe_central_asia_subsidies_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+  })
+  
   ###------------------------------------------------------------------
   ### Latin America & Caribbean ---------------------------------------
   ###------------------------------------------------------------------
@@ -456,7 +548,8 @@ shinyServer(function(input, output, session) {
                                              map_lat = -15,
                                              map_zoom = 2,
                                              connect = eez_flag_state_connectivity %>%
-                                               dplyr::filter(region == "Latin America & Caribbean"))
+                                               dplyr::filter(region == "Latin America & Caribbean"),
+                                             eez_dat = NULL)
   
   ### UI output: Select coastal state widget --------
   output$latin_america_caribbean_eez_select <- renderUI({
@@ -562,6 +655,51 @@ shinyServer(function(input, output, session) {
                      input_fill_scale = input$latin_america_caribbean_vessel_origins_fill_rescale,
                      region_pal_light = region_pal_light,
                      map_id = "latin_america_caribbean_vessel_origins_map")
+    
+  })
+  
+  ### UI output: Select flag state widget (effort) --------
+  output$latin_america_caribbean_effort_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = latin_america_caribbean_rv,
+                          widget_id = "latin_america_caribbean_effort_select_flag_state")
+    
+  })
+  
+  ### UI output: Select flag state widget (subsidies) --------
+  output$latin_america_caribbean_subsidies_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = latin_america_caribbean_rv,
+                          widget_id = "latin_america_caribbean_subsidies_select_flag_state")
+    
+  })
+  
+  ### Load Data -----------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    
+    # Load data
+    eez_dat <- LoadEEZData(input_selected_eez = input$latin_america_caribbean_eez_select)
+    
+    # Save to reactive object
+    latin_america_caribbean_rv$eez_dat <- eez_dat
+    
+    # Get flag state choices for this coastal state and update widgets
+    flag_state_choices <- eez_dat %>%
+      distinct(flag_iso3) %>%
+      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+      arrange(admin)
+    
+    flags <- flag_state_choices$flag_iso3
+    names(flags) <- flag_state_choices$admin
+    
+    updateSelectizeInput(session, "latin_america_caribbean_effort_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+    updateSelectizeInput(session, "latin_america_caribbean_subsidies_select_flag_state",
+                         choices = c("Select a flag state...", flags))
     
   })
   
@@ -685,6 +823,51 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### UI output: Select flag state widget (effort) --------
+  output$middle_east_north_africa_effort_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = middle_east_north_africa_rv,
+                          widget_id = "middle_east_north_africa_effort_select_flag_state")
+    
+  })
+  
+  ### UI output: Select flag state widget (subsidies) --------
+  output$middle_east_north_africa_subsidies_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = middle_east_north_africa_rv,
+                          widget_id = "middle_east_north_africa_subsidies_select_flag_state")
+    
+  })
+  
+  ### Load Data -----------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    
+    # Load data
+    eez_dat <- LoadEEZData(input_selected_eez = input$middle_east_north_africa_eez_select)
+    
+    # Save to reactive object
+    middle_east_north_africa_rv$eez_dat <- eez_dat
+    
+    # Get flag state choices for this coastal state and update widgets
+    flag_state_choices <- eez_dat %>%
+      distinct(flag_iso3) %>%
+      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+      arrange(admin)
+    
+    flags <- flag_state_choices$flag_iso3
+    names(flags) <- flag_state_choices$admin
+    
+    updateSelectizeInput(session, "middle_east_north_africa_effort_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+    updateSelectizeInput(session, "middle_east_north_africa_subsidies_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+  })
+  
   ###------------------------------------------------------------
   ### North America ---------------------------------------------
   ###------------------------------------------------------------
@@ -802,6 +985,51 @@ shinyServer(function(input, output, session) {
                      input_fill_scale = input$north_america_vessel_origins_fill_rescale,
                      region_pal_light = region_pal_light,
                      map_id = "north_america_vessel_origins_map")
+    
+  })
+  
+  ### UI output: Select flag state widget (effort) --------
+  output$north_america_effort_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = north_america_rv,
+                          widget_id = "north_america_effort_select_flag_state")
+    
+  })
+  
+  ### UI output: Select flag state widget (subsidies) --------
+  output$north_america_subsidies_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = north_america_rv,
+                          widget_id = "north_america_subsidies_select_flag_state")
+    
+  })
+  
+  ### Load Data -----------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...")
+    
+    # Load data
+    eez_dat <- LoadEEZData(input_selected_eez = input$north_america_eez_select)
+    
+    # Save to reactive object
+    north_america_rv$eez_dat <- eez_dat
+    
+    # Get flag state choices for this coastal state and update widgets
+    flag_state_choices <- eez_dat %>%
+      distinct(flag_iso3) %>%
+      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+      arrange(admin)
+    
+    flags <- flag_state_choices$flag_iso3
+    names(flags) <- flag_state_choices$admin
+    
+    updateSelectizeInput(session, "north_america_effort_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+    updateSelectizeInput(session, "north_america_subsidies_select_flag_state",
+                         choices = c("Select a flag state...", flags))
     
   })
   
@@ -925,6 +1153,51 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### UI output: Select flag state widget (effort) --------
+  output$south_asia_effort_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = south_asia_rv,
+                          widget_id = "south_asia_effort_select_flag_state")
+    
+  })
+  
+  ### UI output: Select flag state widget (subsidies) --------
+  output$south_asia_subsidies_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = south_asia_rv,
+                          widget_id = "south_asia_subsidies_select_flag_state")
+    
+  })
+  
+  ### Load Data -----------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...")
+    
+    # Load data
+    eez_dat <- LoadEEZData(input_selected_eez = input$south_asia_eez_select)
+    
+    # Save to reactive object
+    south_asia_rv$eez_dat <- eez_dat
+    
+    # Get flag state choices for this coastal state and update widgets
+    flag_state_choices <- eez_dat %>%
+      distinct(flag_iso3) %>%
+      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+      arrange(admin)
+    
+    flags <- flag_state_choices$flag_iso3
+    names(flags) <- flag_state_choices$admin
+    
+    updateSelectizeInput(session, "south_asia_effort_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+    updateSelectizeInput(session, "south_asia_subsidies_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+  })
+  
   ###-----------------------------------------------------------------
   ### Sub-Saharan Africa ---------------------------------------------
   ###-----------------------------------------------------------------
@@ -1043,6 +1316,65 @@ shinyServer(function(input, output, session) {
                      map_id = "sub_saharan_africa_vessel_origins_map")
   })
   
+  ### UI output: Select flag state widget (effort) --------
+  output$sub_saharan_africa_effort_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = sub_saharan_africa_rv,
+                          widget_id = "sub_saharan_africa_effort_select_flag_state")
+    
+  })
+  
+  ### UI output: Select flag state widget (subsidies) --------
+  output$sub_saharan_africa_subsidies_select_flag_state <- renderUI({
+    
+    WidgetFlagStateSelect(region_dat = sub_saharan_africa_rv,
+                          widget_id = "sub_saharan_africa_subsidies_select_flag_state")
+    
+  })
+  
+  ### Load Data -----------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    
+    # Load data
+    eez_dat <- LoadEEZData(input_selected_eez = input$sub_saharan_africa_eez_select)
+    
+    # Save to reactive object
+    sub_saharan_africa_rv$eez_dat <- eez_dat
+    
+    # Get flag state choices for this coastal state and update widgets
+    flag_state_choices <- eez_dat %>%
+      distinct(flag_iso3) %>%
+      mutate(admin = countrycode(flag_iso3, "iso3c", "country.name")) %>%
+      arrange(admin)
+    
+    flags <- flag_state_choices$flag_iso3
+    names(flags) <- flag_state_choices$admin
+    
+    updateSelectizeInput(session, "sub_saharan_africa_effort_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+    updateSelectizeInput(session, "sub_saharan_africa_subsidies_select_flag_state",
+                         choices = c("Select a flag state...", flags))
+    
+  })
+  
+  ### plotOutput: Effort plot (all flag states)
+  output$sub_saharan_africa_effort_map_all <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+        nrow(sub_saharan_africa_rv$eez_dat) > 0)
+    
+    
+    
+    
+    
+    
+  })
+  
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
@@ -1068,68 +1400,21 @@ shinyServer(function(input, output, session) {
   #   
   # })
   
-  ### -----
-  ### Reactive DF: Load 0.1 x 0.1 degree effort/subsidy data for selected ACP Africa state
-  ### -----
-  
-  africa_eez_data <- eventReactive(input$africa_eez_select, {
-    
-    # Require EEZ selection
-    req(input$africa_eez_select != "Select a coastal state...")
-    
-    # Find matching data file and load
-    all_data_files <- list.files(path = "./data/eez_results/ACP/", pattern = "*.csv")
-    coastal_state_codes <- unique(str_replace(all_data_files, "\\_.*", ""))
-    matching_file <- all_data_files[coastal_state_codes == input$africa_eez_select]
-    
-    out <- read_csv(paste0("./data/eez_results/ACP/", matching_file), col_types = "nnccnnnnnn")
-    
-    clean_out <- out %>%
-      dplyr::filter(year == 2018) %>%
-      mutate(flag = ifelse(is.na(flag), "UNK", flag)) %>%
-      mutate(name = countrycode(flag, "iso3c", "country.name")) %>%
-      dplyr::filter(name != names(africa_eez_choices[africa_eez_choices == input$africa_eez_select])) %>%
-      arrange(name)
-    
-    clean_out$name[is.na(clean_out$name)] <- "Unknown flag"
-    
-    clean_out
-    
-  })
-  
-  ### -----
-  ### Update selectInput: Filter possible flag state selections based on selected ACP Africa state
-  ### -----
-  
-  observeEvent(input$africa_eez_select, {
-    
-    req(input$africa_eez_select != "Select a coastal state...")
-    
-    flag_state_choices_africa <- unique(africa_eez_data()$flag)
-    names(flag_state_choices_africa) <- unique(africa_eez_data()$name)
-    
-    updateSelectizeInput(session, "africa_flag_state_select_effort",
-                         choices = c("Select a flag state...", flag_state_choices_africa))
-    
-    updateSelectizeInput(session, "africa_flag_state_select_subsidy",
-                         choices = c("Select a flag state...", flag_state_choices_africa))
-    
-  })
   
   ### -----
   ### Reactive object: bounding box coordinates for the EEZ of the selected ACP Africa state
   ### -----
   
-  africa_eez_bbox <- eventReactive(input$africa_eez_select, {
-    
-    eez_map_subsidy <- africa_eez_map %>%
-      dplyr::filter(iso_ter == input$africa_eez_select) %>%
-      group_by(iso_ter) %>%
-      summarize(geometry = st_union(geometry))
-    
-    st_bbox(eez_map_subsidy)
-    
-  })
+  # africa_eez_bbox <- eventReactive(input$africa_eez_select, {
+  #   
+  #   eez_map_subsidy <- africa_eez_map %>%
+  #     dplyr::filter(iso_ter == input$africa_eez_select) %>%
+  #     group_by(iso_ter) %>%
+  #     summarize(geometry = st_union(geometry))
+  #   
+  #   st_bbox(eez_map_subsidy)
+  #   
+  # })
   
   ### -----
   ### UI output: summary stats for effort heat map (selected flag state only) for the selected ACP Africa state

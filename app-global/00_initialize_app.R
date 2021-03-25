@@ -96,12 +96,12 @@ eezmaptheme <- theme_minimal()+
 # RFMO_links <- read_csv("./data/RMFO_links.csv")
 # 
 # 3) Spatial data frame with connectivity lines linking countries and the EEZs in which their fleets fish
-connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") %>%
-  rename(eez_code = eez_cod,
-         eez_territory_iso3 = ez_tr_3,
-         capacity = capacty,
-         fishing_h = fshng_h,
-         fishing_KWh = fshn_KW)
+# connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp") %>%
+#   rename(eez_code = eez_cod,
+#          eez_territory_iso3 = ez_tr_3,
+#          capacity = capacty,
+#          fishing_h = fshng_h,
+#          fishing_KWh = fshn_KW)
 # 
 # ### Shapefiles -----
 # 
@@ -173,10 +173,10 @@ connectivity_data <- read_sf("./data/eez_results/ACP/eez_mapping_with_lines.shp"
 # pacific_land_eez_map <- land_eez_map %>% 
 #   st_crop(c(xmin=0, xmax=360, ymin=-90, ymax=90)) %>%
 #   st_collection_extract(type = c("POLYGON"))
-# 
-flag_state_choices <- unique(connectivity_data$flag)
-names(flag_state_choices) <- countrycode(flag_state_choices, "iso3c", "country.name")
-names(flag_state_choices)[is.na(names(flag_state_choices))] <- "Unknown flag"
-# 
+# # 
+# flag_state_choices <- unique(connectivity_data$flag)
+# names(flag_state_choices) <- countrycode(flag_state_choices, "iso3c", "country.name")
+# names(flag_state_choices)[is.na(names(flag_state_choices))] <- "Unknown flag"
+# # 
 # ### Themes -----
 # 

@@ -6,10 +6,9 @@
 ### ------------------------------------
 
 ### Function
-LatinAmericaCaribbean = function(vessel_origins_fill_choices, vessel_origins_fill_scale, flag_state_choices)
+LatinAmericaCaribbean = function(vessel_origins_fill_choices, vessel_origins_fill_scale)
   
   RegionPageLayout(region_name = "latin_america_caribbean",
                    vessel_origins_fill_choices = vessel_origins_fill_choices,
-                   vessel_origins_fill_scale = vessel_origins_fill_scale,
-                   flag_state_choices = flag_state_choices)
+                   vessel_origins_fill_scale = vessel_origins_fill_scale)
   
