@@ -29,8 +29,14 @@ vessel_year <- 2018
 results_dir <- here::here("results/global/05-eez-hi-res-data/")
   if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
 
-app_dir <- here::here("app-global/data/eez-effort-subs/")
+app_dir <- here::here("app-global/data/")
   if (dir.exists(app_dir) == F) { dir.create(app_dir, recursive = T) }
+
+app_eez_dir <- here::here("app-global/data/eez-effort-subs/")
+  if (dir.exists(app_eez_dir) == F) { dir.create(app_eez_dir, recursive = T) }
+
+app_region_dir <- here::here("app-global/data/region-effort-subs/")
+  if (dir.exists(app_region_dir) == F) { dir.create(app_region_dir, recursive = T) }
 
 # Temporary solution to bigrquery error (August 5, 2020) - see https://github.com/r-dbi/bigrquery/issues/395 for details
 options(scipen = 20)
@@ -90,7 +96,7 @@ eez_ter_flag_lookup_table <- bq_table(project = bq_project,
   }
 ```
 
-## Pull data
+## Pull Data (EEZ Level)
 
 ```{r}
 eez_ter_to_pull <- unique(flags_by_eez_id$eez_ter_iso3) 
@@ -239,7 +245,150 @@ for(i in 1:length(eez_ter_to_pull)){
            ugly_subs = ugly_subs_per_fishing_KWh * fishing_KWh)
   
   write_csv(effort_eez_save, paste0(results_dir, eez_ter_to_pull[i], "_eez_effort_subs_by_flag.csv"))
-  write_csv(effort_eez_save, paste0(app_dir, eez_ter_to_pull[i], "_eez_effort_subs_by_flag.csv"))
+  write_csv(effort_eez_save, paste0(app_eez_dir, eez_ter_to_pull[i], "_eez_effort_subs_by_flag.csv"))
+  
+}
+```
+
+## Pull Data (FAO Level for High Seas)
+
+```{r}
+# Get all corresponding FAO regions for each EEZ
+fao_by_eez_id <- vessel_list_expanded %>%
+  distinct(eez_ter_iso3, eez_id, fao_region) %>%
+  arrange(eez_ter_iso3, eez_id)
+
+# Save 
+  write_csv(fao_by_eez_id, paste0(results_dir, "fao_regions_by_eez_ter_id.csv"))
+  write_csv(fao_by_eez_id, paste0(app_dir, "fao_regions_by_eez_ter_id.csv"))
+  
+```
+
+```{r}
+fao_regions_to_pull <- unique(fao_by_eez_id$fao_region) 
+
+for(i in 1:length(fao_regions_to_pull)){
+  
+  run_region_text <- paste0("fao_region = '", fao_regions_to_pull[i], "'")
+  
+  sql4 <- paste0(
+  "WITH
+  subsidy_rates AS (
+     SELECT
+        *
+     FROM
+        `emlab-gcp.distant_water_fishing_atlas.subsidy_rates_flag_sov`),
+   
+  eez_dat AS (
+     SELECT
+       year,
+       CAST(eez_id as string) as eez_id,
+       CAST(fao_region as string) as fao_region,
+       lat_bin_center as lat_cen,
+       lon_bin_center as lon_cen,
+       flag,
+       sum(fishing_hours_lat_lon) AS fishing_hours,
+       sum(fishing_KWh_lat_lon) AS fishing_KWh
+     FROM
+       `emlab-gcp.distant_water_fishing_atlas.effort_01x01_good_fishing_vessels_2018_raw`
+    GROUP BY
+      year,
+      eez_id,
+      fao_region,
+      lat_cen,
+      lon_cen,
+      flag
+    HAVING
+      eez_id = '0000' 
+      AND ", run_region_text, ")
+      
+ SELECT
+    a.year,
+    a.eez_id,
+    a.fao_region,
+    lat_cen,
+    lon_cen,
+    a.flag as flag_iso3,
+    SUM(a.fishing_hours) as fishing_hours,
+    SUM(a.fishing_KWh) as fishing_KWh,
+    B1_per_fishing_KWh,
+    B2_per_fishing_KWh,
+    B3_per_fishing_KWh,
+    B4_per_fishing_KWh,
+    B5_per_fishing_KWh,
+    B6_per_fishing_KWh,
+    B7_per_fishing_KWh,
+    C1_per_fishing_KWh,
+    C2_per_fishing_KWh,
+    C3_per_fishing_KWh
+  FROM
+    eez_dat a
+  LEFT JOIN
+    `emlab-gcp.distant_water_fishing_atlas.subsidy_rates_flag_sov` c
+  ON
+    a.flag = c.flag_sovereign_iso3
+  GROUP BY
+    year,
+    eez_id,
+    fao_region,
+    lat_cen,
+    lon_cen,
+    flag,
+    B1_per_fishing_KWh,
+    B2_per_fishing_KWh,
+    B3_per_fishing_KWh,
+    B4_per_fishing_KWh,
+    B5_per_fishing_KWh,
+    B6_per_fishing_KWh,
+    B7_per_fishing_KWh,
+    C1_per_fishing_KWh,
+    C2_per_fishing_KWh,
+    C3_per_fishing_KWh
+  ORDER BY
+    flag"
+  )
+
+  fao_table <- bq_table(project = bq_project, 
+                        table = paste0("fishing_effort_hs_fao_region_", fao_regions_to_pull[i]), 
+                        dataset = "distant_water_fishing_atlas") 
+
+  if(bq_table_exists(fao_table)){
+    
+    bq_table_delete(fao_table)
+  effort_region_out <- 
+    bq_project_query(bq_project, 
+                    query = sql4, 
+                    destination_table = fao_table, 
+                    use_legacy_sql = FALSE, 
+                    allowLargeResults = TRUE) %>%
+     bq_table_download()
+    
+  }else{
+    
+   bq_table_create(fao_table)
+  effort_region_out <- 
+    bq_project_query(bq_project, 
+                   query = sql4, 
+                   destination_table = fao_table,
+                   use_legacy_sql = FALSE, 
+                   allowLargeResults = TRUE) %>%
+    bq_table_download()
+    
+  }  
+  
+  # Do some last tweaks and save
+  bad_sub_columns <- paste0(c("B1", "B2", "B3", "B4", "B5", "B6", "B7"), "_per_fishing_KWh")
+  ugly_sub_columns <- paste0(c("C1", "C2", "C3"), "_per_fishing_KWh")
+  
+  effort_region_save <- effort_region_out %>%
+    mutate(bad_subs_per_fishing_KWh = rowSums(across(all_of(bad_sub_columns))),
+           ugly_subs_per_fishing_KWh = rowSums(across(all_of(ugly_sub_columns)))) %>%
+    dplyr::select(-bad_sub_columns, -ugly_sub_columns) %>%
+    mutate(bad_subs = bad_subs_per_fishing_KWh * fishing_KWh,
+           ugly_subs = ugly_subs_per_fishing_KWh * fishing_KWh)
+  
+  write_csv(effort_region_save, paste0(results_dir, fao_regions_to_pull[i], "_region_effort_subs_by_flag.csv"))
+  write_csv(effort_region_save, paste0(app_region_dir, fao_regions_to_pull[i], "_region_effort_subs_by_flag.csv"))
   
 }
 ```
