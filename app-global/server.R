@@ -1842,7 +1842,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  ### Load Data -----------------------------------------------------
+  ### Load EEZ Data -----------------------------------------------------
   observe({
     
     # Require coastal state selection
@@ -1866,9 +1866,31 @@ shinyServer(function(input, output, session) {
     eez_region <- sub_saharan_africa_rv$eezs %>%
       st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
       dplyr::filter(eez_ter_iso3 == input$sub_saharan_africa_eez_select)
-
+    
     sub_saharan_africa_rv$eez_bb <- st_bbox(eez_region)
-
+    
+  })
+  
+  ### Load FAO Region Data -------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+        input$sub_saharan_africa_effort_high_seas == TRUE)
+    
+    # Find Corresponding FAO regions 
+    fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$sub_saharan_africa_eez_select])
+    
+    if(all(fao_regions %in% sub_saharan_africa_rv$hs_regions) == F){
+      
+      # Load data
+      hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+      
+      # Save to reactive object
+      sub_saharan_africa_rv$hs_dat <- hs_dat
+      sub_saharan_africa_rv$hs_regions <- fao_regions
+      
+    }
   })
   
   ### plotOutput: Effort plot (all flag states) ----------------
@@ -1881,6 +1903,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
+            input_hs = input$sub_saharan_africa_effort_high_seas,
             type = "total",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1900,6 +1923,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
+            input_hs = input$sub_saharan_africa_effort_high_seas,
             type = "flag",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1918,6 +1942,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
+            input_hs = input$sub_saharan_africa_subsidies_high_seas,
             type = "total",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1937,6 +1962,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
+            input_hs = input$sub_saharan_africa_subsidies_high_seas,
             type = "flag",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
