@@ -220,7 +220,10 @@ shinyServer(function(input, output, session) {
                                          map_zoom = 1,
                                          connect = eez_flag_state_connectivity %>%
                                            dplyr::filter(region == "East Asia & Pacific"),
-                                         eez_dat = NULL)
+                                         eez_dat = NULL,
+                                         eez_bb = NULL,
+                                         hs_dat = NULL,
+                                         hs_regions = NULL)
   
   ### UI output: Select coastal state widget --------
   output$east_asia_pacific_eez_select <- renderUI({
@@ -380,6 +383,28 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Load FAO Region Data -------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+        input$east_asia_pacific_effort_high_seas == TRUE | input$east_asia_pacific_subsidies_high_seas == TRUE)
+    
+    # Find Corresponding FAO regions 
+    fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$east_asia_pacific_eez_select])
+    
+    if(all(fao_regions %in% east_asia_pacific_rv$hs_regions) == F){
+      
+      # Load data
+      hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+      
+      # Save to reactive object
+      east_asia_pacific_rv$hs_dat <- hs_dat
+      east_asia_pacific_rv$hs_regions <- fao_regions
+      
+    }
+  })
+  
   ### plotOutput: Effort plot (all flag states) ----------------
   output$east_asia_pacific_effort_map_all <- renderPlot({
     
@@ -390,6 +415,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = east_asia_pacific_rv,
             input_selected_eez = input$east_asia_pacific_eez_select,
             input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+            input_hs = input$east_asia_pacific_effort_high_seas,
             type = "total",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -409,6 +435,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = east_asia_pacific_rv,
             input_selected_eez = input$east_asia_pacific_eez_select,
             input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+            input_hs = input$east_asia_pacific_effort_high_seas,
             type = "flag",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -427,6 +454,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = east_asia_pacific_rv,
             input_selected_eez = input$east_asia_pacific_eez_select,
             input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+            input_hs = input$east_asia_pacific_subsidies_high_seas,
             type = "total",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -446,6 +474,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = east_asia_pacific_rv,
             input_selected_eez = input$east_asia_pacific_eez_select,
             input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+            input_hs = input$east_asia_pacific_subsidies_high_seas,
             type = "flag",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -467,7 +496,9 @@ shinyServer(function(input, output, session) {
                                            connect = eez_flag_state_connectivity %>%
                                              dplyr::filter(region == "Europe & Central Asia"),
                                            eez_dat = NULL,
-                                           eez_bb = NULL)
+                                           eez_bb = NULL,
+                                           hs_dat = NULL,
+                                           hs_regions = NULL)
   
   ### UI output: Select coastal state widget --------
   output$europe_central_asia_eez_select <- renderUI({
@@ -628,6 +659,28 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Load FAO Region Data -------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+        input$europe_central_asia_effort_high_seas == TRUE | input$europe_central_asia_subsidies_high_seas == TRUE)
+    
+    # Find Corresponding FAO regions 
+    fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$europe_central_asia_eez_select])
+    
+    if(all(fao_regions %in% europe_central_asia_rv$hs_regions) == F){
+      
+      # Load data
+      hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+      
+      # Save to reactive object
+      europe_central_asia_rv$hs_dat <- hs_dat
+      europe_central_asia_rv$hs_regions <- fao_regions
+      
+    }
+  })
+  
   ### plotOutput: Effort plot (all flag states) ----------------
   output$europe_central_asia_effort_map_all <- renderPlot({
     
@@ -638,6 +691,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = europe_central_asia_rv,
             input_selected_eez = input$europe_central_asia_eez_select,
             input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+            input_hs = input$europe_central_asia_effort_high_seas,
             type = "total",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -657,6 +711,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = europe_central_asia_rv,
             input_selected_eez = input$europe_central_asia_eez_select,
             input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+            input_hs = input$europe_central_asia_effort_high_seas,
             type = "flag",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -675,6 +730,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = europe_central_asia_rv,
             input_selected_eez = input$europe_central_asia_eez_select,
             input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+            input_hs = input$europe_central_asia_subsidies_high_seas,
             type = "total",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -694,6 +750,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = europe_central_asia_rv,
             input_selected_eez = input$europe_central_asia_eez_select,
             input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+            input_hs = input$europe_central_asia_subsidies_high_seas,
             type = "flag",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -715,7 +772,9 @@ shinyServer(function(input, output, session) {
                                              connect = eez_flag_state_connectivity %>%
                                                dplyr::filter(region == "Latin America & Caribbean"),
                                              eez_dat = NULL,
-                                             eez_bb = NULL)
+                                             eez_bb = NULL,
+                                             hs_dat = NULL,
+                                             hs_regions = NULL)
   
   ### UI output: Select coastal state widget --------
   output$latin_america_caribbean_eez_select <- renderUI({
@@ -877,6 +936,28 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Load FAO Region Data -------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+        input$latin_america_caribbean_effort_high_seas == TRUE | input$latin_america_caribbean_subsidies_high_seas == TRUE)
+    
+    # Find Corresponding FAO regions 
+    fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$latin_america_caribbean_eez_select])
+    
+    if(all(fao_regions %in% latin_america_caribbean_rv$hs_regions) == F){
+      
+      # Load data
+      hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+      
+      # Save to reactive object
+      latin_america_caribbean_rv$hs_dat <- hs_dat
+      latin_america_caribbean_rv$hs_regions <- fao_regions
+      
+    }
+  })
+  
   ### plotOutput: Effort plot (all flag states) ----------------
   output$latin_america_caribbean_effort_map_all <- renderPlot({
     
@@ -887,6 +968,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = latin_america_caribbean_rv,
             input_selected_eez = input$latin_america_caribbean_eez_select,
             input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+            input_hs = input$latin_america_caribbean_effort_high_seas,
             type = "total",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -906,6 +988,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = latin_america_caribbean_rv,
             input_selected_eez = input$latin_america_caribbean_eez_select,
             input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+            input_hs = input$latin_america_caribbean_effort_high_seas,
             type = "flag",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -924,6 +1007,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = latin_america_caribbean_rv,
             input_selected_eez = input$latin_america_caribbean_eez_select,
             input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+            input_hs = input$latin_america_caribbean_subsidies_high_seas,
             type = "total",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -943,6 +1027,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = latin_america_caribbean_rv,
             input_selected_eez = input$latin_america_caribbean_eez_select,
             input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+            input_hs = input$latin_america_caribbean_subsidies_high_seas,
             type = "flag",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -964,7 +1049,9 @@ shinyServer(function(input, output, session) {
                                                 connect = eez_flag_state_connectivity %>%
                                                   dplyr::filter(region == "Middle East & North Africa"),
                                                 eez_dat = NULL,
-                                                eez_bb = NULL)
+                                                eez_bb = NULL,
+                                                hs_dat = NULL,
+                                                hs_regions = NULL)
   
   ### UI output: Select coastal state widget --------
   output$middle_east_north_africa_eez_select <- renderUI({
@@ -1126,6 +1213,28 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Load FAO Region Data -------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+        input$middle_east_north_africa_effort_high_seas == TRUE | input$middle_east_north_africa_subsidies_high_seas == TRUE)
+    
+    # Find Corresponding FAO regions 
+    fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$middle_east_north_africa_eez_select])
+    
+    if(all(fao_regions %in% middle_east_north_africa_rv$hs_regions) == F){
+      
+      # Load data
+      hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+      
+      # Save to reactive object
+      middle_east_north_africa_rv$hs_dat <- hs_dat
+      middle_east_north_africa_rv$hs_regions <- fao_regions
+      
+    }
+  })
+  
   ### plotOutput: Effort plot (all flag states) ----------------
   output$middle_east_north_africa_effort_map_all <- renderPlot({
     
@@ -1136,6 +1245,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = middle_east_north_africa_rv,
             input_selected_eez = input$middle_east_north_africa_eez_select,
             input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+            input_hs = input$middle_east_north_africa_effort_high_seas,
             type = "total",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1155,6 +1265,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = middle_east_north_africa_rv,
             input_selected_eez = input$middle_east_north_africa_eez_select,
             input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+            input_hs = input$middle_east_north_africa_effort_high_seas,
             type = "flag",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1173,6 +1284,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = middle_east_north_africa_rv,
             input_selected_eez = input$middle_east_north_africa_eez_select,
             input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+            input_hs = input$middle_east_north_africa_subsidies_high_seas,
             type = "total",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1192,6 +1304,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = middle_east_north_africa_rv,
             input_selected_eez = input$middle_east_north_africa_eez_select,
             input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+            input_hs = input$middle_east_north_africa_subsidies_high_seas,
             type = "flag",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1213,7 +1326,9 @@ shinyServer(function(input, output, session) {
                                      connect = eez_flag_state_connectivity %>%
                                        dplyr::filter(region == "North America"),
                                      eez_dat = NULL,
-                                     eez_bb = NULL)
+                                     eez_bb = NULL,
+                                     hs_dat = NULL,
+                                     hs_regions = NULL)
   
   ### UI output: Select coastal state widget --------
   output$north_america_eez_select <- renderUI({
@@ -1375,6 +1490,28 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Load FAO Region Data -------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$north_america_eez_select != "Select a coastal state...",
+        input$north_america_effort_high_seas == TRUE | input$north_america_subsidies_high_seas == TRUE)
+    
+    # Find Corresponding FAO regions 
+    fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$north_america_eez_select])
+    
+    if(all(fao_regions %in% north_america_rv$hs_regions) == F){
+      
+      # Load data
+      hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+      
+      # Save to reactive object
+      north_america_rv$hs_dat <- hs_dat
+      north_america_rv$hs_regions <- fao_regions
+      
+    }
+  })
+  
   ### plotOutput: Effort plot (all flag states) ----------------
   output$north_america_effort_map_all <- renderPlot({
     
@@ -1385,6 +1522,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = north_america_rv,
             input_selected_eez = input$north_america_eez_select,
             input_selected_flag_state = input$north_america_effort_select_flag_state,
+            input_hs = input$north_america_effort_high_seas,
             type = "total",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1404,6 +1542,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = north_america_rv,
             input_selected_eez = input$north_america_eez_select,
             input_selected_flag_state = input$north_america_effort_select_flag_state,
+            input_hs = input$north_america_effort_high_seas,
             type = "flag",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1422,6 +1561,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = north_america_rv,
             input_selected_eez = input$north_america_eez_select,
             input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+            input_hs = input$north_america_subsidies_high_seas,
             type = "total",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1441,6 +1581,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = north_america_rv,
             input_selected_eez = input$north_america_eez_select,
             input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+            input_hs = input$north_america_subsidies_high_seas,
             type = "flag",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1462,7 +1603,9 @@ shinyServer(function(input, output, session) {
                                   connect = eez_flag_state_connectivity %>%
                                     dplyr::filter(region == "South Asia"),
                                   eez_dat = NULL,
-                                  eez_bb = NULL)
+                                  eez_bb = NULL,
+                                  hs_dat = NULL,
+                                  hs_regions = NULL)
   
   ### UI output: Select coastal state widget --------
   output$south_asia_eez_select <- renderUI({
@@ -1624,6 +1767,28 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Load FAO Region Data -------------------------------------------------
+  observe({
+    
+    # Require coastal state selection
+    req(input$south_asia_eez_select != "Select a coastal state...",
+        input$south_asia_effort_high_seas == TRUE | input$south_asia_subsidies_high_seas == TRUE)
+    
+    # Find Corresponding FAO regions 
+    fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$south_asia_eez_select])
+    
+    if(all(fao_regions %in% south_asia_rv$hs_regions) == F){
+      
+      # Load data
+      hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+      
+      # Save to reactive object
+      south_asia_rv$hs_dat <- hs_dat
+      south_asia_rv$hs_regions <- fao_regions
+      
+    }
+  })
+  
   ### plotOutput: Effort plot (all flag states) ----------------
   output$south_asia_effort_map_all <- renderPlot({
     
@@ -1634,6 +1799,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = south_asia_rv,
             input_selected_eez = input$south_asia_eez_select,
             input_selected_flag_state = input$south_asia_effort_select_flag_state,
+            input_hs = input$south_asia_effort_high_seas,
             type = "total",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1653,6 +1819,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = south_asia_rv,
             input_selected_eez = input$south_asia_eez_select,
             input_selected_flag_state = input$south_asia_effort_select_flag_state,
+            input_hs = input$south_asia_effort_high_seas,
             type = "flag",
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1671,6 +1838,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = south_asia_rv,
             input_selected_eez = input$south_asia_eez_select,
             input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+            input_hs = input$south_asia_subsidies_high_seas,
             type = "total",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1690,6 +1858,7 @@ shinyServer(function(input, output, session) {
     EEZPlot(region_dat = south_asia_rv,
             input_selected_eez = input$south_asia_eez_select,
             input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+            input_hs = input$south_asia_subsidies_high_seas,
             type = "flag",
             plot_variable = "bad_subs_per_fishing_KWh",
             eez_sf = eez_ter_360,
@@ -1711,7 +1880,9 @@ shinyServer(function(input, output, session) {
                                           connect = eez_flag_state_connectivity %>%
                                             dplyr::filter(region == "Sub-Saharan Africa"),
                                           eez_dat = NULL,
-                                          eez_bb = NULL)
+                                          eez_bb = NULL,
+                                          hs_dat = NULL,
+                                          hs_regions = NULL)
   
   ### UI output: Select coastal state widget --------
   output$sub_saharan_africa_eez_select <- renderUI({
@@ -1876,7 +2047,7 @@ shinyServer(function(input, output, session) {
     
     # Require coastal state selection
     req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
-        input$sub_saharan_africa_effort_high_seas == TRUE)
+        input$sub_saharan_africa_effort_high_seas == TRUE | input$sub_saharan_africa_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
     fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$sub_saharan_africa_eez_select])
