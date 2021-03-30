@@ -71,13 +71,13 @@ RegionPageLayout <- function(region_name,
                     column(12,
 
                            # tabBox
-                           tabBox(width = 12, id = paste0(str_replace(region_name, "_", "-"), "-results-tabs"),
+                           tabBox(width = 12, id = paste0(str_replace_all(region_name, "_", "-"), "-results-tabs"),
 
                                   ### --------------------------
                                   ### Tab # 1  - Stats overview
                                   ### --------------------------
 
-                                  tabPanel(value = paste0(str_replace(region_name, "_", "-"), "-summary"),
+                                  tabPanel(value = paste0(str_replace_all(region_name, "_", "-"), "-summary"),
 
                                            # Title
                                            tagList(
@@ -89,6 +89,8 @@ RegionPageLayout <- function(region_name,
                                                          icon("info"))
                                            ),
 
+                                           conditionalPanel(condition = paste0("input.", region_name, "_eez_select != 'Select a coastal state...'"),
+                                             
                                            # Content
                                            column(12, id = "tblr-spaced-div",
 
@@ -99,13 +101,15 @@ RegionPageLayout <- function(region_name,
                                                   dataTableOutput(paste0(region_name, "_summary_dt"))
 
                                            )
+                                           
+                                           )
                                   ),
 
                                   ### --------------------------
                                   ### Tab # 2  - Origins of distant water vessels
                                   ### --------------------------
 
-                                  tabPanel(value = paste0(str_replace(region_name, "_", "-"), "-origins"),
+                                  tabPanel(value = paste0(str_replace_all(region_name, "_", "-"), "-origins"),
 
                                            # Title
                                            tagList(
@@ -117,6 +121,8 @@ RegionPageLayout <- function(region_name,
                                                          icon("info"))
                                            ),
 
+                                           conditionalPanel(condition = paste0("input.", region_name, "_eez_select != 'Select a coastal state...'"),
+                                                            
                                            # Content
                                            column(12, id = "lr-spaced-div",
 
@@ -160,13 +166,14 @@ RegionPageLayout <- function(region_name,
                                                   ) # /column
 
                                            ) # /content
+                                           )
                                   ),
 
                                   ### --------------------------
                                   ### Tab # 3  - Fishing Effort
                                   ### --------------------------
 
-                                  tabPanel(value = paste0(str_replace(region_name, "_", "-"), "-effort"),
+                                  tabPanel(value = paste0(str_replace_all(region_name, "_", "-"), "-effort"),
 
                                            # Title
                                            tagList(
@@ -178,6 +185,8 @@ RegionPageLayout <- function(region_name,
                                                          icon("info"))
                                            ),
 
+                                           conditionalPanel(condition = paste0("input.", region_name, "_eez_select != 'Select a coastal state...'"),
+                                                            
                                            # Content
                                            column(12, id = "lr-spaced-div",
 
@@ -246,13 +255,14 @@ RegionPageLayout <- function(region_name,
                                                   )
 
                                            ) # /content
+                                           )
                                   ),
 
                                   ### --------------------------
                                   ### Tab # 4  - Global fishing footprint
                                   ### --------------------------
 
-                                  tabPanel(value = paste0(str_replace(region_name, "_", "-"), "-subsidies"),
+                                  tabPanel(value = paste0(str_replace_all(region_name, "_", "-"), "-subsidies"),
 
                                            # Title
                                            tagList(
@@ -264,6 +274,8 @@ RegionPageLayout <- function(region_name,
                                                          icon("info"))
                                            ),
 
+                                           conditionalPanel(condition = paste0("input.", region_name, "_eez_select != 'Select a coastal state...'"),
+                                                            
                                            # Content
                                            column(12, id = "lr-spaced-div",
 
@@ -333,6 +345,7 @@ RegionPageLayout <- function(region_name,
                                                   ) # /heat maps
 
                                            ) # /content
+                                           )
                                   ) # /tabPanel 4
                            ) # /tabBox
 
