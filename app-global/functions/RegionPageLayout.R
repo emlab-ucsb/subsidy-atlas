@@ -198,7 +198,7 @@ RegionPageLayout <- function(region_name,
                                                            # All flag states
                                                            column(6, align = "center",
 
-                                                                  h4("All flag states")
+                                                                  h4("All DW vessels")
 
                                                            ),
 
@@ -299,7 +299,7 @@ RegionPageLayout <- function(region_name,
                                                            # All flag states
                                                            column(6, align = "center",
 
-                                                                  h4("All flag states")
+                                                                  h4("All DW vessels")
 
                                                            ),
 

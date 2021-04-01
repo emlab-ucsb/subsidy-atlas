@@ -412,15 +412,19 @@ shinyServer(function(input, output, session) {
     req(input$east_asia_pacific_eez_select != "Select a coastal state...",
         nrow(east_asia_pacific_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = east_asia_pacific_rv,
-            input_selected_eez = input$east_asia_pacific_eez_select,
-            input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-            input_hs = input$east_asia_pacific_effort_high_seas,
-            type = "total",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = east_asia_pacific_rv,
+                   input_selected_eez = input$east_asia_pacific_eez_select,
+                   input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+                   input_hs = input$east_asia_pacific_effort_high_seas,
+                   type = "total",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    east_asia_pacific_rv$effort_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -432,15 +436,30 @@ shinyServer(function(input, output, session) {
         nrow(east_asia_pacific_rv$eez_dat) > 0,
         input$east_asia_pacific_effort_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = east_asia_pacific_rv,
-            input_selected_eez = input$east_asia_pacific_eez_select,
-            input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-            input_hs = input$east_asia_pacific_effort_high_seas,
-            type = "flag",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = east_asia_pacific_rv,
+                   input_selected_eez = input$east_asia_pacific_eez_select,
+                   input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+                   input_hs = input$east_asia_pacific_effort_high_seas,
+                   type = "flag",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme_nolegend)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Effort plot (legend) -------------------
+  output$east_asia_pacific_effort_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+        nrow(east_asia_pacific_rv$eez_dat) > 0,
+        !is.null(east_asia_pacific_rv$effort_legend))
+    
+    # Plot legend
+    ggdraw(east_asia_pacific_rv$effort_legend)
     
   })
   
@@ -451,15 +470,19 @@ shinyServer(function(input, output, session) {
     req(input$east_asia_pacific_eez_select != "Select a coastal state...",
         nrow(east_asia_pacific_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = east_asia_pacific_rv,
-            input_selected_eez = input$east_asia_pacific_eez_select,
-            input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
-            input_hs = input$east_asia_pacific_subsidies_high_seas,
-            type = "total",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = east_asia_pacific_rv,
+                   input_selected_eez = input$east_asia_pacific_eez_select,
+                   input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+                   input_hs = input$east_asia_pacific_subsidies_high_seas,
+                   type = "total",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    east_asia_pacific_rv$subsidy_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -471,15 +494,30 @@ shinyServer(function(input, output, session) {
         nrow(east_asia_pacific_rv$eez_dat) > 0,
         input$east_asia_pacific_subsidies_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = east_asia_pacific_rv,
-            input_selected_eez = input$east_asia_pacific_eez_select,
-            input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
-            input_hs = input$east_asia_pacific_subsidies_high_seas,
-            type = "flag",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = east_asia_pacific_rv,
+                   input_selected_eez = input$east_asia_pacific_eez_select,
+                   input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+                   input_hs = input$east_asia_pacific_subsidies_high_seas,
+                   type = "flag",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$east_asia_pacific_subsidies_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+        nrow(east_asia_pacific_rv$eez_dat) > 0,
+        !is.null(east_asia_pacific_rv$subsidy_legend))
+    
+    # Plot legend
+    ggdraw(east_asia_pacific_rv$subsidy_legend)
     
   })
   
@@ -688,15 +726,19 @@ shinyServer(function(input, output, session) {
     req(input$europe_central_asia_eez_select != "Select a coastal state...",
         nrow(europe_central_asia_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = europe_central_asia_rv,
-            input_selected_eez = input$europe_central_asia_eez_select,
-            input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
-            input_hs = input$europe_central_asia_effort_high_seas,
-            type = "total",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = europe_central_asia_rv,
+                   input_selected_eez = input$europe_central_asia_eez_select,
+                   input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+                   input_hs = input$europe_central_asia_effort_high_seas,
+                   type = "total",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    europe_central_asia_rv$effort_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -708,15 +750,30 @@ shinyServer(function(input, output, session) {
         nrow(europe_central_asia_rv$eez_dat) > 0,
         input$europe_central_asia_effort_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = europe_central_asia_rv,
-            input_selected_eez = input$europe_central_asia_eez_select,
-            input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
-            input_hs = input$europe_central_asia_effort_high_seas,
-            type = "flag",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = europe_central_asia_rv,
+                   input_selected_eez = input$europe_central_asia_eez_select,
+                   input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+                   input_hs = input$europe_central_asia_effort_high_seas,
+                   type = "flag",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme_nolegend)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Effort plot (legend) -------------------
+  output$europe_central_asia_effort_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+        nrow(europe_central_asia_rv$eez_dat) > 0,
+        !is.null(europe_central_asia_rv$effort_legend))
+    
+    # Plot legend
+    ggdraw(europe_central_asia_rv$effort_legend)
     
   })
   
@@ -727,15 +784,19 @@ shinyServer(function(input, output, session) {
     req(input$europe_central_asia_eez_select != "Select a coastal state...",
         nrow(europe_central_asia_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = europe_central_asia_rv,
-            input_selected_eez = input$europe_central_asia_eez_select,
-            input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
-            input_hs = input$europe_central_asia_subsidies_high_seas,
-            type = "total",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = europe_central_asia_rv,
+                   input_selected_eez = input$europe_central_asia_eez_select,
+                   input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+                   input_hs = input$europe_central_asia_subsidies_high_seas,
+                   type = "total",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    europe_central_asia_rv$subsidy_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -747,15 +808,30 @@ shinyServer(function(input, output, session) {
         nrow(europe_central_asia_rv$eez_dat) > 0,
         input$europe_central_asia_subsidies_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = europe_central_asia_rv,
-            input_selected_eez = input$europe_central_asia_eez_select,
-            input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
-            input_hs = input$europe_central_asia_subsidies_high_seas,
-            type = "flag",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = europe_central_asia_rv,
+                   input_selected_eez = input$europe_central_asia_eez_select,
+                   input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+                   input_hs = input$europe_central_asia_subsidies_high_seas,
+                   type = "flag",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$europe_central_asia_subsidies_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+        nrow(europe_central_asia_rv$eez_dat) > 0,
+        !is.null(europe_central_asia_rv$subsidy_legend))
+    
+    # Plot legend
+    ggdraw(europe_central_asia_rv$subsidy_legend)
     
   })
   
@@ -965,15 +1041,19 @@ shinyServer(function(input, output, session) {
     req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
         nrow(latin_america_caribbean_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = latin_america_caribbean_rv,
-            input_selected_eez = input$latin_america_caribbean_eez_select,
-            input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
-            input_hs = input$latin_america_caribbean_effort_high_seas,
-            type = "total",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = latin_america_caribbean_rv,
+                   input_selected_eez = input$latin_america_caribbean_eez_select,
+                   input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+                   input_hs = input$latin_america_caribbean_effort_high_seas,
+                   type = "total",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    latin_america_caribbean_rv$effort_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -985,15 +1065,30 @@ shinyServer(function(input, output, session) {
         nrow(latin_america_caribbean_rv$eez_dat) > 0,
         input$latin_america_caribbean_effort_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = latin_america_caribbean_rv,
-            input_selected_eez = input$latin_america_caribbean_eez_select,
-            input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
-            input_hs = input$latin_america_caribbean_effort_high_seas,
-            type = "flag",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = latin_america_caribbean_rv,
+                   input_selected_eez = input$latin_america_caribbean_eez_select,
+                   input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+                   input_hs = input$latin_america_caribbean_effort_high_seas,
+                   type = "flag",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme_nolegend)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Effort plot (legend) -------------------
+  output$latin_america_caribbean_effort_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+        nrow(latin_america_caribbean_rv$eez_dat) > 0,
+        !is.null(latin_america_caribbean_rv$effort_legend))
+    
+    # Plot legend
+    ggdraw(latin_america_caribbean_rv$effort_legend)
     
   })
   
@@ -1004,15 +1099,19 @@ shinyServer(function(input, output, session) {
     req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
         nrow(latin_america_caribbean_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = latin_america_caribbean_rv,
-            input_selected_eez = input$latin_america_caribbean_eez_select,
-            input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
-            input_hs = input$latin_america_caribbean_subsidies_high_seas,
-            type = "total",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = latin_america_caribbean_rv,
+                   input_selected_eez = input$latin_america_caribbean_eez_select,
+                   input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+                   input_hs = input$latin_america_caribbean_subsidies_high_seas,
+                   type = "total",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    latin_america_caribbean_rv$subsidy_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -1024,15 +1123,30 @@ shinyServer(function(input, output, session) {
         nrow(latin_america_caribbean_rv$eez_dat) > 0,
         input$latin_america_caribbean_subsidies_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = latin_america_caribbean_rv,
-            input_selected_eez = input$latin_america_caribbean_eez_select,
-            input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
-            input_hs = input$latin_america_caribbean_subsidies_high_seas,
-            type = "flag",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = latin_america_caribbean_rv,
+                   input_selected_eez = input$latin_america_caribbean_eez_select,
+                   input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+                   input_hs = input$latin_america_caribbean_subsidies_high_seas,
+                   type = "flag",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$latin_america_caribbean_subsidies_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+        nrow(latin_america_caribbean_rv$eez_dat) > 0,
+        !is.null(latin_america_caribbean_rv$subsidy_legend))
+    
+    # Plot legend
+    ggdraw(latin_america_caribbean_rv$subsidy_legend)
     
   })
   
@@ -1242,15 +1356,19 @@ shinyServer(function(input, output, session) {
     req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
         nrow(middle_east_north_africa_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = middle_east_north_africa_rv,
-            input_selected_eez = input$middle_east_north_africa_eez_select,
-            input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
-            input_hs = input$middle_east_north_africa_effort_high_seas,
-            type = "total",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = middle_east_north_africa_rv,
+                   input_selected_eez = input$middle_east_north_africa_eez_select,
+                   input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+                   input_hs = input$middle_east_north_africa_effort_high_seas,
+                   type = "total",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    middle_east_north_africa_rv$effort_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -1262,15 +1380,30 @@ shinyServer(function(input, output, session) {
         nrow(middle_east_north_africa_rv$eez_dat) > 0,
         input$middle_east_north_africa_effort_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = middle_east_north_africa_rv,
-            input_selected_eez = input$middle_east_north_africa_eez_select,
-            input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
-            input_hs = input$middle_east_north_africa_effort_high_seas,
-            type = "flag",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = middle_east_north_africa_rv,
+                   input_selected_eez = input$middle_east_north_africa_eez_select,
+                   input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+                   input_hs = input$middle_east_north_africa_effort_high_seas,
+                   type = "flag",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme_nolegend)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Effort plot (legend) -------------------
+  output$middle_east_north_africa_effort_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+        nrow(middle_east_north_africa_rv$eez_dat) > 0,
+        !is.null(middle_east_north_africa_rv$effort_legend))
+    
+    # Plot legend
+    ggdraw(middle_east_north_africa_rv$effort_legend)
     
   })
   
@@ -1281,15 +1414,19 @@ shinyServer(function(input, output, session) {
     req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
         nrow(middle_east_north_africa_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = middle_east_north_africa_rv,
-            input_selected_eez = input$middle_east_north_africa_eez_select,
-            input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
-            input_hs = input$middle_east_north_africa_subsidies_high_seas,
-            type = "total",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = middle_east_north_africa_rv,
+                   input_selected_eez = input$middle_east_north_africa_eez_select,
+                   input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+                   input_hs = input$middle_east_north_africa_subsidies_high_seas,
+                   type = "total",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    middle_east_north_africa_rv$subsidy_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -1301,15 +1438,30 @@ shinyServer(function(input, output, session) {
         nrow(middle_east_north_africa_rv$eez_dat) > 0,
         input$middle_east_north_africa_subsidies_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = middle_east_north_africa_rv,
-            input_selected_eez = input$middle_east_north_africa_eez_select,
-            input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
-            input_hs = input$middle_east_north_africa_subsidies_high_seas,
-            type = "flag",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = middle_east_north_africa_rv,
+                   input_selected_eez = input$middle_east_north_africa_eez_select,
+                   input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+                   input_hs = input$middle_east_north_africa_subsidies_high_seas,
+                   type = "flag",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$middle_east_north_africa_subsidies_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+        nrow(middle_east_north_africa_rv$eez_dat) > 0,
+        !is.null(middle_east_north_africa_rv$subsidy_legend))
+    
+    # Plot legend
+    ggdraw(middle_east_north_africa_rv$subsidy_legend)
     
   })
   
@@ -1519,15 +1671,19 @@ shinyServer(function(input, output, session) {
     req(input$north_america_eez_select != "Select a coastal state...",
         nrow(north_america_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = north_america_rv,
-            input_selected_eez = input$north_america_eez_select,
-            input_selected_flag_state = input$north_america_effort_select_flag_state,
-            input_hs = input$north_america_effort_high_seas,
-            type = "total",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = north_america_rv,
+                   input_selected_eez = input$north_america_eez_select,
+                   input_selected_flag_state = input$north_america_effort_select_flag_state,
+                   input_hs = input$north_america_effort_high_seas,
+                   type = "total",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    north_america_rv$effort_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -1539,15 +1695,30 @@ shinyServer(function(input, output, session) {
         nrow(north_america_rv$eez_dat) > 0,
         input$north_america_effort_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = north_america_rv,
-            input_selected_eez = input$north_america_eez_select,
-            input_selected_flag_state = input$north_america_effort_select_flag_state,
-            input_hs = input$north_america_effort_high_seas,
-            type = "flag",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = north_america_rv,
+                   input_selected_eez = input$north_america_eez_select,
+                   input_selected_flag_state = input$north_america_effort_select_flag_state,
+                   input_hs = input$north_america_effort_high_seas,
+                   type = "flag",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme_nolegend)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Effort plot (legend) -------------------
+  output$north_america_effort_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$north_america_eez_select != "Select a coastal state...",
+        nrow(north_america_rv$eez_dat) > 0,
+        !is.null(north_america_rv$effort_legend))
+    
+    # Plot legend
+    ggdraw(north_america_rv$effort_legend)
     
   })
   
@@ -1558,15 +1729,19 @@ shinyServer(function(input, output, session) {
     req(input$north_america_eez_select != "Select a coastal state...",
         nrow(north_america_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = north_america_rv,
-            input_selected_eez = input$north_america_eez_select,
-            input_selected_flag_state = input$north_america_subsidies_select_flag_state,
-            input_hs = input$north_america_subsidies_high_seas,
-            type = "total",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = north_america_rv,
+                   input_selected_eez = input$north_america_eez_select,
+                   input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+                   input_hs = input$north_america_subsidies_high_seas,
+                   type = "total",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    north_america_rv$subsidy_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -1578,15 +1753,30 @@ shinyServer(function(input, output, session) {
         nrow(north_america_rv$eez_dat) > 0,
         input$north_america_subsidies_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = north_america_rv,
-            input_selected_eez = input$north_america_eez_select,
-            input_selected_flag_state = input$north_america_subsidies_select_flag_state,
-            input_hs = input$north_america_subsidies_high_seas,
-            type = "flag",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = north_america_rv,
+                   input_selected_eez = input$north_america_eez_select,
+                   input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+                   input_hs = input$north_america_subsidies_high_seas,
+                   type = "flag",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$north_america_subsidies_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$north_america_eez_select != "Select a coastal state...",
+        nrow(north_america_rv$eez_dat) > 0,
+        !is.null(north_america_rv$subsidy_legend))
+    
+    # Plot legend
+    ggdraw(north_america_rv$subsidy_legend)
     
   })
   
@@ -1796,15 +1986,19 @@ shinyServer(function(input, output, session) {
     req(input$south_asia_eez_select != "Select a coastal state...",
         nrow(south_asia_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = south_asia_rv,
-            input_selected_eez = input$south_asia_eez_select,
-            input_selected_flag_state = input$south_asia_effort_select_flag_state,
-            input_hs = input$south_asia_effort_high_seas,
-            type = "total",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = south_asia_rv,
+                   input_selected_eez = input$south_asia_eez_select,
+                   input_selected_flag_state = input$south_asia_effort_select_flag_state,
+                   input_hs = input$south_asia_effort_high_seas,
+                   type = "total",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    south_asia_rv$effort_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -1816,15 +2010,30 @@ shinyServer(function(input, output, session) {
         nrow(south_asia_rv$eez_dat) > 0,
         input$south_asia_effort_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = south_asia_rv,
-            input_selected_eez = input$south_asia_eez_select,
-            input_selected_flag_state = input$south_asia_effort_select_flag_state,
-            input_hs = input$south_asia_effort_high_seas,
-            type = "flag",
-            plot_variable = "fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = south_asia_rv,
+                   input_selected_eez = input$south_asia_eez_select,
+                   input_selected_flag_state = input$south_asia_effort_select_flag_state,
+                   input_hs = input$south_asia_effort_high_seas,
+                   type = "flag",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme_nolegend)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Effort plot (legend) -------------------
+  output$south_asia_effort_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$south_asia_eez_select != "Select a coastal state...",
+        nrow(south_asia_rv$eez_dat) > 0,
+        !is.null(south_asia_rv$effort_legend))
+    
+    # Plot legend
+    ggdraw(south_asia_rv$effort_legend)
     
   })
   
@@ -1835,15 +2044,19 @@ shinyServer(function(input, output, session) {
     req(input$south_asia_eez_select != "Select a coastal state...",
         nrow(south_asia_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = south_asia_rv,
-            input_selected_eez = input$south_asia_eez_select,
-            input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
-            input_hs = input$south_asia_subsidies_high_seas,
-            type = "total",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = south_asia_rv,
+                   input_selected_eez = input$south_asia_eez_select,
+                   input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+                   input_hs = input$south_asia_subsidies_high_seas,
+                   type = "total",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    south_asia_rv$subsidy_legend <- out$legend
+    
+    out$plot
     
   })
   
@@ -1855,15 +2068,30 @@ shinyServer(function(input, output, session) {
         nrow(south_asia_rv$eez_dat) > 0,
         input$south_asia_subsidies_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = south_asia_rv,
-            input_selected_eez = input$south_asia_eez_select,
-            input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
-            input_hs = input$south_asia_subsidies_high_seas,
-            type = "flag",
-            plot_variable = "bad_subs_per_fishing_KWh",
-            eez_sf = eez_ter_360,
-            land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+    out <- EEZPlot(region_dat = south_asia_rv,
+                   input_selected_eez = input$south_asia_eez_select,
+                   input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+                   input_hs = input$south_asia_subsidies_high_seas,
+                   type = "flag",
+                   plot_variable = "bad_subs_per_fishing_KWh",
+                   eez_sf = eez_ter_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$south_asia_subsidies_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$south_asia_eez_select != "Select a coastal state...",
+        nrow(south_asia_rv$eez_dat) > 0,
+        !is.null(south_asia_rv$subsidy_legend))
+    
+    # Plot legend
+    ggdraw(south_asia_rv$subsidy_legend)
     
   })
   
