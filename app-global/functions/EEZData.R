@@ -22,16 +22,19 @@ EEZPlot <- function(region_dat,
                     land_sf,
                     map_theme){
   
+  
+  ### Get totals for all flag states
+  eez_totals <- region_dat$eez_dat %>%
+    group_by(lon_cen, lat_cen) %>%
+    summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+              fishing_KWh = sum(fishing_KWh, na.rm = T),
+              subs = sum(bad_subs, na.rm = T)) %>%
+    ungroup() %>%
+    mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
+  
   if(type == "total"){
     
-    ### Get totals for all flag states
-    eez_totals <- region_dat$eez_dat %>%
-      group_by(lon_cen, lat_cen) %>%
-      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-                fishing_KWh = sum(fishing_KWh, na.rm = T),
-                subs = sum(bad_subs, na.rm = T)) %>%
-      ungroup() %>%
-      mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
+    plot_totals <- eez_totals
     
     ### Get high seas effort if relevant
     if(input_hs){
@@ -57,7 +60,7 @@ EEZPlot <- function(region_dat,
   }else{
     
     ### Get totals for selected flag states
-    eez_totals <- region_dat$eez_dat %>%
+    plot_totals <- region_dat$eez_dat %>%
       dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
       rename(subs = bad_subs)
     
@@ -80,7 +83,7 @@ EEZPlot <- function(region_dat,
     
   }
   
-  req(nrow(eez_totals) > 0)
+  req(nrow(plot_totals) > 0)
     
     ### Get limits for map area
     x_lim <- c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1)
@@ -91,11 +94,28 @@ EEZPlot <- function(region_dat,
       
       legend_name = "Fishing effort \n(kWh)"
       legend_options = "A"
+
+      ### Get legend limits
+      scale_breaks <- pretty(log10(c(eez_totals[[plot_variable]], hs_totals[[plot_variable]])), n = 5)
+      scale_labels <- format(round(10^scale_breaks, 0), big.mark = ",", scientific = F)
+      
+      ### Log transform variable 
+      plot_totals <- plot_totals %>%
+        dplyr::filter(fishing_KWh > 0) %>%
+        mutate(fishing_KWh = log10(fishing_KWh)) 
+      
+      hs_totals <- hs_totals %>%
+        dplyr::filter(fishing_KWh > 0) %>%
+        mutate(fishing_KWh = log10(fishing_KWh)) 
       
     }else{
       
       legend_name = "Subsidy intensity\n(2018 $US/kWh)"
       legend_options = "D"
+      
+      ### Get legend limits
+      scale_breaks <- pretty(c(eez_totals[[plot_variable]], hs_totals[[plot_variable]]), n = 5)
+      scale_labels <- format(round(scale_breaks, 0), big.mark = ",", scientific = F)
 
     }
     
@@ -104,15 +124,19 @@ EEZPlot <- function(region_dat,
     if(input_hs & nrow(hs_totals) > 0){
       
     # Map 
-    ggplot()+
-      geom_tile(data = eez_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
+    plot <- ggplot()+
+      geom_tile(data = plot_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
       geom_tile(data = hs_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
-      scale_fill_viridis_c(na.value = NA, option = legend_options, name = legend_name, trans = log10_trans(), labels = comma)+
-      geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
-      geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries (dark grey, white border lines)
+        scale_fill_gradientn(colors = viridis_pal(option = legend_options)(9),
+                             breaks = scale_breaks,
+                             limits = c(min(scale_breaks), max(scale_breaks)),
+                             labels = scale_labels,
+                             name = legend_name)+
+      guides(fill = guide_colourbar(title.position = "bottom", title.hjust = 0.5, barwidth = 20))+
+      geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs
+      geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries
       labs(x = "", y = "")+
       coord_sf(xlim = x_lim, ylim = y_lim) +
-      guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))+
       map_theme
@@ -122,19 +146,25 @@ EEZPlot <- function(region_dat,
       ### Map with high seas off --------------------------------------------------------------
       
       # Map 
-      ggplot()+
-        geom_tile(data = eez_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
-        scale_fill_viridis_c(na.value = NA, option = legend_options, name = legend_name, trans = log10_trans(), labels = comma)+
-        geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs (transparent, light grey border lines)
-        geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries (dark grey, white border lines)
+      plot <- ggplot()+
+        geom_tile(data = plot_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
+        scale_fill_gradientn(colors = viridis_pal(option = legend_options)(9),
+                             breaks = scale_breaks,
+                             limits = c(min(scale_breaks), max(scale_breaks)),
+                             labels = scale_labels,
+                             name = legend_name)+
+        geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries
+        geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs
+        guides(fill = guide_colourbar(title.position = "bottom", title.hjust = 0.5, barwidth = 20, ticks.colour = "black", frame.colour = "black"))+
         labs(x = "", y = "")+
         coord_sf(xlim = x_lim, ylim = y_lim) +
-        guides(fill = guide_colorbar(title.position = "bottom", title.hjust = 0.5, barwidth = 18))+
         scale_x_continuous(expand = c(0,0))+
         scale_y_continuous(expand = c(0,0))+
         map_theme
-      
-      
+        
     }
+    
+    return(list(plot = plot + theme(legend.position = "none"),
+                legend = cowplot::get_legend(plot)))
 
 }

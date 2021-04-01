@@ -32,7 +32,6 @@ library(png)
 library(htmltools)
 library(DT)
 
-library(sf) # spatial manipulation
 library(lwgeom) # needed for curved lines
 library(here) # path names
 library(knitr) # knit document
@@ -44,7 +43,7 @@ library(ggalt) # transform to robinson projection
 library(RColorBrewer) # custom color palettes
 library(colorRamps)
 library(scales) # scales for plotting
-library(ggpubr) # plot arranging
+library(cowplot) # plot arranging
 library(gridExtra)
 library(grid)
 

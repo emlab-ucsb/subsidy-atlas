@@ -82,3 +82,4 @@ eezmaptheme <- theme_minimal()+
         legend.position = "bottom",
         legend.box = "horizontal",
         axis.text = element_text(color = "black"))
+

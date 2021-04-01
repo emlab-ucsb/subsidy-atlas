@@ -2071,7 +2071,7 @@ shinyServer(function(input, output, session) {
     req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
         nrow(sub_saharan_africa_rv$eez_dat) > 0)
 
-    EEZPlot(region_dat = sub_saharan_africa_rv,
+    out <- EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
             input_hs = input$sub_saharan_africa_effort_high_seas,
@@ -2080,6 +2080,10 @@ shinyServer(function(input, output, session) {
             eez_sf = eez_ter_360,
             land_sf = land_ter_360,
             map_theme = eezmaptheme)
+    
+    sub_saharan_africa_rv$effort_legend <- out$legend
+    
+    out$plot
 
   })
   
@@ -2091,7 +2095,7 @@ shinyServer(function(input, output, session) {
         nrow(sub_saharan_africa_rv$eez_dat) > 0,
         input$sub_saharan_africa_effort_select_flag_state != "Select a flag state...")
 
-    EEZPlot(region_dat = sub_saharan_africa_rv,
+    out <- EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
             input_hs = input$sub_saharan_africa_effort_high_seas,
@@ -2099,7 +2103,22 @@ shinyServer(function(input, output, session) {
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
             land_sf = land_ter_360,
-            map_theme = eezmaptheme)
+            map_theme = eezmaptheme_nolegend)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Effort plot (legend) -------------------
+  output$sub_saharan_africa_effort_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+        nrow(sub_saharan_africa_rv$eez_dat) > 0,
+        !is.null(sub_saharan_africa_rv$effort_legend))
+    
+    # Plot legend
+    ggdraw(sub_saharan_africa_rv$effort_legend)
     
   })
   
@@ -2110,7 +2129,7 @@ shinyServer(function(input, output, session) {
     req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
         nrow(sub_saharan_africa_rv$eez_dat) > 0)
     
-    EEZPlot(region_dat = sub_saharan_africa_rv,
+    out <- EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
             input_hs = input$sub_saharan_africa_subsidies_high_seas,
@@ -2120,6 +2139,10 @@ shinyServer(function(input, output, session) {
             land_sf = land_ter_360,
             map_theme = eezmaptheme)
     
+    sub_saharan_africa_rv$subsidy_legend <- out$legend
+    
+    out$plot
+
   })
   
   ### plotOutput: Subsidies plot (selected flag state) ----------------
@@ -2130,7 +2153,7 @@ shinyServer(function(input, output, session) {
         nrow(sub_saharan_africa_rv$eez_dat) > 0,
         input$sub_saharan_africa_subsidies_select_flag_state != "Select a flag state...")
     
-    EEZPlot(region_dat = sub_saharan_africa_rv,
+    out <- EEZPlot(region_dat = sub_saharan_africa_rv,
             input_selected_eez = input$sub_saharan_africa_eez_select,
             input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
             input_hs = input$sub_saharan_africa_subsidies_high_seas,
@@ -2139,6 +2162,21 @@ shinyServer(function(input, output, session) {
             eez_sf = eez_ter_360,
             land_sf = land_ter_360,
             map_theme = eezmaptheme)
+    
+    out$plot
+    
+  })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$sub_saharan_africa_subsidies_map_legend <- renderPlot({
+    
+    # Require coastal state selection & data
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+        nrow(sub_saharan_africa_rv$eez_dat) > 0,
+        !is.null(sub_saharan_africa_rv$subsidy_legend))
+    
+    # Plot legend
+    ggdraw(sub_saharan_africa_rv$subsidy_legend)
     
   })
   

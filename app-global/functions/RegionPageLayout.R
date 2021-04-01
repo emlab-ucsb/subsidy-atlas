@@ -222,7 +222,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_effort_map_all"),
-                                                                    width = "auto")
+                                                                    height = "300px")
 
                                                            ),
                                                            # Selected flag state
@@ -230,10 +230,22 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_effort_map_selected"),
-                                                                    width = "auto")
+                                                                    height = "300px")
 
 
                                                            )
+                                                         ),
+                                                         
+                                                         fluidRow(
+                                                           
+                                                           column(12, align = "center",
+                                                                  
+                                                                  plotOutput(
+                                                                    paste0(region_name, "_effort_map_legend"),
+                                                                    height = "80px")
+                                                                  
+                                                           )
+                                                           
                                                          ),
                                                          
                                                          fluidRow(
@@ -312,7 +324,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_subsidies_map_all"),
-                                                                    width = "auto")
+                                                                    height = "300px")
 
 
                                                            ),
@@ -321,9 +333,21 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_subsidies_map_selected"),
-                                                                    width = "auto")
+                                                                    height = "300px")
 
                                                            )
+                                                         ),
+                                                         
+                                                         fluidRow(
+                                                           
+                                                           column(12, align = "center",
+                                                                  
+                                                                  plotOutput(
+                                                                    paste0(region_name, "_subsidies_map_legend"),
+                                                                    height = "80px")
+                                                                  
+                                                           )
+
                                                          ),
                                                          
                                                          fluidRow(
