@@ -444,7 +444,7 @@ shinyServer(function(input, output, session) {
                    plot_variable = "fishing_KWh",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
-                   map_theme = eezmaptheme_nolegend)
+                   map_theme = eezmaptheme)
     
     out$plot
     
@@ -758,7 +758,7 @@ shinyServer(function(input, output, session) {
                    plot_variable = "fishing_KWh",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
-                   map_theme = eezmaptheme_nolegend)
+                   map_theme = eezmaptheme)
     
     out$plot
     
@@ -1073,7 +1073,7 @@ shinyServer(function(input, output, session) {
                    plot_variable = "fishing_KWh",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
-                   map_theme = eezmaptheme_nolegend)
+                   map_theme = eezmaptheme)
     
     out$plot
     
@@ -1388,7 +1388,7 @@ shinyServer(function(input, output, session) {
                    plot_variable = "fishing_KWh",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
-                   map_theme = eezmaptheme_nolegend)
+                   map_theme = eezmaptheme)
     
     out$plot
     
@@ -1703,7 +1703,7 @@ shinyServer(function(input, output, session) {
                    plot_variable = "fishing_KWh",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
-                   map_theme = eezmaptheme_nolegend)
+                   map_theme = eezmaptheme)
     
     out$plot
     
@@ -2018,7 +2018,7 @@ shinyServer(function(input, output, session) {
                    plot_variable = "fishing_KWh",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
-                   map_theme = eezmaptheme_nolegend)
+                   map_theme = eezmaptheme)
     
     out$plot
     
@@ -2331,7 +2331,7 @@ shinyServer(function(input, output, session) {
             plot_variable = "fishing_KWh",
             eez_sf = eez_ter_360,
             land_sf = land_ter_360,
-            map_theme = eezmaptheme_nolegend)
+            map_theme = eezmaptheme)
     
     out$plot
     
