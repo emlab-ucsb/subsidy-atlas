@@ -28,24 +28,23 @@ library(shinyWidgets)
 
 library(tidyverse)
 library(sf)
-library(png)
-library(htmltools)
+#library(png)
+#library(htmltools)
 library(DT)
 
-library(lwgeom) # needed for curved lines
+#library(lwgeom) # needed for curved lines
 library(here) # path names
 library(knitr) # knit document
-library(bigrquery) # access GFW data
-library(DBI) # access GFW data
+#library(bigrquery) # access GFW data
+#library(DBI) # access GFW data
 library(countrycode) # country names 
-library(tidyverse) # data manipulation
-library(ggalt) # transform to robinson projection
+#library(ggalt) # transform to robinson projection
 library(RColorBrewer) # custom color palettes
-library(colorRamps)
+#library(colorRamps)
 library(scales) # scales for plotting
 library(cowplot) # plot arranging
-library(gridExtra)
-library(grid)
+#library(gridExtra)
+#library(grid)
 
 # Silence new dplyr grouping messages
 options(dplyr.summarise.inform=F)
