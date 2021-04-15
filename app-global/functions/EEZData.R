@@ -6,7 +6,15 @@ LoadEEZData <- function(input_selected_eez){
   coastal_state_codes <- unique(str_replace(all_data_files, "\\_.*", ""))
   matching_file <- all_data_files[coastal_state_codes == input_selected_eez]
   
+  if(length(matching_file) > 0){
+  
   out <- read_csv(paste0("./data/eez-effort-subs/", matching_file))
+  
+  }else{
+    
+    out <- NULL
+    
+  }
   
   out
   
