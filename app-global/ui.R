@@ -119,11 +119,11 @@ shinyUI(
                     
    # Sidebar menu
    dashboardSidebar(width = "250px",
-                    collapsed = TRUE,
+                    collapsed = FALSE,
                     sidebarMenu(id = "tabs",
                                 
                                 # Introduction/select a region
-                                menuItem("Select a Region",
+                                menuItem("Global Map",
                                          tabName = "selectregion",
                                          icon = NULL,
                                          selected = TRUE),

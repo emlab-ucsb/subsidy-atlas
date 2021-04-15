@@ -9,5 +9,6 @@
 NorthAmerica = function(vessel_origins_fill_choices, vessel_origins_fill_scale)
   
   RegionPageLayout(region_name = "north_america",
+                   region_name_long = "North America",
                    vessel_origins_fill_choices = vessel_origins_fill_choices,
                    vessel_origins_fill_scale = vessel_origins_fill_scale)

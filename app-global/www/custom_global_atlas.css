@@ -449,7 +449,7 @@ header.main-header {
 .nav-tabs-custom #north-america-results-tabs.nav-tabs li.active,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs li.active,
 .nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li.active{
-  border-bottom: 5px solid var(--accent-color);
+  border-bottom: 0px solid var(--accent-color);
   border-top: transparent;
   background: #ffffff;
 }
@@ -465,6 +465,7 @@ header.main-header {
   background: #ffffff;
   border-left-color: transparent;
   border-right-color: transparent;
+  font-weight: bold;
 }
 
 /* ------ */

@@ -9,6 +9,14 @@
 ### This script loads data needed for the app and performs some final data wrangling
 ### --------------------------------------------------------------------
 
+# region_names_long <- c("East Asia & Pacific" = "east_asia_pacific",
+#                   "Europe & Central Asia" = "europe_central_asia",
+#                   "Latin America & Caribbean" = "latin_america_caribbean",
+#                   "Middle East & North Africa" = "middle_east_north_africa",
+#                   "North America" = "north_america",
+#                   "South Asia" = "south_asia",
+#                   "Sub-Saharan Africa" = "sub_saharan_africa")
+
 # Should the EEZs of EU countries be visualized as a unit
 merge_EU <- FALSE
 
@@ -57,6 +65,9 @@ if(merge_EU){
     dplyr::filter(eez_ter_iso3 != "EU")
   
 }
+
+### Manual region corrections
+
 
 ### Widget choices that are shared across all pages -----
 vessel_origins_fill_choices <- c("# of vessels" = "n_vessels", 

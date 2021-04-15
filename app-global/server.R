@@ -148,7 +148,7 @@ shinyServer(function(input, output, session) {
     
     # Leaflet map
     leaflet("regional_map", 
-            options = leafletOptions(minZoom = 2, zoomControl = FALSE,
+            options = leafletOptions(minZoom = 1, zoomControl = FALSE,
                                      attributionControl = FALSE)) %>%
       
       htmlwidgets::onRender("function(el, x) {
@@ -167,7 +167,7 @@ shinyServer(function(input, output, session) {
                                                bringToFront = TRUE),
                   label = regional_dat$region,
                   group = regional_dat$region) %>%
-      setView(0, 20, zoom = 2.5) %>%
+      setView(0, 20, zoom = 2) %>%
       setMaxBounds(lng1 = -270, lat1 = -90, lng2 = 270, lat2 = 90)
       
   })

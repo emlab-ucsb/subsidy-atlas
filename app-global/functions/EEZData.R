@@ -99,6 +99,10 @@ EEZPlot <- function(region_dat,
       scale_breaks <- pretty(log10(c(eez_totals[[plot_variable]], hs_totals[[plot_variable]])), n = 5)
       scale_labels <- format(round(10^scale_breaks, 0), big.mark = ",", scientific = F)
       
+      # Caption
+      caption = paste0("DW effort in EEZ (kWh): ", 
+                       format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+      
       ### Log transform variable 
       plot_totals <- plot_totals %>%
         dplyr::filter(fishing_KWh > 0) %>%
@@ -108,6 +112,8 @@ EEZPlot <- function(region_dat,
         dplyr::filter(fishing_KWh > 0) %>%
         mutate(fishing_KWh = log10(fishing_KWh)) 
       
+      
+      
     }else{
       
       legend_name = "Subsidy intensity\n(2018 $US/kWh)"
@@ -116,6 +122,10 @@ EEZPlot <- function(region_dat,
       ### Get legend limits
       scale_breaks <- pretty(c(eez_totals[[plot_variable]], hs_totals[[plot_variable]]), n = 5)
       scale_labels <- format(round(scale_breaks, 0), big.mark = ",", scientific = F)
+      
+      # Caption
+      caption = paste0("Estimate of DW subsidies to EEZ (2018 $US): ", 
+                       format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
 
     }
     
@@ -139,7 +149,9 @@ EEZPlot <- function(region_dat,
       coord_sf(xlim = x_lim, ylim = y_lim) +
       scale_x_continuous(expand = c(0,0))+
       scale_y_continuous(expand = c(0,0))+
-      map_theme
+      map_theme+
+      labs(caption=caption) + 
+      theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
       
     }else{
       
@@ -160,7 +172,9 @@ EEZPlot <- function(region_dat,
         coord_sf(xlim = x_lim, ylim = y_lim) +
         scale_x_continuous(expand = c(0,0))+
         scale_y_continuous(expand = c(0,0))+
-        map_theme
+        map_theme+
+        labs(caption=caption) + 
+        theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
         
     }
     

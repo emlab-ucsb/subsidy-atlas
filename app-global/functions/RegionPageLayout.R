@@ -1,5 +1,6 @@
 
 RegionPageLayout <- function(region_name, 
+                             region_name_long,
                              vessel_origins_fill_choices, 
                              vessel_origins_fill_scale){
   
@@ -31,14 +32,21 @@ RegionPageLayout <- function(region_name,
                            # Return to regional map button
                            column(12, id = "t-spaced-div",
 
+                                  # Title
+                                  tags$h4(region_name_long),
+                                  tags$br(),
+                                  
+                                  # Return button
                                   tags$button(id = paste0(region_name, "_return_to_region"),
-                                              tags$b("Return to Regional Map"),
+                                              tags$b("Return to Global Map"),
                                               class = "btn action-button rounded-button")
+                                  
+                              
                            ),
 
                            # Small navigational map of the region
                            column(12, id = "tb-spaced-div",
-
+                                  
                                   # Regional map with selectable EEZs
                                   leafletOutput(paste0(region_name, "_nav_map"), width = "auto", height = "250px"),
 
