@@ -96,8 +96,6 @@ RegionPageLayout <- function(region_name,
                                                          class = "btn action-button info-button",
                                                          icon("info"))
                                            ),
-
-                                           conditionalPanel(condition = paste0("input.", region_name, "_eez_select != 'Select a coastal state...'"),
                                              
                                            # Content
                                           column(12, id = "tlr-spaced-div",
@@ -107,26 +105,31 @@ RegionPageLayout <- function(region_name,
                                                 
                                           ),
                                           
-                                          fluidRow(
-                                            column(8, id = "tblr-small-spaced-div",
-                                                   
-                                                   paste0("<h5>By flag state</h5>") %>%
-                                                     lapply(htmltools::HTML)
-                                                   
-                                                   
-                                            ),
-                                            column(4, id = "tblr-small-spaced-div", align = "right",
-                                                   
-                                                   # Download CSV button
-                                                   downloadButton(
-                                                     paste0(region_name, "_download_data"),
-                                                     tags$b("Download Data (CSV)"))
-                                                   
-                                            #        tags$button(id = paste0(region_name, "_download_data"),
-                                            #                    tags$b("Download Data (CSV)"),
-                                            #                    class = "btn action-button rounded-button")
-                                            )
-                                          ),
+                                          conditionalPanel(condition = paste0("input.", region_name, "_eez_select != 'Select a coastal state...'"),
+                                                           
+                                          column(12,
+                                                 
+                                                 uiOutput(paste0(region_name, "_summary_ui_flag"))
+                                                 
+                                          ),                 
+                                          
+                                          # fluidRow(
+                                          #   column(8, id = "tblr-small-spaced-div",
+                                          #          
+                                          #          paste0("<h5>By flag state</h5>") %>%
+                                          #            lapply(htmltools::HTML)
+                                          #          
+                                          #          
+                                          #   ),
+                                          #   column(4, id = "tblr-small-spaced-div", align = "right",
+                                          #          
+                                          #          # Download CSV button
+                                          #          downloadButton(
+                                          #            paste0(region_name, "_download_data"),
+                                          #            tags$b("Download Data (CSV)"))
+                                          #          
+                                          #   )
+                                          # ),
                                           
                                           column(12, id = "tblr-spaced-div",
                                                     

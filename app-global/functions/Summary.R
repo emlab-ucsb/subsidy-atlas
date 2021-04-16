@@ -1,6 +1,10 @@
 
 SummaryUI <- function(region_dat,
                     input_selected_eez){
+  
+  req(!is.null(input_selected_eez))
+
+  if(input_selected_eez != "Select a coastal state..."){
     
     # Distant water fishing totals
     total_stats_eez <- region_dat$connect %>%
@@ -40,7 +44,38 @@ SummaryUI <- function(region_dat,
     "<b>Estimated DW subsidies to EEZ (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
     "<hr>") %>%
     lapply(htmltools::HTML)
+  
+  }else{
+    
+    ### Combine into country profile/summary of DW fishing
+    info_out <- paste0(
+      "<i style = 'color: red;'>Select a coastal state by clicking on the map or using the dropdown menu in the left panel to view a summary of distant water fishing activity in that EEZ</b>") %>%
+      lapply(htmltools::HTML)
+    
+  }
 
+}
+
+SummaryUIFlag <- function(region_name){
+  
+  fluidRow(
+    column(8, id = "tblr-small-spaced-div",
+           
+           paste0("<h5>By flag state</h5>") %>%
+             lapply(htmltools::HTML)
+           
+           
+    ),
+    column(4, id = "tblr-small-spaced-div", align = "right",
+           
+           # Download CSV button
+           downloadButton(
+             paste0(region_name, "_download_data"),
+             tags$b("Download Data (CSV)"))
+           
+    )
+  )
+  
 }
 
 SummaryDT <- function(region_dat,
