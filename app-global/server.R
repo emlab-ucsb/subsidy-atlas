@@ -85,7 +85,7 @@ shinyServer(function(input, output, session) {
                  input$sub_saharan_africa_info_effort), {
                    
                    shinyalert(title = "Fishing Effort",
-                              text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kWh) in the EEZ(s) of the selected coastal state in 2018. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
+                              text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) in the EEZ(s) of the selected coastal state in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the engine power of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude.  If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
                               size = "l",
                               closeOnEsc = TRUE,
                               closeOnClickOutside = TRUE,
