@@ -32,15 +32,15 @@ RegionPageLayout <- function(region_name,
                            # Return to regional map button
                            column(12, id = "t-spaced-div",
 
-                                  # Title
-                                  tags$h4(region_name_long),
-                                  tags$br(),
-                                  
                                   # Return button
                                   tags$button(id = paste0(region_name, "_return_to_region"),
                                               tags$b("Return to Global Map"),
-                                              class = "btn action-button rounded-button")
+                                              class = "btn action-button rounded-button"),
                                   
+                                  # Title
+                                  paste0("<h4 style = 'margin-bottom:5px; margin-top:15px;'>", region_name_long, "</h4>") %>% 
+                                    lapply(htmltools::HTML)
+                                  #tags$h4(region_name_long)
                               
                            ),
 
@@ -100,17 +100,42 @@ RegionPageLayout <- function(region_name,
                                            conditionalPanel(condition = paste0("input.", region_name, "_eez_select != 'Select a coastal state...'"),
                                              
                                            # Content
-                                           column(12, id = "tblr-spaced-div",
-
-                                                  # Interactive text
-                                                  uiOutput(paste0(region_name, "_summary_ui")),
-                                                  
-                                                  # Data table
-                                                  dataTableOutput(paste0(region_name, "_summary_dt"))
-
-                                           )
-                                           
-                                           )
+                                          column(12, id = "tlr-spaced-div",
+                                                    
+                                                    # Interactive text
+                                                    uiOutput(paste0(region_name, "_summary_ui"))
+                                                
+                                          ),
+                                          
+                                          fluidRow(
+                                            column(8, id = "tblr-small-spaced-div",
+                                                   
+                                                   paste0("<h5>By flag state</h5>") %>%
+                                                     lapply(htmltools::HTML)
+                                                   
+                                                   
+                                            ),
+                                            column(4, id = "tblr-small-spaced-div", align = "right",
+                                                   
+                                                   # Download CSV button
+                                                   downloadButton(
+                                                     paste0(region_name, "_download_data"),
+                                                     tags$b("Download Data (CSV)"))
+                                                   
+                                            #        tags$button(id = paste0(region_name, "_download_data"),
+                                            #                    tags$b("Download Data (CSV)"),
+                                            #                    class = "btn action-button rounded-button")
+                                            )
+                                          ),
+                                          
+                                          column(12, id = "tblr-spaced-div",
+                                                    
+                                                 # Data table
+                                                 dataTableOutput(paste0(region_name, "_summary_dt"))    
+                                                    
+                                          )
+                                          
+                                           ) # /conditional
                                   ),
 
                                   ### --------------------------

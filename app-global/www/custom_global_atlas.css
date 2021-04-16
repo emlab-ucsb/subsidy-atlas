@@ -355,9 +355,17 @@ header.main-header {
   padding: 7px 0px 15px 0px;
 }
 
+#tlr-spaced-div {
+  padding: 15px 15px 0px 15px;
+}
+
 /* TB spaced divider */
 #tblr-spaced-div {
   padding: 15px;
+}
+
+#tblr-small-spaced-div {
+  padding: 7px 15px 7px 15px;
 }
 
 #custom-title-container {

@@ -108,7 +108,7 @@ EEZPlot <- function(region_dat,
       scale_labels <- format(round(10^scale_breaks, 0), big.mark = ",", scientific = F)
       
       # Caption
-      caption = paste0("DW effort in EEZ (kWh): ", 
+      caption = paste0("Total DW fishing effort in EEZ (kWh): ", 
                        format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
       
       ### Log transform variable 
@@ -132,7 +132,7 @@ EEZPlot <- function(region_dat,
       scale_labels <- format(round(scale_breaks, 0), big.mark = ",", scientific = F)
       
       # Caption
-      caption = paste0("Estimate of DW subsidies to EEZ (2018 $US): ", 
+      caption = paste0("Estimated DW subsidies to EEZ (2018 $US): ", 
                        format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
 
     }

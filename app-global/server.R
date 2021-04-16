@@ -2411,6 +2411,111 @@ shinyServer(function(input, output, session) {
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$east_asia_pacific_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$east_asia_pacific_eez_select, ".csv")
+      },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = east_asia_pacific_rv,
+                          input_selected_eez = input$east_asia_pacific_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$europe_central_asia_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$europe_central_asia_eez_select, ".csv")
+      },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = europe_central_asia_rv,
+                          input_selected_eez = input$europe_central_asia_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$latin_america_caribbean_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$latin_america_caribbean_eez_select, ".csv")
+      },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = latin_america_caribbean_rv,
+                          input_selected_eez = input$latin_america_caribbean_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$middle_east_north_africa_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$middle_east_north_africa_eez_select, ".csv")
+      },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = middle_east_north_africa_rv,
+                          input_selected_eez = input$middle_east_north_africa_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$north_america_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$north_america_eez_select, ".csv")
+      },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = north_america_rv,
+                          input_selected_eez = input$north_america_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$south_asia_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$south_asia_eez_select, ".csv")
+      },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = south_asia_rv,
+                          input_selected_eez = input$south_asia_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$sub_saharan_africa_download_data <- downloadHandler(
+    
+    filename = function() {
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$sub_saharan_africa_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = sub_saharan_africa_rv,
+                          input_selected_eez = input$sub_saharan_africa_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
 
 }) # /close server
 
