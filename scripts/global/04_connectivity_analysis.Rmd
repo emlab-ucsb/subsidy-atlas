@@ -27,8 +27,11 @@ library(countrycode) # country names
 library(tidyverse) # data manipulation
 library(ggalt) # transform to robinson projection
 
-# Path to vessel list
+# Path to distant water vessel list
 vessel_list_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_distant_water.csv")
+
+# Path to high seas vessel list 
+vessel_list_hs_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_high_seas.csv")
 
 # Path to eez file
 eez_centroid_path <- here::here("results", "global", "00a-eez-polygon-wrangling", "eez_centroid_coordinates.csv")

@@ -147,6 +147,7 @@ eez_attrib_expanded <- eez_attrib_expanded %>%
                                    iso_ter == "SJM" ~ "Europe & Central Asia",
                                    iso_ter == "UMI" ~ "East Asia & Pacific",
                                    iso_ter == "WLF" ~ "East Asia & Pacific",
+                                   iso_ter == "SGS" ~ "Latin America & Caribbean", # Fix South Georgia and the South Sandwich Islands
                                    TRUE ~ region)) %>%
   dplyr::select(-region, -iso_ter_all) %>%
   rename(iso_sov = iso_sov_all,
@@ -206,7 +207,7 @@ map_coord <- list(east_asia_pacific = c(0, 360),
                                                 ymin=-90, ymax=90))
   east_asia_pacific_eez_centroids <- east_asia_pacific_eez_sf %>%
     st_centroid() %>%
-    dplyr::select(mrgid, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov, region) %>%
+    dplyr::select(mrgid, pol_type, geoname, eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov, region) %>%
     dplyr::filter(region == "East Asia & Pacific")
   
   # All other regions

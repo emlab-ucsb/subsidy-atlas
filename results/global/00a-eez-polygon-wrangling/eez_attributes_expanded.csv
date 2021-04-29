@@ -43,8 +43,6 @@ mrgid,pol_type,geoname,iso_sov,iso_ter,name_ter,name_sov,region
 8445,200NM,Samoan Exclusive Economic Zone,WSM,WSM,Samoa,Samoa,East Asia & Pacific
 8485,200NM,Singaporean Exclusive Economic Zone,SGP,SGP,Singapore,Singapore,East Asia & Pacific
 8314,200NM,Solomon Islands Exclusive Economic Zone,SLB,SLB,Solomon Islands,Solomon Islands,East Asia & Pacific
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,GBR,SGS,South Georgia & South Sandwich Islands,United Kingdom,East Asia & Pacific
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,ARG,SGS,South Georgia & South Sandwich Islands,Argentina,East Asia & Pacific
 21796,Joint regime,Joint regime area Japan / Korea,KOR,KOR,South Korea,South Korea,East Asia & Pacific
 8327,200NM,South Korean Exclusive Economic Zone,KOR,KOR,South Korea,South Korea,East Asia & Pacific
 48955,Overlapping claim,Overlapping claim Liancourt Rocks: Japan / South Korea,KOR,KOR,South Korea,South Korea,East Asia & Pacific
@@ -209,6 +207,8 @@ mrgid,pol_type,geoname,iso_sov,iso_ter,name_ter,name_sov,region
 48982,Overlapping claim,Overlapping claim: Puerto Rico / Dominican Republic,USA,PRI,Puerto Rico,United States,Latin America & Caribbean
 8495,200NM,Saint-Martin Exclusive Economic Zone,FRA,MAF,Saint Martin (French part),France,Latin America & Caribbean
 21803,200NM,Sint-Maarten Exclusive Economic Zone,NLD,SXM,Sint Maarten,Netherlands,Latin America & Caribbean
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,GBR,SGS,South Georgia & South Sandwich Islands,United Kingdom,Latin America & Caribbean
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,ARG,SGS,South Georgia & South Sandwich Islands,Argentina,Latin America & Caribbean
 48952,200NM,Saint-Barthélemy Exclusive Economic Zone,FRA,BLM,St. Barthélemy,France,Latin America & Caribbean
 8413,200NM,Saint Kitts and Nevis Exclusive Economic Zone,KNA,KNA,St. Kitts & Nevis,St. Kitts & Nevis,Latin America & Caribbean
 8416,200NM,Saint Lucia Exclusive Economic Zone,LCA,LCA,St. Lucia,St. Lucia,Latin America & Caribbean

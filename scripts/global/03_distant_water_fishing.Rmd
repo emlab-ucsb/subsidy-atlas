@@ -153,39 +153,13 @@ dw_effort_final <- vessel_list_dw
 write_csv(dw_effort_final, paste0(results_dir, "vessel_list_2018_distant_water.csv"))
 ```
 
+## Identify high seas fishing vessels
+
+A secondary purpose of this tool is to show distant water fishing effort occuring on the high seas. We separate out the vessels partaking in distant water fishing here. 
 
 ```{r}
-# ### Do some manual corrections for fishing that shouldn't be there
-# dw_effort_final <- dw_effort %>%
-#   mutate(is_weird = case_when((flag == "CAN" & eez_territory_iso3 == "GUY") ~ T,
-#                            (flag == "ZAF" & eez_territory_iso3 == "COD") ~ T,
-#                            (flag == "SYC" & eez_territory_iso3 == "COD") ~ T,
-#                            TRUE ~ FALSE)) %>%
-#   dplyr::filter(!is_weird)
-# 
-# # Save
-#   dw_effort_final_table <- bq_table(project = bq_project, table = paste0("FINAL_dw_effort_by_eez_", analysis_year), dataset = "subsidy_atlas")
-#   
-# # Check if that table already exists. If not, create it. Otherwise clear it. 
-#   if(bq_table_exists(dw_effort_final_table)){
-#     
-#       dw_effort_final_table %>%
-#       bq_table_delete()
-#     
-#       dw_effort_final_table %>%
-#       bq_table_create() %>%
-#       bq_table_upload(values = dw_effort_final, fields = dw_effort_final)
-#     
-#   }else{
-#     
-#       dw_effort_final_table %>%
-#       bq_table_create() %>%
-#       bq_table_upload(values = dw_effort_final, fields = dw_effort_final)
-# 
-#   }
-# 
-# write_csv(dw_effort_final, paste0(results_dir, "FINAL_dw_effort_by_eez_", analysis_year, ".csv"))
+vessel_list_hs <- vessel_list_raw %>%
+  dplyr::filter(eez_id == 0000)
 
+write_csv(vessel_list_hs, paste0(results_dir, "vessel_list_2018_high_seas.csv"))
 ```
-
-

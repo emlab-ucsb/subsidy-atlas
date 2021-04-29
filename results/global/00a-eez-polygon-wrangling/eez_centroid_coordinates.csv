@@ -267,8 +267,8 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8371,200NM,Senegalese Exclusive Economic Zone,SEN,Senegal,SEN,Senegal,Sub-Saharan Africa,-18.50572267901882,13.695988393845731
 48964,Joint regime,Joint regime area Senegal / Guinea Bissau,SEN,Senegal,SEN,Senegal,Sub-Saharan Africa,-18.77405114203223,11.261178553628167
 8485,200NM,Singaporean Exclusive Economic Zone,SGP,Singapore,SGP,Singapore,East Asia & Pacific,103.82379950105341,1.278790298621863
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,SGS,South Georgia & South Sandwich Islands,GBR,United Kingdom,East Asia & Pacific,328.7370578838391,-56.52403030032331
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,SGS,South Georgia & South Sandwich Islands,ARG,Argentina,East Asia & Pacific,328.7370578838391,-56.52403030032331
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,SGS,South Georgia & South Sandwich Islands,GBR,United Kingdom,Latin America & Caribbean,-31.262942116161085,-56.52403030032328
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,SGS,South Georgia & South Sandwich Islands,ARG,Argentina,Latin America & Caribbean,-31.262942116161085,-56.52403030032328
 8379,200NM,Ascension Exclusive Economic Zone,SHN,St. Helena,GBR,United Kingdom,Sub-Saharan Africa,-14.363391796295561,-7.9474537893484785
 8380,200NM,St. Helena Exclusive Economic Zone,SHN,St. Helena,GBR,United Kingdom,Sub-Saharan Africa,-5.708630640986364,-15.972751725592047
 8382,200NM,Tristan Da Cunha Exclusive Economic Zone,SHN,St. Helena,GBR,United Kingdom,Sub-Saharan Africa,-11.209799223280388,-38.76180583995759
