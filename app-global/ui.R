@@ -119,7 +119,7 @@ shinyUI(
                     
    # Sidebar menu
    dashboardSidebar(width = "250px",
-                    collapsed = TRUE,
+                    collapsed = FALSE,
                     sidebarMenu(id = "tabs",
                                 
                                 # Introduction/select a region

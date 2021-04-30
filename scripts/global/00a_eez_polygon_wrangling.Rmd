@@ -127,7 +127,7 @@ eez_attrib_all <- eez_attrib %>%
          iso_sov_all = list(c(iso_sov1, iso_sov2, iso_sov3))) %>%
   dplyr::select(mrgid, pol_type, geoname, iso_ter_all, iso_sov_all)
 
-# Asign country names
+# Assign country names
 eez_attrib_expanded <- eez_attrib_all %>%
   unnest(cols = c("iso_ter_all", "iso_sov_all")) %>%
   mutate(iso_ter = ifelse(!is.na(iso_ter_all), iso_ter_all, iso_sov_all)) %>%
@@ -151,9 +151,48 @@ eez_attrib_expanded <- eez_attrib_expanded %>%
                                    TRUE ~ region)) %>%
   dplyr::select(-region, -iso_ter_all) %>%
   rename(iso_sov = iso_sov_all,
-         region = region_custom) %>%
-  arrange(region, name_ter)
+         region = region_custom)
 
+# Make some manual corrections for certain disputed/overlapping/joint areas so they're attributed to each claiming state
+eez_attrib_expanded_fix <- eez_attrib_expanded %>%
+  dplyr::filter(pol_type != "200NM") %>%
+  arrange(geoname) %>%
+  mutate(pol_type_new = case_when(pol_type == "200 NM" ~ "200NM",
+                                  mrgid == 5695 ~ "200NM",
+                                  TRUE ~ pol_type),
+         geoname_new = case_when(mrgid == 5695 ~ "Ukrainian Exclusive Economic Zone",
+                                 TRUE ~ geoname),
+         name_ter_new = case_when(iso_ter == "FRO" ~ "Denmark",
+                                  iso_ter == "SJM" ~ "Norway",
+                                  iso_ter == "FLK" & iso_sov == "GBR" ~ "United Kingdom",
+                                  iso_ter == "FLK" & iso_sov == "ARG" ~ "Argentina",
+                                  iso_ter == "FRA" & mrgid == 48946 ~ "Réunion",
+                                  iso_ter == "FRA" & mrgid == 48948 ~ "New Caledonia",
+                                  iso_ter == "MYT" & iso_sov == "COM" ~ "Comoros",
+                                  iso_ter == "MYT" & iso_sov == "FRA" ~ "French Southern Territories",
+                                  iso_ter == "SGS" ~ name_sov,
+                                  iso_ter == "ESH" ~ name_sov,
+                                  TRUE ~ name_ter),
+         iso_ter_new = case_when(iso_ter == "FRO" ~ "DNK",
+                                 iso_ter == "SJM" ~ "NOR",
+                                 iso_ter == "FLK" & iso_sov == "GBR" ~ "GBR",
+                                 iso_ter == "FLK" & iso_sov == "ARG" ~ "ARG",
+                                 iso_ter == "FRA" & mrgid == 48946 ~ "REU",
+                                 iso_ter == "FRA" & mrgid == 48948 ~ "NCL",
+                                 iso_ter == "MYT" & iso_sov == "COM" ~ "COM",
+                                 iso_ter == "MYT" & iso_sov == "FRA" ~ "ATF",
+                                 iso_ter == "SGS" ~ iso_sov,
+                                 iso_ter == "ESH" ~ iso_sov,
+                                 TRUE ~ iso_ter)) %>%
+  dplyr::select(-pol_type, -geoname, -name_ter, -iso_ter) %>%
+  rename(pol_type = pol_type_new, geoname = geoname_new, name_ter = name_ter_new, iso_ter = iso_ter_new) %>%
+  dplyr::filter(iso_ter != "ESH" & iso_sov != "ESH")
+
+# Join back together
+eez_attrib_expanded <- eez_attrib_expanded %>%
+  dplyr::filter(pol_type == "200NM") %>%
+  bind_rows(eez_attrib_expanded_fix)
+                                 
 write_csv(eez_attrib_expanded, paste0(results_dir, "eez_attributes_expanded.csv"))
 ```
 

@@ -66,9 +66,6 @@ if(merge_EU){
   
 }
 
-### Manual region corrections
-
-
 ### Widget choices that are shared across all pages -----
 vessel_origins_fill_choices <- c("# of vessels" = "n_vessels", 
                                    "Total vessel capacity (kW)" = "tot_engine_power",

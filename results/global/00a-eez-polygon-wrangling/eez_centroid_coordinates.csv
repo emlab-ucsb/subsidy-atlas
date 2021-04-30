@@ -7,6 +7,8 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8360,200NM,United Arab Emirates Exclusive Economic Zone,ARE,United Arab Emirates,ARE,United Arab Emirates,Middle East & North Africa,53.89200774393185,24.940176484649193
 48947,Overlapping claim,Overlapping claim: Iran / United Arab Emirates,ARE,United Arab Emirates,ARE,United Arab Emirates,Middle East & North Africa,55.171456179330775,26.011326583865127
 50170,Overlapping claim,Overlapping claim Qatar / Saudi Arabia / United Arab Emirates,ARE,United Arab Emirates,ARE,United Arab Emirates,Middle East & North Africa,51.59951027545091,24.692322444600354
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,ARG,Argentina,ARG,Argentina,Latin America & Caribbean,-31.262942116161085,-56.52403030032328
+8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,ARG,Argentina,ARG,Argentina,Latin America & Caribbean,-58.32519369745881,-51.667113522202825
 8466,200NM,Argentinean Exclusive Economic Zone,ARG,Argentina,ARG,Argentina,Latin America & Caribbean,-62.15844950417256,-47.08218175852057
 48961,Joint regime,Joint regime area Argentina / Uruguay,ARG,Argentina,ARG,Argentina,Latin America & Caribbean,-55.1610961186539,-36.25493243142485
 8444,200NM,American Samoa Exclusive Economic Zone,ASM,American Samoa,USA,United States,East Asia & Pacific,190.93617438986902,-13.854904630623924
@@ -17,6 +19,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8385,200NM,Crozet Islands Exclusive Economic Zone,ATF,French Southern Territories,FRA,France,Sub-Saharan Africa,51.212019946291896,-46.30683712323964
 8386,200NM,Amsterdam Island & St. Paul Island Exclusive Economic Zone,ATF,French Southern Territories,FRA,France,Sub-Saharan Africa,77.54170609411422,-38.29423362382045
 8387,200NM,Kerguelen Exclusive Economic Zone,ATF,French Southern Territories,FRA,France,Sub-Saharan Africa,68.97534902167536,-48.87814355032834
+48944,Overlapping claim,Overlapping claim Mayotte: France / Comoros,ATF,French Southern Territories,FRA,France,Sub-Saharan Africa,45.306334855934736,-13.215670343447238
 48945,Overlapping claim,Overlapping claim Glorioso Islands: France / Madagascar,ATF,French Southern Territories,FRA,France,Sub-Saharan Africa,47.09718010855173,-11.617839921304327
 8414,200NM,Antigua and Barbuda Exclusive Economic Zone,ATG,Antigua & Barbuda,ATG,Antigua & Barbuda,Latin America & Caribbean,-60.57157515316423,18.731751394863437
 8311,200NM,Australian Exclusive Economic Zone (Macquarie Island),AUS,Australia,AUS,Australia,East Asia & Pacific,158.65079404673756,-54.87762175664477
@@ -65,6 +68,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 62596,200NM,Colombian Exclusive Economic Zone (Serrana),COL,Colombia,COL,Colombia,Latin America & Caribbean,-80.30280806689285,14.38118835631707
 62598,200NM,Colombian Exclusive Economic Zone (Quitasueño),COL,Colombia,COL,Colombia,Latin America & Caribbean,-81.16099787633055,14.303186812817362
 8334,200NM,Comoran Exclusive Economic Zone,COM,Comoros,COM,Comoros,Sub-Saharan Africa,43.45492517450583,-11.423457211882843
+48944,Overlapping claim,Overlapping claim Mayotte: France / Comoros,COM,Comoros,COM,Comoros,Sub-Saharan Africa,45.306334855934736,-13.215670343447238
 8362,200NM,Cape Verdean Exclusive Economic Zone,CPV,Cape Verde,CPV,Cape Verde,Sub-Saharan Africa,-24.17122862135537,16.091889400095532
 8424,200NM,Costa Rican Exclusive Economic Zone,CRI,Costa Rica,CRI,Costa Rica,Latin America & Caribbean,-86.50696965196342,6.737510784287869
 48968,Joint regime,Joint regime area Costa Rica / Ecuador (Galapagos),CRI,Costa Rica,CRI,Costa Rica,Latin America & Caribbean,-88.84133458221648,3.22637325597341
@@ -79,6 +83,8 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 48956,Overlapping claim,Overlapping claim Doumeira Islands: Djibouti / Eritrea,DJI,Djibouti,DJI,Djibouti,Middle East & North Africa,43.22471429745022,12.760458255086201
 8417,200NM,Dominican Exclusive Economic Zone,DMA,Dominica,DMA,Dominica,Latin America & Caribbean,-60.7209899313635,15.497345395268422
 5674,200NM,Danish Exclusive Economic Zone,DNK,Denmark,DNK,Denmark,Europe & Central Asia,9.256507277761415,56.138160489636384
+48967,Joint regime,Joint regime area United Kingdom / Denmark (Faeroe Islands),DNK,Denmark,DNK,Denmark,Europe & Central Asia,-7.517071675873157,60.03616101344183
+48973,Joint regime,Joint regime area Iceland / Denmark (Faeroe Islands),DNK,Denmark,DNK,Denmark,Europe & Central Asia,-10.985800513825403,63.15078412991847
 8409,200NM,Dominican Republic Exclusive Economic Zone,DOM,Dominican Republic,DOM,Dominican Republic,Latin America & Caribbean,-69.6720731033331,19.137829182823374
 48965,Overlapping claim,Overlapping claim: Venezuela / Aruba / Dominican Republic,DOM,Dominican Republic,DOM,Dominican Republic,Latin America & Caribbean,-69.65199735339097,15.303730062364133
 48970,Joint regime,Joint regime area Colombia / Dominican Republic,DOM,Dominican Republic,DOM,Dominican Republic,Latin America & Caribbean,-72.50386113298597,15.018509674362624
@@ -94,8 +100,6 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 26582,Overlapping claim,Overlapping claim: Sudan / Egypt,EGY,Egypt,EGY,Egypt,Middle East & North Africa,36.87868046632946,22.612067990280792
 8351,200NM,Eritrean Exclusive Economic Zone,ERI,Eritrea,ERI,Eritrea,Sub-Saharan Africa,40.592165695668534,15.818902018459777
 48956,Overlapping claim,Overlapping claim Doumeira Islands: Djibouti / Eritrea,ERI,Eritrea,ERI,Eritrea,Sub-Saharan Africa,43.22471429745022,12.760458255086201
-8368,Overlapping claim,Overlapping claim Western Saharan Exclusive Economic Zone,ESH,Western Sahara,ESH,Western Sahara,Middle East & North Africa,-17.695351023526893,23.342338684876292
-8368,Overlapping claim,Overlapping claim Western Saharan Exclusive Economic Zone,ESH,Western Sahara,MAR,Morocco,Middle East & North Africa,-17.695351023526893,23.342338684876292
 5693,200NM,Spanish Exclusive Economic Zone,ESP,Spain,ESP,Spain,Europe & Central Asia,-4.154045772800368,41.720895749713605
 8364,200NM,Spanish Exclusive Economic Zone (Canary Islands),ESP,Spain,ESP,Spain,Europe & Central Asia,-17.612245113981665,28.367351770727527
 8365,Overlapping claim,Overlapping claim Gibraltarian Exclusive Economic Zone,ESP,Spain,ESP,Spain,Europe & Central Asia,-5.222292516826084,36.0890168833964
@@ -109,20 +113,16 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 5675,200NM,Estonian Exclusive Economic Zone,EST,Estonia,EST,Estonia,Europe & Central Asia,23.00258691906214,58.770646075060796
 5676,200NM,Finnish Exclusive Economic Zone,FIN,Finland,FIN,Finland,Europe & Central Asia,21.89540420452471,61.72833945568125
 8325,200NM,Fijian Exclusive Economic Zone,FJI,Fiji,FJI,Fiji,East Asia & Pacific,177.66831948215062,-17.98721812774163
-8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,FLK,Falkland Islands,GBR,United Kingdom,Latin America & Caribbean,-58.32519369745881,-51.667113522202825
-8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,FLK,Falkland Islands,ARG,Argentina,Latin America & Caribbean,-58.32519369745881,-51.667113522202825
 5677,200NM,French Exclusive Economic Zone,FRA,France,FRA,France,Europe & Central Asia,-1.9647453475986745,46.04111291645646
 8401,200NM,Clipperton Exclusive Economic Zone,FRA,France,FRA,France,Europe & Central Asia,-109.21730804677394,10.308650831314456
-48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,FRA,France,FRA,France,Europe & Central Asia,54.67307746911066,-15.711345999320915
-48948,Overlapping claim,Overlapping claim Matthew and Hunter Islands: New Caledonia / Vanuatu,FRA,France,FRA,France,Europe & Central Asia,172.03646811610102,-23.27861562398467
 48966,Joint regime,Joint regime area Spain / France,FRA,France,FRA,France,Europe & Central Asia,-5.333333349999999,45.254166649999995
 48976,Joint regime,Joint regime area Italy / France,FRA,France,FRA,France,Europe & Central Asia,9.051774324412007,41.3122164830103
 8435,200NM,Faeroe Exclusive Economic Zone,FRO,Faroe Islands,DNK,Denmark,Europe & Central Asia,-6.997100552060303,62.593827375418044
-48967,Joint regime,Joint regime area United Kingdom / Denmark (Faeroe Islands),FRO,Faroe Islands,DNK,Denmark,Europe & Central Asia,-7.517071675873157,60.03616101344183
-48973,Joint regime,Joint regime area Iceland / Denmark (Faeroe Islands),FRO,Faroe Islands,DNK,Denmark,Europe & Central Asia,-10.985800513825403,63.15078412991847
 8316,200NM,Micronesian Exclusive Economic Zone,FSM,Micronesia (Federated States of),FSM,Micronesia (Federated States of),East Asia & Pacific,150.32210106350794,6.769800961285347
 8476,200NM,Gabonese Exclusive Economic Zone,GAB,Gabon,GAB,Gabon,Sub-Saharan Africa,8.738843249700707,-3.064268769847721
 5696,200NM,United Kingdom Exclusive Economic Zone,GBR,United Kingdom,GBR,United Kingdom,Europe & Central Asia,-4.290144784727494,56.784015687743185
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,GBR,United Kingdom,GBR,United Kingdom,Latin America & Caribbean,-31.262942116161085,-56.52403030032328
+8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,GBR,United Kingdom,GBR,United Kingdom,Latin America & Caribbean,-58.32519369745881,-51.667113522202825
 48967,Joint regime,Joint regime area United Kingdom / Denmark (Faeroe Islands),GBR,United Kingdom,GBR,United Kingdom,Europe & Central Asia,-7.517071675873157,60.03616101344183
 5678,200NM,Georgian Exclusive Economic Zone,GEO,Georgia,GEO,Georgia,Europe & Central Asia,40.559712034726424,42.44623306239816
 21788,200NM,Guernsey Exclusive Economic Zone,GGY,Guernsey,GBR,United Kingdom,Europe & Central Asia,-2.656329243925204,49.63850246245594
@@ -195,6 +195,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 5683,200NM,Latvian Exclusive Economic Zone,LVA,Latvia,LVA,Latvia,Europe & Central Asia,21.347701159963275,57.10462021907059
 8495,200NM,Saint-Martin Exclusive Economic Zone,MAF,Saint Martin (French part),FRA,France,Latin America & Caribbean,-63.19890643094444,18.03619715824055
 8367,200NM,Moroccan Exclusive Economic Zone,MAR,Morocco,MAR,Morocco,Middle East & North Africa,-9.849916656489745,32.78243961209765
+8368,Overlapping claim,Overlapping claim Western Saharan Exclusive Economic Zone,MAR,Morocco,MAR,Morocco,Middle East & North Africa,-17.695351023526893,23.342338684876292
 48997,Overlapping claim,Overlapping claim Chafarinas Islands: Spain / Morocco,MAR,Morocco,MAR,Morocco,Middle East & North Africa,-2.475901149443883,35.17106739051665
 48998,Overlapping claim,Overlapping claim Perejil Island: Spain / Morocco,MAR,Morocco,MAR,Morocco,Middle East & North Africa,-5.419209900000001,35.91474803333334
 48999,Overlapping claim,Overlapping claim Peñón de Vélez de la Gomera: Spain / Morocco,MAR,Morocco,MAR,Morocco,Middle East & North Africa,-4.3065109350046775,35.18781380591547
@@ -218,12 +219,11 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 33178,200NM,Martinican Exclusive Economic Zone,MTQ,Martinique,FRA,France,Latin America & Caribbean,-60.20085419219953,14.975126257832448
 8343,200NM,Mauritian Exclusive Economic Zone,MUS,Mauritius,MUS,Mauritius,Sub-Saharan Africa,60.11640797908167,-16.80934842778641
 48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,MUS,Mauritius,MUS,Mauritius,Sub-Saharan Africa,54.67307746911066,-15.711345999320915
-62589,200 NM,Chagos Archipelago Exclusive Economic Zone,MUS,Mauritius,MUS,Mauritius,Sub-Saharan Africa,72.0020273912326,-6.539140949594131
+62589,200NM,Chagos Archipelago Exclusive Economic Zone,MUS,Mauritius,MUS,Mauritius,Sub-Saharan Africa,72.0020273912326,-6.539140949594131
 8483,200NM,Malaysian Exclusive Economic Zone,MYS,Malaysia,MYS,Malaysia,East Asia & Pacific,109.11906087942575,5.175457144697634
-48944,Overlapping claim,Overlapping claim Mayotte: France / Comoros,MYT,Mayotte,FRA,France,Sub-Saharan Africa,45.306334855934736,-13.215670343447238
-48944,Overlapping claim,Overlapping claim Mayotte: France / Comoros,MYT,Mayotte,COM,Comoros,Sub-Saharan Africa,45.306334855934736,-13.215670343447238
 8395,200NM,Namibian Exclusive Economic Zone,NAM,Namibia,NAM,Namibia,Sub-Saharan Africa,12.286196873995571,-23.649659829705875
 8312,200NM,New Caledonian Exclusive Economic Zone,NCL,New Caledonia,FRA,France,East Asia & Pacific,163.20533791992546,-21.017257958124063
+48948,Overlapping claim,Overlapping claim Matthew and Hunter Islands: New Caledonia / Vanuatu,NCL,New Caledonia,FRA,France,Europe & Central Asia,172.03646811610102,-23.27861562398467
 8310,200NM,Norfolk Island Exclusive Economic Zone,NFK,Norfolk Island,AUS,Australia,East Asia & Pacific,167.92896140920732,-29.093185313821724
 8474,200NM,Nigerian Exclusive Economic Zone,NGA,Nigeria,NGA,Nigeria,Sub-Saharan Africa,4.833462122215593,4.090193561468712
 21797,Joint regime,Joint regime area Nigeria / Sao Tome and Principe,NGA,Nigeria,NGA,Nigeria,Sub-Saharan Africa,5.586638261925441,2.0675520237539717
@@ -231,6 +231,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8447,200NM,Niue Exclusive Economic Zone,NIU,Niue,NZL,New Zealand,East Asia & Pacific,190.6683187893404,-19.522318060771592
 5668,200NM,Dutch Exclusive Economic Zone,NLD,Netherlands,NLD,Netherlands,Europe & Central Asia,4.191453724527107,53.60713585566377
 5686,200NM,Norwegian Exclusive Economic Zone,NOR,Norway,NOR,Norway,Europe & Central Asia,14.050895001351353,68.18850805243736
+48975,Joint regime,Joint regime area Iceland / Norway (Jan Mayen),NOR,Norway,NOR,Norway,Europe & Central Asia,-8.500000000000002,69.29166665
 48977,Joint regime,Joint regime area Sweden / Norway,NOR,Norway,NOR,Norway,Europe & Central Asia,10.5009537,58.80998146666667
 8317,200NM,Nauruan Exclusive Economic Zone,NRU,Nauru,NRU,Nauru,East Asia & Pacific,166.12474773464368,-0.5909437848039104
 8455,200NM,New Zealand Exclusive Economic Zone,NZL,New Zealand,NZL,New Zealand,East Asia & Pacific,175.14772028882575,-42.76611696733245
@@ -256,6 +257,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8468,200NM,Qatari Exclusive Economic Zone,QAT,Qatar,QAT,Qatar,Middle East & North Africa,51.88360228778891,25.863826728086906
 50170,Overlapping claim,Overlapping claim Qatar / Saudi Arabia / United Arab Emirates,QAT,Qatar,QAT,Qatar,Middle East & North Africa,51.59951027545091,24.692322444600354
 8338,200NM,Réunion Exclusive Economic Zone,REU,Réunion,FRA,France,Sub-Saharan Africa,54.713201652784534,-21.78120042833816
+48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,REU,Réunion,FRA,France,Europe & Central Asia,54.67307746911066,-15.711345999320915
 5689,200NM,Romanian Exclusive economic Zone,ROU,Romania,ROU,Romania,Europe & Central Asia,30.07903268030797,44.23973677833228
 5690,200NM,Russian Exclusive economic Zone,RUS,Russia,RUS,Russia,Europe & Central Asia,93.5663005411693,71.32511870711761
 48950,Overlapping claim,Overlapping claim Kuril Islands: Japan / Russia,RUS,Russia,RUS,Russia,Europe & Central Asia,147.96086927763503,43.88650367774513
@@ -267,14 +269,11 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8371,200NM,Senegalese Exclusive Economic Zone,SEN,Senegal,SEN,Senegal,Sub-Saharan Africa,-18.50572267901882,13.695988393845731
 48964,Joint regime,Joint regime area Senegal / Guinea Bissau,SEN,Senegal,SEN,Senegal,Sub-Saharan Africa,-18.77405114203223,11.261178553628167
 8485,200NM,Singaporean Exclusive Economic Zone,SGP,Singapore,SGP,Singapore,East Asia & Pacific,103.82379950105341,1.278790298621863
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,SGS,South Georgia & South Sandwich Islands,GBR,United Kingdom,Latin America & Caribbean,-31.262942116161085,-56.52403030032328
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,SGS,South Georgia & South Sandwich Islands,ARG,Argentina,Latin America & Caribbean,-31.262942116161085,-56.52403030032328
 8379,200NM,Ascension Exclusive Economic Zone,SHN,St. Helena,GBR,United Kingdom,Sub-Saharan Africa,-14.363391796295561,-7.9474537893484785
 8380,200NM,St. Helena Exclusive Economic Zone,SHN,St. Helena,GBR,United Kingdom,Sub-Saharan Africa,-5.708630640986364,-15.972751725592047
 8382,200NM,Tristan Da Cunha Exclusive Economic Zone,SHN,St. Helena,GBR,United Kingdom,Sub-Saharan Africa,-11.209799223280388,-38.76180583995759
 8437,200NM,Jan Mayen Exclusive Economic Zone,SJM,Svalbard & Jan Mayen,NOR,Norway,Europe & Central Asia,-5.254452607427777,71.11364248788679
 33181,200NM,Svalbard Exclusive Economic Zone,SJM,Svalbard & Jan Mayen,NOR,Norway,Europe & Central Asia,18.292658068672427,78.7121515914119
-48975,Joint regime,Joint regime area Iceland / Norway (Jan Mayen),SJM,Svalbard & Jan Mayen,NOR,Norway,Europe & Central Asia,-8.500000000000002,69.29166665
 8314,200NM,Solomon Islands Exclusive Economic Zone,SLB,Solomon Islands,SLB,Solomon Islands,East Asia & Pacific,163.68318839009788,-10.049421118973301
 8390,200NM,Sierra Leonian Exclusive Economic Zone,SLE,Sierra Leone,SLE,Sierra Leone,Sub-Saharan Africa,-14.145165673519852,6.634561722536489
 8428,200NM,El Salvador Exclusive Economic Zone,SLV,El Salvador,SLV,El Salvador,Latin America & Caribbean,-89.74314167195968,11.849304553088722
@@ -307,7 +306,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8321,200NM,Taiwanese Exclusive Economic Zone,TWN,Taiwan,TWN,Taiwan,East Asia & Pacific,118.71632744152896,21.422031936080884
 48954,Overlapping claim,Overlapping claim Senkaku Islands: Japan / China / Taiwan,TWN,Taiwan,TWN,Taiwan,East Asia & Pacific,124.12220839884654,26.520434206536756
 8479,200NM,Tanzanian Exclusive Economic Zone,TZA,Tanzania,TZA,Tanzania,Sub-Saharan Africa,41.16741493560575,-7.2115603275400035
-5695,Overlapping claim,Overlapping claim Ukrainian Exclusive Economic Zone,UKR,Ukraine,UKR,Ukraine,Europe & Central Asia,33.63641337485081,44.95113265650188
+5695,200NM,Ukrainian Exclusive Economic Zone,UKR,Ukraine,UKR,Ukraine,Europe & Central Asia,33.63641337485081,44.95113265650188
 8319,200NM,Wake Island Exclusive Economic Zone,UMI,United States Minor Outlying Islands (the),USA,United States,East Asia & Pacific,166.53066447458647,19.50289956203936
 8442,200NM,Jarvis Island Exclusive Economic Zone,UMI,United States Minor Outlying Islands (the),USA,United States,East Asia & Pacific,199.53223635280204,-0.9134959108850034
 8443,200NM,Palmyra Atoll Exclusive Economic Zone,UMI,United States Minor Outlying Islands (the),USA,United States,East Asia & Pacific,197.1017728657855,6.6877280028774795
