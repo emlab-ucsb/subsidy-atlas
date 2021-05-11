@@ -485,8 +485,8 @@ header.main-header {
   background: rgba(255,255,255,0.9);
   padding: 0;
   left: 400px;
-  bottom: 150px;
-  width: 100px;
+  bottom: 90px;
+  width: 150px;
   height: 30px;
   border-radius: 5px 5px 0 0;
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
@@ -498,7 +498,7 @@ header.main-header {
   background: rgba(255,255,255,0.9);
   padding: 0;
   height: 30px;
-  width: 100px;
+  width: 150px;
   border-radius: 5px 5px 0 0;
   color: var(--accent-color);
   line-height: 30px;
@@ -515,7 +515,7 @@ header.main-header {
   padding: 0;
   left: 400px;
   bottom: 0;
-  width: 100px;
+  width: 150px;
   height: 30px;
   border-radius: 5px 5px 0 0;
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
@@ -527,7 +527,7 @@ header.main-header {
   background: rgba(255,255,255,0.9);
   padding: 0;
   height: 30px;
-  width: 100px;
+  width: 150px;
   border-radius: 5px 5px 0 0;
   color: var(--accent-color);
   line-height: 30px;
@@ -542,10 +542,11 @@ header.main-header {
 #regional_map_text_panel {
   background: rgba(255,255,255,0.9);
   padding: 15px 25px;
+  color: var(--accent-color);
   left: 100px;
   right: 100px;
   bottom: 0;
-  height: 150px;
+  height: 90px;
   border-radius: 5px 5px 0 0;
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
   z-index: 15;
