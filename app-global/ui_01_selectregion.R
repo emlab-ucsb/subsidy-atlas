@@ -37,7 +37,7 @@ selectregion = function(){
                                          
                          column(12, id = "tb-spaced-div", align = "center",
                                 
-                                includeHTML("./text/01_intro_overlay.html")
+                                includeHTML("./text/intro_overlay.html")
                                                 
                          )
                                          
