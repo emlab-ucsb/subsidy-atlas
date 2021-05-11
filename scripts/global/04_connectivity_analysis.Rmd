@@ -33,6 +33,9 @@ vessel_list_dw_path <- here::here("results", "global", "03-distant-water-fishing
 # Path to high seas vessel list 
 vessel_list_hs_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_high_seas.csv")
 
+# Path to updated EEZ characteristics
+eez_attrib_path <- here::here("results", "global", "00a-eez-polygon-wrangling", "eez_attributes_expanded.csv")
+
 # Path to eez file
 eez_centroid_path <- here::here("results", "global", "00a-eez-polygon-wrangling", "eez_centroid_coordinates.csv")
 
@@ -55,6 +58,14 @@ Since our vessel list of distant water fishing (and subsidies) is currently at t
 ```{r}
 # Load vessel list
 vessel_list_dw_raw <- read.csv(vessel_list_dw_path, stringsAsFactors = F) 
+
+# Load updated eez attributes
+eez_attributes <- read_csv(eez_attrib_path)
+
+# Extract eez_ids and cooresponding ter and sov iso3 codes
+eez_attrib_expand <- eez_attributes %>%
+  distinct(mrgid, iso_sov, iso_ter) %>%
+  rename(eez_id = mrgid)
 ```
 
 ```{r}
@@ -69,6 +80,15 @@ vessel_list_dw_expanded <- vessel_list_dw_raw %>%
   rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
   dplyr::select(-eez_ter_iso3_all) %>%
   dplyr::filter(!is.na(eez_ter_iso3))
+
+test <- vessel_list_dw_raw %>%
+   dplyr::select(-eez_territory1_iso3, -eez_territory2_iso3, -eez_territory3_iso3, -eez_sovereign1_iso3, -eez_sovereign2_iso3, -eez_sovereign3_iso3) %>%
+  mutate(eez_id = case_when(eez_id == 8344 ~ as.integer(62589), # updating code for Chagos
+                            TRUE ~ eez_id)) %>%
+  left_join(eez_attrib_expand, by = "eez_id")
+
+test2 <- test %>%
+  dplyr::filter(is.na(iso_ter))
 
 # Now calculate summaries for each coastal territory
 flag_eez_summary <- vessel_list_dw_expanded %>%

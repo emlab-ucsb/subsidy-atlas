@@ -168,6 +168,12 @@ shinyUI(
                                 menuItem("Sub-Saharan Africa", 
                                          tabName = "sub-saharan-africa", 
                                          icon = NULL,
+                                         selected = NULL),
+                                
+                                # Learn More
+                                menuItem("FAQs and Contact", 
+                                         tabName = "contact", 
+                                         icon = NULL,
                                          selected = NULL)
                                 
 
@@ -228,6 +234,12 @@ shinyUI(
        # South Asisa
        tabItem(tabName = "sub-saharan-africa",
                SubSaharanAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale)
+       ),
+       
+       # FAQs and Contact
+       # South Asisa
+       tabItem(tabName = "contact",
+               Contact()
        )
        
      ) # close tabItems

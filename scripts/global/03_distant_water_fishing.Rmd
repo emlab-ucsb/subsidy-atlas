@@ -35,18 +35,22 @@ results_dir <- here::here("results/global/03-distant-water-fishing/")
 
 This script extracts defines and extracts distant water fishing activity to pull from the global vessel list previously created. 
 
-## Identify distant water fishing vessels
+# Reassign EEZ chracteristics
+
+We made quite a few manual corrections to the attributes of different EEZ areas. As these are not reflected in the GFW data, we need to reassign these characteristics before identifying distant water fishing. 
+
+```{r}
+# Load vessel list
+vessel_list_raw <- read.csv(vessel_list_path, stringsAsFactors = F) 
+```
+
+# Identify distant water fishing vessels
 
 Since the purpose of this tool is to show distant water fishing effort and subsidies, we need to separate out fishing effort considered to be "distant water" from the rest. This is done in a series of steps. 
 
 In the first step, the following is not considered to be "distant water fishing" and is therefore removed:
 - All fishing effort occuring on the high seas;
 - All fishing effort occuring in an EEZ when the flag state of the vessel is the same as the administering state of the EEZ in which it is fishing.
-
-```{r}
-# Load vessel list
-vessel_list_raw <- read.csv(vessel_list_path, stringsAsFactors = F) 
-```
 
 ```{r}
 # Country lookup table
@@ -82,7 +86,7 @@ We define "intra-EU fishing" as fishing activity that meets one of the following
 1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a French-flagged vessel fishing in the EEZ of Spain);
 2. The sovereign of the vessel's flag state is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a XXX-flagged vessel fishing in the EEZ of Spain).
 
-We do not consider the following to be "intra-EU fishing" (and is therefore distante water fishing): 
+We do not consider the following to be "intra-EU fishing" (and is therefore distant water fishing): 
 1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing belongs to a territory or distant region of an EU member state (e.g. a French-flagged vessel fishing in the EEZ of French Polynesia). 
 
 ```{r}

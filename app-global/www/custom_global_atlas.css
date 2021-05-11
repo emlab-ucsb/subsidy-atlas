@@ -550,3 +550,30 @@ header.main-header {
   box-shadow: 0 0 15px rgba(0,0,0,0.2);
   z-index: 15;
 }
+
+/* ------------------------------ */
+/* FAQs and Contact */
+/* ------------------------------ */
+
+#methods-process-table {
+  vertical-align: middle;
+  table-layout: fixed;
+  width: 100%;
+  text-align: center;
+}
+
+#methods-process-table-row{
+  width: 100%;
+}
+
+#methods-process-table-cell-1{
+  width: 33%;
+}
+
+#methods-process-table-cell-2{
+  width: 33%;
+}
+
+#methods-process-table-cell-3{
+  width: 33%;
+}
