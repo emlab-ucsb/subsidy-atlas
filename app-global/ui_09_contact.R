@@ -17,7 +17,7 @@ Contact = function(){
     column(12, id = "tblr-small-spaced-div",
            
            # Title
-           tags$h4("FAQs and Contact")
+           tags$h4("More Info, FAQs, and Contact")
            
     ),
     
@@ -27,6 +27,31 @@ Contact = function(){
            # Text
            includeHTML("./text/faqs-and-contact/intro_and_purpose.html")
            
+    ),
+    
+    ### Data summaries
+    column(12, id = "tblr-small-spaced-div",
+           
+           # Text
+           includeHTML("./text/faqs-and-contact/summary.html"),
+           
+           # File download buttons
+           column(12, style = "text-align: center;", id = "t-spaced-div",
+                  
+                  fluidRow(
+                    
+                    downloadButton("db_data_summary_by_eez", 
+                                   "Summary by EEZ (CSV)"),
+                    
+                    downloadButton("db_data_summary_by_region", 
+                                   "Summary by High Seas Region (CSV)"),
+                    
+                    downloadButton("db_data_summary_by_flag", 
+                                   "Summary by Flag State (CSV)")
+                  )
+                  
+           )
+
     ),
     
     ### FAQs

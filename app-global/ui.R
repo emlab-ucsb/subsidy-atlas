@@ -171,7 +171,7 @@ shinyUI(
                                          selected = NULL),
                                 
                                 # Learn More
-                                menuItem("FAQs and Contact", 
+                                menuItem("More Info, FAQs, and Contact", 
                                          tabName = "contact", 
                                          icon = NULL,
                                          selected = NULL)
