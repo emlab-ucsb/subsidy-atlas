@@ -1,0 +1,192 @@
+---
+output:
+  html_document: default
+
+title: "Distant Water Fishing Atlas - FAO Regions Shapefile Wrangling"
+author: "Kat Millage, Matt Warham"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+fontsize: 11pt
+---
+
+# Introduction
+
+We had previously created a shapefile of only the high seas areas of the FAO major statistical regions, combined with simplified versions of the EEZ boundaries (version 10). Since we've already created our nicely wrangled EEZ shapefile (version 11), we're just going to extract the high seas areas defined by FAO major statistical region here. 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+### Load packages ------
+library(sf) # spatial manipulation
+library(here) # path names
+library(knitr) # knit document
+library(mapview)
+library(tidyverse) # data manipulation
+
+### Create results directories
+data_dir <- here::here("data/edited/")
+  if (dir.exists(data_dir) == F) { dir.create(data_dir, recursive = T) }
+
+results_dir <- here::here("results/global/00c-fao-region-polygon-wrangling/")
+  if (dir.exists(results_dir) == F) { dir.create(results_dir, recursive = T) }
+
+### Also save to app data directory
+app_dir <- here::here("app-global/data/")
+  if (dir.exists(app_dir) == F) { dir.create(app_dir, recursive = T) }
+```
+
+# Combined EEZ/FAO Region Shapefile
+
+This is a shapefile previously created by us for use in another project. It was created by simplifying version 10 of the EEZ and Maritime Boundaries shapefile, and subtracting those polygons from the shapefile of the FAO major statistical areas. 
+
+## Load shapefile and extract high seas regions
+
+```{r}
+# Path where the raw data file lives
+fao_path <- here::here("data", "shapefiles", "eez_v10_fao_combined_simple", "eez_v10_fao_combined_simple.shp") 
+
+# Load file
+fao_sf <- st_read(fao_path) %>%
+  dplyr::filter(is.na(mrgid))
+```
+
+## Create expanded version of polygons (-360 to 360 degrees)
+
+Because we are going to center different pages of our app on different regions, we want to make an duplicated polygon object that ranges from -360 to 360 degrees. 
+
+```{r}
+# Make left duplicate (-540, -180)
+fao_sf_left <- (st_geometry(fao_sf) - c(360, 0)) %>%
+  st_set_crs(4326)
+
+# Make right duplicate (180 - 540)
+fao_sf_right <- (st_geometry(fao_sf) + c(360, 0)) %>%
+  st_set_crs(4326)
+
+# Assign geometry
+fao_sf_left <- st_set_geometry(fao_sf, fao_sf_left)
+fao_sf_right <- st_set_geometry(fao_sf, fao_sf_right)
+
+# Combine
+fao_sf_all <- fao_sf %>%
+  rbind(fao_sf_left) %>% 
+  rbind(fao_sf_right) %>%
+  st_make_valid() %>%
+  group_by(zone) %>%
+  summarize(a = 1) %>%
+  ungroup() %>%
+  dplyr::select(-a)
+
+# Crop
+fao_sf_crop <- fao_sf_all %>%
+  st_crop(xmin = -360, ymin = -90, xmax = 360, ymax = 90)
+
+# Keep only polygons
+fao_sf_polygon <- st_collection_extract(
+  fao_sf_crop,
+  type = c("POLYGON"),
+  warn = FALSE
+) %>%
+  group_by(zone) %>%
+  summarize(a = 1) %>%
+  ungroup() %>%
+  dplyr::select(-a)
+
+ggplot() + geom_sf(data = fao_sf_polygon, aes(fill = zone))
+```
+## Modify attributes
+
+```{r}
+fao_sf_out <- fao_sf_polygon %>%
+  mutate(title = paste0("FAO Major Fishing Area ", zone),
+         description = case_when(zone == 18 ~ "Arctic Ocean",
+                              zone == 21 ~ "Northwestern part of the Atlantic Ocean",
+                              zone == 27 ~ "Northeastern part of the Atlantic Ocean",
+                              zone == 31 ~ "Western part of the Atlantic Ocean",
+                              zone == 34 ~ "Eastern Central part of the Atlantic Ocean",
+                              zone == 37 ~ "Mediterranean Sea and the Black Sea",
+                              zone == 41 ~ "Southwestern part of the Atlantic Ocean",
+                              zone == 47 ~ "Southeastern part of the Atlantic Ocean",
+                              zone == 48 ~ "Antarctic part of the Atlantic Ocean", 
+                              zone == 51 ~ "Western part of the Indian Ocean",
+                              zone == 57 ~ "Eastern part of the Indian Ocean",
+                              zone == 58 ~ "Antarctic and Southern parts of the Indian Ocean",
+                              zone == 61 ~ "Northwestern part of the Pacific Ocean",
+                              zone == 67 ~ "Northeastern part of the Pacific Ocean",
+                              zone == 71 ~ "Western Central part of the Pacific Ocean",
+                              zone == 77 ~ "Eastern Central part of the Pacific Ocean",
+                              zone == 81 ~ "Southwestern part of the Pacific Ocean",
+                              zone == 87 ~ "Southeastern part of the Pacific Ocean",
+                              zone == 88 ~ "Antarctic part of the Pacific Ocean",
+                              TRUE ~ "NA"),
+         region = "High Seas")
+
+
+```
+
+## Find Centroids 
+
+In order to make our connectivity plots later on, we will need the centroids of each high seas region. This will be more straightforward for high seas regions because we're only going to offer one view. For simplicity, we should be able to get everything we need by using -180 - 180.
+
+```{r}
+map_coord <- list(all_others = c(-180, 180))
+```
+
+```{r}
+  # All other regions
+  cropped_fao_sf <- st_crop(fao_sf_out, c(xmin = map_coord$all_others[1],
+                                          xmax = map_coord$all_others[2],
+                                          ymin=-90, ymax=90))
+  fao_centroids <- cropped_fao_sf %>%
+    st_centroid() %>%
+    dplyr::select(zone, title, description, region)
+
+  # Put centroids in lon/lat columns
+  fao_centroid_coordinates <- tibble(zone = fao_centroids$zone,
+                                     title = fao_centroids$title,
+                                     description = fao_centroids$description,
+                                     region = fao_centroids$region) %>% 
+    bind_cols(do.call(rbind, st_geometry(fao_centroids)) %>%
+                as_tibble() %>%
+                setNames(c("fao_lon", "fao_lat"))) %>%
+    arrange(zone)
+  
+  # Save
+  write_csv(fao_centroid_coordinates, paste0(results_dir, "fao_centroid_coordinates.csv"))
+```
+
+## Add Centroids to polygons
+
+```{r}
+# Add Centroids
+fao_sf_out <- fao_sf_out %>%
+  left_join(fao_centroid_coordinates, by = c("zone", "title", "description", "region"))
+```
+
+## Manual Correction of Centroids
+
+There might be a few centroids we need to correct - Do that here. 
+
+```{r}
+# Manual centroid corrections
+
+# Save
+st_write(fao_sf_out, paste0(data_dir, "fao_high_seas_areas_neg360_360_centroids.gpkg"), delete_layer = T)
+st_write(fao_sf_out, paste0(results_dir, "fao_high_seas_areas_neg360_360_centroids.gpkg"), delete_layer = T)
+st_write(fao_sf_out, paste0(app_dir, "fao_high_seas_areas_neg360_360_centroids.gpkg"), delete_layer = T)
+```
+
+## Create region aggregated polygon for landing page
+
+```{r}
+# Regional aggregation
+region_sf <- fao_sf_out %>%
+  group_by(region) %>%
+  summarize(geom = st_union(geometry))
+  
+ggplot()+geom_sf(data = region_sf, aes(fill = region))
+
+st_write(region_sf, paste0(data_dir, "high_seas_region_neg360_360.gpkg"), delete_layer = T)
+st_write(region_sf, paste0(results_dir, "high_seas_region_neg360_360.gpkg"), delete_layer = T)
+st_write(region_sf, paste0(app_dir, "high_seas_region_neg360_360.gpkg"), delete_layer = T)
+```
