@@ -82,6 +82,9 @@ vessel_origins_fill_choices <- c("# of vessels" = "n_vessels",
 vessel_origins_fill_scale <- c("All distant water fishing in the region (default)" = "region",
                                "Selected coastal state only" = "selected_eez")
 
+vessel_origins_fill_scale_hs <- c("All distant water fishing on the high seas (default)" = "region",
+                                  "Selected FAO area only" = "selected_eez")
+
 ### Plot Themes ---------
 eezmaptheme <- theme_minimal()+
   theme(#strip.background = element_rect(color = NA),

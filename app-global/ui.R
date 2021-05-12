@@ -244,7 +244,7 @@ shinyUI(
        
        # High Seas
        tabItem(tabName = "high-seas",
-               HighSeas(vessel_origins_fill_choices, vessel_origins_fill_scale)
+               HighSeas(vessel_origins_fill_choices, vessel_origins_fill_scale_hs)
        ),
        
        # FAQs and Contact
