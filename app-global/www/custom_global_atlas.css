@@ -402,7 +402,8 @@ header.main-header {
 .nav-tabs-custom #middle-east-north-africa-results-tabs.nav-tabs,
 .nav-tabs-custom #north-america-results-tabs.nav-tabs,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs,
-.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs{
+.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs,
+.nav-tabs-custom #high-seas-results-tabs.nav-tabs{
   background-color: #ffffff;
   border-bottom: 4px solid var(--main-color);
 }
@@ -413,7 +414,8 @@ header.main-header {
 .nav-tabs-custom #middle-east-north-africa-results-tabs.nav-tabs li,
 .nav-tabs-custom #north-america-results-tabs.nav-tabs li,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs li,
-.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li{
+.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li,
+.nav-tabs-custom #high-seas-results-tabs.nav-tabs li{
   width: 25%;
   margin: 0;
 }
@@ -424,7 +426,8 @@ header.main-header {
 .nav-tabs-custom #middle-east-north-africa-results-tabs.nav-tabs li a,
 .nav-tabs-custom #north-america-results-tabs.nav-tabs li a,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs li a,
-.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li a{
+.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li a,
+.nav-tabs-custom #high-seas-results-tabs.nav-tabs li a{
   color: var(--main-color);
   padding: 25px;
   text-align: center;
@@ -436,7 +439,8 @@ header.main-header {
 .nav-tabs-custom #middle-east-north-africa-results-tabs.nav-tabs li:hover,
 .nav-tabs-custom #north-america-results-tabs.nav-tabs li:hover,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs li:hover,
-.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li:hover{
+.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li:hover,
+.nav-tabs-custom #high-seas-results-tabs.nav-tabs li:hover{
   color: var(--accent-color-2)
 }
       
@@ -446,7 +450,8 @@ header.main-header {
 .nav-tabs-custom #middle-east-north-africa-results-tabs.nav-tabs li.active:hover a,
 .nav-tabs-custom #north-america-results-tabs.nav-tabs li.active:hover a,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs li.active:hover a,
-.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li.active:hover a{
+.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li.active:hover a,
+.nav-tabs-custom #high-seas-results-tabs.nav-tabs li.active:hover a{
   color: var(--accent-color);
 }
       
@@ -456,7 +461,8 @@ header.main-header {
 .nav-tabs-custom #middle-east-north-africa-results-tabs.nav-tabs li.active,
 .nav-tabs-custom #north-america-results-tabs.nav-tabs li.active,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs li.active,
-.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li.active{
+.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li.active,
+.nav-tabs-custom #high-seas-results-tabs.nav-tabs li.active{
   border-bottom: 0px solid var(--accent-color);
   border-top: transparent;
   background: #ffffff;
@@ -468,7 +474,8 @@ header.main-header {
 .nav-tabs-custom #middle-east-north-africa-results-tabs.nav-tabs li.active a,
 .nav-tabs-custom #north-america-results-tabs.nav-tabs li.active a,
 .nav-tabs-custom #south-asia-results-tabs.nav-tabs li.active a,
-.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li.active a{
+.nav-tabs-custom #sub-saharan-africa-results-tabs.nav-tabs li.active a,
+.nav-tabs-custom #high-seas-results-tabs.nav-tabs li.active a{
   color: var(--accent-color);
   background: #ffffff;
   border-left-color: transparent;

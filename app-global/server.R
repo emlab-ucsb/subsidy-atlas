@@ -23,7 +23,8 @@ shinyServer(function(input, output, session) {
                 input$middle_east_north_africa_return_to_region,
                 input$north_america_return_to_region,
                 input$south_asia_return_to_region,
-                input$sub_saharan_africa_return_to_region), {
+                input$sub_saharan_africa_return_to_region,
+                input$high_seas_return_to_region), {
     updateTabItems(session, "tabs", "selectregion")
   })
   
@@ -51,6 +52,23 @@ shinyServer(function(input, output, session) {
                animation = TRUE)
   }, ignoreInit = T)
   
+  observeEvent(c(input$high_seas_info_summary), {
+                   
+                   shinyalert(title = "Summary",
+                              text = paste0("This tab provides a summary of distant water fishing activity on the high seas cooresponding to the selected FAO Major Fishing Area. Distant water fishing activity is aggregated by flag state. If nothing is visable, please select a high seas area using the map or widget in the left panel."),
+                              size = "l",
+                              closeOnEsc = TRUE,
+                              closeOnClickOutside = TRUE,
+                              html = TRUE,
+                              type = "",
+                              showConfirmButton = TRUE,
+                              showCancelButton = FALSE,
+                              confirmButtonText = "OK",
+                              confirmButtonCol = "#0d5ba2",
+                              timer = 0,
+                              animation = TRUE)
+                 }, ignoreInit = T)
+  
   # Info modal: Vessel origins ----------
   observeEvent(c(input$east_asia_pacific_info_vessel_origins,
                  input$europe_central_asia_info_vessel_origins,
@@ -58,10 +76,28 @@ shinyServer(function(input, output, session) {
                  input$middle_east_north_africa_info_vessel_origins,
                  input$north_america_info_vessel_origins,
                  input$south_asia_info_vessel_origins,
-                 input$sub_saharan_africa_info_vessel_origins), {
+                 input$sub_saharan_africa_info_vessel_origins,
+                 input$high_seas_info_vessel_origins), {
                    
                    shinyalert(title = "Vessel Origins",
                               text = paste0("This tab illustrates the flag state origins of distant water vessels fishing in the EEZ(s) of the selected coastal state. If no map is visible, please select a coastal state using the map or widget in the left panel. The fill scale can be changed based on the metric of effort selected below. Hover over each flag state to view more about distant water fishing activity by vessels flagged to that state in the selected EEZ(s)."),
+                              size = "l",
+                              closeOnEsc = TRUE,
+                              closeOnClickOutside = TRUE,
+                              html = TRUE,
+                              type = "",
+                              showConfirmButton = TRUE,
+                              showCancelButton = FALSE,
+                              confirmButtonText = "OK",
+                              confirmButtonCol = "#0d5ba2",
+                              timer = 0,
+                              animation = TRUE)
+                 }, ignoreInit = T)
+  
+  observeEvent(c(input$high_seas_info_vessel_origins), {
+                   
+                   shinyalert(title = "Vessel Origins",
+                              text = paste0("This tab illustrates the flag state origins of distant water vessels fishing on the high seas in the selected FAO Major Fishing Area. If no map is visible, please select a high seas area using the map or widget in the left panel. The fill scale can be changed based on the metric of effort selected below. Hover over each flag state to view more about distant water fishing activity by vessels flagged to that state in the selected high seas area."),
                               size = "l",
                               closeOnEsc = TRUE,
                               closeOnClickOutside = TRUE,
@@ -82,10 +118,28 @@ shinyServer(function(input, output, session) {
                  input$middle_east_north_africa_info_effort,
                  input$north_america_info_effort,
                  input$south_asia_info_effort,
-                 input$sub_saharan_africa_info_effort), {
+                 input$sub_saharan_africa_info_effort,
+                 input$high_seas_info_effort), {
                    
                    shinyalert(title = "Fishing Effort",
                               text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) in the EEZ(s) of the selected coastal state in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the engine power of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude.  If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
+                              size = "l",
+                              closeOnEsc = TRUE,
+                              closeOnClickOutside = TRUE,
+                              html = TRUE,
+                              type = "",
+                              showConfirmButton = TRUE,
+                              showCancelButton = FALSE,
+                              confirmButtonText = "OK",
+                              confirmButtonCol = "#0d5ba2",
+                              timer = 0,
+                              animation = TRUE)
+                 }, ignoreInit = T)
+  
+  observeEvent(c(input$high_seas_info_effort), {
+                   
+                   shinyalert(title = "Fishing Effort",
+                              text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) on the high seas in the selected FAO Major Fishing Area in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the engine power of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a high seas area using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
                               size = "l",
                               closeOnEsc = TRUE,
                               closeOnClickOutside = TRUE,
@@ -106,7 +160,8 @@ shinyServer(function(input, output, session) {
                  input$middle_east_north_africa_info_subsidies,
                  input$north_america_info_subsidies,
                  input$south_asia_info_subsidies,
-                 input$sub_saharan_africa_info_subsidies), {
+                 input$sub_saharan_africa_info_subsidies,
+                 input$high_seas_info_subsidies), {
                    
                    shinyalert(title = "Subsidy Intensity",
                               text = paste0("This tab illustrates the estimated magnitude of capacity-enhancing subsidies (in 2018 USD) supporting distant water fishing in the EEZ(s) of the selected coastal state. Subsidy intensity is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total subsidy intensity for distant water vessels from all flag states and the figure on the right shows subsidy intensity for distant water vessels from the selected flag state."),
@@ -123,6 +178,22 @@ shinyServer(function(input, output, session) {
                               animation = TRUE)
                  }, ignoreInit = T)
   
+  observeEvent(c(input$high_seas_info_subsidies), {
+                   
+                   shinyalert(title = "Subsidy Intensity",
+                              text = paste0("This tab illustrates the estimated magnitude of capacity-enhancing subsidies (in 2018 USD) supporting distant water fishing on the high seas in the selected FAO Major Fishing Area. Subsidy intensity is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a high seas area using the map or widget in the left panel. The figure on the left shows total subsidy intensity for distant water vessels from all flag states and the figure on the right shows subsidy intensity for distant water vessels from the selected flag state."),
+                              size = "l",
+                              closeOnEsc = TRUE,
+                              closeOnClickOutside = TRUE,
+                              html = TRUE,
+                              type = "",
+                              showConfirmButton = TRUE,
+                              showCancelButton = FALSE,
+                              confirmButtonText = "OK",
+                              confirmButtonCol = "#0d5ba2",
+                              timer = 0,
+                              animation = TRUE)
+                 }, ignoreInit = T)
   
   ### ------------------------------------------
   ### Introduction / Select a region -----------
@@ -156,6 +227,16 @@ shinyServer(function(input, output, session) {
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       
+      addPolygons(data = fao_region_360,
+                  fillColor = "#1783C3",
+                  fillOpacity = 0.2,
+                  color= "#1783C3",
+                  weight = 0,
+                  highlight = highlightOptions(fillOpacity = 0.5,
+                                               bringToFront = TRUE),
+                  label = fao_region_360$region,
+                  group = fao_region_360$region) %>%
+      
       addPolygons(data = regional_dat, 
                   fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
@@ -182,7 +263,8 @@ shinyServer(function(input, output, session) {
                              "Middle East & North Africa" = list("middle-east-north-africa"),
                              "North America" = list("north-america"),
                              "South Asia" = list("south-asia"),
-                             "Sub-Saharan Africa" = list("sub-saharan-africa"))
+                             "Sub-Saharan Africa" = list("sub-saharan-africa"),
+                             "High Seas" = list("high-seas"))
     
     updateTabItems(session, "tabs", tab_navigation[[1]])
     

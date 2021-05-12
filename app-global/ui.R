@@ -170,6 +170,12 @@ shinyUI(
                                          icon = NULL,
                                          selected = NULL),
                                 
+                                # Sub-Saharan Africa 
+                                menuItem("High Seas", 
+                                         tabName = "high-seas", 
+                                         icon = NULL,
+                                         selected = NULL),
+
                                 # Learn More
                                 menuItem("More Info, FAQs, and Contact", 
                                          tabName = "contact", 
@@ -226,14 +232,19 @@ shinyUI(
                NorthAmerica(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
-       # South Asisa
+       # South Asia
        tabItem(tabName = "south-asia",
                SouthAsia(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
-       # South Asisa
+       # Sub-Saharan Africa
        tabItem(tabName = "sub-saharan-africa",
                SubSaharanAfrica(vessel_origins_fill_choices, vessel_origins_fill_scale)
+       ),
+       
+       # High Seas
+       tabItem(tabName = "high-seas",
+               HighSeas(vessel_origins_fill_choices, vessel_origins_fill_scale)
        ),
        
        # FAQs and Contact

@@ -66,6 +66,12 @@ if(merge_EU){
   
 }
 
+# 6) High Seas Region Polygons - merged by area
+fao_area_360 <- st_read("./data/fao_high_seas_areas_neg360_360_centroids.gpkg")
+
+# 7) High Seas Region Polygon - merged by region
+fao_region_360 <- st_read("./data/high_seas_region_neg360_360.gpkg")
+
 ### Widget choices that are shared across all pages -----
 vessel_origins_fill_choices <- c("# of vessels" = "n_vessels", 
                                    "Total vessel capacity (kW)" = "tot_engine_power",
