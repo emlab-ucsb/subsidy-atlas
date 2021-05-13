@@ -23,17 +23,17 @@ StateInfo <- function(region_dat,
   ### Combine into country profile/summary of DW fishing
   info_out <- paste0(
     "<h4>", unique(eez_dat$eez_ter_name), "</h3>",
-    "Sovereign state: ", unique(eez_dat$eez_sov_name),
-    "<br>",
-    "Fisheries management agency: ", #fisheries_mgmt_agency,
-    "<br>",
-    "FAO profile: ", #country_profiles,
-    "<br>",
-    "Treaties and conventions: ", #treaties_conventions,
-    "<br>",
-    "Foreign access agreements: ", #foreign_access_agreements
-    "<br>",
-    "FAO Regional Fisheries Body Memberships: " #regional_body_memberships,
+    "Sovereign state: ", unique(eez_dat$eez_sov_name)
+    #"<br>",
+    # "Fisheries management agency: ", #fisheries_mgmt_agency,
+    # "<br>",
+    # "FAO profile: ", #country_profiles,
+    # "<br>",
+    # "Treaties and conventions: ", #treaties_conventions,
+    # "<br>",
+    # "Foreign access agreements: ", #foreign_access_agreements
+    # "<br>",
+    # "FAO Regional Fisheries Body Memberships: " #regional_body_memberships,
   ) %>%
     lapply(htmltools::HTML)
   
