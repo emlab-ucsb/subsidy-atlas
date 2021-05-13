@@ -1,17 +1,10 @@
 
 SummaryUI <- function(region_dat,
-                      summary_dat,
                       input_selected_eez){
   
   req(!is.null(input_selected_eez))
 
   if(input_selected_eez != "Select a coastal state..."){
-    
-    #browser()
-    
-    # Distant water fishing totals
-    # total_stats_eez <- summary_dat %>%
-    #   dplyr::filter(eez_ter_iso3 == input_selected_eez) %>% 
     
     total_stats_eez <- region_dat$connect %>%
       st_drop_geometry() %>%

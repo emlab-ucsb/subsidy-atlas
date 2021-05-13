@@ -376,7 +376,6 @@ shinyServer(function(input, output, session) {
     
     # Generate summary
     SummaryUI(region_dat = east_asia_pacific_rv,
-              summary_dat = eez_flag_state_summary,
               input_selected_eez = input$east_asia_pacific_eez_select)
     
   })
