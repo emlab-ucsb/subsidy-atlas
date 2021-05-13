@@ -2818,30 +2818,30 @@ shinyServer(function(input, output, session) {
 
   })
 
-  # ### UI output: Select flag state widget (effort) --------
-  # output$east_asia_pacific_effort_select_flag_state <- renderUI({
-  #   
-  #   # Require coastal state selection
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
-  #                         input_selected_eez = input$east_asia_pacific_eez_select,
-  #                         widget_id = "east_asia_pacific_effort_select_flag_state")
-  #   
-  # })
-  # 
-  # ### UI output: Select flag state widget (subsidies) --------
-  # output$east_asia_pacific_subsidies_select_flag_state <- renderUI({
-  #   
-  #   # Require coastal state selection
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
-  #                         input_selected_eez = input$east_asia_pacific_eez_select,
-  #                         widget_id = "east_asia_pacific_subsidies_select_flag_state")
-  #   
-  # })
-  # 
+  ### UI output: Select flag state widget (effort) --------
+  output$high_seas_effort_select_flag_state <- renderUI({
+
+    # Require coastal state selection
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    WidgetFlagStateSelect(region_dat = high_seas_rv,
+                          input_selected_eez = input$high_seas_eez_select,
+                          widget_id = "high_seas_effort_select_flag_state")
+
+  })
+
+  ### UI output: Select flag state widget (subsidies) --------
+  output$high_seas_subsidies_select_flag_state <- renderUI({
+
+    # Require coastal state selection
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    WidgetFlagStateSelect(region_dat = high_seas_rv,
+                          input_selected_eez = input$high_seas_eez_select,
+                          widget_id = "high_seas_subsidies_select_flag_state")
+
+  })
+
   ### Load Data -----------------------------------------------------
   observe({
 
@@ -2893,6 +2893,7 @@ shinyServer(function(input, output, session) {
   #   }
   # })
   # 
+  
   ### plotOutput: Effort plot (all flag states) ----------------
   output$high_seas_effort_map_all <- renderPlot({
 
@@ -2916,27 +2917,27 @@ shinyServer(function(input, output, session) {
 
   })
 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$east_asia_pacific_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       input$east_asia_pacific_effort_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
+  ### plotOutput: Effort plot (selected flag state) ----------------
+  output$high_seas_effort_map_selected <- renderPlot({
+
+    # Require coastal state selection & data
+    req(input$high_seas_eez_select != "Select a coastal state...",
+        nrow(high_seas_rv$eez_dat) > 0,
+        input$high_seas_effort_select_flag_state != "Select a flag state...")
+
+    out <- EEZPlot(region_dat = high_seas_rv,
+                   input_selected_eez = input$high_seas_eez_select,
+                   input_selected_flag_state = input$high_seas_effort_select_flag_state,
+                   input_hs = input$high_seas_effort_high_seas,
+                   type = "flag",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = fao_area_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+
+    out$plot
+
+  })
 
   ### plotOutput: Effort plot (legend) -------------------
   output$high_seas_effort_map_legend <- renderPlot({
@@ -2974,27 +2975,27 @@ shinyServer(function(input, output, session) {
 
   })
 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$east_asia_pacific_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       input$east_asia_pacific_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
+  ### plotOutput: Subsidies plot (selected flag state) ----------------
+  output$high_seas_subsidies_map_selected <- renderPlot({
+
+    # Require coastal state selection & data
+    req(input$high_seas_eez_select != "Select a coastal state...",
+        nrow(high_seas_rv$eez_dat) > 0,
+        input$high_seas_subsidies_select_flag_state != "Select a flag state...")
+
+    out <- EEZPlot(region_dat = high_seas_rv,
+                   input_selected_eez = input$high_seas_eez_select,
+                   input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
+                   input_hs = input$high_seas_subsidies_high_seas,
+                   type = "flag",
+                   plot_variable = "subs",
+                   eez_sf = fao_area_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+
+    out$plot
+
+  })
   
   ### plotOutput: Subsidies plot (legend) -------------------
   output$high_seas_subsidies_map_legend <- renderPlot({

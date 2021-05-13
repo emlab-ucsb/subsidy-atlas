@@ -143,6 +143,8 @@ EEZPlot <- function(region_dat,
 
     }
     
+    req(nrow(plot_totals) > 0)
+    
     ### Map with high seas on --------------------------------------------------------------
     
     # if(input_hs 

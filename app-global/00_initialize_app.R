@@ -73,8 +73,9 @@ fao_area_360 <- st_read("./data/fao_high_seas_areas_neg360_360_centroids.gpkg")
 fao_region_360 <- st_read("./data/high_seas_region_neg360_360.gpkg")
 
 # 8) FAO / Flag State Connectivity Lines
-fao_flag_state_connectivity <- st_read("./data/fao_flag_state_connectivity_lines.gpkg")
-
+fao_flag_state_connectivity <- st_read("./data/fao_flag_state_connectivity_lines.gpkg") %>%
+  mutate(admin = case_when(flag_iso3 == "TUV" ~ "Tuvalu",
+                           TRUE ~ admin))
 ### --------------------
 
 ### Widget choices that are shared across all pages -----
