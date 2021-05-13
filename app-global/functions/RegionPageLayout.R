@@ -258,7 +258,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_effort_map_all"),
-                                                                    height = "300px")
+                                                                    height = "400px")
 
                                                            ),
                                                            # Selected flag state
@@ -266,7 +266,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_effort_map_selected"),
-                                                                    height = "300px")
+                                                                    height = "400px")
 
 
                                                            )
@@ -315,7 +315,7 @@ RegionPageLayout <- function(region_name,
                                            # Title
                                            tagList(
                                              # Text
-                                             tags$b("Subsidy Intensity"),
+                                             tags$b("Subsidies"),
                                              # Info button
                                              tags$button(id = paste0(region_name, "_info_subsidies"),
                                                          class = "btn action-button info-button",
@@ -360,7 +360,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_subsidies_map_all"),
-                                                                    height = "300px")
+                                                                    height = "400px")
 
 
                                                            ),
@@ -369,7 +369,7 @@ RegionPageLayout <- function(region_name,
 
                                                                   plotOutput(
                                                                     paste0(region_name, "_subsidies_map_selected"),
-                                                                    height = "300px")
+                                                                    height = "400px")
 
                                                            )
                                                          ),

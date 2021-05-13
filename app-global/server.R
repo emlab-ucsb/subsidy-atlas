@@ -394,6 +394,21 @@ shinyServer(function(input, output, session) {
     
   })
   
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$east_asia_pacific_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$east_asia_pacific_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = east_asia_pacific_rv,
+                          input_selected_eez = input$east_asia_pacific_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+  
   ### DT output: Distant water summary (by flag) for selected state -------------
   output$east_asia_pacific_summary_dt <- renderDataTable({
     
@@ -568,7 +583,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
                    input_hs = input$east_asia_pacific_subsidies_high_seas,
                    type = "total",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -592,7 +607,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
                    input_hs = input$east_asia_pacific_subsidies_high_seas,
                    type = "flag",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -718,6 +733,21 @@ shinyServer(function(input, output, session) {
     SummaryUIFlag(region_name = "europe_central_asia")
     
   })
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$europe_central_asia_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$europe_central_asia_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = europe_central_asia_rv,
+                          input_selected_eez = input$europe_central_asia_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
   
   ### DT output: Distant water summary (by flag) for selected state -------------
   output$europe_central_asia_summary_dt <- renderDataTable({
@@ -893,7 +923,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
                    input_hs = input$europe_central_asia_subsidies_high_seas,
                    type = "total",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -917,7 +947,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
                    input_hs = input$europe_central_asia_subsidies_high_seas,
                    type = "flag",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -1044,6 +1074,21 @@ shinyServer(function(input, output, session) {
     SummaryUIFlag(region_name = "latin_america_caribbean")
     
   })
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$latin_america_caribbean_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$latin_america_caribbean_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = latin_america_caribbean_rv,
+                          input_selected_eez = input$latin_america_caribbean_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
   
   ### DT output: Distant water summary (by flag) for selected state -------------
   output$latin_america_caribbean_summary_dt <- renderDataTable({
@@ -1219,7 +1264,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
                    input_hs = input$latin_america_caribbean_subsidies_high_seas,
                    type = "total",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -1243,7 +1288,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
                    input_hs = input$latin_america_caribbean_subsidies_high_seas,
                    type = "flag",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -1370,6 +1415,21 @@ shinyServer(function(input, output, session) {
     SummaryUIFlag(region_name = "middle_east_north_africa")
     
   })
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$middle_east_north_africa_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$middle_east_north_africa_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = middle_east_north_africa_rv,
+                          input_selected_eez = input$middle_east_north_africa_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
   
   ### DT output: Distant water summary (by flag) for selected state -------------
   output$middle_east_north_africa_summary_dt <- renderDataTable({
@@ -1545,7 +1605,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
                    input_hs = input$middle_east_north_africa_subsidies_high_seas,
                    type = "total",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -1569,7 +1629,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
                    input_hs = input$middle_east_north_africa_subsidies_high_seas,
                    type = "flag",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -1696,6 +1756,21 @@ shinyServer(function(input, output, session) {
     SummaryUIFlag(region_name = "north_america")
     
   })
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$north_america_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$north_america_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = north_america_rv,
+                          input_selected_eez = input$north_america_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
   
   ### DT output: Distant water summary (by flag) for selected state -------------
   output$north_america_summary_dt <- renderDataTable({
@@ -1871,7 +1946,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$north_america_subsidies_select_flag_state,
                    input_hs = input$north_america_subsidies_high_seas,
                    type = "total",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -1895,7 +1970,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$north_america_subsidies_select_flag_state,
                    input_hs = input$north_america_subsidies_high_seas,
                    type = "flag",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -2022,6 +2097,21 @@ shinyServer(function(input, output, session) {
     SummaryUIFlag(region_name = "south_asia")
     
   })
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$south_asia_download_data <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$south_asia_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = south_asia_rv,
+                          input_selected_eez = input$south_asia_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
   
   ### DT output: Distant water summary (by flag) for selected state -------------
   output$south_asia_summary_dt <- renderDataTable({
@@ -2197,7 +2287,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
                    input_hs = input$south_asia_subsidies_high_seas,
                    type = "total",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -2221,7 +2311,7 @@ shinyServer(function(input, output, session) {
                    input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
                    input_hs = input$south_asia_subsidies_high_seas,
                    type = "flag",
-                   plot_variable = "bad_subs_per_fishing_KWh",
+                   plot_variable = "subs",
                    eez_sf = eez_ter_360,
                    land_sf = land_ter_360,
                    map_theme = eezmaptheme)
@@ -2347,6 +2437,21 @@ shinyServer(function(input, output, session) {
     SummaryUIFlag(region_name = "sub_saharan_africa")
     
   })
+  
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$sub_saharan_africa_download_data <- downloadHandler(
+    
+    filename = function() {
+      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$sub_saharan_africa_eez_select, ".csv")
+    },
+    content = function(file) {
+      
+      dat <- DownloadData(region_dat = sub_saharan_africa_rv,
+                          input_selected_eez = input$sub_saharan_africa_eez_select)
+      
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
   
   ### DT output: Distant water summary (by flag) for selected state -------------
   output$sub_saharan_africa_summary_dt <- renderDataTable({
@@ -2521,7 +2626,7 @@ shinyServer(function(input, output, session) {
             input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
             input_hs = input$sub_saharan_africa_subsidies_high_seas,
             type = "total",
-            plot_variable = "bad_subs_per_fishing_KWh",
+            plot_variable = "subs",
             eez_sf = eez_ter_360,
             land_sf = land_ter_360,
             map_theme = eezmaptheme)
@@ -2545,7 +2650,7 @@ shinyServer(function(input, output, session) {
             input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
             input_hs = input$sub_saharan_africa_subsidies_high_seas,
             type = "flag",
-            plot_variable = "bad_subs_per_fishing_KWh",
+            plot_variable = "subs",
             eez_sf = eez_ter_360,
             land_sf = land_ter_360,
             map_theme = eezmaptheme)
@@ -2579,10 +2684,9 @@ shinyServer(function(input, output, session) {
                                  connect = eez_flag_state_connectivity %>%
                                    dplyr::filter(region == "East Asia & Pacific"),
                                  eez_dat = NULL,
-                                 eez_bb = NULL
-                                 # hs_dat = NULL,
-                                 # hs_regions = NULL
-                                 )
+                                 eez_bb = NULL,
+                                 hs_dat = NULL,
+                                 hs_regions = NULL)
 
   ### UI output: Select coastal state widget --------
   output$high_seas_eez_select <- renderUI({
@@ -2673,6 +2777,21 @@ shinyServer(function(input, output, session) {
   #   
   # })
   # 
+  # ### Download buttons: DW fishing data (CSV) -----------------------
+  # output$sub_saharan_africa_download_data <- downloadHandler(
+  #   
+  #   filename = function() {
+  #     paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$sub_saharan_africa_eez_select, ".csv")
+  #   },
+  #   content = function(file) {
+  #     
+  #     dat <- DownloadData(region_dat = sub_saharan_africa_rv,
+  #                         input_selected_eez = input$sub_saharan_africa_eez_select)
+  #     
+  #     write.csv(dat, file, row.names = FALSE)
+  #   }
+  # )
+  # 
   # ### DT output: Distant water summary (by flag) for selected state -------------
   # output$east_asia_pacific_summary_dt <- renderDataTable({
   #   
@@ -2726,35 +2845,35 @@ shinyServer(function(input, output, session) {
   #   
   # })
   # 
-  # ### Load Data -----------------------------------------------------
-  # observe({
-  #   
-  #   # Require coastal state selection
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   # Load data
-  #   eez_dat <- LoadEEZData(input_selected_eez = input$east_asia_pacific_eez_select)
-  #   
-  #   # Save to reactive object
-  #   east_asia_pacific_rv$eez_dat <- eez_dat
-  #   
-  # })
-  # 
-  # ### Bounding box of selected coastal state ----------------
-  # observe({
-  #   
-  #   # Require coastal state selection
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   # Crop eez shapefile based on the region 
-  #   eez_region <- east_asia_pacific_rv$eezs %>%
-  #     st_crop(xmin = 0, ymin = -90, xmax = 360, ymax = 90) %>%
-  #     dplyr::filter(eez_ter_iso3 == input$east_asia_pacific_eez_select)
-  #   
-  #   east_asia_pacific_rv$eez_bb <- st_bbox(eez_region)
-  #   
-  # })
-  # 
+  ### Load Data -----------------------------------------------------
+  observe({
+
+    # Require FAO area selection
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    # Load data
+    hs_dat <- LoadHSData(input_selected_regions = input$high_seas_eez_select)
+
+    # Save to reactive object
+    high_seas_rv$eez_dat <- hs_dat
+
+  })
+
+  ### Bounding box of selected FAO area ----------------
+  observe({
+
+    # Require coastal state selection
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    # Crop FAO region shapefile based on the region
+    eez_region <- high_seas_rv$eezs %>%
+      st_crop(xmin = -180, ymin = -90, xmax = 180, ymax = 90) %>%
+      dplyr::filter(zone == input$high_seas_eez_select)
+
+    high_seas_rv$eez_bb <- st_bbox(eez_region)
+    
+  })
+
   # ### Load FAO Region Data -------------------------------------------------
   # observe({
   #   
@@ -2777,29 +2896,29 @@ shinyServer(function(input, output, session) {
   #   }
   # })
   # 
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$east_asia_pacific_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   east_asia_pacific_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
+  ### plotOutput: Effort plot (all flag states) ----------------
+  output$high_seas_effort_map_all <- renderPlot({
+
+    # Require coastal state selection & data
+    req(input$high_seas_eez_select != "Select a coastal state...",
+        nrow(high_seas_rv$eez_dat) > 0)
+
+    out <- EEZPlot(region_dat = high_seas_rv,
+                   input_selected_eez = input$high_seas_eez_select,
+                   input_selected_flag_state = input$high_seas_effort_select_flag_state,
+                   input_hs = input$high_seas_effort_high_seas,
+                   type = "total",
+                   plot_variable = "fishing_KWh",
+                   eez_sf = fao_area_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+
+    high_seas_rv$effort_legend <- out$legend
+
+    out$plot
+
+  })
+
   # ### plotOutput: Effort plot (selected flag state) ----------------
   # output$east_asia_pacific_effort_map_selected <- renderPlot({
   #   
@@ -2821,43 +2940,43 @@ shinyServer(function(input, output, session) {
   #   out$plot
   #   
   # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$east_asia_pacific_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       !is.null(east_asia_pacific_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(east_asia_pacific_rv$effort_legend)
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$east_asia_pacific_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "bad_subs_per_fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   east_asia_pacific_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
+
+  ### plotOutput: Effort plot (legend) -------------------
+  output$high_seas_effort_map_legend <- renderPlot({
+
+    # Require coastal state selection & data
+    req(input$high_seas_eez_select != "Select a coastal state...",
+        nrow(high_seas_rv$eez_dat) > 0,
+        !is.null(high_seas_rv$effort_legend))
+
+    # Plot legend
+    ggdraw(high_seas_rv$effort_legend)
+
+  })
+
+  ### plotOutput: Subsidies plot (all flag states) ----------------
+  output$high_seas_subsidies_map_all <- renderPlot({
+
+    # Require coastal state selection & data
+    req(input$high_seas_eez_select != "Select a coastal state...",
+        nrow(high_seas_rv$eez_dat) > 0)
+
+    out <- EEZPlot(region_dat = high_seas_rv,
+                   input_selected_eez = input$high_seas_eez_select,
+                   input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
+                   input_hs = input$high_seas_subsidies_high_seas,
+                   type = "total",
+                   plot_variable = "subs",
+                   eez_sf = fao_area_360,
+                   land_sf = land_ter_360,
+                   map_theme = eezmaptheme)
+
+    high_seas_rv$subsidy_legend <- out$legend
+
+    out$plot
+
+  })
+
   # ### plotOutput: Subsidies plot (selected flag state) ----------------
   # output$east_asia_pacific_subsidies_map_selected <- renderPlot({
   #   
@@ -2871,7 +2990,7 @@ shinyServer(function(input, output, session) {
   #                  input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
   #                  input_hs = input$east_asia_pacific_subsidies_high_seas,
   #                  type = "flag",
-  #                  plot_variable = "bad_subs_per_fishing_KWh",
+  #                  plot_variable = "subs",
   #                  eez_sf = eez_ter_360,
   #                  land_sf = land_ter_360,
   #                  map_theme = eezmaptheme)
@@ -2879,128 +2998,23 @@ shinyServer(function(input, output, session) {
   #   out$plot
   #   
   # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$east_asia_pacific_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       !is.null(east_asia_pacific_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(east_asia_pacific_rv$subsidy_legend)
-  #   
-  # })
+  
+  ### plotOutput: Subsidies plot (legend) -------------------
+  output$high_seas_subsidies_map_legend <- renderPlot({
+
+    # Require coastal state selection & data
+    req(input$high_seas_eez_select != "Select a coastal state...",
+        nrow(high_seas_rv$eez_dat) > 0,
+        !is.null(high_seas_rv$subsidy_legend))
+
+    # Plot legend
+    ggdraw(high_seas_rv$subsidy_legend)
+
+  })
   
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
-  
-  ### Download buttons: DW fishing data (CSV) -----------------------
-  output$east_asia_pacific_download_data <- downloadHandler(
-    
-    filename = function(){
-      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$east_asia_pacific_eez_select, ".csv")
-      },
-    content = function(file) {
-      
-      dat <- DownloadData(region_dat = east_asia_pacific_rv,
-                          input_selected_eez = input$east_asia_pacific_eez_select)
-      
-      write.csv(dat, file, row.names = FALSE)
-    }
-  )
-  
-  ### Download buttons: DW fishing data (CSV) -----------------------
-  output$europe_central_asia_download_data <- downloadHandler(
-    
-    filename = function(){
-      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$europe_central_asia_eez_select, ".csv")
-      },
-    content = function(file) {
-      
-      dat <- DownloadData(region_dat = europe_central_asia_rv,
-                          input_selected_eez = input$europe_central_asia_eez_select)
-      
-      write.csv(dat, file, row.names = FALSE)
-    }
-  )
-  
-  ### Download buttons: DW fishing data (CSV) -----------------------
-  output$latin_america_caribbean_download_data <- downloadHandler(
-    
-    filename = function(){
-      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$latin_america_caribbean_eez_select, ".csv")
-      },
-    content = function(file) {
-      
-      dat <- DownloadData(region_dat = latin_america_caribbean_rv,
-                          input_selected_eez = input$latin_america_caribbean_eez_select)
-      
-      write.csv(dat, file, row.names = FALSE)
-    }
-  )
-  
-  ### Download buttons: DW fishing data (CSV) -----------------------
-  output$middle_east_north_africa_download_data <- downloadHandler(
-    
-    filename = function(){
-      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$middle_east_north_africa_eez_select, ".csv")
-      },
-    content = function(file) {
-      
-      dat <- DownloadData(region_dat = middle_east_north_africa_rv,
-                          input_selected_eez = input$middle_east_north_africa_eez_select)
-      
-      write.csv(dat, file, row.names = FALSE)
-    }
-  )
-  
-  ### Download buttons: DW fishing data (CSV) -----------------------
-  output$north_america_download_data <- downloadHandler(
-    
-    filename = function(){
-      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$north_america_eez_select, ".csv")
-      },
-    content = function(file) {
-      
-      dat <- DownloadData(region_dat = north_america_rv,
-                          input_selected_eez = input$north_america_eez_select)
-      
-      write.csv(dat, file, row.names = FALSE)
-    }
-  )
-  
-  ### Download buttons: DW fishing data (CSV) -----------------------
-  output$south_asia_download_data <- downloadHandler(
-    
-    filename = function(){
-      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$south_asia_eez_select, ".csv")
-      },
-    content = function(file) {
-      
-      dat <- DownloadData(region_dat = south_asia_rv,
-                          input_selected_eez = input$south_asia_eez_select)
-      
-      write.csv(dat, file, row.names = FALSE)
-    }
-  )
-  
-  ### Download buttons: DW fishing data (CSV) -----------------------
-  output$sub_saharan_africa_download_data <- downloadHandler(
-    
-    filename = function() {
-      paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$sub_saharan_africa_eez_select, ".csv")
-    },
-    content = function(file) {
-      
-      dat <- DownloadData(region_dat = sub_saharan_africa_rv,
-                          input_selected_eez = input$sub_saharan_africa_eez_select)
-      
-      write.csv(dat, file, row.names = FALSE)
-    }
-  )
 
 }) # /close server
 

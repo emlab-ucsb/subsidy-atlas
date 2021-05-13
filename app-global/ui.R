@@ -248,7 +248,6 @@ shinyUI(
        ),
        
        # FAQs and Contact
-       # South Asisa
        tabItem(tabName = "contact",
                Contact()
        )
