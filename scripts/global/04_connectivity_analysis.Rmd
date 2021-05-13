@@ -33,8 +33,6 @@ vessel_list_dw_path <- here::here("results", "global", "03-distant-water-fishing
 # Path to high seas vessel list 
 vessel_list_hs_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_high_seas.csv")
 
-# Path to updated EEZ characteristics
-eez_attrib_path <- here::here("results", "global", "00a-eez-polygon-wrangling", "eez_attributes_expanded.csv")
 
 # Path to eez file
 eez_centroid_path <- here::here("results", "global", "00a-eez-polygon-wrangling", "eez_centroid_coordinates.csv")
@@ -52,58 +50,49 @@ results_dir <- here::here("results/global/04-connectivity-analysis/")
 ### Also save to app data directory
 app_dir <- here::here("app-global/data/")
   if (dir.exists(app_dir) == F) { dir.create(app_dir, recursive = T) }
+
+### Also save to app data directory
+app_www_dir <- here::here("app-global/www/")
+  if (dir.exists(app_www_dir) == F) { dir.create(app_www_dir, recursive = T) }
+```
+
+# Setup
+
+```{r}
+# Load vessel list
+vessel_list_dw_raw <- read.csv(vessel_list_dw_path, stringsAsFactors = F) 
+
+# List of 2018 EU countries
+eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+```
+
+We first need to duplicate entries for areas with multiple administering territories so the stats are counted for each. 
+
+```{r}
+vessel_list_dw_expanded <- vessel_list_dw_raw %>%
+  rowwise() %>%
+  mutate(eez_ter_iso3_all = list(c(eez_ter1_iso3, eez_ter2_iso3, eez_ter3_iso3)),
+         eez_sov_iso3_all = list(c(eez_sov1_iso3, eez_sov2_iso3, eez_sov3_iso3))) %>%
+  dplyr::select(-eez_ter1_iso3, -eez_ter2_iso3, -eez_ter3_iso3, -eez_sov1_iso3, -eez_sov2_iso3, -eez_sov3_iso3) %>%
+  unnest(cols = c("eez_ter_iso3_all", "eez_sov_iso3_all")) %>%
+  mutate(eez_ter_iso3 = ifelse(!is.na(eez_ter_iso3_all), eez_ter_iso3_all, eez_sov_iso3_all)) %>%
+  rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
+  dplyr::select(-eez_ter_iso3_all) %>%
+  dplyr::filter(!is.na(eez_ter_iso3))
 ```
 
 # Flag state / EEZ summaries (Distant Water Fishing)
 
 Since our vessel list of distant water fishing (and subsidies) is currently at the individual vessel level, we first want to aggregate this by flag state/coastal state. We also want to output summary tables here ranking distant water fishing activity by flag state and EEZ. 
 
-```{r}
-# Load vessel list
-vessel_list_dw_raw <- read.csv(vessel_list_dw_path, stringsAsFactors = F) 
-
-# Load updated eez attributes
-eez_attributes <- read_csv(eez_attrib_path)
-
-# Extract eez_ids and cooresponding ter and sov iso3 codes
-eez_attrib_expand <- eez_attributes %>%
-  distinct(mrgid, iso_sov, iso_ter) %>%
-  rename(eez_id = mrgid)
-```
+This takes a couple of forms: 
+- Aggregate by EEZ ID and flag state (used for connectivity plots so we can see exactly which eez areas flag states are fishing)
+- Aggregate by coastal state and flag state (used for summary table for all EEZ areas cooresponding to selected coastal state)
 
 ```{r}
-# Let's duplicate entries for EEZs with multiple administering territories (old method)
-# vessel_list_dw_expanded <- vessel_list_dw_raw %>%
-#   rowwise() %>%
-#   mutate(eez_ter_iso3_all = list(c(eez_territory1_iso3, eez_territory2_iso3, eez_territory3_iso3)),
-#          eez_sov_iso3_all = list(c(eez_sovereign1_iso3, eez_sovereign2_iso3, eez_sovereign3_iso3))) %>%
-#   dplyr::select(-eez_territory1_iso3, -eez_territory2_iso3, -eez_territory3_iso3, -eez_sovereign1_iso3, -eez_sovereign2_iso3, -eez_sovereign3_iso3) %>%
-#   unnest(cols = c("eez_ter_iso3_all", "eez_sov_iso3_all")) %>%
-#   mutate(eez_ter_iso3 = ifelse(!is.na(eez_ter_iso3_all), eez_ter_iso3_all, eez_sov_iso3_all)) %>%
-#   rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
-#   dplyr::select(-eez_ter_iso3_all) %>%
-#   dplyr::filter(!is.na(eez_ter_iso3))
-
-# Let's duplicate entries for EEZs with multiple administering territories (new method)
-vessel_list_dw_expanded <- vessel_list_dw_raw %>%
-   dplyr::select(-eez_territory1_iso3, -eez_territory2_iso3, -eez_territory3_iso3, -eez_sovereign1_iso3, -eez_sovereign2_iso3, -eez_sovereign3_iso3) %>%
-  mutate(eez_id = case_when(eez_id == 8344 ~ as.integer(62589), # updating code for Chagos
-                            TRUE ~ eez_id)) %>%
-  left_join(eez_attrib_expand, by = "eez_id") %>%
-  rename(eez_ter_iso3 = iso_ter,
-         eez_sov_iso3 = iso_sov) %>%
-  dplyr::filter(!is.na(eez_ter_iso3)) # removes 3 entries
-
-eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
-
-# Now calculate summaries for each coastal territory and expand so there are duplicate entries for multiple non-continuous EEZs
-flag_eez_summary <- vessel_list_dw_expanded %>%
-  rename(flag_is_EU = is_EU) %>%
-  mutate(eez_is_EU = case_when(eez_ter_iso3 %in% eu_countries ~ T,
-                               TRUE ~ F),
-         flag_is_EU = case_when(!is.na(flag_is_EU) ~ flag_is_EU,
-                                TRUE ~ F)) %>%
-  group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
+# Now calculate summaries for each EEZ area - these will be used for the connectivity plots
+flag_eez_id_summary <- vessel_list_dw_expanded %>%
+  group_by(eez_id, eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -113,19 +102,12 @@ flag_eez_summary <- vessel_list_dw_expanded %>%
             fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
-            ugly_subs = sum(ugly_subs, na.rm = T),
-            eez_id = list(c(unique(eez_id)))) %>%
+            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
   ungroup() %>%
-  unnest(cols = eez_id) %>%
-  arrange(eez_ter_iso3, flag_iso3)
+  arrange(eez_ter_iso3, eez_id, flag_iso3)
 
 # Create an aggregated entry for the EU EEZ as a whole
-eu_summary <- vessel_list_dw_expanded %>%
-  rename(flag_is_EU = is_EU) %>%
-  mutate(eez_is_EU = case_when(eez_ter_iso3 %in% eu_countries ~ T,
-                               TRUE ~ F),
-         flag_is_EU = case_when(!is.na(flag_is_EU) ~ flag_is_EU,
-                                TRUE ~ F)) %>%
+eu_eez_id_summary <- vessel_list_dw_expanded %>%
   dplyr::filter(eez_is_EU) %>%
   mutate(eez_ter_iso3 = "EU") %>%
   group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
@@ -144,17 +126,17 @@ eu_summary <- vessel_list_dw_expanded %>%
   mutate(eez_id = 9999)
 
 # Join back together
-flag_eez_summary <- flag_eez_summary %>%
-  bind_rows(eu_summary)
+flag_eez_id_summary <- flag_eez_id_summary %>%
+  bind_rows(eu_eez_id_summary)
+
+write_csv(flag_eez_id_summary, paste0(results_dir, "flag_eez_id_summary.csv"))
+write_csv(flag_eez_id_summary, paste0(app_dir, "flag_eez_id_summary.csv"))
 ```
 
-Now let's create an EEZ summary version...
-
 ```{r}
-eez_summary <- vessel_list_dw_expanded %>%
-  mutate(eez_is_EU = case_when(eez_ter_iso3 %in% eu_countries ~ T,
-                               TRUE ~ F)) %>%
-  group_by(eez_ter_iso3, eez_is_EU) %>%
+# Now we do the same by coastal state... slightly different - these will be used for the summary tables.  
+flag_eez_ter_summary <- vessel_list_dw_expanded %>%
+  group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -165,16 +147,15 @@ eez_summary <- vessel_list_dw_expanded %>%
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
             ugly_subs = sum(ugly_subs, na.rm = T),
-            eez_id = list(unique(eez_id))) %>%
+            eez_id_all = paste0(unique(eez_id), collapse = ",")) %>%
   ungroup() %>%
-  unnest(cols = eez_id)
+  arrange(eez_ter_iso3, flag_iso3)
 
-eu_eez_summary <- vessel_list_dw_expanded %>%
-  mutate(eez_is_EU = case_when(eez_ter_iso3 %in% eu_countries ~ T,
-                               TRUE ~ F)) %>%
+# Create an aggregated entry for the EU EEZ as a whole
+eu_eez_ter_summary <- vessel_list_dw_expanded %>%
   dplyr::filter(eez_is_EU) %>%
   mutate(eez_ter_iso3 = "EU") %>%
-  group_by(eez_ter_iso3, eez_is_EU) %>%
+  group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -186,24 +167,64 @@ eu_eez_summary <- vessel_list_dw_expanded %>%
             bad_subs = sum(bad_subs, na.rm = T),
             ugly_subs = sum(ugly_subs, na.rm = T)) %>%
   ungroup() %>%
-  mutate(eez_id = 9999)
+  arrange(eez_ter_iso3, flag_iso3) %>%
+  mutate(eez_id_all = "9999")
+
+# Join back together
+flag_eez_ter_summary <- flag_eez_ter_summary %>%
+  bind_rows(eu_eez_ter_summary)
+
+write_csv(flag_eez_ter_summary, paste0(results_dir, "flag_eez_ter_summary.csv"))
+write_csv(flag_eez_ter_summary, paste0(app_dir, "flag_eez_ter_summary.csv"))
+```
+
+Now let's create a pretty summary version by EEZ ID that will be available for download... 
+
+```{r}
+eez_summary <- vessel_list_dw_expanded %>%
+  group_by(geoname, eez_id) %>%
+  summarize(n_vessels = n_distinct(ssvid),
+            mean_length = mean(length_m, na.rm = T),
+            mean_tonnage = mean(tonnage_gt, na.rm = T),
+            tot_tonnage = sum(tonnage_gt, na.rm = T),
+            mean_engine_power = mean(engine_power_kw, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T),
+            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
+            bad_subs = sum(bad_subs, na.rm = T),
+            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
+  ungroup()
+
+eu_eez_summary <- vessel_list_dw_expanded %>%
+  dplyr::filter(eez_is_EU) %>%
+  mutate(geoname = "European Union Exclusive Economic Zone",
+         eez_id = 9999) %>%
+  group_by(geoname, eez_id) %>%
+  summarize(n_vessels = n_distinct(ssvid),
+            mean_length = mean(length_m, na.rm = T),
+            mean_tonnage = mean(tonnage_gt, na.rm = T),
+            tot_tonnage = sum(tonnage_gt, na.rm = T),
+            mean_engine_power = mean(engine_power_kw, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T),
+            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
+            bad_subs = sum(bad_subs, na.rm = T),
+            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
+  ungroup()
 
 eez_summary <- eez_summary %>%
   bind_rows(eu_eez_summary) %>%
   arrange(desc(fishing_hours))
 
 write_csv(eez_summary, paste0(results_dir, "dw_activity_summary_by_eez.csv"))
-write_csv(eez_summary, paste0(app_dir, "dw_activity_summary_by_eez.csv"))
+write_csv(eez_summary, paste0(app_www_dir, "dw_activity_summary_by_eez.csv"))
 ```
 
-And then the same thing by flag state... 
+And then a pretty summary version by flag state for EEZ distant water fishing that will be available for download...
 
 ```{r}
 flag_state_summary <- vessel_list_dw_expanded %>%
-  rename(flag_is_EU = is_EU) %>%
-  mutate(flag_is_EU = case_when(!is.na(flag_is_EU) ~ flag_is_EU,
-                                TRUE ~ F)) %>%
-  group_by(flag_iso3, flag_is_EU) %>%
+  group_by(flag_iso3) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -217,12 +238,9 @@ flag_state_summary <- vessel_list_dw_expanded %>%
   ungroup() 
 
 flag_state_eu_summary <- vessel_list_dw_expanded %>%
-  rename(flag_is_EU = is_EU) %>%
-  mutate(flag_is_EU = case_when(!is.na(flag_is_EU) ~ flag_is_EU,
-                                TRUE ~ F)) %>%
   dplyr::filter(flag_is_EU) %>%
   mutate(flag_iso3 = "EU") %>%
-  group_by(flag_iso3, flag_is_EU) %>%
+  group_by(flag_iso3) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -239,25 +257,24 @@ flag_state_summary <- flag_state_summary %>%
   bind_rows(flag_state_eu_summary) %>%
   arrange(desc(fishing_hours))
 
+flag_state_summary$flag_iso3[is.na(flag_state_summary$flag_iso3)] <- "Unknown"
+
 write_csv(flag_state_summary, paste0(results_dir, "dw_activity_summary_by_flag_state.csv"))
-write_csv(flag_state_summary, paste0(app_dir, "dw_activity_summary_by_flag_state.csv"))
+write_csv(flag_state_summary, paste0(app_www_dir, "dw_activity_summary_by_flag_state.csv"))
 ```
 
 # Flag state / FAO Region Summaries (Distant Water Fishing)
 
-Let's now do the same thing for our high seas data 
+We now repeat the process for our high seas data, but this is more straightforward because we're aggregating by FAO area and there are no administering territories to deal with.  
 
 ```{r}
 # Load vessel list
 vessel_list_hs_raw <- read.csv(vessel_list_hs_path, stringsAsFactors = F) 
-
 ```
 
 ```{r}
-flag_fao_summary <- vessel_list_hs_raw %>%
-  rename(flag_is_EU = is_EU) %>%
-  mutate(flag_is_EU = case_when(!is.na(flag_is_EU) ~ flag_is_EU,
-                                TRUE ~ F)) %>%
+# Get fishing activity by flag for each high seas FAO region
+flag_fao_hs_summary <- vessel_list_hs_raw %>%
   group_by(fao_region, flag_iso3, flag_is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
@@ -268,16 +285,15 @@ flag_fao_summary <- vessel_list_hs_raw %>%
             fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
-            ugly_subs = sum(ugly_subs, na.rm = T),
-            eez_id = list(c(unique(eez_id)))) %>%
+            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
   ungroup() %>%
-  unnest(cols = eez_id) %>%
   arrange(fao_region, flag_iso3)
 
-
+write_csv(flag_fao_hs_summary, paste0(results_dir, "flag_fao_hs_summary.csv"))
+write_csv(flag_fao_hs_summary, paste0(app_dir, "flag_fao_hs_summary.csv"))
 ```
 
-Now let's create a region summary version...
+Now let's create a pretty summary version by high seas FAO area that will be available for download... 
 
 ```{r}
 fao_summary <- vessel_list_hs_raw %>%
@@ -291,23 +307,19 @@ fao_summary <- vessel_list_hs_raw %>%
             fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
-            ugly_subs = sum(ugly_subs, na.rm = T),
-            eez_id = list(unique(eez_id))) %>%
+            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
   ungroup() %>%
-  unnest(cols = eez_id)
+  arrange(desc(fishing_hours))
 
 write_csv(fao_summary, paste0(results_dir, "hs_activity_summary_by_area.csv"))
-write_csv(fao_summary, paste0(app_dir, "hs_activity_summary_by_area.csv"))
+write_csv(fao_summary, paste0(app_www_dir, "hs_activity_summary_by_area.csv"))
 ```
 
-And finally the same thing for flag states fishing on the high seas...
+And finally a pretty summary version by flag state for high seas distant water fishing that will be available for download...
 
 ```{r}
 hs_flag_state_summary <- vessel_list_hs_raw %>%
-  rename(flag_is_EU = is_EU) %>%
-  mutate(flag_is_EU = case_when(!is.na(flag_is_EU) ~ flag_is_EU,
-                                TRUE ~ F)) %>%
-  group_by(flag_iso3, flag_is_EU) %>%
+  group_by(flag_iso3) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -318,15 +330,12 @@ hs_flag_state_summary <- vessel_list_hs_raw %>%
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
             ugly_subs = sum(ugly_subs, na.rm = T)) %>%
-  ungroup() 
+  ungroup()
 
 hs_flag_state_eu_summary <- vessel_list_hs_raw %>%
-  rename(flag_is_EU = is_EU) %>%
-  mutate(flag_is_EU = case_when(!is.na(flag_is_EU) ~ flag_is_EU,
-                                TRUE ~ F)) %>%
   dplyr::filter(flag_is_EU) %>%
   mutate(flag_iso3 = "EU") %>%
-  group_by(flag_iso3, flag_is_EU) %>%
+  group_by(flag_iso3) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -343,18 +352,26 @@ hs_flag_state_summary <- hs_flag_state_summary %>%
   bind_rows(hs_flag_state_eu_summary) %>%
   arrange(desc(fishing_hours))
 
+hs_flag_state_summary$flag_iso3[is.na(hs_flag_state_summary$flag_iso3)] <- "Unknown"
+
 write_csv(hs_flag_state_summary, paste0(results_dir, "hs_activity_summary_by_flag_state.csv"))
-write_csv(hs_flag_state_summary, paste0(app_dir, "hs_activity_summary_by_flag_state.csv"))
+write_csv(hs_flag_state_summary, paste0(app_www_dir, "hs_activity_summary_by_flag_state.csv"))
 ```
 
 # Connectivity Plots (Distant Water Fishing)
 
-## Add centroids to our EEZ/flag state distant water summary
+## Add centroids to our EEZ id/flag state distant water summary
 
 We first need to load in our land and EEZ centroids so we can start matching them up. 
 
 ```{r}
-land_centroids <- read_csv(land_centroid_path)
+land_centroids <- read_csv(land_centroid_path) 
+
+land_centroids_fix <- land_centroids %>%
+  group_by(region, admin_iso3) %>%
+  summarize(flag_lon = mean(flag_lon, na.rm = T),
+            flag_lat = mean(flag_lat, na.rm = T)) %>%
+  ungroup()
 
 eez_centroids <- read_csv(eez_centroid_path) %>%
   rename(eez_id = mrgid)
@@ -379,10 +396,10 @@ eez_centroids <- eez_centroids %>%
 Then we join them together.
 
 ```{r}
-flag_eez_summary_centroids <- flag_eez_summary %>%
+flag_eez_summary_centroids <- flag_eez_id_summary %>%
   left_join(eez_centroids, by = c("eez_id", "eez_ter_iso3")) %>%
   dplyr::filter(!is.na(eez_lon)) %>% # remove entries for outdated EEZ codes 
-  left_join(land_centroids, by = c("region", "flag_iso3" = "admin_iso3"))
+  left_join(land_centroids_fix, by = c("region", "flag_iso3" = "admin_iso3"))
 
 # Manually correct for Tuvalu - for some reason it's not in the land file
 flag_eez_summary_centroids$flag_lon[flag_eez_summary_centroids$flag_iso3 == "TUV"] <- 177.6493
@@ -422,7 +439,9 @@ test_plot_east_asia_pacific <- ggplot()+
   scale_y_continuous(expand = c(0,0))
 
 test_plot_east_asia_pacific
+
 ```
+
 ## Draw Connectivity Lines (All Other Regions)
 
 ```{r}
@@ -454,7 +473,9 @@ test_plot_all_others <- ggplot()+
   scale_y_continuous(expand = c(0,0))
 
 test_plot_all_others
+
 ```
+
 We then join them together and save. 
 
 ```{r}
@@ -469,6 +490,65 @@ st_write(eez_mapping_wlines, paste0(app_dir, "eez_flag_state_connectivity_lines.
 
 We now need to repeat the process for our high seas regions, defined by the portions of the FAO statistical areas that exist outside EEZs.
 
+## Add centroids to our FAO region/flag state distant water summary
 
+We first need to load in our FAO region centroids so we can start matching them up. 
 
+```{r}
+fao_centroids <- read_csv(fao_centroid_path) 
+```
+
+Then we match them up
+
+```{r}
+flag_fao_hs_summary_centroids <- flag_fao_hs_summary %>%
+  left_join(fao_centroids, by = c("fao_region" = "zone")) %>%
+  dplyr::filter(!is.na(fao_lon)) %>% # removes 1 entry for a russian vessel fishing in the MED
+  left_join(land_centroids_fix %>% dplyr::filter(region == "Europe & Central Asia") %>% dplyr::select(-region), by = c("flag_iso3" = "admin_iso3"))
+
+# Manually correct for Tuvalu - for some reason it's not in the land file
+flag_fao_hs_summary_centroids$flag_lon[flag_fao_hs_summary_centroids$flag_iso3 == "TUV"] <- 177.6493
+flag_fao_hs_summary_centroids$flag_lat[flag_fao_hs_summary_centroids$flag_iso3 == "TUV"] <- -7.1095
+
+```
+
+## Draw Connectivity Lines (High Seas)
+
+```{r}
+# Europe & Central Asia should be straightforward
+fao_mapping_wlines <- flag_fao_hs_summary_centroids %>%
+  ungroup() %>%
+  dplyr::filter(!is.na(flag_lon)) %>%
+  dplyr::filter(region == "High Seas") %>%
+  select(flag_lon, flag_lat, fao_lon, fao_lat) %>% 
+  purrr::transpose() %>% 
+  purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
+  purrr::map(st_linestring) %>%
+  st_sfc(crs = 4326) %>%
+  st_sf(geometry = .) %>% 
+  bind_cols(flag_fao_hs_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region == "High Seas")) %>%
+  select(everything(), geometry) %>% 
+  st_segmentize(units::set_units(100,km)) %>% 
+  st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
+  sf::st_sf(crs = 4326) 
+
+test_plot_fao <- ggplot()+
+  # geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.1)+
+  # geom_sf(data = land_sf, fill = "grey2", color = "grey40", size = 0.1)+
+  # geom_sf(data = land_sf %>% dplyr::filter(admin_iso3 %in% test_dat_2$flag_iso3), fill = "darkmagenta", color = "grey40", size = 0.1) + # highlighted flag state (magenta, grey border lines)
+  # geom_sf(data = eez_sf %>% dplyr::filter(eez_id %in% test_dat_2$eez_id), fill = "slateblue", alpha = 0.5, color = NA, size = 0.1) + # highlighted EEZs (slate blue)
+  geom_sf(data = fao_mapping_wlines, col = "darkgoldenrod", size = 0.25) +
+  coord_sf(xlim = c(-180,180), ylim = c(-90,90))+
+  scale_x_continuous(expand = c(0,0))+
+  scale_y_continuous(expand = c(0,0))
+
+test_plot_fao
+
+```
  
+ We then save. 
+
+```{r}
+st_write(fao_mapping_wlines, paste0(results_dir, "fao_flag_state_connectivity_lines.gpkg"), delete_layer = T)
+st_write(fao_mapping_wlines, paste0(app_dir, "fao_flag_state_connectivity_lines.gpkg"), delete_layer = T)
+```
