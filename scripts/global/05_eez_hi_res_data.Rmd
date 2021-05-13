@@ -256,14 +256,17 @@ for(i in 1:length(eez_ter_to_pull)){
 ## Pull Data (FAO Level for High Seas)
 
 ```{r}
-# Get all corresponding FAO regions for each EEZ
-fao_by_eez_id <- vessel_list_expanded %>%
-  distinct(eez_ter_iso3, eez_id, fao_region) %>%
-  arrange(eez_ter_iso3, eez_id)
+# Load high seas vessel list
+vessel_list_hs <- read.csv(vessel_list_hs_path, stringsAsFactors = F)
 
-# Save 
-  write_csv(fao_by_eez_id, paste0(results_dir, "fao_regions_by_eez_ter_id.csv"))
-  write_csv(fao_by_eez_id, paste0(app_dir, "fao_regions_by_eez_ter_id.csv"))
+# Get all corresponding FAO regions for each EEZ
+fao_by_eez_id <- vessel_list_hs %>%
+  distinct(eez_id, fao_region) %>%
+  arrange(eez_id)
+
+# # Save 
+#   write_csv(fao_by_eez_id, paste0(results_dir, "fao_regions_by_eez_ter_id.csv"))
+#   write_csv(fao_by_eez_id, paste0(app_dir, "fao_regions_by_eez_ter_id.csv"))
   
 ```
 

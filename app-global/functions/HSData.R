@@ -7,7 +7,8 @@ LoadHSData <- function(input_selected_regions){
   hs_codes <- unique(str_replace(all_data_files, "\\_.*", ""))
   matching_files <- all_data_files[hs_codes %in% input_selected_regions]
   
-  out <- map_df(matching_files, function(x){read_csv(paste0("./data/region-effort-subs/", x))})
+  out <- map_df(matching_files, function(x){read.csv(paste0("./data/region-effort-subs/", x), stringsAsFactors = F)}) %>%
+    dplyr::filter(!is.na(flag_iso3))
   
   out
   
