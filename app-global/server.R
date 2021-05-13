@@ -374,11 +374,9 @@ shinyServer(function(input, output, session) {
   ### UI output: Distant water summary for selected state -------------
   output$east_asia_pacific_summary_ui <- renderUI({
     
-    # # Require coastal state selection
-    # req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-    
     # Generate summary
     SummaryUI(region_dat = east_asia_pacific_rv,
+              summary_dat = eez_flag_state_summary,
               input_selected_eez = input$east_asia_pacific_eez_select)
     
   })

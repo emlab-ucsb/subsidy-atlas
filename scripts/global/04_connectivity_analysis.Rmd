@@ -33,7 +33,6 @@ vessel_list_dw_path <- here::here("results", "global", "03-distant-water-fishing
 # Path to high seas vessel list 
 vessel_list_hs_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_high_seas.csv")
 
-
 # Path to eez file
 eez_centroid_path <- here::here("results", "global", "00a-eez-polygon-wrangling", "eez_centroid_coordinates.csv")
 
@@ -85,14 +84,10 @@ vessel_list_dw_expanded <- vessel_list_dw_raw %>%
 
 Since our vessel list of distant water fishing (and subsidies) is currently at the individual vessel level, we first want to aggregate this by flag state/coastal state. We also want to output summary tables here ranking distant water fishing activity by flag state and EEZ. 
 
-This takes a couple of forms: 
-- Aggregate by EEZ ID and flag state (used for connectivity plots so we can see exactly which eez areas flag states are fishing)
-- Aggregate by coastal state and flag state (used for summary table for all EEZ areas cooresponding to selected coastal state)
-
 ```{r}
-# Now calculate summaries for each EEZ area - these will be used for the connectivity plots
+# Now calculate summaries for each EEZ - these will be used for the connectivity plots. 
 flag_eez_id_summary <- vessel_list_dw_expanded %>%
-  group_by(eez_id, eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
+  group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
@@ -102,8 +97,10 @@ flag_eez_id_summary <- vessel_list_dw_expanded %>%
             fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
-            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
+            ugly_subs = sum(ugly_subs, na.rm = T),
+            eez_id = list(unique(eez_id))) %>%
   ungroup() %>%
+  unnest(eez_id) %>%
   arrange(eez_ter_iso3, eez_id, flag_iso3)
 
 # Create an aggregated entry for the EU EEZ as a whole
