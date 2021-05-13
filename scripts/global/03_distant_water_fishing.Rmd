@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # General
 library(knitr) 
 library(countrycode) # country name matching
+library(bigrquery) # access Bigquery from R
 library(janitor)
 library(tidyverse)
 
@@ -35,14 +36,57 @@ results_dir <- here::here("results/global/03-distant-water-fishing/")
 
 This script extracts defines and extracts distant water fishing activity to pull from the global vessel list previously created. 
 
+```{r}
+# Load vessel list
+vessel_list_raw <- read.csv(vessel_list_path, stringsAsFactors = F) 
+
+# Manually correct one EEZ code
+vessel_list_raw$eez_id[vessel_list_raw$eez_id == 8344] <- as.integer(62589) # Updated code for Chagos
+```
+
 # Reassign EEZ chracteristics
 
 We made quite a few manual corrections to the attributes of different EEZ areas. As these are not reflected in the GFW data, we need to reassign these characteristics before identifying distant water fishing. 
 
 ```{r}
-# Load vessel list
-vessel_list_raw <- read.csv(vessel_list_path, stringsAsFactors = F) 
+# Load updated EEZ attributes
+load(here::here("results", "global", "00a-eez-polygon-wrangling", "eez_attributes_flat.rda"))
+
+# Modify our attributes table so it's back in roughly the original format used by GFW
+eez_attrib_clean <- eez_attrib_flat %>%
+  distinct(mrgid, pol_type, geoname, iso_sov, iso_ter) %>%
+  rename(eez_id = mrgid) %>%
+  unnest_wider(iso_sov) %>%
+  rename(iso_sov1 = `...1`,
+         iso_sov2 = `...2`,
+         iso_sov3 = `...3`) %>%
+  unnest_wider(iso_ter) %>%
+  rename(iso_ter1 = `...1`,
+         iso_ter2 = `...2`,
+         iso_ter3 = `...3`)
+
+# Apply to vessel list 
+vessel_list_update <- vessel_list_raw %>%
+  dplyr::select(-contains("eez_territory"), -contains("eez_sovereign"), -is_EU, -is_dependency) %>%
+  left_join(eez_attrib_clean, by = c("eez_id")) %>%
+  dplyr::filter(eez_id != 8399) # removes 3 entries corresponding to eez_id = 8399
+
 ```
+
+# Identify EU flags and EEZx
+
+```{r}
+# List of 2018 EU countries
+eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL", "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE", "GBR")
+
+# Apply to vessel list
+vessel_list_update <- vessel_list_update %>%
+  mutate(flag_is_EU = case_when(flag_iso3 %in% eu_countries ~ T,
+                                TRUE ~ F),
+         eez_is_EU = case_when(pol_type == "200NM" & iso_ter1 %in% eu_countries ~ T,
+                               TRUE ~ F))
+```
+
 
 # Identify distant water fishing vessels
 
@@ -53,28 +97,24 @@ In the first step, the following is not considered to be "distant water fishing"
 - All fishing effort occuring in an EEZ when the flag state of the vessel is the same as the administering state of the EEZ in which it is fishing.
 
 ```{r}
-# Country lookup table
-country_lookup <- read_csv(here::here("data", "lookup-tables", "country_dependencies.csv"))
-
-# Countries participating in the Northern Agreement for fishing
-eu_countries <- country_lookup$iso3[country_lookup$is_EU]
+# Participants in the EU Northern Agreement
 eu_northern_agreement <- c("NOR", "ISL", "SJM")
 ```
 
 ```{r}
 # Remove high seas fishing
-vessel_list_dw <- vessel_list_raw %>%
+vessel_list_dw <- vessel_list_update %>%
   dplyr::filter(eez_id != 0000)
 
 # Remove cases where flag state of vessel matches the administering territory (or territories in the cases of joint regime/disputed areas)
 distant_water_fishing <- vessel_list_dw %>%
-   mutate(territory1_match = case_when(!is.na(eez_territory1_iso3) & !is.na(flag_iso3) & flag_iso3 == eez_territory1_iso3 ~ T,
+   mutate(ter1_match = case_when(!is.na(iso_ter1) & !is.na(flag_iso3) & flag_iso3 == iso_ter1 ~ T,
+                                 TRUE ~ F),
+         ter2_match = case_when(!is.na(iso_ter2) & !is.na(flag_iso3) & flag_iso3 == iso_ter2 ~ T,
                                       TRUE ~ F),
-         territory2_match = case_when(!is.na(eez_territory2_iso3) & !is.na(flag_iso3) & flag_iso3 == eez_territory2_iso3 ~ T,
-                                      TRUE ~ F),
-         territory3_match = case_when(!is.na(eez_territory3_iso3) & !is.na(flag_iso3) & flag_iso3 == eez_territory3_iso3 ~ T,
+         ter3_match = case_when(!is.na(iso_ter3) & !is.na(flag_iso3) & flag_iso3 == iso_ter3 ~ T,
                                       TRUE ~ F)) %>%
-  dplyr::filter(!territory1_match & !territory2_match & !territory3_match)
+  dplyr::filter(!ter1_match & !ter2_match & !ter3_match)
 
 ```
 
@@ -83,21 +123,28 @@ distant_water_fishing <- vessel_list_dw %>%
 Vessels flagged to EU member states have the right to fish in the EEZs of other EU member states, therefore we do not include these instances as "distant water fishing". In order to remove these from our dataset, we first need create a list of EU member states, as well as non-member states with with the EU has fishing agreements as part of the northern agreement (i.e. Norway and Iceland). 
 
 We define "intra-EU fishing" as fishing activity that meets one of the following criteria: 
-1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a French-flagged vessel fishing in the EEZ of Spain);
-2. The sovereign of the vessel's flag state is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a XXX-flagged vessel fishing in the EEZ of Spain).
+1. The flag state of the vessel is a member state of the EU, or the vessel is flagged to Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, or by Norway, Svalbard and Jan Mayen, or Iceland (e.g. a French-flagged vessel fishing in the EEZ of Spain);
+2. The sovereign of the vessel's flag state is a member state of the EU, or is Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a XXX-flagged vessel fishing in the EEZ of Spain).
 
 We do not consider the following to be "intra-EU fishing" (and is therefore distant water fishing): 
 1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing belongs to a territory or distant region of an EU member state (e.g. a French-flagged vessel fishing in the EEZ of French Polynesia). 
 
 ```{r}
 # Exclude intra EU fishing
-distant_water_fishing <- distant_water_fishing %>%
-  mutate(is_intra_EU = case_when(flag_iso3 %in% c(eu_countries, eu_northern_agreement) & eez_territory1_iso3 %in% c(eu_countries, eu_northern_agreement) ~ T,
-                                 flag_sovereign_iso3 %in% c(eu_countries, eu_northern_agreement) & eez_territory1_iso3 %in% c(eu_countries, eu_northern_agreement) ~ T,
-                                 TRUE ~ F)) %>%
-  dplyr::filter(!is_intra_EU) %>%
-  mutate(distant_water = T) %>%
-  dplyr::select(eez_id, ssvid, fao_region, is_territorial, distant_water)
+distant_water_fishing_nonEU <- distant_water_fishing %>%
+  mutate(is_intra_EU = case_when(flag_is_EU & eez_is_EU ~ T,
+                                 (flag_iso3 %in% eu_northern_agreement) & eez_is_EU ~ T,
+                                 flag_is_EU & (iso_ter1 %in% eu_northern_agreement) & pol_type == "200NM" ~ T,
+                                 flag_is_EU & (iso_ter2 %in% eu_northern_agreement) & pol_type == "200NM" ~ T,
+                                 flag_is_EU & (iso_ter3 %in% eu_northern_agreement) & pol_type == "200NM" ~ T,
+                                 (flag_sovereign_iso3 %in% eu_countries) & eez_is_EU ~ T,
+                                  (flag_sovereign_iso3 %in% eu_northern_agreement) & eez_is_EU ~ T,
+                                  (flag_sovereign_iso3 %in% eu_countries) & (iso_ter1 %in% eu_northern_agreement) ~ T,
+                                  (flag_sovereign_iso3 %in% eu_countries) & (iso_ter2 %in% eu_northern_agreement) ~ T,
+                                  (flag_sovereign_iso3 %in% eu_countries) & (iso_ter3 %in% eu_northern_agreement) ~ T,
+                                  TRUE ~ F)) %>%
+  dplyr::filter(!is_intra_EU) 
+
 ```
 
 #### A Note on Sovereignity
@@ -109,9 +156,17 @@ We describe "sovereign fishing" as fishing activity that meets one of the follow
 2. The sovereign of the flag state of the vessel is the same as the sovereign of the administering territory of the EEZ in which it is fishing (e.g. a Puerto-Rican flagged vessel fishing in the EEZ of Palmyra Atoll);
 
 ```{r}
-vessel_list_dw <- vessel_list_dw %>%
-  left_join(distant_water_fishing, by = c("eez_id", "ssvid", "fao_region", "is_territorial")) %>%
-  dplyr::filter(distant_water)
+# Simplify the rows we want to keep and rename some columns
+vessel_list_dw_out <- distant_water_fishing_nonEU %>%
+  mutate(distant_water = T) %>%
+  dplyr::select(-ter1_match, -ter2_match, -ter3_match, -is_intra_EU) %>%
+  rename(eez_ter1_iso3 = iso_ter1,
+         eez_ter2_iso3 = iso_ter2,
+         eez_ter3_iso3 = iso_ter3,
+         eez_sov1_iso3 = iso_sov1,
+         eez_sov2_iso3 = iso_sov2,
+         eez_sov3_iso3 = iso_sov3,
+         flag_sov_iso3 = flag_sovereign_iso3)
 ```
 
 Deciding whether to include these cases as "distant water fishing" is often tricky because many sovereign countries have fleets permanently based in their overseas territories. If that is indeed the case, then those fleets are not really partaking in distant water fishing. 
@@ -120,12 +175,12 @@ Sala et al. (2018) manually compiled some examples of this, and excluded them fr
 
 ```{r}
 # Specific cases that shouldn't be considered to be DW fishing
-vessel_list_dw <- vessel_list_dw %>%
+vessel_list_dw_out <- vessel_list_dw_out %>%
   filter(!(flag_iso3 == "USA" & eez_id %in% c(8442, 8443, 8444, 8451, 8452, 33179, 33180, 48980))) %>% # US flagged vessels fishing in the EEZs of Jarvis Island, Palmyra Atoll, American Samoa, Howland and Baker, Johnston Atoll, Puerto Rico, US Virgin Islands & Northern Mariana Islands 
-  filter(!(flag_iso3 == "FLK" & eez_territory1_iso3 == "SHN")) %>% # Vessels flagged to the Falkland Islands fishing in the EEZ of Saint Helana, Ascension, and Tristan da Cunha
-  filter(!(flag_sovereign_iso3 == "GBR" & eez_id == 8383)) %>% # Vessels flagged to the UK fishing in the disputed area of South Georgia & Sandwich Islands
-  filter(!(flag_sovereign_iso3 == "GBR" & eez_id == 8389)) %>% # Vessels flagged to the UK fishing in the disputed area of the Falkland Islands
-  filter(!(flag_sovereign_iso3 == "GBR" & eez_id == 8415)) # Vessels flagged to the UK fishing in the EEZ of Montserrat
+  filter(!(flag_iso3 == "FLK" & eez_ter1_iso3 == "SHN")) %>% # Vessels flagged to the Falkland Islands fishing in the EEZ of Saint Helana, Ascension, and Tristan da Cunha
+  filter(!(flag_sov_iso3 == "GBR" & eez_id == 8383)) %>% # Vessels flagged to a dependency of the UK fishing in the disputed area of South Georgia & Sandwich Islands
+  filter(!(flag_sov_iso3 == "GBR" & eez_id == 8389)) %>% # Vessels flagged to a dependency of the UK fishing in the disputed area of the Falkland Islands
+  filter(!(flag_sov_iso3 == "GBR" & eez_id == 8415)) # Vessels flagged to a dependency of the UK fishing in the EEZ of Montserrat
 ```
 
 ```{r}
@@ -134,7 +189,7 @@ dw_effort_final_table <- bq_table(project = bq_project,
                                     table = "effort_eez_fao_ter_2018_distant_water_only", 
                                     dataset = "distant_water_fishing_atlas")
 
-dw_effort_final <- vessel_list_dw
+dw_effort_final <- vessel_list_dw_out
 
 # Check if that table already exists. If not, create it. Otherwise clear it.
   if(bq_table_exists(dw_effort_final_table)){
@@ -159,11 +214,12 @@ write_csv(dw_effort_final, paste0(results_dir, "vessel_list_2018_distant_water.c
 
 ## Identify high seas fishing vessels
 
-A secondary purpose of this tool is to show distant water fishing effort occuring on the high seas. We separate out the vessels partaking in distant water fishing here. 
+A secondary purpose of this tool is to show distant water fishing effort occurring on the high seas. This is a much more straightforward process. We separate out the vessels partaking in distant water fishing here. 
 
 ```{r}
-vessel_list_hs <- vessel_list_raw %>%
-  dplyr::filter(eez_id == 0000)
+vessel_list_hs <- vessel_list_update %>%
+  dplyr::filter(eez_id == 0000) %>%
+  mutate(high_seas = T)
 
 write_csv(vessel_list_hs, paste0(results_dir, "vessel_list_2018_high_seas.csv"))
 ```
