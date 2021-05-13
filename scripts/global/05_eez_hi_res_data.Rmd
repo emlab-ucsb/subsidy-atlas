@@ -20,6 +20,9 @@ library(tidyverse)
 ### Path to vessel list
 vessel_list_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_distant_water.csv")
 
+### Path to vessel list
+vessel_list_hs_path <- here::here("results", "global", "03-distant-water-fishing", "vessel_list_2018_high_seas.csv")
+
 ### Set run options
 # Bigquery project
 bq_project <-  "emlab-gcp"
@@ -45,7 +48,7 @@ options(scipen = 20)
 
 # Introduction
 
-This script pulls high resolution distant water fishing effort data for each EEZ. 
+This script pulls high resolution distant water fishing effort data for each EEZ and high seas FAO area. 
 
 ## Get flag states to include data for each EEZ
 
@@ -53,11 +56,11 @@ This script pulls high resolution distant water fishing effort data for each EEZ
 vessel_list <- read.csv(vessel_list_path, stringsAsFactors = F)
 
 # Let's duplicate entries again for EEZs with multiple administering territories
-vessel_list_expanded <- vessel_list %>%
+vessel_list_dw_expanded <- vessel_list %>%
   rowwise() %>%
-  mutate(eez_ter_iso3_all = list(c(eez_territory1_iso3, eez_territory2_iso3, eez_territory3_iso3)),
-         eez_sov_iso3_all = list(c(eez_sovereign1_iso3, eez_sovereign2_iso3, eez_sovereign3_iso3))) %>%
-  dplyr::select(-eez_territory1_iso3, -eez_territory2_iso3, -eez_territory3_iso3, -eez_sovereign1_iso3, -eez_sovereign2_iso3, -eez_sovereign3_iso3) %>%
+  mutate(eez_ter_iso3_all = list(c(eez_ter1_iso3, eez_ter2_iso3, eez_ter3_iso3)),
+         eez_sov_iso3_all = list(c(eez_sov1_iso3, eez_sov2_iso3, eez_sov3_iso3))) %>%
+  dplyr::select(-eez_ter1_iso3, -eez_ter2_iso3, -eez_ter3_iso3, -eez_sov1_iso3, -eez_sov2_iso3, -eez_sov3_iso3) %>%
   unnest(cols = c("eez_ter_iso3_all", "eez_sov_iso3_all")) %>%
   mutate(eez_ter_iso3 = ifelse(!is.na(eez_ter_iso3_all), eez_ter_iso3_all, eez_sov_iso3_all)) %>%
   rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
@@ -67,7 +70,7 @@ vessel_list_expanded <- vessel_list %>%
 
 ```{r}
 # Get all flags we want to keep for each EEZ
-flags_by_eez_id <- vessel_list_expanded %>%
+flags_by_eez_id <- vessel_list_dw_expanded %>%
   distinct(eez_ter_iso3, eez_id, flag_iso3) %>%
   arrange(eez_ter_iso3, eez_id)
 
@@ -76,7 +79,7 @@ eez_ter_flag_lookup_table <- bq_table(project = bq_project,
                                 table = "eez_ter_flag_lookup", 
                                 dataset = "distant_water_fishing_atlas")
 
-  # Check if that table already exists. If not, create it. Otherwise clear it. 
+# Check if that table already exists. If not, create it. Otherwise clear it. 
   if(bq_table_exists(eez_ter_flag_lookup_table)){
     
     eez_ter_flag_lookup_table %>%
