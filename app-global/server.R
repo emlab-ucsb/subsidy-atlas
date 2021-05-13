@@ -228,11 +228,11 @@ shinyServer(function(input, output, session) {
       addProviderTiles("Esri.WorldPhysical") %>% 
       
       addPolygons(data = fao_region_360,
-                  fillColor = "#1783C3",
-                  fillOpacity = 0.2,
-                  color= "#1783C3",
+                  fillColor = hs_pal$dark_col,
+                  fillOpacity = 0.8,
+                  color= hs_pal$dark_col,
                   weight = 0,
-                  highlight = highlightOptions(fillOpacity = 0.5,
+                  highlight = highlightOptions(fillOpacity = 1,
                                                bringToFront = TRUE),
                   label = fao_region_360$region,
                   group = fao_region_360$region) %>%
@@ -2566,6 +2566,332 @@ shinyServer(function(input, output, session) {
     ggdraw(sub_saharan_africa_rv$subsidy_legend)
     
   })
+  
+  ###--------------------------------------------------------
+  ### High Seas ---------------------------------------------
+  ###--------------------------------------------------------
+  
+  ### Data Container -----------
+  high_seas_rv <- reactiveValues(eezs = fao_area_360,
+                                 map_lng = 0,
+                                 map_lat = -5,
+                                 map_zoom = 1,
+                                 connect = eez_flag_state_connectivity %>%
+                                   dplyr::filter(region == "East Asia & Pacific"),
+                                 eez_dat = NULL,
+                                 eez_bb = NULL
+                                 # hs_dat = NULL,
+                                 # hs_regions = NULL
+                                 )
+
+  ### UI output: Select coastal state widget --------
+  output$high_seas_eez_select <- renderUI({
+
+    WidgetEEZSelect(region_dat = high_seas_rv,
+                    widget_id = "high_seas_eez_select")
+
+  })
+
+  ### UI output: Selected coastal state stats -----------
+  output$high_seas_eez_select_stats <- renderUI({
+
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    StateInfo(region_dat = high_seas_rv,
+              input_selected_eez = input$high_seas_eez_select,
+              is_hs = T)
+
+  })
+
+  ### Leaflet output: Navigational map for the region ---------
+  output$high_seas_nav_map <- renderLeaflet({
+
+    NavMap(region_dat = high_seas_rv,
+           region_pal = hs_pal,
+           map_id = "high_seas_nav_map",
+           min_zoom = 1)
+
+  })
+
+  ### Update selectInput: Register user clicks on nav map ---------
+  observeEvent(input$high_seas_nav_map_shape_click, {
+
+    # Don't register clicks on the disputed areas/joint areas
+    req(!is.null(input$high_seas_nav_map_shape_click$id))
+
+    updateSelectizeInput(session, "high_seas_eez_select",
+                         selected = input$high_seas_nav_map_shape_click$id)
+
+  })
+
+  ### Leaflet proxy: Create proxy for the nav map -----------
+  high_seas_nav_map_proxy <- leafletProxy("high_seas_nav_map")
+
+  ### Leaflet proxy: Highlight and zoom to EEZ(s) cooresponding to selected state ---------
+  observeEvent(input$high_seas_eez_select, {
+
+    if(input$high_seas_eez_select == "Select a coastal state..."){
+
+      # Remove any previously highlighted polygon and reorient
+      high_seas_nav_map_proxy %>%
+        clearGroup("highlighted_eez") %>%
+        setView(lng = high_seas_rv$map_lng,
+                lat = high_seas_rv$map_lat,
+                zoom = high_seas_rv$map_zoom)
+
+    }else{
+
+      NavMapHighlight(region_dat = high_seas_rv,
+                      region_pal_light = hs_pal,
+                      proxy_map = high_seas_nav_map_proxy,
+                      input_selected_eez = input$high_seas_eez_select,
+                      is_hs = T)
+    }
+
+  })
+
+  # ### UI output: Distant water summary for selected state -------------
+  # output$east_asia_pacific_summary_ui <- renderUI({
+  #   
+  #   # # Require coastal state selection
+  #   # req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   # Generate summary
+  #   SummaryUI(region_dat = east_asia_pacific_rv,
+  #             input_selected_eez = input$east_asia_pacific_eez_select)
+  #   
+  # })
+  # 
+  # ### UI output: Distant water summary by flag state for selected state -------------
+  # output$east_asia_pacific_summary_ui_flag <- renderUI({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   # Generate summary
+  #   SummaryUIFlag(region_name = "east_asia_pacific")
+  #   
+  # })
+  # 
+  # ### DT output: Distant water summary (by flag) for selected state -------------
+  # output$east_asia_pacific_summary_dt <- renderDataTable({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   # Generate summary
+  #   SummaryDT(region_dat = east_asia_pacific_rv,
+  #             input_selected_eez = input$east_asia_pacific_eez_select)
+  #   
+  # })
+  # 
+  # ### Leaflet output: Connectivity map for selected state -----------
+  # output$east_asia_pacific_vessel_origins_map <- renderLeaflet({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   # Make connectivity map
+  #   VesselOriginsMap(region_dat = east_asia_pacific_rv,
+  #                    land_sf = land_ter_360,
+  #                    input_selected_eez = input$east_asia_pacific_eez_select,
+  #                    input_fill_variable = input$east_asia_pacific_vessel_origins_fill,
+  #                    input_fill_scale = input$east_asia_pacific_vessel_origins_fill_rescale,
+  #                    region_pal_light = region_pal_light,
+  #                    map_id = "east_asia_pacific_vessel_origins_map")
+  #   
+  # })
+  # 
+  # ### UI output: Select flag state widget (effort) --------
+  # output$east_asia_pacific_effort_select_flag_state <- renderUI({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
+  #                         input_selected_eez = input$east_asia_pacific_eez_select,
+  #                         widget_id = "east_asia_pacific_effort_select_flag_state")
+  #   
+  # })
+  # 
+  # ### UI output: Select flag state widget (subsidies) --------
+  # output$east_asia_pacific_subsidies_select_flag_state <- renderUI({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
+  #                         input_selected_eez = input$east_asia_pacific_eez_select,
+  #                         widget_id = "east_asia_pacific_subsidies_select_flag_state")
+  #   
+  # })
+  # 
+  # ### Load Data -----------------------------------------------------
+  # observe({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   # Load data
+  #   eez_dat <- LoadEEZData(input_selected_eez = input$east_asia_pacific_eez_select)
+  #   
+  #   # Save to reactive object
+  #   east_asia_pacific_rv$eez_dat <- eez_dat
+  #   
+  # })
+  # 
+  # ### Bounding box of selected coastal state ----------------
+  # observe({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+  #   
+  #   # Crop eez shapefile based on the region 
+  #   eez_region <- east_asia_pacific_rv$eezs %>%
+  #     st_crop(xmin = 0, ymin = -90, xmax = 360, ymax = 90) %>%
+  #     dplyr::filter(eez_ter_iso3 == input$east_asia_pacific_eez_select)
+  #   
+  #   east_asia_pacific_rv$eez_bb <- st_bbox(eez_region)
+  #   
+  # })
+  # 
+  # ### Load FAO Region Data -------------------------------------------------
+  # observe({
+  #   
+  #   # Require coastal state selection
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       input$east_asia_pacific_effort_high_seas == TRUE | input$east_asia_pacific_subsidies_high_seas == TRUE)
+  #   
+  #   # Find Corresponding FAO regions 
+  #   fao_regions <- unique(fao_regions_by_eez$fao_region[fao_regions_by_eez$eez_ter_iso3 == input$east_asia_pacific_eez_select])
+  #   
+  #   if(all(fao_regions %in% east_asia_pacific_rv$hs_regions) == F){
+  #     
+  #     # Load data
+  #     hs_dat <- LoadHSData(input_selected_regions = fao_regions)
+  #     
+  #     # Save to reactive object
+  #     east_asia_pacific_rv$hs_dat <- hs_dat
+  #     east_asia_pacific_rv$hs_regions <- fao_regions
+  #     
+  #   }
+  # })
+  # 
+  # ### plotOutput: Effort plot (all flag states) ----------------
+  # output$east_asia_pacific_effort_map_all <- renderPlot({
+  #   
+  #   # Require coastal state selection & data
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       nrow(east_asia_pacific_rv$eez_dat) > 0)
+  #   
+  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
+  #                  input_selected_eez = input$east_asia_pacific_eez_select,
+  #                  input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+  #                  input_hs = input$east_asia_pacific_effort_high_seas,
+  #                  type = "total",
+  #                  plot_variable = "fishing_KWh",
+  #                  eez_sf = eez_ter_360,
+  #                  land_sf = land_ter_360,
+  #                  map_theme = eezmaptheme)
+  #   
+  #   east_asia_pacific_rv$effort_legend <- out$legend
+  #   
+  #   out$plot
+  #   
+  # })
+  # 
+  # ### plotOutput: Effort plot (selected flag state) ----------------
+  # output$east_asia_pacific_effort_map_selected <- renderPlot({
+  #   
+  #   # Require coastal state selection & data
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
+  #       input$east_asia_pacific_effort_select_flag_state != "Select a flag state...")
+  #   
+  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
+  #                  input_selected_eez = input$east_asia_pacific_eez_select,
+  #                  input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+  #                  input_hs = input$east_asia_pacific_effort_high_seas,
+  #                  type = "flag",
+  #                  plot_variable = "fishing_KWh",
+  #                  eez_sf = eez_ter_360,
+  #                  land_sf = land_ter_360,
+  #                  map_theme = eezmaptheme)
+  #   
+  #   out$plot
+  #   
+  # })
+  # 
+  # ### plotOutput: Effort plot (legend) -------------------
+  # output$east_asia_pacific_effort_map_legend <- renderPlot({
+  #   
+  #   # Require coastal state selection & data
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
+  #       !is.null(east_asia_pacific_rv$effort_legend))
+  #   
+  #   # Plot legend
+  #   ggdraw(east_asia_pacific_rv$effort_legend)
+  #   
+  # })
+  # 
+  # ### plotOutput: Subsidies plot (all flag states) ----------------
+  # output$east_asia_pacific_subsidies_map_all <- renderPlot({
+  #   
+  #   # Require coastal state selection & data
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       nrow(east_asia_pacific_rv$eez_dat) > 0)
+  #   
+  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
+  #                  input_selected_eez = input$east_asia_pacific_eez_select,
+  #                  input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+  #                  input_hs = input$east_asia_pacific_subsidies_high_seas,
+  #                  type = "total",
+  #                  plot_variable = "bad_subs_per_fishing_KWh",
+  #                  eez_sf = eez_ter_360,
+  #                  land_sf = land_ter_360,
+  #                  map_theme = eezmaptheme)
+  #   
+  #   east_asia_pacific_rv$subsidy_legend <- out$legend
+  #   
+  #   out$plot
+  #   
+  # })
+  # 
+  # ### plotOutput: Subsidies plot (selected flag state) ----------------
+  # output$east_asia_pacific_subsidies_map_selected <- renderPlot({
+  #   
+  #   # Require coastal state selection & data
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
+  #       input$east_asia_pacific_subsidies_select_flag_state != "Select a flag state...")
+  #   
+  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
+  #                  input_selected_eez = input$east_asia_pacific_eez_select,
+  #                  input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+  #                  input_hs = input$east_asia_pacific_subsidies_high_seas,
+  #                  type = "flag",
+  #                  plot_variable = "bad_subs_per_fishing_KWh",
+  #                  eez_sf = eez_ter_360,
+  #                  land_sf = land_ter_360,
+  #                  map_theme = eezmaptheme)
+  #   
+  #   out$plot
+  #   
+  # })
+  # 
+  # ### plotOutput: Subsidies plot (legend) -------------------
+  # output$east_asia_pacific_subsidies_map_legend <- renderPlot({
+  #   
+  #   # Require coastal state selection & data
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
+  #       !is.null(east_asia_pacific_rv$subsidy_legend))
+  #   
+  #   # Plot legend
+  #   ggdraw(east_asia_pacific_rv$subsidy_legend)
+  #   
+  # })
   
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------

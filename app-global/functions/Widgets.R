@@ -2,6 +2,26 @@
 WidgetEEZSelect <- function(region_dat,
                             widget_id){
   
+  if(widget_id == "high_seas_eez_select"){
+    
+    # Get data
+    region_eez_data <- region_dat$eezs %>%
+      st_drop_geometry() %>%
+      arrange(title) %>%
+      mutate(zone_name = paste0(zone, ": ", description))
+    
+    # Unique choices
+    eezs <- region_eez_data$zone
+    names(eezs) <- region_eez_data$zone_name
+    
+    selectizeInput(widget_id,
+                   label = NULL,
+                   choices = c("Select a FAO area..." = "Select a coastal state...", eezs),
+                   selected = "Select a coastal state...",
+                   width = "100%")
+    
+  }else{
+    
   # Get data
   region_eez_data <- region_dat$connect %>%
     st_drop_geometry() %>%
@@ -17,6 +37,7 @@ WidgetEEZSelect <- function(region_dat,
                  choices = c("Select a coastal state..." = "Select a coastal state...", eezs),
                  selected = "Select a coastal state...",
                  width = "100%")
+  }
   
 }
 

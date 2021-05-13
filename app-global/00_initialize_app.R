@@ -100,3 +100,6 @@ eezmaptheme <- theme_minimal()+
         legend.box = "horizontal",
         axis.text = element_text(color = "black"))
 
+hs_pal <- list(dark_col = "#1783C3",
+               light_col = "#67C6FF")
+

@@ -1,14 +1,28 @@
 
 StateInfo <- function(region_dat,
-                      input_selected_eez){
+                      input_selected_eez,
+                      is_hs = F){
   
+  if(is_hs){
+    
+    eez_dat <- region_dat$eezs %>%
+      dplyr::filter(zone == input_selected_eez)
+    
+    info_out <- paste0(
+      "<h4>", unique(eez_dat$title), "</h3>",
+      "Description: ", unique(eez_dat$description), ", high seas area only"
+    ) %>%
+      lapply(htmltools::HTML)
+    
+  }else{
+    
   # Filter data
   eez_dat <- region_dat$eezs %>% # load this in up above
     dplyr::filter(eez_ter_iso3 == input_selected_eez)
   
   ### Combine into country profile/summary of DW fishing
   info_out <- paste0(
-    "<h3>", unique(eez_dat$eez_ter_name), "</h3>",
+    "<h4>", unique(eez_dat$eez_ter_name), "</h3>",
     "Sovereign state: ", unique(eez_dat$eez_sov_name),
     "<br>",
     "Fisheries management agency: ", #fisheries_mgmt_agency,
@@ -22,6 +36,8 @@ StateInfo <- function(region_dat,
     "FAO Regional Fisheries Body Memberships: " #regional_body_memberships,
   ) %>%
     lapply(htmltools::HTML)
+  
+  }
   
   # # Filter and format Country profile data
   # ACP_codes_links <- ACP_codes %>%
