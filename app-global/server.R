@@ -3015,6 +3015,56 @@ shinyServer(function(input, output, session) {
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
+  
+  ### Download button: Summary by EEZ (CSV) -----------------------
+  output$db_data_summary_by_eez <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_summary_by_eez.csv")
+    },
+    content = function(file) {
+      
+      file.copy("www/dw_activity_summary_by_eez.csv", file)
+
+    }
+  )
+  
+  ### Download button: Summary by High Seas Area (CSV) -----------------------
+  output$db_data_summary_by_region <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_summary_by_high_seas_area.csv")
+    },
+    content = function(file) {
+      
+      file.copy("www/hs_activity_summary_by_area.csv", file)
+      
+    }
+  )
+  
+  ### Download button: Summary by Flag State - EEZs only (CSV) -----------------------
+  output$db_data_summary_by_flag <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_summary_by_flag_state_eezs_only.csv")
+    },
+    content = function(file) {
+      
+      file.copy("www/dw_activity_summary_by_flag_state.csv", file)
+      
+    }
+  )
+  
+  ### Download button: Summary by Flag State - High Seas only (CSV) -----------------------
+  output$db_data_summary_by_flag_hs <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_distant_water_fishing_summary_by_flag_state_hs_only.csv")
+    },
+    content = function(file){
+      file.copy("www/hs_activity_summary_by_flag_state.csv", file)
+    }
+  )
 
 }) # /close server
 

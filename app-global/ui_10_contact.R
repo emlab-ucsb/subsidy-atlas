@@ -41,13 +41,16 @@ Contact = function(){
                   fluidRow(
                     
                     downloadButton("db_data_summary_by_eez", 
-                                   "Summary by EEZ (CSV)"),
+                                   "Summary by EEZ\n(CSV)"),
                     
                     downloadButton("db_data_summary_by_region", 
-                                   "Summary by High Seas Region (CSV)"),
+                                   "Summary by High Seas Area\n(CSV)"),
                     
                     downloadButton("db_data_summary_by_flag", 
-                                   "Summary by Flag State (CSV)")
+                                   "Summary by Flag State - EEZs Only\n(CSV)"),
+                    
+                    downloadButton("db_data_summary_by_flag_hs", 
+                                   "Summary by Flag State - High Seas Areas Only\n(CSV)")
                   )
                   
            )
