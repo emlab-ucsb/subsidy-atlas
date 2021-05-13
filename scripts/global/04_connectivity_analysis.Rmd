@@ -371,7 +371,9 @@ land_centroids_fix <- land_centroids %>%
   group_by(region, admin_iso3) %>%
   summarize(flag_lon = mean(flag_lon, na.rm = T),
             flag_lat = mean(flag_lat, na.rm = T)) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(admin = case_when(admin_iso3 == "EU" ~ "European Union",
+                           TRUE ~ countrycode(admin_iso3, "iso3c", "country.name")))
 
 eez_centroids <- read_csv(eez_centroid_path) %>%
   rename(eez_id = mrgid)
