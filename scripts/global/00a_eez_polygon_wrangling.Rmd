@@ -118,7 +118,7 @@ st_write(eez_sf_polygon, paste0(data_dir, "world_eez_v11_simple_neg360_360.gpkg"
 eez_attrib <- eez_sf_simple %>%
   st_drop_geometry()
 
-write_csv(eez_attrib, paste0(results_dir, "eez_attributes.csv"))
+write_csv(eez_attrib, paste0(results_dir, "eez_attributes_raw.csv"))
 
 # Now let's do some editing so we have one row for each territory (dealing with joing regime and disputed areas)
 eez_attrib_all <- eez_attrib %>%
@@ -186,14 +186,35 @@ eez_attrib_expanded_fix <- eez_attrib_expanded %>%
                                  TRUE ~ iso_ter)) %>%
   dplyr::select(-pol_type, -geoname, -name_ter, -iso_ter) %>%
   rename(pol_type = pol_type_new, geoname = geoname_new, name_ter = name_ter_new, iso_ter = iso_ter_new) %>%
-  dplyr::filter(iso_ter != "ESH" & iso_sov != "ESH")
+  dplyr::filter(iso_ter != "ESH" & iso_sov != "ESH") # remove independent entry for Western Sahara
+
+# Modify some regions again so that when one of the administering territories is in a different region, we can see it.... 
+eez_attrib_expanded_fix_again <- eez_attrib_expanded_fix %>%
+  mutate(region = case_when(mrgid == 8383 & iso_ter == "GBR" ~ "Europe & Central Asia", # SGS
+                            mrgid == 8389 & iso_ter == "GBR" ~ "Europe & Central Asia", # Falkland Islands
+                            mrgid == 48946 & iso_ter == "REU" ~ "Sub-Saharan Africa", # Ile Tromelin
+                            mrgid == 48948 & iso_ter == "NCL" ~ "East Asia & Pacific", # Matthew + Hunter
+                            TRUE ~ region))
 
 # Join back together
 eez_attrib_expanded <- eez_attrib_expanded %>%
   dplyr::filter(pol_type == "200NM") %>%
-  bind_rows(eez_attrib_expanded_fix)
+  bind_rows(eez_attrib_expanded_fix_again)
                                  
 write_csv(eez_attrib_expanded, paste0(results_dir, "eez_attributes_expanded.csv"))
+
+# Now let's condense the attributes so there's a single row for each zone 
+eez_attrib_flat <- eez_attrib_expanded %>%
+  group_by(mrgid) %>%
+  summarize(pol_type = unique(pol_type),
+            geoname = unique(geoname),
+            iso_sov = list((unique(iso_sov))),
+            name_sov = list((unique(name_sov))),
+            iso_ter = list((unique(iso_ter))),
+            name_ter = list((unique(name_ter))),
+            region = list((unique(region))))
+
+save(eez_attrib_flat, file = paste0(results_dir, "eez_attributes_flat.rda"))
 ```
 
 ## Duplicate Polygons
@@ -275,9 +296,15 @@ map_coord <- list(east_asia_pacific = c(0, 360),
                 as_tibble() %>%
                 setNames(c("eez_lon", "eez_lat"))) %>%
     arrange(eez_ter_iso3)
-  
-  # Save
-  write_csv(eez_centroid_coordinates, paste0(results_dir, "eez_centroid_coordinates.csv"))
+```
+
+## Manual Corrections of Centroids
+
+There might be a few centroids we want to correct - Do that here. 
+
+```{r}
+# Manual centroid corrections
+eez_centroid_coordinates_corrected <- eez_centroid_coordinates 
 
 ```
 
@@ -287,17 +314,14 @@ map_coord <- list(east_asia_pacific = c(0, 360),
 # Add Centroids
 eez_sf_out <- eez_sf_out %>%
   rename(eez_ter_iso3 = iso_ter, eez_ter_name = name_ter, eez_sov_iso3 = iso_sov, eez_sov_name = name_sov) %>%
-  left_join(eez_centroid_coordinates, by = c("mrgid", "pol_type", "geoname", "eez_ter_iso3", "eez_ter_name", "eez_sov_iso3", "eez_sov_name",  "region"))
+  left_join(eez_centroid_coordinates_corrected, by = c("mrgid", "pol_type", "geoname", "eez_ter_iso3", "eez_ter_name", "eez_sov_iso3", "eez_sov_name",  "region"))
 ```
 
-## Manual Correction of Centroids
-
-There might be a few centroids we want to correct - Do that here. 
+## Save
 
 ```{r}
-# Manual centroid corrections
-
 # Save
+write_csv(eez_centroid_coordinates_corrected, paste0(results_dir, "eez_centroid_coordinates.csv"))
 st_write(eez_sf_out, paste0(results_dir, "world_eez_v11_simple_neg360_360_centroids.gpkg"), delete_layer = T)
 ```
 

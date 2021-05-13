@@ -121,8 +121,8 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8316,200NM,Micronesian Exclusive Economic Zone,FSM,Micronesia (Federated States of),FSM,Micronesia (Federated States of),East Asia & Pacific,150.32210106350794,6.769800961285347
 8476,200NM,Gabonese Exclusive Economic Zone,GAB,Gabon,GAB,Gabon,Sub-Saharan Africa,8.738843249700707,-3.064268769847721
 5696,200NM,United Kingdom Exclusive Economic Zone,GBR,United Kingdom,GBR,United Kingdom,Europe & Central Asia,-4.290144784727494,56.784015687743185
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,GBR,United Kingdom,GBR,United Kingdom,Latin America & Caribbean,-31.262942116161085,-56.52403030032328
-8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,GBR,United Kingdom,GBR,United Kingdom,Latin America & Caribbean,-58.32519369745881,-51.667113522202825
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,GBR,United Kingdom,GBR,United Kingdom,Europe & Central Asia,-31.262942116161085,-56.52403030032328
+8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,GBR,United Kingdom,GBR,United Kingdom,Europe & Central Asia,-58.32519369745881,-51.667113522202825
 48967,Joint regime,Joint regime area United Kingdom / Denmark (Faeroe Islands),GBR,United Kingdom,GBR,United Kingdom,Europe & Central Asia,-7.517071675873157,60.03616101344183
 5678,200NM,Georgian Exclusive Economic Zone,GEO,Georgia,GEO,Georgia,Europe & Central Asia,40.559712034726424,42.44623306239816
 21788,200NM,Guernsey Exclusive Economic Zone,GGY,Guernsey,GBR,United Kingdom,Europe & Central Asia,-2.656329243925204,49.63850246245594
@@ -223,7 +223,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8483,200NM,Malaysian Exclusive Economic Zone,MYS,Malaysia,MYS,Malaysia,East Asia & Pacific,109.11906087942575,5.175457144697634
 8395,200NM,Namibian Exclusive Economic Zone,NAM,Namibia,NAM,Namibia,Sub-Saharan Africa,12.286196873995571,-23.649659829705875
 8312,200NM,New Caledonian Exclusive Economic Zone,NCL,New Caledonia,FRA,France,East Asia & Pacific,163.20533791992546,-21.017257958124063
-48948,Overlapping claim,Overlapping claim Matthew and Hunter Islands: New Caledonia / Vanuatu,NCL,New Caledonia,FRA,France,Europe & Central Asia,172.03646811610102,-23.27861562398467
+48948,Overlapping claim,Overlapping claim Matthew and Hunter Islands: New Caledonia / Vanuatu,NCL,New Caledonia,FRA,France,East Asia & Pacific,172.03646811610102,-23.27861562398467
 8310,200NM,Norfolk Island Exclusive Economic Zone,NFK,Norfolk Island,AUS,Australia,East Asia & Pacific,167.92896140920732,-29.093185313821724
 8474,200NM,Nigerian Exclusive Economic Zone,NGA,Nigeria,NGA,Nigeria,Sub-Saharan Africa,4.833462122215593,4.090193561468712
 21797,Joint regime,Joint regime area Nigeria / Sao Tome and Principe,NGA,Nigeria,NGA,Nigeria,Sub-Saharan Africa,5.586638261925441,2.0675520237539717
@@ -257,7 +257,7 @@ mrgid,pol_type,geoname,eez_ter_iso3,eez_ter_name,eez_sov_iso3,eez_sov_name,regio
 8468,200NM,Qatari Exclusive Economic Zone,QAT,Qatar,QAT,Qatar,Middle East & North Africa,51.88360228778891,25.863826728086906
 50170,Overlapping claim,Overlapping claim Qatar / Saudi Arabia / United Arab Emirates,QAT,Qatar,QAT,Qatar,Middle East & North Africa,51.59951027545091,24.692322444600354
 8338,200NM,Réunion Exclusive Economic Zone,REU,Réunion,FRA,France,Sub-Saharan Africa,54.713201652784534,-21.78120042833816
-48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,REU,Réunion,FRA,France,Europe & Central Asia,54.67307746911066,-15.711345999320915
+48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,REU,Réunion,FRA,France,Sub-Saharan Africa,54.67307746911066,-15.711345999320915
 5689,200NM,Romanian Exclusive economic Zone,ROU,Romania,ROU,Romania,Europe & Central Asia,30.07903268030797,44.23973677833228
 5690,200NM,Russian Exclusive economic Zone,RUS,Russia,RUS,Russia,Europe & Central Asia,93.5663005411693,71.32511870711761
 48950,Overlapping claim,Overlapping claim Kuril Islands: Japan / Russia,RUS,Russia,RUS,Russia,Europe & Central Asia,147.96086927763503,43.88650367774513

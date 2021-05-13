@@ -277,20 +277,20 @@ mrgid,pol_type,geoname,iso_sov,iso_ter,name_ter,name_sov,region
 48997,Overlapping claim,Overlapping claim Chafarinas Islands: Spain / Morocco,MAR,MAR,Morocco,Morocco,Middle East & North Africa
 48956,Overlapping claim,Overlapping claim Doumeira Islands: Djibouti / Eritrea,ERI,ERI,Eritrea,Eritrea,Sub-Saharan Africa
 48956,Overlapping claim,Overlapping claim Doumeira Islands: Djibouti / Eritrea,DJI,DJI,Djibouti,Djibouti,Middle East & North Africa
-8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,GBR,GBR,United Kingdom,United Kingdom,Latin America & Caribbean
+8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,GBR,GBR,United Kingdom,United Kingdom,Europe & Central Asia
 8389,Overlapping claim,Overlapping claim Falkland / Malvinas Islands: UK / Argentina,ARG,ARG,Argentina,Argentina,Latin America & Caribbean
 8365,Overlapping claim,Overlapping claim Gibraltarian Exclusive Economic Zone,GIB,GIB,Gibraltar,Gibraltar,Europe & Central Asia
 8365,Overlapping claim,Overlapping claim Gibraltarian Exclusive Economic Zone,ESP,ESP,Spain,Spain,Europe & Central Asia
 48945,Overlapping claim,Overlapping claim Glorioso Islands: France / Madagascar,MDG,MDG,Madagascar,Madagascar,Sub-Saharan Africa
 48945,Overlapping claim,Overlapping claim Glorioso Islands: France / Madagascar,FRA,ATF,French Southern Territories,France,Sub-Saharan Africa
-48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,FRA,REU,Réunion,France,Europe & Central Asia
+48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,FRA,REU,Réunion,France,Sub-Saharan Africa
 48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,MDG,MDG,Madagascar,Madagascar,Sub-Saharan Africa
 48946,Overlapping claim,Overlapping claim Ile Tromelin: Reunion / Madagascar / Mauritus,MUS,MUS,Mauritius,Mauritius,Sub-Saharan Africa
 48950,Overlapping claim,Overlapping claim Kuril Islands: Japan / Russia,JPN,JPN,Japan,Japan,East Asia & Pacific
 48950,Overlapping claim,Overlapping claim Kuril Islands: Japan / Russia,RUS,RUS,Russia,Russia,Europe & Central Asia
 48955,Overlapping claim,Overlapping claim Liancourt Rocks: Japan / South Korea,JPN,JPN,Japan,Japan,East Asia & Pacific
 48955,Overlapping claim,Overlapping claim Liancourt Rocks: Japan / South Korea,KOR,KOR,South Korea,South Korea,East Asia & Pacific
-48948,Overlapping claim,Overlapping claim Matthew and Hunter Islands: New Caledonia / Vanuatu,FRA,NCL,New Caledonia,France,Europe & Central Asia
+48948,Overlapping claim,Overlapping claim Matthew and Hunter Islands: New Caledonia / Vanuatu,FRA,NCL,New Caledonia,France,East Asia & Pacific
 48948,Overlapping claim,Overlapping claim Matthew and Hunter Islands: New Caledonia / Vanuatu,VUT,VUT,Vanuatu,Vanuatu,East Asia & Pacific
 48944,Overlapping claim,Overlapping claim Mayotte: France / Comoros,FRA,ATF,French Southern Territories,France,Sub-Saharan Africa
 48944,Overlapping claim,Overlapping claim Mayotte: France / Comoros,COM,COM,Comoros,Comoros,Sub-Saharan Africa
@@ -310,7 +310,7 @@ mrgid,pol_type,geoname,iso_sov,iso_ter,name_ter,name_sov,region
 48954,Overlapping claim,Overlapping claim Senkaku Islands: Japan / China / Taiwan,JPN,JPN,Japan,Japan,East Asia & Pacific
 48954,Overlapping claim,Overlapping claim Senkaku Islands: Japan / China / Taiwan,CHN,CHN,China,China,East Asia & Pacific
 49003,Overlapping claim,Overlapping claim South China Sea,CHN,CHN,China,China,East Asia & Pacific
-8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,GBR,GBR,United Kingdom,United Kingdom,Latin America & Caribbean
+8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,GBR,GBR,United Kingdom,United Kingdom,Europe & Central Asia
 8383,Overlapping claim,Overlapping claim South Georgia and South Sandwich Islands: UK / Argentina,ARG,ARG,Argentina,Argentina,Latin America & Caribbean
 5695,200NM,Ukrainian Exclusive Economic Zone,UKR,UKR,Ukraine,Ukraine,Europe & Central Asia
 8368,Overlapping claim,Overlapping claim Western Saharan Exclusive Economic Zone,MAR,MAR,Morocco,Morocco,Middle East & North Africa
