@@ -37,7 +37,6 @@ land_ter_360 <- st_read("./data/ne_50m_admin_neg360_360.gpkg")
 
 # 4) EEZ / Flag State Connectivity Lines
 eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines.gpkg")
-eez_flag_state_summary <- read_csv("./data/flag_eez_ter_summary.csv")
 
 # 5) EEZ / FAO Region Lookup Table
 fao_regions_by_eez <- read_csv("./data/fao_regions_by_eez_ter_id.csv")
@@ -75,7 +74,6 @@ fao_region_360 <- st_read("./data/high_seas_region_neg360_360.gpkg")
 
 # 8) FAO / Flag State Connectivity Lines
 fao_flag_state_connectivity <- st_read("./data/fao_flag_state_connectivity_lines.gpkg")
-fao_flag_state_summary <- read_csv("./data/flag_fao_hs_summary.csv")
 
 ### --------------------
 

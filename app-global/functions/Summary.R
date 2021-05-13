@@ -1,10 +1,54 @@
 
 SummaryUI <- function(region_dat,
-                      input_selected_eez){
+                      input_selected_eez,
+                      is_hs = F){
   
   req(!is.null(input_selected_eez))
 
   if(input_selected_eez != "Select a coastal state..."){
+    
+    if(is_hs){
+      
+      total_stats_eez <- region_dat$connect %>%
+        st_drop_geometry() %>%
+        mutate(fao_region = as.character(fao_region)) %>%
+        dplyr::filter(fao_region == input_selected_eez) %>%
+        group_by(fao_region, title, flag_iso3) %>%
+        summarize(vessels = unique(n_vessels),
+                  capacity = unique(tot_engine_power),
+                  tonnage = unique(tot_tonnage),
+                  fishing_hours = unique(fishing_hours),
+                  fishing_KWh = unique(fishing_KWh),
+                  bad_subs = unique(bad_subs)) %>%
+        ungroup() %>%
+        group_by(fao_region, title) %>%
+        summarize(vessels = sum(vessels, na.rm = T),
+                  capacity = sum(capacity, na.rm = T),
+                  tonnage = sum(tonnage, na.rm = T),
+                  fishing_hours = sum(fishing_hours, na.rm = T),
+                  fishing_KWh = sum(fishing_KWh, na.rm = T),
+                  bad_subs = sum(bad_subs, na.rm = T)) %>%
+        ungroup()
+      
+      ### Combine into country profile/summary of DW fishing
+      info_out <- paste0(
+        "<h4>AIS-observed distant water fishing in the high seas area of ", unique(total_stats_eez$title), " (2018)</h4>",
+        "<h5>Totals</h5>",
+        "<b>Different DW vessels: </b>", format(round(total_stats_eez$vessels, 0), big.mark = ","),
+        "<br>",
+        "<b>Total DW vessel capacity (kW): </b>", format(round(total_stats_eez$capacity, 0), big.mark = ","),
+        "<br>",
+        "<b>Total DW vessel tonnage (gt): </b>", format(round(total_stats_eez$tonnage, 0), big.mark = ","),
+        "<br>",
+        "<b>Total DW fishing effort (hours): </b>", format(round(total_stats_eez$fishing_hours, 0), big.mark = ","),
+        "<br>",
+        "<b>Total DW fishing effort (kW hours): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
+        "<br>",
+        "<b>Estimated DW subsidies to area (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
+        "<hr>") %>%
+        lapply(htmltools::HTML)
+      
+    }else{
     
     total_stats_eez <- region_dat$connect %>%
       st_drop_geometry() %>%
@@ -28,7 +72,7 @@ SummaryUI <- function(region_dat,
     
   ### Combine into country profile/summary of DW fishing
   info_out <- paste0(
-    "<h4>AIS-observed distant water fishing in the EEZ of ", unique(total_stats_eez$eez_ter_name), " (2018)</h3>",
+    "<h4>AIS-observed distant water fishing in the EEZ of ", unique(total_stats_eez$eez_ter_name), " (2018)</h4>",
     "<h5>Totals</h5>",
     "<b>Different DW vessels: </b>", format(round(total_stats_eez$vessels, 0), big.mark = ","),
     "<br>",
@@ -43,6 +87,8 @@ SummaryUI <- function(region_dat,
     "<b>Estimated DW subsidies to EEZ (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
     "<hr>") %>%
     lapply(htmltools::HTML)
+  
+    }
   
   }else{
     
@@ -78,7 +124,28 @@ SummaryUIFlag <- function(region_name){
 }
 
 SummaryDT <- function(region_dat,
-                      input_selected_eez){
+                      input_selected_eez,
+                      is_hs = F){
+  
+  if(is_hs){
+    
+    # Distant water fishing summary
+    flag_stats_eez <- region_dat$connect %>%
+      st_drop_geometry() %>%
+      dplyr::filter(fao_region == input_selected_eez) %>% 
+      group_by(fao_region, title, flag_iso3, admin) %>%
+      summarize(`Number of DW vessels` = round(unique(n_vessels), 0),
+                `Total DW vessel capacity (kW)` = round(unique(tot_engine_power), 0),
+                `Total DW vessel tonnage (gt)` = round(unique(tot_tonnage), 0),
+                `Total DW fishing effort (hours)` = round(unique(fishing_hours), 0),
+                `Total DW fishing effort (kW hours)` = round(unique(fishing_KWh), 0),
+                `Estimated DW subsidies to area (2018 $US)` = round(unique(bad_subs), 0)) %>%
+      ungroup() %>%
+      arrange(admin) %>%
+      dplyr::select(-fao_region, -title, -flag_iso3) %>%
+      rename(`Flag state` = admin)
+    
+  }else{
   
   # Distant water fishing summary
   flag_stats_eez <- region_dat$connect %>%
@@ -95,6 +162,8 @@ SummaryDT <- function(region_dat,
     arrange(admin) %>%
     dplyr::select(-eez_ter_iso3, -eez_ter_name, -flag_iso3) %>%
     rename(`Flag state` = admin)
+  
+  }
   
   # Convert format
   DT::datatable(flag_stats_eez, options = list(orderClasses = TRUE, dom = 'tip', pageLength = 5), rownames = F)
@@ -103,8 +172,29 @@ SummaryDT <- function(region_dat,
 
 #### -----------------
 DownloadData <- function(region_dat,
-                         input_selected_eez){
+                         input_selected_eez,
+                         is_hs = F){
   
+  if(is_hs){
+    
+    # Distant water fishing summary
+    flag_stats_eez <- region_dat$connect %>%
+      st_drop_geometry() %>%
+      dplyr::filter(fao_region == input_selected_eez) %>% 
+      group_by(fao_region, title, flag_iso3, admin) %>%
+      summarize(`Number of DW vessels` = round(unique(n_vessels), 0),
+                `Total DW vessel capacity (kW)` = round(unique(tot_engine_power), 0),
+                `Total DW vessel tonnage (gt)` = round(unique(tot_tonnage), 0),
+                `Total DW fishing effort (hours)` = round(unique(fishing_hours), 0),
+                `Total DW fishing effort (kW hours)` = round(unique(fishing_KWh), 0),
+                `Estimated DW subsidies to area (2018 $US)` = round(unique(bad_subs), 0)) %>%
+      ungroup() %>%
+      arrange(admin) %>%
+      dplyr::select(-fao_region, -title, -flag_iso3) %>%
+      rename(`Flag state` = admin)
+    
+  }else{
+    
   # Distant water fishing summary
   flag_stats_eez <- region_dat$connect %>%
     st_drop_geometry() %>%
@@ -120,5 +210,7 @@ DownloadData <- function(region_dat,
     arrange(admin) %>%
     dplyr::select(-eez_ter_iso3, -eez_ter_name, -flag_iso3) %>%
     rename(`Flag state` = admin)
+  
+  }
   
 }

@@ -5,13 +5,14 @@ WidgetEEZSelect <- function(region_dat,
   if(widget_id == "high_seas_eez_select"){
     
     # Get data
-    region_eez_data <- region_dat$eezs %>%
+    region_eez_data <- region_dat$connect %>%
       st_drop_geometry() %>%
-      arrange(title) %>%
-      mutate(zone_name = paste0(zone, ": ", description))
+      distinct(fao_region, description) %>%
+      arrange(fao_region) %>%
+      mutate(zone_name = paste0(fao_region, ": ", description))
     
     # Unique choices
-    eezs <- region_eez_data$zone
+    eezs <- region_eez_data$fao_region
     names(eezs) <- region_eez_data$zone_name
     
     selectizeInput(widget_id,

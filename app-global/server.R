@@ -2678,8 +2678,8 @@ shinyServer(function(input, output, session) {
                                  map_lng = 0,
                                  map_lat = -5,
                                  map_zoom = 1,
-                                 connect = eez_flag_state_connectivity %>%
-                                   dplyr::filter(region == "East Asia & Pacific"),
+                                 connect = fao_flag_state_connectivity %>%
+                                   dplyr::filter(region == "High Seas"),
                                  eez_dat = NULL,
                                  eez_bb = NULL,
                                  hs_dat = NULL,
@@ -2751,56 +2751,56 @@ shinyServer(function(input, output, session) {
 
   })
 
-  # ### UI output: Distant water summary for selected state -------------
-  # output$east_asia_pacific_summary_ui <- renderUI({
-  #   
-  #   # # Require coastal state selection
-  #   # req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   # Generate summary
-  #   SummaryUI(region_dat = east_asia_pacific_rv,
-  #             input_selected_eez = input$east_asia_pacific_eez_select)
-  #   
-  # })
-  # 
-  # ### UI output: Distant water summary by flag state for selected state -------------
-  # output$east_asia_pacific_summary_ui_flag <- renderUI({
-  #   
-  #   # Require coastal state selection
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   # Generate summary
-  #   SummaryUIFlag(region_name = "east_asia_pacific")
-  #   
-  # })
-  # 
-  # ### Download buttons: DW fishing data (CSV) -----------------------
-  # output$sub_saharan_africa_download_data <- downloadHandler(
-  #   
-  #   filename = function() {
-  #     paste0("DWFA_distant_water_fishing_in_EEZ_of_", input$sub_saharan_africa_eez_select, ".csv")
-  #   },
-  #   content = function(file) {
-  #     
-  #     dat <- DownloadData(region_dat = sub_saharan_africa_rv,
-  #                         input_selected_eez = input$sub_saharan_africa_eez_select)
-  #     
-  #     write.csv(dat, file, row.names = FALSE)
-  #   }
-  # )
-  # 
-  # ### DT output: Distant water summary (by flag) for selected state -------------
-  # output$east_asia_pacific_summary_dt <- renderDataTable({
-  #   
-  #   # Require coastal state selection
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   # Generate summary
-  #   SummaryDT(region_dat = east_asia_pacific_rv,
-  #             input_selected_eez = input$east_asia_pacific_eez_select)
-  #   
-  # })
-  # 
+  ### UI output: Distant water summary for selected state -------------
+  output$high_seas_summary_ui <- renderUI({
+
+    # Generate summary
+    SummaryUI(region_dat = high_seas_rv,
+              input_selected_eez = input$high_seas_eez_select,
+              is_hs = T)
+
+  })
+
+  ### UI output: Distant water summary by flag state for selected state -------------
+  output$high_seas_summary_ui_flag <- renderUI({
+
+    # Require coastal state selection
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    # Generate summary
+    SummaryUIFlag(region_name = "high_seas")
+
+  })
+
+  ### Download buttons: DW fishing data (CSV) -----------------------
+  output$high_seas_download_data <- downloadHandler(
+
+    filename = function() {
+      paste0("DWFA_distant_water_fishing_in_high_seas_area_", input$high_seas_eez_select, ".csv")
+    },
+    content = function(file) {
+
+      dat <- DownloadData(region_dat = high_seas_rv,
+                          input_selected_eez = input$high_seas_eez_select,
+                          is_hs = T)
+
+      write.csv(dat, file, row.names = FALSE)
+    }
+  )
+
+  ### DT output: Distant water summary (by flag) for selected state -------------
+  output$high_seas_summary_dt <- renderDataTable({
+
+    # Require coastal state selection
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    # Generate summary
+    SummaryDT(region_dat = high_seas_rv,
+              input_selected_eez = input$high_seas_eez_select,
+              is_hs = T)
+
+  })
+
   # ### Leaflet output: Connectivity map for selected state -----------
   # output$east_asia_pacific_vessel_origins_map <- renderLeaflet({
   #   
