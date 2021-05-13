@@ -2801,23 +2801,23 @@ shinyServer(function(input, output, session) {
 
   })
 
-  # ### Leaflet output: Connectivity map for selected state -----------
-  # output$east_asia_pacific_vessel_origins_map <- renderLeaflet({
-  #   
-  #   # Require coastal state selection
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...")
-  #   
-  #   # Make connectivity map
-  #   VesselOriginsMap(region_dat = east_asia_pacific_rv,
-  #                    land_sf = land_ter_360,
-  #                    input_selected_eez = input$east_asia_pacific_eez_select,
-  #                    input_fill_variable = input$east_asia_pacific_vessel_origins_fill,
-  #                    input_fill_scale = input$east_asia_pacific_vessel_origins_fill_rescale,
-  #                    region_pal_light = region_pal_light,
-  #                    map_id = "east_asia_pacific_vessel_origins_map")
-  #   
-  # })
-  # 
+  ### Leaflet output: Connectivity map for selected state -----------
+  output$high_seas_vessel_origins_map <- renderLeaflet({
+
+    # Require coastal state selection
+    req(input$high_seas_eez_select != "Select a coastal state...")
+
+    # Make connectivity map
+    VesselOriginsMap(region_dat = high_seas_rv,
+                     land_sf = land_ter_360,
+                     input_selected_eez = input$high_seas_eez_select,
+                     input_fill_variable = input$high_seas_vessel_origins_fill,
+                     input_fill_scale = input$high_seas_vessel_origins_fill_rescale,
+                     region_pal_light = hs_pal,
+                     map_id = "high_seas_vessel_origins_map")
+
+  })
+
   # ### UI output: Select flag state widget (effort) --------
   # output$east_asia_pacific_effort_select_flag_state <- renderUI({
   #   
