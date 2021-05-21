@@ -21,14 +21,6 @@ Summary = function(){
            
     ),
     
-    # ### Intro and purpose
-    # column(12, id = "tblr-small-spaced-div",
-    #        
-    #        # Text
-    #        includeHTML("./text/faqs-and-contact/intro_and_purpose.html")
-    #        
-    # ),
-    
     ### Data summaries
     column(12, id = "tblr-small-spaced-div",
            
