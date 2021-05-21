@@ -76,8 +76,7 @@ shinyServer(function(input, output, session) {
                  input$middle_east_north_africa_info_vessel_origins,
                  input$north_america_info_vessel_origins,
                  input$south_asia_info_vessel_origins,
-                 input$sub_saharan_africa_info_vessel_origins,
-                 input$high_seas_info_vessel_origins), {
+                 input$sub_saharan_africa_info_vessel_origins), {
                    
                    shinyalert(title = "Vessel Origins",
                               text = paste0("This tab illustrates the flag state origins of distant water vessels fishing in the EEZ(s) of the selected coastal state. If no map is visible, please select a coastal state using the map or widget in the left panel. The fill scale can be changed based on the metric of effort selected below. Hover over each flag state to view more about distant water fishing activity by vessels flagged to that state in the selected EEZ(s)."),
@@ -118,8 +117,7 @@ shinyServer(function(input, output, session) {
                  input$middle_east_north_africa_info_effort,
                  input$north_america_info_effort,
                  input$south_asia_info_effort,
-                 input$sub_saharan_africa_info_effort,
-                 input$high_seas_info_effort), {
+                 input$sub_saharan_africa_info_effort), {
                    
                    shinyalert(title = "Fishing Effort",
                               text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) in the EEZ(s) of the selected coastal state in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the engine power of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude.  If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
@@ -160,8 +158,7 @@ shinyServer(function(input, output, session) {
                  input$middle_east_north_africa_info_subsidies,
                  input$north_america_info_subsidies,
                  input$south_asia_info_subsidies,
-                 input$sub_saharan_africa_info_subsidies,
-                 input$high_seas_info_subsidies), {
+                 input$sub_saharan_africa_info_subsidies), {
                    
                    shinyalert(title = "Subsidy Intensity",
                               text = paste0("This tab illustrates the estimated magnitude of capacity-enhancing subsidies (in 2018 USD) supporting distant water fishing in the EEZ(s) of the selected coastal state. Subsidy intensity is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total subsidy intensity for distant water vessels from all flag states and the figure on the right shows subsidy intensity for distant water vessels from the selected flag state."),
@@ -510,28 +507,57 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  ### plotOutput: Effort plot (all flag states) ----------------
-  output$east_asia_pacific_effort_map_all <- renderPlot({
+  ### Leaflet output: Effort plot  ---------
+  output$east_asia_pacific_effort_map_all <- renderLeaflet({
     
-    # Require coastal state selection & data
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-        nrow(east_asia_pacific_rv$eez_dat) > 0)
+    # Create raster layer and palette from EEZ data
+    raster <- EEZDatRasterize(region_dat = east_asia_pacific_rv,
+                                    input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+                                    type = "total",
+                                    plot_variable = "fishing_KWh")
     
-    out <- EEZPlot(region_dat = east_asia_pacific_rv,
-                   input_selected_eez = input$east_asia_pacific_eez_select,
-                   input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-                   input_hs = input$east_asia_pacific_effort_high_seas,
-                   type = "total",
-                   plot_variable = "fishing_KWh",
-                   eez_sf = eez_ter_360,
-                   land_sf = land_ter_360,
-                   map_theme = eezmaptheme)
-    
-    east_asia_pacific_rv$effort_legend <- out$legend
-    
-    out$plot
+    # Make leaflet object and add raster image
+    EEZEffortMap(region_dat = east_asia_pacific_rv,
+                 input_selected_eez = input$east_asia_pacific_eez_select,
+                 eez_sf = eez_ter_360,
+                 land_sf = land_ter_360,
+                 map_id = "east_asia_pacific_effort_map_all",
+                 min_zoom = 1) %>%
+      addRasterImage(raster$r, 
+                     colors = raster$pal, 
+                     opacity = 0.8) %>%
+      addLegend(position = "bottomleft", 
+                pal = raster$pal, 
+                values = values(raster$r), 
+                title = raster$pal_title, 
+                labFormat = labelFormat(
+        transform = function(x) 10^x))
     
   })
+  
+  ### plotOutput: Effort plot (all flag states) ----------------
+  #output$east_asia_pacific_effort_map_all <- renderPlot({
+  # output$east_asia_pacific_effort_map_all <- renderLeaflet({
+  #   
+  #   # Require coastal state selection & data
+  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+  #       nrow(east_asia_pacific_rv$eez_dat) > 0)
+  #   
+  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
+  #                  input_selected_eez = input$east_asia_pacific_eez_select,
+  #                  input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+  #                  input_hs = input$east_asia_pacific_effort_high_seas,
+  #                  type = "total",
+  #                  plot_variable = "fishing_KWh",
+  #                  eez_sf = eez_ter_360,
+  #                  land_sf = land_ter_360,
+  #                  map_theme = eezmaptheme)
+  #   
+  #   #east_asia_pacific_rv$effort_legend <- out$legend
+  #   
+  #   out$plot
+  #   
+  # })
   
   ### plotOutput: Effort plot (selected flag state) ----------------
   output$east_asia_pacific_effort_map_selected <- renderPlot({

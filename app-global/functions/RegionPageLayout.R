@@ -256,7 +256,8 @@ RegionPageLayout <- function(region_name,
                                                            # All flag states
                                                            column(6, align = "center",
 
-                                                                  plotOutput(
+                                                                  leafletOutput(
+                                                                  #plotOutput(  
                                                                     paste0(region_name, "_effort_map_all"),
                                                                     height = "400px")
 

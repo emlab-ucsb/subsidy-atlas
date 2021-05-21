@@ -28,6 +28,8 @@ library(shinyWidgets)
 
 library(tidyverse)
 library(sf)
+library(raster)
+library(rgdal)
 #library(png)
 #library(htmltools)
 library(DT)

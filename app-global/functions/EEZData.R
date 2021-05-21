@@ -28,7 +28,8 @@ EEZPlot <- function(region_dat,
                     plot_variable = "fishing_KWh",
                     eez_sf,
                     land_sf,
-                    map_theme){
+                    map_theme,
+                    use_raster = T){
   
   ### Get totals for all flag states
   eez_totals <- region_dat$eez_dat %>%
@@ -173,7 +174,9 @@ EEZPlot <- function(region_dat,
     # }else{
       
     ### Map with high seas off --------------------------------------------------------------
-      
+     
+    if(!use_raster){
+    
       # Map 
       plot <- ggplot()+
         geom_tile(data = plot_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
@@ -194,8 +197,204 @@ EEZPlot <- function(region_dat,
         theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
         
     #}
+      
+    }else if(use_raster){
+      
+      raster_grid <- raster(xmn=x_lim[1], 
+                            xmx=x_lim[2], 
+                            ymn=y_lim[1], 
+                            ymx=y_lim[2], 
+                            res=0.1, crs="+proj=longlat +datum=WGS84")
+      
+      plot_totals_raster <- rasterize(plot_totals[, c("lon_cen", "lat_cen")], raster_grid, 
+                                      plot_totals[, plot_variable], fun=mean)
+      
+      crs(plot_totals_raster) <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+      
+      #plot <- plot(plot_totals_raster)
+      
+      # pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(plot_totals_raster),
+      #                     na.color = "transparent")
+      # 
+      plot <- leaflet() %>% addTiles() %>%
+        addRasterImage(plot_totals_raster, opacity = 0.8)
+        # addLegend(pal = pal, values = 10^values(plot_totals_raster),
+        #           title = legend_name)
+      
+    }
     
-    return(list(plot = plot + theme(legend.position = "none"),
-                legend = cowplot::get_legend(plot)))
+    return(list(plot = plot + theme(legend.position = "none")))
+                #legend = cowplot::get_legend(plot)))
 
+}
+
+EEZEffortMap <- function(region_dat,
+                         input_selected_eez,
+                         eez_sf,
+                         land_sf,
+                         map_id,
+                         min_zoom = 1){
+  
+  if(map_id == "high_seas_effort_map_all"){
+    
+    # # Extract FAO areas that should be selectable
+    # eezs <- region_dat$eezs
+    # 
+    # # Map
+    # leaflet(map_id, 
+    #         options = leafletOptions(minZoom = min_zoom, zoomControl = FALSE, 
+    #                                  attributionControl=FALSE)) %>% 
+    #   
+    #   htmlwidgets::onRender("function(el, x) {
+    #                         L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
+    #   
+    #   addProviderTiles("Esri.WorldPhysical") %>% 
+    #   
+    #   addPolygons(data = eezs,
+    #               fillColor = region_pal$dark_col,
+    #               fillOpacity = 0.8,
+    #               color= "white",
+    #               weight = 0.3,
+    #               highlight = highlightOptions(weight = 5,
+    #                                            color = "#666",
+    #                                            fillOpacity = 1,
+    #                                            bringToFront = TRUE),
+    #               label = eezs$title,
+    #               layerId = eezs$zone, #need this to select input below
+    #               labelOptions = labelOptions(style = list("font-weight" = "normal",
+    #                                                        padding = "3px 8px"),
+    #                                           textsize = "13px",
+    #                                           direction = "auto")
+    #   ) %>%
+    #   setView(lng = region_dat$map_lng, 
+    #           lat = region_dat$map_lat, 
+    #           zoom = region_dat$map_zoom) %>%
+    #   setMaxBounds(lng1 = region_dat$map_lng - 270, 
+    #                lat1 = -90, 
+    #                lng2 = region_dat$map_lng + 270, 
+    #                lat2 = 90)
+    
+  }else{
+    
+    
+    ### Get limits for map area
+    x_lim <- c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1)
+    y_lim <- c(region_dat$eez_bb$ymin - 1, region_dat$eez_bb$ymax + 1)
+    unname(x_lim)
+    unname(y_lim)
+    
+    # Get selected EEZ so we can emphasize it
+    selected_eez <- region_dat$eezs %>%
+      dplyr::filter(eez_ter_iso3 == input_selected_eez)
+
+    # Map
+    leaflet(map_id, 
+            options = leafletOptions(minZoom = min_zoom, zoomControl = FALSE, 
+                                     attributionControl=FALSE)) %>% 
+      
+      htmlwidgets::onRender("function(el, x) {
+                            L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
+      
+      addProviderTiles("Esri.WorldPhysical") %>% 
+      
+      addPolygons(data = region_dat$eezs,
+                  fillOpacity = 0,
+                  color= "white",
+                  weight = 0.3,
+                  label = NA,
+      ) %>%
+      addPolygons(data = selected_eez,
+                  fillOpacity = 0,
+                  color= "white",
+                  weight = 2,
+                  label = NA,
+      ) %>%
+      setView(lng = mean(x_lim, na.rm = T),
+              lat = mean(y_lim, na.rm = T),
+              zoom = min_zoom + 2) %>%
+      setMaxBounds(lng1 = x_lim[1],
+                   lat1 = y_lim[1],
+                   lng2 = x_lim[2],
+                   lat2 = y_lim[2])
+    
+  }
+  
+}
+
+EEZDatRasterize <- function(region_dat,
+                            input_selected_flag_state,
+                            type = "total",
+                            plot_variable = "fishing_KWh"){
+  
+  ### Get totals for all flag states
+  eez_totals <- region_dat$eez_dat %>%
+    group_by(lon_cen, lat_cen) %>%
+    summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+              fishing_KWh = sum(fishing_KWh, na.rm = T),
+              subs = sum(bad_subs, na.rm = T)) %>%
+    ungroup() %>%
+    mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
+  
+  if(type == "total"){
+    
+    ### Get totals for all flag states
+    plot_totals <- eez_totals
+    
+  }else{
+    
+    ### Get totals for selected flag states
+    plot_totals <- region_dat$eez_dat %>%
+      dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
+      rename(subs = bad_subs)
+    
+  }
+  
+  # Make sure there's data
+  req(nrow(plot_totals) > 0)
+  
+  ### Scale
+  if(plot_variable == "fishing_KWh"){
+    
+    legend_name = "Fishing effort \n(kWh)"
+    legend_options = "plasma"
+    
+    # # Caption
+    # caption = paste0("Total DW fishing effort\n(kWh): ", 
+    #                  format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+    
+    ## Log transform variable
+    plot_totals <- plot_totals %>%
+      dplyr::filter(fishing_KWh > 0) %>%
+      mutate(fishing_KWh = log10(fishing_KWh))
+    
+  }else{
+    
+    legend_name = "Capacity-Enhancing Subsidies\n(2018 $US)"
+    legend_options = "viridis"
+    
+    # # Caption
+    # caption = paste0("Estimated DW subsidies\n(2018 $US): ", 
+    #                  format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
+    
+    ## Log transform variable
+    plot_totals <- plot_totals %>%
+      dplyr::filter(subs > 0 & !is.na(subs)) %>%
+      mutate(subs = log10(subs))
+    
+  }
+  
+  # Make sure we still have data
+  req(nrow(plot_totals) > 0)
+  
+  # Rasterize
+  plot_totals_raster <- rasterFromXYZ(plot_totals[, c('lon_cen', 'lat_cen', plot_variable)])
+  crs(plot_totals_raster) <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+  
+  # Create palette
+  pal <- colorBin(legend_options, domain = seq(0, 6), bins = 5, na.color = "transparent", pretty = T)
+  
+  return(list(r = plot_totals_raster,
+         pal = pal,
+         pal_title = legend_name))
+    
 }
