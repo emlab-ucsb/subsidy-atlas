@@ -1,7 +1,7 @@
 ### -----------------------------------
 #
 # ACP Atlas of Distant Water Fishing
-# UI - Tab 9: Sub-Saharan Africa
+# UI - Tab 9: High Seas
 # 
 ### ------------------------------------
 

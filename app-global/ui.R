@@ -177,6 +177,12 @@ shinyUI(
                                          tabName = "high-seas", 
                                          icon = NULL,
                                          selected = NULL),
+                                
+                                # Summary Info
+                                menuItem("Data Summaries",
+                                         tabName = "summary",
+                                         icon = NULL,
+                                         selected = NULL),
 
                                 # Learn More
                                 menuItem("More Info, FAQs, and Contact", 
@@ -247,6 +253,11 @@ shinyUI(
        # High Seas
        tabItem(tabName = "high-seas",
                HighSeas(vessel_origins_fill_choices, vessel_origins_fill_scale_hs)
+       ),
+       
+       # Summaries
+       tabItem(tabName = "summary",
+               Summary()
        ),
        
        # FAQs and Contact

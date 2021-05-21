@@ -1,7 +1,7 @@
 ### -----------------------------------
 #
 # ACP Atlas of Distant Water Fishing
-# UI - Tab 9: FAQs & Contact
+# UI - Tab 11: FAQs & Contact
 # 
 ### ------------------------------------
 
@@ -29,33 +29,33 @@ Contact = function(){
            
     ),
     
-    ### Data summaries
-    column(12, id = "tblr-small-spaced-div",
-           
-           # Text
-           includeHTML("./text/faqs-and-contact/summary.html"),
-           
-           # File download buttons
-           column(12, style = "text-align: center;", id = "t-spaced-div",
-                  
-                  fluidRow(
-                    
-                    downloadButton("db_data_summary_by_eez", 
-                                   "Summary by EEZ\n(CSV)"),
-                    
-                    downloadButton("db_data_summary_by_region", 
-                                   "Summary by High Seas Area\n(CSV)"),
-                    
-                    downloadButton("db_data_summary_by_flag", 
-                                   "Summary by Flag State - EEZs Only\n(CSV)"),
-                    
-                    downloadButton("db_data_summary_by_flag_hs", 
-                                   "Summary by Flag State - High Seas Areas Only\n(CSV)")
-                  )
-                  
-           )
-
-    ),
+    # ### Data summaries
+    # column(12, id = "tblr-small-spaced-div",
+    #        
+    #        # Text
+    #        includeHTML("./text/faqs-and-contact/summary.html"),
+    #        
+    #        # File download buttons
+    #        column(12, style = "text-align: center;", id = "t-spaced-div",
+    #               
+    #               fluidRow(
+    #                 
+    #                 downloadButton("db_data_summary_by_eez", 
+    #                                "Summary by EEZ\n(CSV)"),
+    #                 
+    #                 downloadButton("db_data_summary_by_region", 
+    #                                "Summary by High Seas Area\n(CSV)"),
+    #                 
+    #                 downloadButton("db_data_summary_by_flag", 
+    #                                "Summary by Flag State - EEZs Only\n(CSV)"),
+    #                 
+    #                 downloadButton("db_data_summary_by_flag_hs", 
+    #                                "Summary by Flag State - High Seas Areas Only\n(CSV)")
+    #               )
+    #               
+    #        )
+    # 
+    # ),
     
     ### FAQs
     column(12, id = "tblr-small-spaced-div",

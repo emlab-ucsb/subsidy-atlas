@@ -4307,37 +4307,57 @@ shinyServer(function(input, output, session) {
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
   
+  summary_rv <- reactiveValues(by_eez = NULL,
+                               by_flag_eezs_only = NULL,
+                               by_hs_area = NULL,
+                               by_flag_hs_only = NULL)
+  
+  ### DT output: Data summary (by EEZ) -------------
+  output$summary_table_by_EEZ <- renderDataTable({
+    
+    # Read in data
+    dat <- read.csv("www/dw_activity_summary_by_eez.csv")
+    
+    summary_rv$by_eez <- dat
+    
+    # Create pretty summary table
+    DataSummaryDT(dat = dat,
+                  type = "eez")
+    
+  })
+  
   ### Download button: Summary by EEZ (CSV) -----------------------
   output$db_data_summary_by_eez <- downloadHandler(
     
     filename = function(){
-      paste0("DWFA_distant_water_fishing_summary_by_eez.csv")
+      paste0("DWFA_summary_by_eez.csv")
     },
     content = function(file) {
       
       file.copy("www/dw_activity_summary_by_eez.csv", file)
-
+      
     }
   )
   
-  ### Download button: Summary by High Seas Area (CSV) -----------------------
-  output$db_data_summary_by_region <- downloadHandler(
+  ### DT output: Data summary (by flag state - eezs only) -------------
+  output$summary_table_by_flag_EEZs_only <- renderDataTable({
     
-    filename = function(){
-      paste0("DWFA_distant_water_fishing_summary_by_high_seas_area.csv")
-    },
-    content = function(file) {
-      
-      file.copy("www/hs_activity_summary_by_area.csv", file)
-      
-    }
-  )
+    # Read in data
+    dat <- read.csv("www/dw_activity_summary_by_flag_state.csv")
+    
+    summary_rv$by_flag_eezs_only <- dat
+    
+    # Create pretty summary table
+    DataSummaryDT(dat = dat,
+                  type = "flag_eezs_only")
+    
+  })
   
   ### Download button: Summary by Flag State - EEZs only (CSV) -----------------------
   output$db_data_summary_by_flag <- downloadHandler(
     
     filename = function(){
-      paste0("DWFA_distant_water_fishing_summary_by_flag_state_eezs_only.csv")
+      paste0("DWFA_summary_by_flag_state_eezs_only.csv")
     },
     content = function(file) {
       
@@ -4346,11 +4366,52 @@ shinyServer(function(input, output, session) {
     }
   )
   
+  ### DT output: Data summary (by hs area) -------------
+  output$summary_table_by_hs_area <- renderDataTable({
+    
+    # Read in data
+    dat <- read.csv("www/hs_activity_summary_by_area.csv")
+    
+    summary_rv$by_hs_area <- dat
+    
+    # Create pretty summary table
+    DataSummaryDT(dat = dat,
+                  type = "hs_area")
+    
+  })
+  
+  ### Download button: Summary by High Seas Area (CSV) -----------------------
+  output$db_data_summary_by_region <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_summary_by_high_seas_area.csv")
+    },
+    content = function(file) {
+      
+      file.copy("www/hs_activity_summary_by_area.csv", file)
+      
+    }
+  )
+  
+  ### DT output: Data summary (by flag - hs only) -------------
+  output$summary_table_by_flag_hs_only <- renderDataTable({
+    
+    # Read in data
+    dat <- read.csv("www/hs_activity_summary_by_flag_state.csv")
+    
+    summary_rv$by_flag_hs_only <- dat
+    
+    # Create pretty summary table
+    DataSummaryDT(dat = dat,
+                  type = "flag_hs_only")
+    
+  })
+  
   ### Download button: Summary by Flag State - High Seas only (CSV) -----------------------
   output$db_data_summary_by_flag_hs <- downloadHandler(
     
     filename = function(){
-      paste0("DWFA_distant_water_fishing_summary_by_flag_state_hs_only.csv")
+      paste0("DWFA_summary_by_flag_state_hs_only.csv")
     },
     content = function(file){
       file.copy("www/hs_activity_summary_by_flag_state.csv", file)
