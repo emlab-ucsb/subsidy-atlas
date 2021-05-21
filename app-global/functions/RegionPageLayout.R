@@ -257,33 +257,32 @@ RegionPageLayout <- function(region_name,
                                                            column(6, align = "center",
 
                                                                   leafletOutput(
-                                                                  #plotOutput(  
                                                                     paste0(region_name, "_effort_map_all"),
-                                                                    height = "400px")
+                                                                    height = "375px")
 
                                                            ),
                                                            # Selected flag state
                                                            column(6, align = "center",
 
-                                                                  plotOutput(
+                                                                  leafletOutput(
                                                                     paste0(region_name, "_effort_map_selected"),
-                                                                    height = "400px")
+                                                                    height = "375px")
 
 
                                                            )
                                                          ),
                                                          
-                                                         fluidRow(
-                                                           
-                                                           column(12, align = "center",
-                                                                  
-                                                                  plotOutput(
-                                                                    paste0(region_name, "_effort_map_legend"),
-                                                                    height = "80px")
-                                                                  
-                                                           )
-                                                           
-                                                         ),
+                                                         # fluidRow(
+                                                         #   
+                                                         #   column(12, align = "center",
+                                                         #          
+                                                         #          plotOutput(
+                                                         #            paste0(region_name, "_effort_map_legend"),
+                                                         #            height = "80px")
+                                                         #          
+                                                         #   )
+                                                         #   
+                                                         # ),
                                                          
                                                          shinyjs::hidden(fluidRow(
 
@@ -359,33 +358,33 @@ RegionPageLayout <- function(region_name,
                                                            # All flag states
                                                            column(6, align = "center",
 
-                                                                  plotOutput(
+                                                                  leafletOutput(
                                                                     paste0(region_name, "_subsidies_map_all"),
-                                                                    height = "400px")
+                                                                    height = "375px")
 
 
                                                            ),
                                                            # Selected flag state
                                                            column(6, align = "center",
 
-                                                                  plotOutput(
+                                                                  leafletOutput(
                                                                     paste0(region_name, "_subsidies_map_selected"),
-                                                                    height = "400px")
+                                                                    height = "375px")
 
                                                            )
                                                          ),
                                                          
-                                                         fluidRow(
-                                                           
-                                                           column(12, align = "center",
-                                                                  
-                                                                  plotOutput(
-                                                                    paste0(region_name, "_subsidies_map_legend"),
-                                                                    height = "80px")
-                                                                  
-                                                           )
-
-                                                         ),
+                                                         # fluidRow(
+                                                         #   
+                                                         #   column(12, align = "center",
+                                                         #          
+                                                         #          plotOutput(
+                                                         #            paste0(region_name, "_subsidies_map_legend"),
+                                                         #            height = "80px")
+                                                         #          
+                                                         #   )
+                                                         # 
+                                                         # ),
                                                          
                                                          shinyjs::hidden(fluidRow(
 

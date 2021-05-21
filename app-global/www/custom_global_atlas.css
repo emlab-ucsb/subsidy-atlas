@@ -585,3 +585,9 @@ header.main-header {
 #methods-process-table-cell-3{
   width: 33%;
 }
+
+.leaflet-left {
+    left: 50%;
+    transform: translate(-50%, 0%);
+}
+

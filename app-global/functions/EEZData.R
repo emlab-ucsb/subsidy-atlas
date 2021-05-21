@@ -1,4 +1,8 @@
 
+### ----------------------------------------------------
+### Data import function - Load EEZ level data
+### ----------------------------------------------------
+
 LoadEEZData <- function(input_selected_eez){
   
   # Find matching data file and load
@@ -20,268 +24,247 @@ LoadEEZData <- function(input_selected_eez){
   
 }
 
-EEZPlot <- function(region_dat,
-                    input_selected_eez,
-                    input_selected_flag_state,
-                    input_hs,
-                    type = "total",
-                    plot_variable = "fishing_KWh",
-                    eez_sf,
-                    land_sf,
-                    map_theme,
-                    use_raster = T){
-  
-  ### Get totals for all flag states
-  eez_totals <- region_dat$eez_dat %>%
-    group_by(lon_cen, lat_cen) %>%
-    summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-              fishing_KWh = sum(fishing_KWh, na.rm = T),
-              subs = sum(bad_subs, na.rm = T)) %>%
-    ungroup() %>%
-    mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
-  
-  if(type == "total"){
-    
-    plot_totals <- eez_totals
-    
-    # ### Get high seas effort if relevant
-    # if(input_hs){
-    #   
-    #   hs_totals <- region_dat$hs_dat %>%
-    #     group_by(lon_cen, lat_cen) %>%
-    #     summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-    #               fishing_KWh = sum(fishing_KWh, na.rm = T),
-    #               subs = sum(bad_subs, na.rm = T)) %>%
-    #     ungroup() %>%
-    #     mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
-    #   
-    # }else{
-    #   
-    #   hs_totals <- tibble(lat_cen = numeric(0),
-    #                       lon_cen = numeric(0),
-    #                       fishing_hours = numeric(0),
-    #                       fishing_KWh = numeric(0),
-    #                       subs = numeric(0),
-    #                       bad_subs_per_fishing_KWh = numeric(0))
-    # }
-    
-  }else{
-    
-    ### Get totals for selected flag states
-    plot_totals <- region_dat$eez_dat %>%
-      dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
-      rename(subs = bad_subs)
-    
-    # ### Get high seas effort if relevant
-    # if(input_hs){
-    #   
-    #   hs_totals <- region_dat$hs_dat %>%
-    #     dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
-    #     rename(subs = bad_subs)
-    #   
-    # }else{
-    #   
-    #   hs_totals <- tibble(lat_cen = numeric(0),
-    #                       lon_cen = numeric(0),
-    #                       fishing_hours = numeric(0),
-    #                       fishing_KWh = numeric(0),
-    #                       subs = numeric(0),
-    #                       bad_subs_per_fishing_KWh = numeric(0))
-    # }
-    
-  }
-  
-  #browser()
-  req(nrow(plot_totals) > 0)
-    
-    ### Get limits for map area
-    x_lim <- c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1)
-    y_lim <- c(region_dat$eez_bb$ymin - 1, region_dat$eez_bb$ymax + 1)
-    
-    ### Scale
-    if(plot_variable == "fishing_KWh"){
-      
-      legend_name = "Fishing effort \n(kWh)"
-      legend_options = "A"
+### ----------------------------------------------------
+### Plotting function - EEZ level maps (ggplot version)
+### ----------------------------------------------------
 
-      ### Get legend limits
-      scale_breaks <- pretty(log10(c(eez_totals[[plot_variable]] 
-                                     #hs_totals[[plot_variable]]
-                                     )), n = 5)
-      scale_labels <- format(round(10^scale_breaks, 0), big.mark = ",", scientific = F)
-      
-      # Caption
-      caption = paste0("Total DW fishing effort\n(kWh): ", 
-                       format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
-      
-      ### Log transform variable 
-      plot_totals <- plot_totals %>%
-        dplyr::filter(fishing_KWh > 0) %>%
-        mutate(fishing_KWh = log10(fishing_KWh)) 
-      
-      # hs_totals <- hs_totals %>%
-      #   dplyr::filter(fishing_KWh > 0) %>%
-      #   mutate(fishing_KWh = log10(fishing_KWh)) 
-      
-    }else{
-      
-      legend_name = "Capacity-Enhancing Subsidies\n(2018 $US)"
-      legend_options = "D"
-      
-      ### Get legend limits
-      scale_breaks <- pretty(log10(c(eez_totals[[plot_variable]] 
-                               #hs_totals[[plot_variable]]
-                               )), n = 5)
-      scale_labels <- format(round(10^scale_breaks, 0), big.mark = ",", scientific = F)
-      
-      # Caption
-      caption = paste0("Estimated DW subsidies\n(2018 $US): ", 
-                       format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
-      ### Log transform variable 
-      plot_totals <- plot_totals %>%
-        dplyr::filter(subs > 0 & !is.na(subs)) %>%
-        mutate(subs = log10(subs)) 
+# EEZPlot <- function(region_dat,
+#                     input_selected_eez,
+#                     input_selected_flag_state,
+#                     input_hs,
+#                     type = "total",
+#                     plot_variable = "fishing_KWh",
+#                     eez_sf,
+#                     land_sf,
+#                     map_theme,
+#                     use_raster = T){
+#   
+#   ### Get totals for all flag states
+#   eez_totals <- region_dat$eez_dat %>%
+#     group_by(lon_cen, lat_cen) %>%
+#     summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+#               fishing_KWh = sum(fishing_KWh, na.rm = T),
+#               subs = sum(bad_subs, na.rm = T)) %>%
+#     ungroup() %>%
+#     mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
+#   
+#   if(type == "total"){
+#     
+#     plot_totals <- eez_totals
+#     
+#     # ### Get high seas effort if relevant
+#     # if(input_hs){
+#     #   
+#     #   hs_totals <- region_dat$hs_dat %>%
+#     #     group_by(lon_cen, lat_cen) %>%
+#     #     summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+#     #               fishing_KWh = sum(fishing_KWh, na.rm = T),
+#     #               subs = sum(bad_subs, na.rm = T)) %>%
+#     #     ungroup() %>%
+#     #     mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
+#     #   
+#     # }else{
+#     #   
+#     #   hs_totals <- tibble(lat_cen = numeric(0),
+#     #                       lon_cen = numeric(0),
+#     #                       fishing_hours = numeric(0),
+#     #                       fishing_KWh = numeric(0),
+#     #                       subs = numeric(0),
+#     #                       bad_subs_per_fishing_KWh = numeric(0))
+#     # }
+#     
+#   }else{
+#     
+#     ### Get totals for selected flag states
+#     plot_totals <- region_dat$eez_dat %>%
+#       dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
+#       rename(subs = bad_subs)
+#     
+#     # ### Get high seas effort if relevant
+#     # if(input_hs){
+#     #   
+#     #   hs_totals <- region_dat$hs_dat %>%
+#     #     dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
+#     #     rename(subs = bad_subs)
+#     #   
+#     # }else{
+#     #   
+#     #   hs_totals <- tibble(lat_cen = numeric(0),
+#     #                       lon_cen = numeric(0),
+#     #                       fishing_hours = numeric(0),
+#     #                       fishing_KWh = numeric(0),
+#     #                       subs = numeric(0),
+#     #                       bad_subs_per_fishing_KWh = numeric(0))
+#     # }
+#     
+#   }
+#   
+#   #browser()
+#   req(nrow(plot_totals) > 0)
+#     
+#     ### Get limits for map area
+#     x_lim <- c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1)
+#     y_lim <- c(region_dat$eez_bb$ymin - 1, region_dat$eez_bb$ymax + 1)
+#     
+#     ### Scale
+#     if(plot_variable == "fishing_KWh"){
+#       
+#       legend_name = "Fishing effort \n(kWh)"
+#       legend_options = "A"
+# 
+#       ### Get legend limits
+#       scale_breaks <- pretty(log10(c(eez_totals[[plot_variable]] 
+#                                      #hs_totals[[plot_variable]]
+#                                      )), n = 5)
+#       scale_labels <- format(round(10^scale_breaks, 0), big.mark = ",", scientific = F)
+#       
+#       # Caption
+#       caption = paste0("Total DW fishing effort\n(kWh): ", 
+#                        format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+#       
+#       ### Log transform variable 
+#       plot_totals <- plot_totals %>%
+#         dplyr::filter(fishing_KWh > 0) %>%
+#         mutate(fishing_KWh = log10(fishing_KWh)) 
+#       
+#       # hs_totals <- hs_totals %>%
+#       #   dplyr::filter(fishing_KWh > 0) %>%
+#       #   mutate(fishing_KWh = log10(fishing_KWh)) 
+#       
+#     }else{
+#       
+#       legend_name = "Capacity-Enhancing Subsidies\n(2018 $US)"
+#       legend_options = "D"
+#       
+#       ### Get legend limits
+#       scale_breaks <- pretty(log10(c(eez_totals[[plot_variable]] 
+#                                #hs_totals[[plot_variable]]
+#                                )), n = 5)
+#       scale_labels <- format(round(10^scale_breaks, 0), big.mark = ",", scientific = F)
+#       
+#       # Caption
+#       caption = paste0("Estimated DW subsidies\n(2018 $US): ", 
+#                        format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
+#       ### Log transform variable 
+#       plot_totals <- plot_totals %>%
+#         dplyr::filter(subs > 0 & !is.na(subs)) %>%
+#         mutate(subs = log10(subs)) 
+# 
+#     }
+#     
+#     req(nrow(plot_totals) > 0)
+#     
+#     ### Map with high seas on --------------------------------------------------------------
+#     
+#     # if(input_hs 
+#     #    & nrow(hs_totals) > 0){
+#     #   
+#     # # Map 
+#     # plot <- ggplot()+
+#     #   geom_tile(data = plot_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
+#     #   geom_tile(data = hs_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
+#     #     scale_fill_gradientn(colors = viridis_pal(option = legend_options)(9),
+#     #                          breaks = scale_breaks,
+#     #                          limits = c(min(scale_breaks), max(scale_breaks)),
+#     #                          labels = scale_labels,
+#     #                          name = legend_name)+
+#     #   guides(fill = guide_colourbar(title.position = "bottom", title.hjust = 0.5, barwidth = 20))+
+#     #   geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs
+#     #   geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries
+#     #   labs(x = "", y = "")+
+#     #   coord_sf(xlim = x_lim, ylim = y_lim) +
+#     #   scale_x_continuous(expand = c(0,0))+
+#     #   scale_y_continuous(expand = c(0,0))+
+#     #   map_theme+
+#     #   labs(caption=caption) + 
+#     #   theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
+#     #   
+#     # }else{
+#       
+#     ### Map with high seas off --------------------------------------------------------------
+#      
+#       # Map 
+#       plot <- ggplot()+
+#         geom_tile(data = plot_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
+#         scale_fill_gradientn(colors = viridis_pal(option = legend_options)(9),
+#                              breaks = scale_breaks,
+#                              limits = c(min(scale_breaks), max(scale_breaks)),
+#                              labels = scale_labels,
+#                              name = legend_name)+
+#         geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries
+#         geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs
+#         guides(fill = guide_colourbar(title.position = "bottom", title.hjust = 0.5, barwidth = 20, ticks.colour = "black", frame.colour = "black"))+
+#         labs(x = "", y = "")+
+#         coord_sf(xlim = x_lim, ylim = y_lim) +
+#         scale_x_continuous(expand = c(0,0))+
+#         scale_y_continuous(expand = c(0,0))+
+#         map_theme+
+#         labs(caption=caption) + 
+#         theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
+#         
+#     #}
+#       
+#     return(list(plot = plot + theme(legend.position = "none"),
+#                 legend = cowplot::get_legend(plot)))
+# 
+# }
 
-    }
-    
-    req(nrow(plot_totals) > 0)
-    
-    ### Map with high seas on --------------------------------------------------------------
-    
-    # if(input_hs 
-    #    & nrow(hs_totals) > 0){
-    #   
-    # # Map 
-    # plot <- ggplot()+
-    #   geom_tile(data = plot_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
-    #   geom_tile(data = hs_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
-    #     scale_fill_gradientn(colors = viridis_pal(option = legend_options)(9),
-    #                          breaks = scale_breaks,
-    #                          limits = c(min(scale_breaks), max(scale_breaks)),
-    #                          labels = scale_labels,
-    #                          name = legend_name)+
-    #   guides(fill = guide_colourbar(title.position = "bottom", title.hjust = 0.5, barwidth = 20))+
-    #   geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs
-    #   geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries
-    #   labs(x = "", y = "")+
-    #   coord_sf(xlim = x_lim, ylim = y_lim) +
-    #   scale_x_continuous(expand = c(0,0))+
-    #   scale_y_continuous(expand = c(0,0))+
-    #   map_theme+
-    #   labs(caption=caption) + 
-    #   theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
-    #   
-    # }else{
-      
-    ### Map with high seas off --------------------------------------------------------------
-     
-    if(!use_raster){
-    
-      # Map 
-      plot <- ggplot()+
-        geom_tile(data = plot_totals, aes(x = lon_cen, y = lat_cen, width = 0.1, height = 0.1, fill = get(plot_variable)))+
-        scale_fill_gradientn(colors = viridis_pal(option = legend_options)(9),
-                             breaks = scale_breaks,
-                             limits = c(min(scale_breaks), max(scale_breaks)),
-                             labels = scale_labels,
-                             name = legend_name)+
-        geom_sf(data = land_sf, fill = "#fafaf8", color = "#f4ebeb", size = 0.5)+ # world countries
-        geom_sf(data = eez_sf, fill = NA, color = "grey60", size = 0.5)+ # world EEZs
-        guides(fill = guide_colourbar(title.position = "bottom", title.hjust = 0.5, barwidth = 20, ticks.colour = "black", frame.colour = "black"))+
-        labs(x = "", y = "")+
-        coord_sf(xlim = x_lim, ylim = y_lim) +
-        scale_x_continuous(expand = c(0,0))+
-        scale_y_continuous(expand = c(0,0))+
-        map_theme+
-        labs(caption=caption) + 
-        theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
-        
-    #}
-      
-    }else if(use_raster){
-      
-      raster_grid <- raster(xmn=x_lim[1], 
-                            xmx=x_lim[2], 
-                            ymn=y_lim[1], 
-                            ymx=y_lim[2], 
-                            res=0.1, crs="+proj=longlat +datum=WGS84")
-      
-      plot_totals_raster <- rasterize(plot_totals[, c("lon_cen", "lat_cen")], raster_grid, 
-                                      plot_totals[, plot_variable], fun=mean)
-      
-      crs(plot_totals_raster) <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-      
-      #plot <- plot(plot_totals_raster)
-      
-      # pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(plot_totals_raster),
-      #                     na.color = "transparent")
-      # 
-      plot <- leaflet() %>% addTiles() %>%
-        addRasterImage(plot_totals_raster, opacity = 0.8)
-        # addLegend(pal = pal, values = 10^values(plot_totals_raster),
-        #           title = legend_name)
-      
-    }
-    
-    return(list(plot = plot + theme(legend.position = "none")))
-                #legend = cowplot::get_legend(plot)))
+### ----------------------------------------------------
+### Plotting function - EEZ level maps (Leaflet version)
+### ----------------------------------------------------
 
-}
-
-EEZEffortMap <- function(region_dat,
+EEZLeafletMap <- function(region_dat,
                          input_selected_eez,
-                         eez_sf,
-                         land_sf,
                          map_id,
                          min_zoom = 1){
   
-  if(map_id == "high_seas_effort_map_all"){
+  if(map_id %in% c("high_seas_effort_map_all", "high_seas_effort_map_selected", "high_seas_subsidies_map_all", "high_seas_subsidies_map_selected")){
     
-    # # Extract FAO areas that should be selectable
-    # eezs <- region_dat$eezs
-    # 
-    # # Map
-    # leaflet(map_id, 
-    #         options = leafletOptions(minZoom = min_zoom, zoomControl = FALSE, 
-    #                                  attributionControl=FALSE)) %>% 
-    #   
-    #   htmlwidgets::onRender("function(el, x) {
-    #                         L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
-    #   
-    #   addProviderTiles("Esri.WorldPhysical") %>% 
-    #   
-    #   addPolygons(data = eezs,
-    #               fillColor = region_pal$dark_col,
-    #               fillOpacity = 0.8,
-    #               color= "white",
-    #               weight = 0.3,
-    #               highlight = highlightOptions(weight = 5,
-    #                                            color = "#666",
-    #                                            fillOpacity = 1,
-    #                                            bringToFront = TRUE),
-    #               label = eezs$title,
-    #               layerId = eezs$zone, #need this to select input below
-    #               labelOptions = labelOptions(style = list("font-weight" = "normal",
-    #                                                        padding = "3px 8px"),
-    #                                           textsize = "13px",
-    #                                           direction = "auto")
-    #   ) %>%
-    #   setView(lng = region_dat$map_lng, 
-    #           lat = region_dat$map_lat, 
-    #           zoom = region_dat$map_zoom) %>%
-    #   setMaxBounds(lng1 = region_dat$map_lng - 270, 
-    #                lat1 = -90, 
-    #                lng2 = region_dat$map_lng + 270, 
-    #                lat2 = 90)
+    ### Get limits for map area
+    x_lim <- unname(c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1))
+    y_lim <- unname(c(region_dat$eez_bb$ymin - 1, region_dat$eez_bb$ymax + 1))
+    
+    # Get selected EEZ so we can emphasize it
+    selected_eez <- region_dat$eezs %>%
+      mutate(zone = as.character(zone)) %>%
+      dplyr::filter(zone == input_selected_eez)
+    
+    # Map
+    leaflet(map_id, 
+            options = leafletOptions(minZoom = min_zoom, zoomControl = FALSE, 
+                                     attributionControl=FALSE)) %>% 
+      
+      htmlwidgets::onRender("function(el, x) {
+                            L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
+      
+      addProviderTiles("Esri.WorldPhysical") %>% 
+      
+      addPolygons(data = region_dat$eezs,
+                  fillOpacity = 0,
+                  color= "white",
+                  weight = 0.3,
+                  label = NA,
+      ) %>%
+      addPolygons(data = selected_eez,
+                  fillOpacity = 0,
+                  color= "white",
+                  weight = 2,
+                  label = NA,
+      ) %>%
+      setView(lng = mean(x_lim, na.rm = T),
+              lat = mean(y_lim, na.rm = T),
+              zoom = min_zoom + 1) %>%
+      setMaxBounds(lng1 = x_lim[1],
+                   lat1 = y_lim[1],
+                   lng2 = x_lim[2],
+                   lat2 = y_lim[2])
     
   }else{
     
     
     ### Get limits for map area
-    x_lim <- c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1)
-    y_lim <- c(region_dat$eez_bb$ymin - 1, region_dat$eez_bb$ymax + 1)
-    unname(x_lim)
-    unname(y_lim)
+    x_lim <- unname(c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1))
+    y_lim <- unname(c(region_dat$eez_bb$ymin - 1, region_dat$eez_bb$ymax + 1))
     
     # Get selected EEZ so we can emphasize it
     selected_eez <- region_dat$eezs %>%
@@ -321,6 +304,10 @@ EEZEffortMap <- function(region_dat,
   
 }
 
+### ----------------------------------------------------
+### Data manipulation function - Rasterize EEZ level data
+### ----------------------------------------------------
+
 EEZDatRasterize <- function(region_dat,
                             input_selected_flag_state,
                             type = "total",
@@ -340,7 +327,7 @@ EEZDatRasterize <- function(region_dat,
     ### Get totals for all flag states
     plot_totals <- eez_totals
     
-  }else{
+  }else if(type == "flag"){
     
     ### Get totals for selected flag states
     plot_totals <- region_dat$eez_dat %>%
@@ -355,12 +342,16 @@ EEZDatRasterize <- function(region_dat,
   ### Scale
   if(plot_variable == "fishing_KWh"){
     
-    legend_name = "Fishing effort \n(kWh)"
+    legend_name = paste0("Fishing effort", "<br>", "(kWh)")
     legend_options = "plasma"
     
-    # # Caption
-    # caption = paste0("Total DW fishing effort\n(kWh): ", 
-    #                  format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+    # Caption
+    caption = paste0("<b>", "Total DW fishing effort (kWh): ", "</b>", 
+                     "<br>",
+                     format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+    
+    # Format caption
+    caption <- tags$div(HTML(caption))  
     
     ## Log transform variable
     plot_totals <- plot_totals %>%
@@ -369,12 +360,16 @@ EEZDatRasterize <- function(region_dat,
     
   }else{
     
-    legend_name = "Capacity-Enhancing Subsidies\n(2018 $US)"
+    legend_name = paste0("Capacity-Enhancing Subsidies", "<br>", "(2018 $US)")
     legend_options = "viridis"
     
-    # # Caption
-    # caption = paste0("Estimated DW subsidies\n(2018 $US): ", 
-    #                  format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
+    # Caption
+    caption = paste0("<b>", "Estimated DW subsidies\n(2018 $US): ", "</b>",
+                     "<br>",
+                     format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
+    
+    # Format caption
+    caption <- tags$div(HTML(caption))  
     
     ## Log transform variable
     plot_totals <- plot_totals %>%
@@ -395,6 +390,7 @@ EEZDatRasterize <- function(region_dat,
   
   return(list(r = plot_totals_raster,
          pal = pal,
-         pal_title = legend_name))
+         pal_title = legend_name,
+         caption = caption))
     
 }
