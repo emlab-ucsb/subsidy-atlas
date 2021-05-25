@@ -116,10 +116,12 @@ manual_eez <- list("CAN" = c("lat" = NA, "lon" = NA, "zoom" = 1),
                    "GBR" = c("lat" = NA, "lon" = NA, "zoom" = 1),
                    "GRL" = c("lat" = NA, "lon" = NA, "zoom" = 1),
                    "NOR" = c("lat" = NA, "lon" = NA, "zoom" = 2),
-                   "RUS" = c("lat" = 71, "lon" = 60, "zoom" = 1),
+                   "RUS" = c("lat" = 71, "lon" = 70, "zoom" = 1),
                    "SJM" = c("lat" = NA, "lon" = NA, "zoom" = 2),
-                   "USA" = c("lat" = NA, "lon" = NA, "zoom" = 1))
+                   "USA" = c("lat" = 40, "lon" = -112, "zoom" = 1))
 
-manual_region <- list("81" = c("lat" = NA, "lon" = 195, "zoom" = 1),
-                      "88" = c("lat" = NA, "lon" = 195, "zoom" = 1))
+manual_region <- list("61" = c("lat" = NA, "lon" = 175, "zoom" = 1),
+                      "71" = c("lat" = NA, "lon" = 180, "zoom" = 1),
+                      "81" = c("lat" = NA, "lon" = 195, "zoom" = 1),
+                      "88" = c("lat" = NA, "lon" = 200, "zoom" = 1))
 

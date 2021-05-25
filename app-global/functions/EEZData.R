@@ -229,6 +229,32 @@ EEZLeafletMap <- function(region_dat,
       mutate(zone = as.character(zone)) %>%
       dplyr::filter(zone == input_selected_eez)
     
+    # Check to see if there are any manual zoom/extent corrections that need to be made
+    if(input_selected_eez %in% names(manual_region)){
+      
+      eez_manual_info <- manual_region[[input_selected_eez]]
+      
+      lon_map <- unname(ifelse(!is.na(eez_manual_info["lon"]), 
+                               eez_manual_info["lon"],
+                               mean(x_lim, na.rm = T)))
+      
+      lat_map <- unname(ifelse(!is.na(eez_manual_info["lat"]), 
+                               eez_manual_info["lat"],
+                               mean(y_lim, na.rm = T)))
+      
+      zoom_map <- unname(ifelse(!is.na(eez_manual_info["zoom"]), 
+                                eez_manual_info["zoom"],
+                                min_zoom + 1))
+      
+      
+    }else{
+      
+      lon_map <- mean(x_lim, na.rm = T)
+      lat_map <- mean(y_lim, na.rm = T)
+      zoom_map <- min_zoom + 1
+      
+    }
+    
     # Map
     leaflet(map_id, 
             options = leafletOptions(minZoom = min_zoom, zoomControl = FALSE, 
@@ -251,13 +277,13 @@ EEZLeafletMap <- function(region_dat,
                   weight = 2,
                   label = NA,
       ) %>%
-      setView(lng = mean(x_lim, na.rm = T),
-              lat = mean(y_lim, na.rm = T),
-              zoom = min_zoom + 1) %>%
-      setMaxBounds(lng1 = x_lim[1],
-                   lat1 = y_lim[1],
-                   lng2 = x_lim[2],
-                   lat2 = y_lim[2])
+      setView(lng = lon_map,
+              lat = lat_map,
+              zoom = zoom_map)
+      # setMaxBounds(lng1 = x_lim[1],
+      #              lat1 = y_lim[1],
+      #              lng2 = x_lim[2],
+      #              lat2 = y_lim[2])
     
   }else{
     
@@ -269,6 +295,32 @@ EEZLeafletMap <- function(region_dat,
     # Get selected EEZ so we can emphasize it
     selected_eez <- region_dat$eezs %>%
       dplyr::filter(eez_ter_iso3 == input_selected_eez)
+    
+    # Check to see if there are any manual zoom/extent corrections that need to be made
+    if(input_selected_eez %in% names(manual_eez)){
+      
+      eez_manual_info <- manual_eez[[input_selected_eez]]
+      
+      lon_map <- unname(ifelse(!is.na(eez_manual_info["lon"]), 
+                               eez_manual_info["lon"],
+                               mean(x_lim, na.rm = T)))
+      
+      lat_map <- unname(ifelse(!is.na(eez_manual_info["lat"]), 
+                               eez_manual_info["lat"],
+                               mean(y_lim, na.rm = T)))
+      
+      zoom_map <- unname(ifelse(!is.na(eez_manual_info["zoom"]), 
+                                eez_manual_info["zoom"],
+                                min_zoom + 1))
+      
+      
+    }else{
+      
+      lon_map <- mean(x_lim, na.rm = T)
+      lat_map <- mean(y_lim, na.rm = T)
+      zoom_map <- min_zoom + 1
+      
+    }
 
     # Map
     leaflet(map_id, 
@@ -292,13 +344,13 @@ EEZLeafletMap <- function(region_dat,
                   weight = 2,
                   label = NA,
       ) %>%
-      setView(lng = mean(x_lim, na.rm = T),
-              lat = mean(y_lim, na.rm = T),
-              zoom = min_zoom + 2) %>%
-      setMaxBounds(lng1 = x_lim[1],
-                   lat1 = y_lim[1],
-                   lng2 = x_lim[2],
-                   lat2 = y_lim[2])
+      setView(lng = lon_map,
+              lat = lat_map,
+              zoom = zoom_map)
+    # setMaxBounds(lng1 = x_lim[1],
+    #              lat1 = y_lim[1],
+    #              lng2 = x_lim[2],
+    #              lat2 = y_lim[2])
     
   }
   

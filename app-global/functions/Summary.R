@@ -94,7 +94,7 @@ SummaryUI <- function(region_dat,
     
     ### Combine into country profile/summary of DW fishing
     info_out <- paste0(
-      "<i style = 'color: red;'>Select a coastal state by clicking on the map or using the dropdown menu in the left panel to view a summary of distant water fishing activity in that EEZ</b>") %>%
+      "<i style = 'color: red;'>Select a coastal state (or FAO area for the high seas) by clicking on the map or using the dropdown menu in the left panel to view a summary of distant water fishing activity in that EEZ or area.</b>") %>%
       lapply(htmltools::HTML)
     
   }
