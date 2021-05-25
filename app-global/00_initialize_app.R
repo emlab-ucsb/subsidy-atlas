@@ -109,3 +109,17 @@ eezmaptheme <- theme_minimal()+
 hs_pal <- list(dark_col = "#1783C3",
                light_col = "#67C6FF")
 
+### Manual zoom/extent corrections -----------
+
+manual_eez <- list("CAN" = c("lat" = NA, "lon" = NA, "zoom" = 1),
+                   "FRA" = c("lat" = 24, "lon" = -58, "zoom" = 1),
+                   "GBR" = c("lat" = NA, "lon" = NA, "zoom" = 1),
+                   "GRL" = c("lat" = NA, "lon" = NA, "zoom" = 1),
+                   "NOR" = c("lat" = NA, "lon" = NA, "zoom" = 2),
+                   "RUS" = c("lat" = 71, "lon" = 60, "zoom" = 1),
+                   "SJM" = c("lat" = NA, "lon" = NA, "zoom" = 2),
+                   "USA" = c("lat" = NA, "lon" = NA, "zoom" = 1))
+
+manual_region <- list("81" = c("lat" = NA, "lon" = 195, "zoom" = 1),
+                      "88" = c("lat" = NA, "lon" = 195, "zoom" = 1))
+

@@ -38,9 +38,9 @@ NavMap <- function(region_dat,
       setView(lng = region_dat$map_lng, 
               lat = region_dat$map_lat, 
               zoom = region_dat$map_zoom) %>%
-      setMaxBounds(lng1 = region_dat$map_lng - 270, 
+      setMaxBounds(lng1 = region_dat$map_lng - 300, 
                    lat1 = -90, 
-                   lng2 = region_dat$map_lng + 270, 
+                   lng2 = region_dat$map_lng + 300, 
                    lat2 = 90)
 
   }else{
@@ -102,9 +102,9 @@ NavMap <- function(region_dat,
       setView(lng = region_dat$map_lng, 
               lat = region_dat$map_lat, 
               zoom = region_dat$map_zoom) %>%
-      setMaxBounds(lng1 = region_dat$map_lng - 90, 
+      setMaxBounds(lng1 = region_dat$map_lng - 270, 
                    lat1 = -90, 
-                   lng2 = region_dat$map_lng + 90, 
+                   lng2 = region_dat$map_lng + 270, 
                    lat2 = 90)
     
   }
@@ -128,6 +128,32 @@ NavMapHighlight <- function(region_dat,
     # Remove any previously highlighted polygon
     proxy_map %>% clearGroup("highlighted_eez")
     
+    # Check to see if there are any manual zoom/extent corrections that need to be made
+    if(input_selected_eez %in% names(manual_region)){
+      
+      eez_manual_info <- manual_region[[input_selected_eez]]
+      
+      lon_map <- unname(ifelse(!is.na(eez_manual_info["lon"]), 
+                               eez_manual_info["lon"],
+                               mean(selected_eez$fao_lon, na.rm = T)))
+      
+      lat_map <- unname(ifelse(!is.na(eez_manual_info["lat"]), 
+                               eez_manual_info["lat"],
+                               mean(selected_eez$fao_lat, na.rm = T)))
+      
+      zoom_map <- unname(ifelse(!is.na(eez_manual_info["zoom"]), 
+                                eez_manual_info["zoom"],
+                                region_dat$map_zoom))
+      
+      
+    }else{
+      
+      lon_map <- mean(selected_eez$fao_lon, na.rm = T)
+      lat_map <- mean(selected_eez$fao_lat, na.rm = T)
+      zoom_map <- region_dat$map_zoom
+      
+    }
+    
     # Add a different colored polygon on top of map
     proxy_map %>% 
       addPolygons(data = selected_eez,
@@ -145,9 +171,9 @@ NavMapHighlight <- function(region_dat,
                                                            padding = "3px 8px"),
                                               textsize = "13px",
                                               direction = "auto")) %>%
-      setView(lng=mean(selected_eez$fao_lon, na.rm = T), 
-              lat=mean(selected_eez$fao_lat, na.rm = T), 
-              zoom=region_dat$map_zoom)
+      setView(lng=lon_map, 
+              lat=lat_map, 
+              zoom=zoom_map)
     
   }else{
   
@@ -159,6 +185,32 @@ NavMapHighlight <- function(region_dat,
   
   # Remove any previously highlighted polygon
   proxy_map %>% clearGroup("highlighted_eez")
+  
+  # Check to see if there are any manual zoom/extent corrections that need to be made
+  if(input_selected_eez %in% names(manual_eez)){
+    
+    eez_manual_info <- manual_eez[[input_selected_eez]]
+    
+    lon_map <- unname(ifelse(!is.na(eez_manual_info["lon"]), 
+                      eez_manual_info["lon"],
+                      mean(selected_eez$eez_lon, na.rm = T)))
+    
+    lat_map <- unname(ifelse(!is.na(eez_manual_info["lat"]), 
+                      eez_manual_info["lat"],
+                      mean(selected_eez$eez_lat, na.rm = T)))
+    
+    zoom_map <- unname(ifelse(!is.na(eez_manual_info["zoom"]), 
+                      eez_manual_info["zoom"],
+                      region_dat$map_zoom + 1))
+    
+    
+  }else{
+    
+    lon_map <- mean(selected_eez$eez_lon, na.rm = T)
+    lat_map <- mean(selected_eez$eez_lat, na.rm = T)
+    zoom_map <- region_dat$map_zoom + 1
+    
+  }
   
   # Add a different colored polygon on top of map
   proxy_map %>% 
@@ -177,9 +229,9 @@ NavMapHighlight <- function(region_dat,
                                                          padding = "3px 8px"),
                                             textsize = "13px",
                                             direction = "auto")) %>%
-    setView(lng=mean(selected_eez$eez_lon, na.rm = T), 
-            lat=mean(selected_eez$eez_lat, na.rm = T), 
-            zoom=region_dat$map_zoom+1)
+    setView(lng = lon_map, 
+            lat = lat_map, 
+            zoom = zoom_map)
   
   }
 
