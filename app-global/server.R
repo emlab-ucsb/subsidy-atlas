@@ -528,7 +528,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -609,7 +609,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
@@ -1030,7 +1030,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -1111,7 +1111,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
@@ -1533,7 +1533,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -1614,7 +1614,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
@@ -2036,7 +2036,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -2117,7 +2117,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
@@ -2539,7 +2539,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -2620,7 +2620,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
@@ -3042,7 +3042,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -3123,7 +3123,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
@@ -3543,7 +3543,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -3624,7 +3624,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
@@ -4046,7 +4046,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft", 
+      addLegend(position = "bottomright", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
@@ -4127,7 +4127,7 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomleft",
+      addLegend(position = "bottomright",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,

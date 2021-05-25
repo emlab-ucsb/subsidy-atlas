@@ -261,7 +261,7 @@ EEZLeafletMap <- function(region_dat,
                                      attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
+                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       
@@ -328,7 +328,7 @@ EEZLeafletMap <- function(region_dat,
                                      attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
+                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       
