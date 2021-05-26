@@ -261,7 +261,7 @@ EEZLeafletMap <- function(region_dat,
                                      attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+                            L.control.zoom({ position: 'topleft' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       
@@ -328,7 +328,7 @@ EEZLeafletMap <- function(region_dat,
                                      attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+                            L.control.zoom({ position: 'topleft' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       
@@ -394,12 +394,11 @@ EEZDatRasterize <- function(region_dat,
   ### Scale
   if(plot_variable == "fishing_KWh"){
     
-    legend_name = paste0("Fishing effort", "<br>", "(kWh)")
+    legend_name = paste0("Fishing effort (kWh)")
     legend_options = "plasma"
     
     # Caption
     caption = paste0("<b>", "Total DW fishing effort (kWh): ", "</b>", 
-                     "<br>",
                      format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
     
     # Format caption
@@ -412,12 +411,11 @@ EEZDatRasterize <- function(region_dat,
     
   }else{
     
-    legend_name = paste0("Capacity-Enhancing Subsidies", "<br>", "(2018 $US)")
+    legend_name = paste0("Capacity-Enhancing", "<br>",  "Subsidies (2018 $US)")
     legend_options = "viridis"
     
     # Caption
-    caption = paste0("<b>", "Estimated DW subsidies\n(2018 $US): ", "</b>",
-                     "<br>",
+    caption = paste0("<b>", "Estimated DW subsidies (2018 $US): ", "</b>",
                      format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
     
     # Format caption

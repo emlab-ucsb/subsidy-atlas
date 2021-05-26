@@ -593,7 +593,7 @@ header.main-header {
   width: 33%;
 }
 
-.leaflet-left {
+.leaflet-right {
     left: 50%;
     transform: translate(-50%, 0%);
 }

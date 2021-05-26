@@ -15,7 +15,7 @@ NavMap <- function(region_dat,
                                      attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
+                            L.control.zoom({ position: 'bottomleft' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       
@@ -62,7 +62,7 @@ NavMap <- function(region_dat,
                                      attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'bottomright' }).addTo(this)}") %>%
+                            L.control.zoom({ position: 'bottomleft' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       

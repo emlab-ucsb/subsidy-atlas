@@ -254,7 +254,7 @@ RegionPageLayout <- function(region_name,
                                                          fluidRow(
 
                                                            # All flag states
-                                                           column(6, align = "center",
+                                                           column(6,
 
                                                                   leafletOutput(
                                                                     paste0(region_name, "_effort_map_all"),
@@ -262,7 +262,7 @@ RegionPageLayout <- function(region_name,
 
                                                            ),
                                                            # Selected flag state
-                                                           column(6, align = "center",
+                                                           column(6,
 
                                                                   leafletOutput(
                                                                     paste0(region_name, "_effort_map_selected"),
@@ -356,7 +356,7 @@ RegionPageLayout <- function(region_name,
                                                          fluidRow(
 
                                                            # All flag states
-                                                           column(6, align = "center",
+                                                           column(6,
 
                                                                   leafletOutput(
                                                                     paste0(region_name, "_subsidies_map_all"),
@@ -365,7 +365,7 @@ RegionPageLayout <- function(region_name,
 
                                                            ),
                                                            # Selected flag state
-                                                           column(6, align = "center",
+                                                           column(6,
 
                                                                   leafletOutput(
                                                                     paste0(region_name, "_subsidies_map_selected"),

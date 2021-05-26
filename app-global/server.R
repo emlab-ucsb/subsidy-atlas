@@ -220,7 +220,7 @@ shinyServer(function(input, output, session) {
                                      attributionControl = FALSE)) %>%
       
       htmlwidgets::onRender("function(el, x) {
-        L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
+        L.control.zoom({ position: 'topleft' }).addTo(this)}") %>%
       
       addProviderTiles("Esri.WorldPhysical") %>% 
       
@@ -528,13 +528,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
         transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -583,7 +583,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -609,13 +609,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -664,7 +664,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -1030,13 +1030,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -1085,7 +1085,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -1111,13 +1111,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -1166,7 +1166,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -1533,13 +1533,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -1588,7 +1588,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -1614,13 +1614,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -1669,7 +1669,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -2036,13 +2036,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -2091,7 +2091,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -2117,13 +2117,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -2172,7 +2172,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -2539,13 +2539,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -2594,7 +2594,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -2620,13 +2620,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -2675,7 +2675,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -3042,13 +3042,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -3097,7 +3097,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -3123,13 +3123,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -3178,7 +3178,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -3543,13 +3543,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -3598,7 +3598,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -3624,13 +3624,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -3679,7 +3679,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -4046,13 +4046,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright", 
+      addLegend(position = "bottomleft", 
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -4101,7 +4101,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })
@@ -4127,13 +4127,13 @@ shinyServer(function(input, output, session) {
       addRasterImage(raster$r,
                      colors = raster$pal,
                      opacity = 0.8) %>%
-      addLegend(position = "bottomright",
+      addLegend(position = "bottomleft",
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
                 labFormat = labelFormat(
                   transform = function(x) 10^x)) %>%
-      addControl(raster$caption, position = "topleft")
+      addControl(raster$caption, position = "topright")
     
   })
   
@@ -4182,7 +4182,7 @@ shinyServer(function(input, output, session) {
                        colors = raster$pal, 
                        opacity = 0.8,
                        group = "flag_state_dat") %>%
-        addControl(raster$caption, position = "topleft")
+        addControl(raster$caption, position = "topright")
     }
     
   })

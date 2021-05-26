@@ -82,7 +82,7 @@ VesselOriginsMap <- function(region_dat,
             options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
+                            L.control.zoom({ position: 'topleft' }).addTo(this)}") %>% 
       
       addProviderTiles("CartoDB.PositronNoLabels", group = "basemap") %>% 
       
@@ -208,7 +208,7 @@ VesselOriginsMap <- function(region_dat,
           options = leafletOptions(minZoom = 1, zoomControl = FALSE, attributionControl=FALSE)) %>% 
     
     htmlwidgets::onRender("function(el, x) {
-                            L.control.zoom({ position: 'topright' }).addTo(this)}") %>% 
+                            L.control.zoom({ position: 'topleft' }).addTo(this)}") %>% 
     
     addProviderTiles("CartoDB.PositronNoLabels", group = "basemap") %>% 
     
