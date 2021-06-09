@@ -1,6 +1,7 @@
 
 NavMap <- function(region_dat,
                    region_pal,
+                   region_pal_dark,
                    map_id,
                    min_zoom = 1){
   
@@ -52,37 +53,69 @@ NavMap <- function(region_dat,
     eezs <- region_dat$eezs %>%
       dplyr::filter(pol_type == "200NM" & eez_ter_iso3 %in% good_eezs)
     
-    # Extract other regions & non-selectable EEZs
+    # Extract disputed areas
     disputed <- region_dat$eezs %>%
-      dplyr::filter(pol_type != "200NM" | !(eez_ter_iso3 %in% good_eezs))
+      dplyr::filter(pol_type != "200NM")
+    
+    # Non-selectable EEZs
+    bad_eezs <- region_dat$eezs %>%
+      dplyr::filter(pol_type == "200NM" | !(eez_ter_iso3 %in% good_eezs))
     
     # Map
-    leaflet(map_id, 
+    map <- leaflet(map_id, 
             options = leafletOptions(minZoom = min_zoom, zoomControl = FALSE, 
                                      attributionControl=FALSE)) %>% 
       
       htmlwidgets::onRender("function(el, x) {
                             L.control.zoom({ position: 'bottomleft' }).addTo(this)}") %>%
       
-      addProviderTiles("Esri.WorldPhysical") %>% 
+      addProviderTiles("Esri.WorldPhysical") 
+    
+    if(nrow(disputed) > 0){
       
-      addPolygons(data = disputed, 
-                  fillColor = "grey",
-                  fillOpacity = 0.8,
-                  color= "white",
-                  weight = 0.3,
-                  highlight = highlightOptions(weight = 5,
-                                               color = "#666",
-                                               fillOpacity = 1,
-                                               bringToFront = TRUE),
-                  label = disputed$geoname_new,
-                  layerId = NULL, #need this to select input below
-                  labelOptions = labelOptions(style = list("font-weight" = "normal",
-                                                           padding = "3px 8px"),
-                                              textsize = "13px",
-                                              direction = "auto")
-      ) %>%
+      map <- map %>% 
+        addPolygons(data = disputed, 
+                    fillColor = ~region_pal_dark(region),
+                    fillOpacity = 0.8,
+                    color= "white",
+                    weight = 0.3,
+                    highlight = highlightOptions(weight = 5,
+                                                 color = "#666",
+                                                 fillOpacity = 1,
+                                                 bringToFront = FALSE),
+                    label = disputed$geoname_new,
+                    layerId = NULL, #need this to select input below
+                    labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                             padding = "3px 8px"),
+                                                textsize = "13px",
+                                                direction = "auto")
+        )
       
+    }
+    
+    if(nrow(bad_eezs) > 0){
+      
+      map <- map %>%
+        addPolygons(data = bad_eezs, 
+                    fillColor = "grey",
+                    fillOpacity = 0.8,
+                    color= "white",
+                    weight = 0.3,
+                    highlight = highlightOptions(weight = 5,
+                                                 color = "#666",
+                                                 fillOpacity = 1,
+                                                 bringToFront = FALSE),
+                    label = bad_eezs$geoname_new,
+                    layerId = NULL, #need this to select input below
+                    labelOptions = labelOptions(style = list("font-weight" = "normal",
+                                                             padding = "3px 8px"),
+                                                textsize = "13px",
+                                                direction = "auto")
+        )
+      
+    }
+    
+    map <- map %>%
       addPolygons(data = eezs,
                   fillColor = ~region_pal(region),
                   fillOpacity = 0.8,
@@ -106,6 +139,8 @@ NavMap <- function(region_dat,
                    lat1 = -90, 
                    lng2 = region_dat$map_lng + 270, 
                    lat2 = 90)
+    
+    map
     
   }
 

@@ -202,8 +202,11 @@ shinyServer(function(input, output, session) {
   
   region_pal_light <- colorFactor(palette = "Set2",
                                   domain = eez_region_360$region,
-                                  na.color = "grey"
-  )
+                                  na.color = "grey")
+  
+  region_pal_dark <- colorFactor(palette = c("#0A3E2E", "#8E3E01", "#3B3959", "#6C1240", "#31500F", "#8C6700", "#664811"),
+                                 domain = eez_region_360$region,
+                                 na.color = "grey")
   
   #connectivity_fill_scale
   
@@ -329,6 +332,7 @@ shinyServer(function(input, output, session) {
     
     NavMap(region_dat = east_asia_pacific_rv,
            region_pal = region_pal,
+           region_pal_dark = region_pal_dark,
            map_id = "east_asia_pacific_nav_map",
            min_zoom = 1)
 
@@ -829,6 +833,7 @@ shinyServer(function(input, output, session) {
     
     NavMap(region_dat = europe_central_asia_rv,
            region_pal = region_pal,
+           region_pal_dark = region_pal_dark,
            map_id = "europe_central_asia_nav_map",
            min_zoom = 1)
     
@@ -1334,6 +1339,7 @@ shinyServer(function(input, output, session) {
     # Create regional navigation map
     NavMap(region_dat = latin_america_caribbean_rv,
            region_pal = region_pal,
+           region_pal_dark = region_pal_dark,
            map_id = "latin_america_caribbean_nav_map",
            min_zoom = 1)
 
@@ -1838,6 +1844,7 @@ shinyServer(function(input, output, session) {
     
     NavMap(region_dat = middle_east_north_africa_rv,
            region_pal = region_pal,
+           region_pal_dark = region_pal_dark,
            map_id = "middle_east_north_africa_nav_map",
            min_zoom = 1)
 
@@ -2343,6 +2350,7 @@ shinyServer(function(input, output, session) {
     
     NavMap(region_dat = north_america_rv,
            region_pal = region_pal,
+           region_pal_dark = region_pal_dark,
            map_id = "north_america_nav_map",
            min_zoom = 1)
 
@@ -2848,6 +2856,7 @@ shinyServer(function(input, output, session) {
     
     NavMap(region_dat = south_asia_rv,
            region_pal = region_pal,
+           region_pal_dark = region_pal_dark,
            map_id = "south_asia_nav_map",
            min_zoom = 1)
  
@@ -3353,6 +3362,7 @@ shinyServer(function(input, output, session) {
     
     NavMap(region_dat = sub_saharan_africa_rv,
            region_pal = region_pal,
+           region_pal_dark = region_pal_dark,
            map_id = "sub_saharan_africa_nav_map",
            min_zoom = 1)
 
@@ -3854,6 +3864,7 @@ shinyServer(function(input, output, session) {
 
     NavMap(region_dat = high_seas_rv,
            region_pal = hs_pal,
+           region_pal_dark = NA,
            map_id = "high_seas_nav_map",
            min_zoom = 1)
 
