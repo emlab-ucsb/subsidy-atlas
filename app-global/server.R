@@ -4337,6 +4337,24 @@ shinyServer(function(input, output, session) {
                                by_hs_area = NULL,
                                by_flag_hs_only = NULL)
   
+  ### Info modal: EEZ summary ----------
+  observeEvent(input$eez_summary_info, {
+                   
+                   shinyalert(title = "Data Summary - By EEZ",
+                              text = paste0("This table shows total distant water fishing activity in each EEZ. By default, EEZs are sorted based on the total magnitude of capacity enhancing subsidies supporting distant water fishing there. Note: An aggregate entry for the entire EU EEZ area is included alongside individual entries for each EU country. Summing all stats in this table without removing the aggregate entry for the entire EU EEZ area will result in double counting."),
+                              size = "l",
+                              closeOnEsc = TRUE,
+                              closeOnClickOutside = TRUE,
+                              html = TRUE,
+                              type = "",
+                              showConfirmButton = TRUE,
+                              showCancelButton = FALSE,
+                              confirmButtonText = "OK",
+                              confirmButtonCol = "#0d5ba2",
+                              timer = 0,
+                              animation = TRUE)
+                 }, ignoreInit = T)
+  
   ### DT output: Data summary (by EEZ) -------------
   output$summary_table_by_EEZ <- renderDataTable({
     
@@ -4363,6 +4381,24 @@ shinyServer(function(input, output, session) {
       
     }
   )
+  
+  ### Info modal: Flag state summary (EEZs only) ----------
+  observeEvent(input$flag_eez_only_summary_info, {
+    
+    shinyalert(title = "Data Summary - By Flag State (EEZs Only)",
+               text = paste0("This table shows total distant water fishing activity undertaken by each flag state across all EEZs. By default, flag states are sorted based on the total magnitude of capacity enhancing subsidies provided to support distant water fishing in the EEZs of other coastal states. Note: An aggregate entry for the EU is included alongside individual entries for each EU flag state. Summing all stats in this table without removing the aggregate entry for the EU will result in double counting."),
+               size = "l",
+               closeOnEsc = TRUE,
+               closeOnClickOutside = TRUE,
+               html = TRUE,
+               type = "",
+               showConfirmButton = TRUE,
+               showCancelButton = FALSE,
+               confirmButtonText = "OK",
+               confirmButtonCol = "#0d5ba2",
+               timer = 0,
+               animation = TRUE)
+  }, ignoreInit = T)
   
   ### DT output: Data summary (by flag state - eezs only) -------------
   output$summary_table_by_flag_EEZs_only <- renderDataTable({
@@ -4391,6 +4427,24 @@ shinyServer(function(input, output, session) {
     }
   )
   
+  ### Info modal: Flag state summary (EEZs only) ----------
+  observeEvent(input$hs_summary_info, {
+    
+    shinyalert(title = "Data Summary - By High Seas Area",
+               text = paste0("This table shows total distant water fishing activity in the high seas area of each FAO Major Fishing Area. By default, high seas regions are sorted based on the total magnitude of capacity-enhancing subsidies supporting distant water fishing there."),
+               size = "l",
+               closeOnEsc = TRUE,
+               closeOnClickOutside = TRUE,
+               html = TRUE,
+               type = "",
+               showConfirmButton = TRUE,
+               showCancelButton = FALSE,
+               confirmButtonText = "OK",
+               confirmButtonCol = "#0d5ba2",
+               timer = 0,
+               animation = TRUE)
+  }, ignoreInit = T)
+  
   ### DT output: Data summary (by hs area) -------------
   output$summary_table_by_hs_area <- renderDataTable({
     
@@ -4417,6 +4471,24 @@ shinyServer(function(input, output, session) {
       
     }
   )
+  
+  ### Info modal: Flag state summary (HS only) ----------
+  observeEvent(input$flag_eez_only_summary_info, {
+    
+    shinyalert(title = "Data Summary - By Flag State (High Seas Only)",
+               text = paste0("This table shows total distant water fishing activity undertaken by each flag state across all high seas areas. By default, flag states are sorted based on the total magnitude of capacity enhancing subsidies provided to support distant water fishing on the high seas. Note: An aggregate entry for the EU is included alongside individual entries for each EU flag state. Summing all stats in this table without removing the aggregate entry for the EU will result in double counting."),
+               size = "l",
+               closeOnEsc = TRUE,
+               closeOnClickOutside = TRUE,
+               html = TRUE,
+               type = "",
+               showConfirmButton = TRUE,
+               showCancelButton = FALSE,
+               confirmButtonText = "OK",
+               confirmButtonCol = "#0d5ba2",
+               timer = 0,
+               animation = TRUE)
+  }, ignoreInit = T)
   
   ### DT output: Data summary (by flag - hs only) -------------
   output$summary_table_by_flag_hs_only <- renderDataTable({

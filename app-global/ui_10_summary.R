@@ -47,11 +47,11 @@ Summary = function(){
                                   # Title
                                   tagList(
                                     # Text
-                                    tags$b("By EEZ")
-                                    # # Info button
-                                    # tags$button(id = paste0(region_name, "_info_summary"),
-                                    #             class = "btn action-button info-button",
-                                    #             icon("info"))
+                                    tags$b("By EEZ"),
+                                    # Info button
+                                    tags$button(id = "eez_summary_info",
+                                                class = "btn action-button info-button",
+                                                icon("info"))
                                   ),
                                   
                                   column(12, id = "tblr-spaced-div",
@@ -79,11 +79,11 @@ Summary = function(){
                                   # Title
                                   tagList(
                                     # Text
-                                    tags$b("By Flag State (EEZs Only)")
-                                    # # Info button
-                                    # tags$button(id = paste0(region_name, "_info_vessel_origins"),
-                                    #             class = "btn action-button info-button",
-                                    #             icon("info"))
+                                    tags$b("By Flag State (EEZs Only)"),
+                                    # Info button
+                                    tags$button(id = "flag_eez_only_summary_info",
+                                                class = "btn action-button info-button",
+                                                icon("info"))
                                   ),
                                   
                                   column(12, id = "tblr-spaced-div",
@@ -111,11 +111,11 @@ Summary = function(){
                            # Title
                            tagList(
                              # Text
-                             tags$b("By High Seas Area")
-                             # # Info button
-                             # tags$button(id = paste0(region_name, "_info_vessel_origins"),
-                             #             class = "btn action-button info-button",
-                             #             icon("info"))
+                             tags$b("By High Seas Area"),
+                             # Info button
+                             tags$button(id = "hs_summary_info",
+                                         class = "btn action-button info-button",
+                                         icon("info"))
                            ),
                            
                            column(12, id = "tblr-spaced-div",
@@ -143,11 +143,11 @@ Summary = function(){
                            # Title
                            tagList(
                              # Text
-                             tags$b("By Flag State (High Seas Only)")
-                             # # Info button
-                             # tags$button(id = paste0(region_name, "_info_vessel_origins"),
-                             #             class = "btn action-button info-button",
-                             #             icon("info"))
+                             tags$b("By Flag State (High Seas Only)"),
+                             # Info button
+                             tags$button(id = "flag_hs_only_summary_info",
+                                         class = "btn action-button info-button",
+                                         icon("info"))
                            ),
                            
                            column(12, id = "tblr-spaced-div",
