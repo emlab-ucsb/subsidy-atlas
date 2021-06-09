@@ -302,7 +302,9 @@ shinyServer(function(input, output, session) {
                                          eez_dat = NULL,
                                          eez_bb = NULL,
                                          hs_dat = NULL,
-                                         hs_regions = NULL)
+                                         hs_regions = NULL,
+                                         links = eez_ter_links %>%
+                                           dplyr::filter(region == "East Asia & Pacific"))
   
   ### UI output: Select coastal state widget --------
   output$east_asia_pacific_eez_select <- renderUI({
@@ -800,7 +802,9 @@ shinyServer(function(input, output, session) {
                                            eez_dat = NULL,
                                            eez_bb = NULL,
                                            hs_dat = NULL,
-                                           hs_regions = NULL)
+                                           hs_regions = NULL,
+                                           links = eez_ter_links %>%
+                                             dplyr::filter(region == "Europe & Central Asia"))
   
   ### UI output: Select coastal state widget --------
   output$europe_central_asia_eez_select <- renderUI({
@@ -1302,7 +1306,9 @@ shinyServer(function(input, output, session) {
                                              eez_dat = NULL,
                                              eez_bb = NULL,
                                              hs_dat = NULL,
-                                             hs_regions = NULL)
+                                             hs_regions = NULL,
+                                             links = eez_ter_links %>%
+                                               dplyr::filter(region == "Latin America & Caribbean"))
   
   ### UI output: Select coastal state widget --------
   output$latin_america_caribbean_eez_select <- renderUI({
@@ -1805,7 +1811,9 @@ shinyServer(function(input, output, session) {
                                                 eez_dat = NULL,
                                                 eez_bb = NULL,
                                                 hs_dat = NULL,
-                                                hs_regions = NULL)
+                                                hs_regions = NULL,
+                                                links = eez_ter_links %>%
+                                                  dplyr::filter(region == "Middle East & North Africa"))
   
   ### UI output: Select coastal state widget --------
   output$middle_east_north_africa_eez_select <- renderUI({
@@ -2308,7 +2316,9 @@ shinyServer(function(input, output, session) {
                                      eez_dat = NULL,
                                      eez_bb = NULL,
                                      hs_dat = NULL,
-                                     hs_regions = NULL)
+                                     hs_regions = NULL,
+                                     links = eez_ter_links %>%
+                                       dplyr::filter(region == "North America"))
   
   ### UI output: Select coastal state widget --------
   output$north_america_eez_select <- renderUI({
@@ -2811,7 +2821,9 @@ shinyServer(function(input, output, session) {
                                   eez_dat = NULL,
                                   eez_bb = NULL,
                                   hs_dat = NULL,
-                                  hs_regions = NULL)
+                                  hs_regions = NULL,
+                                  links = eez_ter_links %>%
+                                    dplyr::filter(region == "South Asia"))
   
   ### UI output: Select coastal state widget --------
   output$south_asia_eez_select <- renderUI({
@@ -3314,7 +3326,9 @@ shinyServer(function(input, output, session) {
                                           eez_dat = NULL,
                                           eez_bb = NULL,
                                           hs_dat = NULL,
-                                          hs_regions = NULL)
+                                          hs_regions = NULL,
+                                          links = eez_ter_links %>%
+                                            dplyr::filter(region == "Sub-Saharan Africa"))
   
   ### UI output: Select coastal state widget --------
   output$sub_saharan_africa_eez_select <- renderUI({

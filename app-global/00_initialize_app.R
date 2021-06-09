@@ -76,6 +76,10 @@ fao_region_360 <- st_read("./data/high_seas_region_neg360_360.gpkg")
 fao_flag_state_connectivity <- st_read("./data/fao_flag_state_connectivity_lines.gpkg") %>%
   mutate(admin = case_when(flag_iso3 == "TUV" ~ "Tuvalu",
                            TRUE ~ admin))
+
+# 9) Links for EEZs 
+eez_ter_links <- read_csv("./data/eez_ter_links.csv")
+
 ### --------------------
 
 ### Widget choices that are shared across all pages -----
