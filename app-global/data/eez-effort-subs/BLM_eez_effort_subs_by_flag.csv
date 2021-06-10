@@ -1,0 +1,2 @@
+year,eez_id,eez_ter_iso3,lat_cen,lon_cen,flag_iso3,fishing_hours,fishing_KWh,bad_subs_per_fishing_KWh,ugly_subs_per_fishing_KWh,bad_subs,ugly_subs
+2018,48952,BLM,17.950000000000003,-62.85000000000001,FRA,4.478611111111111,3608.4866442121042,0.18103,0.023209999999999998,653.2443372017173,83.75297501216293

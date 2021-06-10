@@ -1,0 +1,2 @@
+year,eez_id,eez_ter_iso3,lat_cen,lon_cen,flag_iso3,fishing_hours,fishing_KWh,bad_subs_per_fishing_KWh,ugly_subs_per_fishing_KWh,bad_subs,ugly_subs
+2018,8439,PCN,-27.25,-126.05000000000001,CHN,0,0,1.08571,0.15938,0,0
