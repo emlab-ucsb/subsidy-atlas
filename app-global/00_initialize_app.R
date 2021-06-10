@@ -102,13 +102,17 @@ eezmaptheme <- theme_minimal()+
         panel.background = element_rect(fill = "#d4dadc", color = NA),
         panel.grid.major = element_line(colour = "#d4dadc"),
         text = element_text(color = "black"),
-        plot.title = element_text(hjust = 0.5),
         panel.border = element_rect(color = "#d4dadc", fill = NA),
-        plot.margin = margin(t = 0.2, r = 0.2, b = 0, l = 0, unit = "cm"),
-        legend.margin = margin(t = 0.1, r = 0, b = 0.2, l = 0, unit = "cm"),
+        plot.margin = margin(t = 1, r = 0.2, b = 1, l = 0.2, unit = "in"),
+        legend.margin = margin(t = 0, r = 0, b = 1, l = 0, unit = "in"),
         legend.position = "bottom",
         legend.box = "horizontal",
-        axis.text = element_text(color = "black"))
+        axis.text = element_text(color = "black"),
+        plot.title = element_text(face = "bold", size = 18, hjust = 0),
+        plot.subtitle = element_text(size = 16, color = "black", hjust = 0.5),
+        plot.caption = element_text(size = 12, color = "black", hjust = 0.5),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 10))
 
 hs_pal <- list(dark_col = "#1783C3",
                light_col = "#67C6FF")

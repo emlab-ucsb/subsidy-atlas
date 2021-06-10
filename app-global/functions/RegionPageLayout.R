@@ -225,6 +225,7 @@ RegionPageLayout <- function(region_name,
                                                             
                                            # Content
                                            column(12, id = "lr-spaced-div",
+                                                  
 
                                                   ### Header row for heat maps w/select input for flag state
                                                   column(12, id = "t-spaced-div",
@@ -249,7 +250,7 @@ RegionPageLayout <- function(region_name,
                                                   ),
 
                                                   ### Heat maps
-                                                  column(12, id = "b-spaced-div",
+                                                  column(12,
 
                                                          fluidRow(
 
@@ -300,6 +301,18 @@ RegionPageLayout <- function(region_name,
 
                                                          ))
 
+                                                  ),
+                                                  
+                                                  ### Footer row with download button
+                                                  column(12, id = "tblr-spaced-div",
+                                                         
+                                                         column(3, offset = 9, align = "right", 
+                                                                
+                                                                downloadButton(
+                                                                  paste0(region_name, "_db_effort_maps"), 
+                                                                  "Download Maps as a PDF")
+                                                                
+                                                         )
                                                   )
 
                                            ) # /content
@@ -351,7 +364,7 @@ RegionPageLayout <- function(region_name,
                                                   ),
 
                                                   ### Heat maps
-                                                  column(12, id = "b-spaced-div",
+                                                  column(12,
 
                                                          fluidRow(
 
@@ -402,7 +415,19 @@ RegionPageLayout <- function(region_name,
 
                                                          ))
 
-                                                  ) # /heat maps
+                                                  ), # /heat maps
+
+                                                  ### Footer row with download button
+                                                  column(12, id = "tblr-spaced-div",
+                                                         
+                                                         column(3, offset = 9, align = "right", 
+                                                                
+                                                                downloadButton(
+                                                                  paste0(region_name, "_db_subsidy_maps"), 
+                                                                  "Download Maps as a PDF")
+                                                                
+                                                         )
+                                                  )
 
                                            ) # /content
                                            )

@@ -522,15 +522,18 @@ shinyServer(function(input, output, session) {
     
     # Create raster layer and palette from EEZ data
     raster <- EEZDatRasterize(region_dat = east_asia_pacific_rv,
-                                    input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-                                    type = "total",
-                                    plot_variable = "fishing_KWh")
+                              input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+                              type = "total",
+                              plot_variable = "fishing_KWh")
+    
+    # Save to rv
+    east_asia_pacific_rv$effort_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = east_asia_pacific_rv,
-                 input_selected_eez = input$east_asia_pacific_eez_select,
-                 map_id = "east_asia_pacific_effort_map_all",
-                 min_zoom = 1) %>%
+                  input_selected_eez = input$east_asia_pacific_eez_select,
+                  map_id = "east_asia_pacific_effort_map_all",
+                  min_zoom = 1) %>%
       addRasterImage(raster$r, 
                      colors = raster$pal, 
                      opacity = 0.8) %>%
@@ -539,7 +542,7 @@ shinyServer(function(input, output, session) {
                 values = values(raster$r), 
                 title = raster$pal_title, 
                 labFormat = labelFormat(
-        transform = function(x) 10^x)) %>%
+                  transform = function(x) 10^x)) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -554,9 +557,9 @@ shinyServer(function(input, output, session) {
     
     # Make leaflet object
     EEZLeafletMap(region_dat = east_asia_pacific_rv,
-                 input_selected_eez = input$east_asia_pacific_eez_select,
-                 map_id = "east_asia_pacific_effort_map_selected",
-                 min_zoom = 1)
+                  input_selected_eez = input$east_asia_pacific_eez_select,
+                  map_id = "east_asia_pacific_effort_map_selected",
+                  min_zoom = 1)
     
   })
   
@@ -572,6 +575,9 @@ shinyServer(function(input, output, session) {
       east_asia_pacific_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      east_asia_pacific_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -579,6 +585,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      east_asia_pacific_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       east_asia_pacific_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -606,6 +615,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Add to rv
+    east_asia_pacific_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = east_asia_pacific_rv,
@@ -653,6 +665,9 @@ shinyServer(function(input, output, session) {
       east_asia_pacific_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      east_asia_pacific_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -660,6 +675,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      east_asia_pacific_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       east_asia_pacific_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -675,121 +693,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  ### plotOutput: Effort plot (all flag states) ----------------
-  #output$east_asia_pacific_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   #east_asia_pacific_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$east_asia_pacific_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_east_asia_pacific_",input$east_asia_pacific_eez_select,"_EEZ.pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+          nrow(east_asia_pacific_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | ", input$east_asia_pacific_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = east_asia_pacific_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$east_asia_pacific_eez_select,
+                             input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      east_asia_pacific_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(east_asia_pacific_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$east_asia_pacific_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = east_asia_pacific_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$east_asia_pacific_eez_select,
+                               input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$east_asia_pacific_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$east_asia_pacific_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       input$east_asia_pacific_effort_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_effort_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$east_asia_pacific_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       !is.null(east_asia_pacific_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(east_asia_pacific_rv$effort_legend)
-  #   
-  # })
-  
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$east_asia_pacific_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   east_asia_pacific_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$east_asia_pacific_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       input$east_asia_pacific_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = east_asia_pacific_rv,
-  #                  input_selected_eez = input$east_asia_pacific_eez_select,
-  #                  input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
-  #                  input_hs = input$east_asia_pacific_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$east_asia_pacific_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$east_asia_pacific_eez_select != "Select a coastal state...",
-  #       nrow(east_asia_pacific_rv$eez_dat) > 0,
-  #       !is.null(east_asia_pacific_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(east_asia_pacific_rv$subsidy_legend)
-  #   
-  # })
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$east_asia_pacific_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_east_asia_pacific_area_",input$east_asia_pacific_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+          nrow(east_asia_pacific_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Subsidies | ", input$east_asia_pacific_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = east_asia_pacific_rv,
+                             plot_raster = "subsidies_all_raster",
+                             plot_variable = "subs",
+                             input_selected_eez = input$east_asia_pacific_eez_select,
+                             input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      east_asia_pacific_rv$subsidy_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(east_asia_pacific_rv$subsidy_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$east_asia_pacific_subsidies_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = east_asia_pacific_rv,
+                               plot_raster = "subsidies_selected_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$east_asia_pacific_eez_select,
+                               input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$east_asia_pacific_subsidies_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ###------------------------------------------------------------------
   ### Europe & Central Asia ---------------------------------------------
@@ -1031,6 +1087,9 @@ shinyServer(function(input, output, session) {
                               type = "total",
                               plot_variable = "fishing_KWh")
     
+    # Save to rv
+    europe_central_asia_rv$effort_all_raster <- raster
+    
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = europe_central_asia_rv,
                   input_selected_eez = input$europe_central_asia_eez_select,
@@ -1077,6 +1136,9 @@ shinyServer(function(input, output, session) {
       europe_central_asia_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      europe_central_asia_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -1084,6 +1146,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      europe_central_asia_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       europe_central_asia_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -1111,6 +1176,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Add to rv
+    europe_central_asia_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = europe_central_asia_rv,
@@ -1158,6 +1226,9 @@ shinyServer(function(input, output, session) {
       europe_central_asia_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      europe_central_asia_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -1165,6 +1236,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      europe_central_asia_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       europe_central_asia_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -1180,121 +1254,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$europe_central_asia_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$europe_central_asia_eez_select != "Select a coastal state...",
-  #       nrow(europe_central_asia_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = europe_central_asia_rv,
-  #                  input_selected_eez = input$europe_central_asia_eez_select,
-  #                  input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
-  #                  input_hs = input$europe_central_asia_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   europe_central_asia_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$europe_central_asia_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$europe_central_asia_eez_select != "Select a coastal state...",
-  #       nrow(europe_central_asia_rv$eez_dat) > 0,
-  #       input$europe_central_asia_effort_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = europe_central_asia_rv,
-  #                  input_selected_eez = input$europe_central_asia_eez_select,
-  #                  input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
-  #                  input_hs = input$europe_central_asia_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$europe_central_asia_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$europe_central_asia_eez_select != "Select a coastal state...",
-  #       nrow(europe_central_asia_rv$eez_dat) > 0,
-  #       !is.null(europe_central_asia_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(europe_central_asia_rv$effort_legend)
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$europe_central_asia_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$europe_central_asia_eez_select != "Select a coastal state...",
-  #       nrow(europe_central_asia_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = europe_central_asia_rv,
-  #                  input_selected_eez = input$europe_central_asia_eez_select,
-  #                  input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
-  #                  input_hs = input$europe_central_asia_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   europe_central_asia_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$europe_central_asia_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$europe_central_asia_eez_select != "Select a coastal state...",
-  #       nrow(europe_central_asia_rv$eez_dat) > 0,
-  #       input$europe_central_asia_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = europe_central_asia_rv,
-  #                  input_selected_eez = input$europe_central_asia_eez_select,
-  #                  input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
-  #                  input_hs = input$europe_central_asia_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$europe_central_asia_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$europe_central_asia_eez_select != "Select a coastal state...",
-  #       nrow(europe_central_asia_rv$eez_dat) > 0,
-  #       !is.null(europe_central_asia_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(europe_central_asia_rv$subsidy_legend)
-  #   
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$europe_central_asia_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_europe_central_asia_",input$europe_central_asia_eez_select,"_EEZ.pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$europe_central_asia_eez_select != "Select a coastal state...",
+          nrow(europe_central_asia_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | ", input$europe_central_asia_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = europe_central_asia_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$europe_central_asia_eez_select,
+                             input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      europe_central_asia_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(europe_central_asia_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$europe_central_asia_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = europe_central_asia_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$europe_central_asia_eez_select,
+                               input_selected_flag_state = input$europe_central_asia_effort_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$europe_central_asia_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
+  
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$europe_central_asia_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_europe_central_asia_area_",input$europe_central_asia_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$europe_central_asia_eez_select != "Select a coastal state...",
+          nrow(europe_central_asia_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Subsidies | ", input$europe_central_asia_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = europe_central_asia_rv,
+                             plot_raster = "subsidies_all_raster",
+                             plot_variable = "subs",
+                             input_selected_eez = input$europe_central_asia_eez_select,
+                             input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      europe_central_asia_rv$subsidy_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(europe_central_asia_rv$subsidy_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$europe_central_asia_subsidies_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = europe_central_asia_rv,
+                               plot_raster = "subsidies_selected_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$europe_central_asia_eez_select,
+                               input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$europe_central_asia_subsidies_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ###------------------------------------------------------------------
   ### Latin America & Caribbean ---------------------------------------
@@ -1537,6 +1649,9 @@ shinyServer(function(input, output, session) {
                               type = "total",
                               plot_variable = "fishing_KWh")
     
+    # Save to rv
+    latin_america_caribbean_rv$effort_all_raster <- raster
+    
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = latin_america_caribbean_rv,
                   input_selected_eez = input$latin_america_caribbean_eez_select,
@@ -1583,6 +1698,9 @@ shinyServer(function(input, output, session) {
       latin_america_caribbean_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      latin_america_caribbean_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -1590,6 +1708,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      latin_america_caribbean_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       latin_america_caribbean_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -1617,6 +1738,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Add to rv
+    latin_america_caribbean_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = latin_america_caribbean_rv,
@@ -1664,6 +1788,9 @@ shinyServer(function(input, output, session) {
       latin_america_caribbean_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      latin_america_caribbean_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -1671,6 +1798,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      latin_america_caribbean_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       latin_america_caribbean_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -1686,121 +1816,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$latin_america_caribbean_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
-  #       nrow(latin_america_caribbean_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = latin_america_caribbean_rv,
-  #                  input_selected_eez = input$latin_america_caribbean_eez_select,
-  #                  input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
-  #                  input_hs = input$latin_america_caribbean_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   latin_america_caribbean_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$latin_america_caribbean_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
-  #       nrow(latin_america_caribbean_rv$eez_dat) > 0,
-  #       input$latin_america_caribbean_effort_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = latin_america_caribbean_rv,
-  #                  input_selected_eez = input$latin_america_caribbean_eez_select,
-  #                  input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
-  #                  input_hs = input$latin_america_caribbean_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$latin_america_caribbean_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
-  #       nrow(latin_america_caribbean_rv$eez_dat) > 0,
-  #       !is.null(latin_america_caribbean_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(latin_america_caribbean_rv$effort_legend)
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$latin_america_caribbean_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
-  #       nrow(latin_america_caribbean_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = latin_america_caribbean_rv,
-  #                  input_selected_eez = input$latin_america_caribbean_eez_select,
-  #                  input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
-  #                  input_hs = input$latin_america_caribbean_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   latin_america_caribbean_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$latin_america_caribbean_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
-  #       nrow(latin_america_caribbean_rv$eez_dat) > 0,
-  #       input$latin_america_caribbean_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = latin_america_caribbean_rv,
-  #                  input_selected_eez = input$latin_america_caribbean_eez_select,
-  #                  input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
-  #                  input_hs = input$latin_america_caribbean_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$latin_america_caribbean_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
-  #       nrow(latin_america_caribbean_rv$eez_dat) > 0,
-  #       !is.null(latin_america_caribbean_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(latin_america_caribbean_rv$subsidy_legend)
-  #   
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$latin_america_caribbean_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_latin_america_caribbean_",input$latin_america_caribbean_eez_select,"_EEZ.pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+          nrow(latin_america_caribbean_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | ", input$latin_america_caribbean_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = latin_america_caribbean_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$latin_america_caribbean_eez_select,
+                             input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      latin_america_caribbean_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(latin_america_caribbean_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$latin_america_caribbean_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = latin_america_caribbean_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$latin_america_caribbean_eez_select,
+                               input_selected_flag_state = input$latin_america_caribbean_effort_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$latin_america_caribbean_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
+  
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$latin_america_caribbean_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_latin_america_caribbean_area_",input$latin_america_caribbean_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+          nrow(latin_america_caribbean_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Subsidies | ", input$latin_america_caribbean_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = latin_america_caribbean_rv,
+                             plot_raster = "subsidies_all_raster",
+                             plot_variable = "subs",
+                             input_selected_eez = input$latin_america_caribbean_eez_select,
+                             input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      latin_america_caribbean_rv$subsidy_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(latin_america_caribbean_rv$subsidy_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$latin_america_caribbean_subsidies_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = latin_america_caribbean_rv,
+                               plot_raster = "subsidies_selected_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$latin_america_caribbean_eez_select,
+                               input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$latin_america_caribbean_subsidies_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ###------------------------------------------------------------------
   ### Middle East & North Africa --------------------------------------
@@ -2043,6 +2211,9 @@ shinyServer(function(input, output, session) {
                               type = "total",
                               plot_variable = "fishing_KWh")
     
+    # Save to rv
+    middle_east_north_africa_rv$effort_all_raster <- raster
+    
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = middle_east_north_africa_rv,
                   input_selected_eez = input$middle_east_north_africa_eez_select,
@@ -2089,6 +2260,9 @@ shinyServer(function(input, output, session) {
       middle_east_north_africa_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      middle_east_north_africa_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -2096,6 +2270,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      middle_east_north_africa_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       middle_east_north_africa_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -2123,6 +2300,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Add to rv
+    middle_east_north_africa_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = middle_east_north_africa_rv,
@@ -2170,6 +2350,9 @@ shinyServer(function(input, output, session) {
       middle_east_north_africa_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      middle_east_north_africa_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -2177,6 +2360,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      middle_east_north_africa_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       middle_east_north_africa_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -2192,121 +2378,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$middle_east_north_africa_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
-  #       nrow(middle_east_north_africa_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = middle_east_north_africa_rv,
-  #                  input_selected_eez = input$middle_east_north_africa_eez_select,
-  #                  input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
-  #                  input_hs = input$middle_east_north_africa_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   middle_east_north_africa_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$middle_east_north_africa_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
-  #       nrow(middle_east_north_africa_rv$eez_dat) > 0,
-  #       input$middle_east_north_africa_effort_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = middle_east_north_africa_rv,
-  #                  input_selected_eez = input$middle_east_north_africa_eez_select,
-  #                  input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
-  #                  input_hs = input$middle_east_north_africa_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$middle_east_north_africa_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
-  #       nrow(middle_east_north_africa_rv$eez_dat) > 0,
-  #       !is.null(middle_east_north_africa_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(middle_east_north_africa_rv$effort_legend)
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$middle_east_north_africa_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
-  #       nrow(middle_east_north_africa_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = middle_east_north_africa_rv,
-  #                  input_selected_eez = input$middle_east_north_africa_eez_select,
-  #                  input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
-  #                  input_hs = input$middle_east_north_africa_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   middle_east_north_africa_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$middle_east_north_africa_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
-  #       nrow(middle_east_north_africa_rv$eez_dat) > 0,
-  #       input$middle_east_north_africa_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = middle_east_north_africa_rv,
-  #                  input_selected_eez = input$middle_east_north_africa_eez_select,
-  #                  input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
-  #                  input_hs = input$middle_east_north_africa_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$middle_east_north_africa_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
-  #       nrow(middle_east_north_africa_rv$eez_dat) > 0,
-  #       !is.null(middle_east_north_africa_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(middle_east_north_africa_rv$subsidy_legend)
-  #   
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$middle_east_north_africa_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_middle_east_north_africa_",input$middle_east_north_africa_eez_select,"_EEZ.pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+          nrow(middle_east_north_africa_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | ", input$middle_east_north_africa_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = middle_east_north_africa_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$middle_east_north_africa_eez_select,
+                             input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      middle_east_north_africa_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(middle_east_north_africa_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$middle_east_north_africa_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = middle_east_north_africa_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$middle_east_north_africa_eez_select,
+                               input_selected_flag_state = input$middle_east_north_africa_effort_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$middle_east_north_africa_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
+  
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$middle_east_north_africa_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_middle_east_north_africa_area_",input$middle_east_north_africa_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+          nrow(middle_east_north_africa_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Subsidies | ", input$middle_east_north_africa_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = middle_east_north_africa_rv,
+                             plot_raster = "subsidies_all_raster",
+                             plot_variable = "subs",
+                             input_selected_eez = input$middle_east_north_africa_eez_select,
+                             input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      middle_east_north_africa_rv$subsidy_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(middle_east_north_africa_rv$subsidy_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$middle_east_north_africa_subsidies_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = middle_east_north_africa_rv,
+                               plot_raster = "subsidies_selected_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$middle_east_north_africa_eez_select,
+                               input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$middle_east_north_africa_subsidies_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ###------------------------------------------------------------
   ### North America ---------------------------------------------
@@ -2549,6 +2773,9 @@ shinyServer(function(input, output, session) {
                               type = "total",
                               plot_variable = "fishing_KWh")
     
+    # Save to rv
+    north_america_rv$effort_all_raster <- raster
+    
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = north_america_rv,
                   input_selected_eez = input$north_america_eez_select,
@@ -2595,6 +2822,9 @@ shinyServer(function(input, output, session) {
       north_america_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      north_america_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -2602,6 +2832,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$north_america_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      north_america_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       north_america_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -2629,6 +2862,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$north_america_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Add to rv
+    north_america_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = north_america_rv,
@@ -2676,6 +2912,9 @@ shinyServer(function(input, output, session) {
       north_america_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      north_america_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -2683,6 +2922,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$north_america_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      north_america_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       north_america_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -2698,121 +2940,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$north_america_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$north_america_eez_select != "Select a coastal state...",
-  #       nrow(north_america_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = north_america_rv,
-  #                  input_selected_eez = input$north_america_eez_select,
-  #                  input_selected_flag_state = input$north_america_effort_select_flag_state,
-  #                  input_hs = input$north_america_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   north_america_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$north_america_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$north_america_eez_select != "Select a coastal state...",
-  #       nrow(north_america_rv$eez_dat) > 0,
-  #       input$north_america_effort_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = north_america_rv,
-  #                  input_selected_eez = input$north_america_eez_select,
-  #                  input_selected_flag_state = input$north_america_effort_select_flag_state,
-  #                  input_hs = input$north_america_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$north_america_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$north_america_eez_select != "Select a coastal state...",
-  #       nrow(north_america_rv$eez_dat) > 0,
-  #       !is.null(north_america_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(north_america_rv$effort_legend)
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$north_america_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$north_america_eez_select != "Select a coastal state...",
-  #       nrow(north_america_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = north_america_rv,
-  #                  input_selected_eez = input$north_america_eez_select,
-  #                  input_selected_flag_state = input$north_america_subsidies_select_flag_state,
-  #                  input_hs = input$north_america_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   north_america_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$north_america_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$north_america_eez_select != "Select a coastal state...",
-  #       nrow(north_america_rv$eez_dat) > 0,
-  #       input$north_america_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = north_america_rv,
-  #                  input_selected_eez = input$north_america_eez_select,
-  #                  input_selected_flag_state = input$north_america_subsidies_select_flag_state,
-  #                  input_hs = input$north_america_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$north_america_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$north_america_eez_select != "Select a coastal state...",
-  #       nrow(north_america_rv$eez_dat) > 0,
-  #       !is.null(north_america_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(north_america_rv$subsidy_legend)
-  #   
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$north_america_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_north_america_",input$north_america_eez_select,"_EEZ.pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$north_america_eez_select != "Select a coastal state...",
+          nrow(north_america_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | ", input$north_america_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = north_america_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$north_america_eez_select,
+                             input_selected_flag_state = input$north_america_effort_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      north_america_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(north_america_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$north_america_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = north_america_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$north_america_eez_select,
+                               input_selected_flag_state = input$north_america_effort_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$north_america_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
+  
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$north_america_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_north_america_area_",input$north_america_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$north_america_eez_select != "Select a coastal state...",
+          nrow(north_america_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Subsidies | ", input$north_america_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = north_america_rv,
+                             plot_raster = "subsidies_all_raster",
+                             plot_variable = "subs",
+                             input_selected_eez = input$north_america_eez_select,
+                             input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      north_america_rv$subsidy_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(north_america_rv$subsidy_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$north_america_subsidies_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = north_america_rv,
+                               plot_raster = "subsidies_selected_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$north_america_eez_select,
+                               input_selected_flag_state = input$north_america_subsidies_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$north_america_subsidies_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ###---------------------------------------------------------
   ### South Asia ---------------------------------------------
@@ -3055,6 +3335,9 @@ shinyServer(function(input, output, session) {
                               type = "total",
                               plot_variable = "fishing_KWh")
     
+    # Save to rv
+    south_asia_rv$effort_all_raster <- raster
+    
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = south_asia_rv,
                   input_selected_eez = input$south_asia_eez_select,
@@ -3101,6 +3384,9 @@ shinyServer(function(input, output, session) {
       south_asia_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      south_asia_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -3108,6 +3394,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$south_asia_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      south_asia_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       south_asia_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -3135,6 +3424,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Add to rv
+    south_asia_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = south_asia_rv,
@@ -3182,6 +3474,9 @@ shinyServer(function(input, output, session) {
       south_asia_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      south_asia_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -3189,6 +3484,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      south_asia_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       south_asia_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -3204,121 +3502,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$south_asia_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$south_asia_eez_select != "Select a coastal state...",
-  #       nrow(south_asia_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = south_asia_rv,
-  #                  input_selected_eez = input$south_asia_eez_select,
-  #                  input_selected_flag_state = input$south_asia_effort_select_flag_state,
-  #                  input_hs = input$south_asia_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   south_asia_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$south_asia_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$south_asia_eez_select != "Select a coastal state...",
-  #       nrow(south_asia_rv$eez_dat) > 0,
-  #       input$south_asia_effort_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = south_asia_rv,
-  #                  input_selected_eez = input$south_asia_eez_select,
-  #                  input_selected_flag_state = input$south_asia_effort_select_flag_state,
-  #                  input_hs = input$south_asia_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$south_asia_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$south_asia_eez_select != "Select a coastal state...",
-  #       nrow(south_asia_rv$eez_dat) > 0,
-  #       !is.null(south_asia_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(south_asia_rv$effort_legend)
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$south_asia_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$south_asia_eez_select != "Select a coastal state...",
-  #       nrow(south_asia_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = south_asia_rv,
-  #                  input_selected_eez = input$south_asia_eez_select,
-  #                  input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
-  #                  input_hs = input$south_asia_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   south_asia_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$south_asia_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$south_asia_eez_select != "Select a coastal state...",
-  #       nrow(south_asia_rv$eez_dat) > 0,
-  #       input$south_asia_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = south_asia_rv,
-  #                  input_selected_eez = input$south_asia_eez_select,
-  #                  input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
-  #                  input_hs = input$south_asia_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = eez_ter_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$south_asia_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$south_asia_eez_select != "Select a coastal state...",
-  #       nrow(south_asia_rv$eez_dat) > 0,
-  #       !is.null(south_asia_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(south_asia_rv$subsidy_legend)
-  #   
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$south_asia_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_south_asia_",input$south_asia_eez_select,"_EEZ.pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$south_asia_eez_select != "Select a coastal state...",
+          nrow(south_asia_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | ", input$south_asia_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = south_asia_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$south_asia_eez_select,
+                             input_selected_flag_state = input$south_asia_effort_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      south_asia_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(south_asia_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$south_asia_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = south_asia_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$south_asia_eez_select,
+                               input_selected_flag_state = input$south_asia_effort_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$south_asia_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
+  
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$south_asia_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_south_asia_area_",input$south_asia_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$south_asia_eez_select != "Select a coastal state...",
+          nrow(south_asia_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Subsidies | ", input$south_asia_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = south_asia_rv,
+                             plot_raster = "subsidies_all_raster",
+                             plot_variable = "subs",
+                             input_selected_eez = input$south_asia_eez_select,
+                             input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      south_asia_rv$subsidy_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(south_asia_rv$subsidy_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$south_asia_subsidies_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = south_asia_rv,
+                               plot_raster = "subsidies_selected_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$south_asia_eez_select,
+                               input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$south_asia_subsidies_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ###-----------------------------------------------------------------
   ### Sub-Saharan Africa ---------------------------------------------
@@ -3559,6 +3895,9 @@ shinyServer(function(input, output, session) {
                               type = "total",
                               plot_variable = "fishing_KWh")
     
+    # Save to rv
+    sub_saharan_africa_rv$effort_all_raster <- raster
+    
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = sub_saharan_africa_rv,
                   input_selected_eez = input$sub_saharan_africa_eez_select,
@@ -3605,6 +3944,9 @@ shinyServer(function(input, output, session) {
       sub_saharan_africa_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      sub_saharan_africa_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -3612,6 +3954,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      sub_saharan_africa_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       sub_saharan_africa_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -3639,6 +3984,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Add to rv
+    sub_saharan_africa_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = sub_saharan_africa_rv,
@@ -3686,6 +4034,9 @@ shinyServer(function(input, output, session) {
       sub_saharan_africa_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      sub_saharan_africa_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -3693,6 +4044,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      sub_saharan_africa_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       sub_saharan_africa_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -3708,121 +4062,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$sub_saharan_africa_effort_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
-  #       nrow(sub_saharan_africa_rv$eez_dat) > 0)
-  # 
-  #   out <- EEZPlot(region_dat = sub_saharan_africa_rv,
-  #           input_selected_eez = input$sub_saharan_africa_eez_select,
-  #           input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
-  #           input_hs = input$sub_saharan_africa_effort_high_seas,
-  #           type = "total",
-  #           plot_variable = "fishing_KWh",
-  #           eez_sf = eez_ter_360,
-  #           land_sf = land_ter_360,
-  #           map_theme = eezmaptheme)
-  #   
-  #   sub_saharan_africa_rv$effort_legend <- out$legend
-  #   
-  #   out$plot
-  # 
-  # })
-  # 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$sub_saharan_africa_effort_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
-  #       nrow(sub_saharan_africa_rv$eez_dat) > 0,
-  #       input$sub_saharan_africa_effort_select_flag_state != "Select a flag state...")
-  # 
-  #   out <- EEZPlot(region_dat = sub_saharan_africa_rv,
-  #           input_selected_eez = input$sub_saharan_africa_eez_select,
-  #           input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
-  #           input_hs = input$sub_saharan_africa_effort_high_seas,
-  #           type = "flag",
-  #           plot_variable = "fishing_KWh",
-  #           eez_sf = eez_ter_360,
-  #           land_sf = land_ter_360,
-  #           map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$sub_saharan_africa_effort_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
-  #       nrow(sub_saharan_africa_rv$eez_dat) > 0,
-  #       !is.null(sub_saharan_africa_rv$effort_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(sub_saharan_africa_rv$effort_legend)
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$sub_saharan_africa_subsidies_map_all <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
-  #       nrow(sub_saharan_africa_rv$eez_dat) > 0)
-  #   
-  #   out <- EEZPlot(region_dat = sub_saharan_africa_rv,
-  #           input_selected_eez = input$sub_saharan_africa_eez_select,
-  #           input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
-  #           input_hs = input$sub_saharan_africa_subsidies_high_seas,
-  #           type = "total",
-  #           plot_variable = "subs",
-  #           eez_sf = eez_ter_360,
-  #           land_sf = land_ter_360,
-  #           map_theme = eezmaptheme)
-  #   
-  #   sub_saharan_africa_rv$subsidy_legend <- out$legend
-  #   
-  #   out$plot
-  # 
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$sub_saharan_africa_subsidies_map_selected <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
-  #       nrow(sub_saharan_africa_rv$eez_dat) > 0,
-  #       input$sub_saharan_africa_subsidies_select_flag_state != "Select a flag state...")
-  #   
-  #   out <- EEZPlot(region_dat = sub_saharan_africa_rv,
-  #           input_selected_eez = input$sub_saharan_africa_eez_select,
-  #           input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
-  #           input_hs = input$sub_saharan_africa_subsidies_high_seas,
-  #           type = "flag",
-  #           plot_variable = "subs",
-  #           eez_sf = eez_ter_360,
-  #           land_sf = land_ter_360,
-  #           map_theme = eezmaptheme)
-  #   
-  #   out$plot
-  #   
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$sub_saharan_africa_subsidies_map_legend <- renderPlot({
-  #   
-  #   # Require coastal state selection & data
-  #   req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
-  #       nrow(sub_saharan_africa_rv$eez_dat) > 0,
-  #       !is.null(sub_saharan_africa_rv$subsidy_legend))
-  #   
-  #   # Plot legend
-  #   ggdraw(sub_saharan_africa_rv$subsidy_legend)
-  #   
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$sub_saharan_africa_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_sub_saharan_africa_",input$sub_saharan_africa_eez_select,"_EEZ.pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+          nrow(sub_saharan_africa_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | ", input$sub_saharan_africa_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = sub_saharan_africa_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$sub_saharan_africa_eez_select,
+                             input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      sub_saharan_africa_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(sub_saharan_africa_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$sub_saharan_africa_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = sub_saharan_africa_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$sub_saharan_africa_eez_select,
+                               input_selected_flag_state = input$sub_saharan_africa_effort_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$sub_saharan_africa_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
+  
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$sub_saharan_africa_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_sub_saharan_africa_area_",input$sub_saharan_africa_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+          nrow(sub_saharan_africa_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Subsidies | ", input$sub_saharan_africa_eez_select, " EEZ")
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = sub_saharan_africa_rv,
+                             plot_raster = "subsidies_all_raster",
+                             plot_variable = "subs",
+                             input_selected_eez = input$sub_saharan_africa_eez_select,
+                             input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
+                             eez_sf = eez_ter_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      sub_saharan_africa_rv$subsidy_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(sub_saharan_africa_rv$subsidy_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$sub_saharan_africa_subsidies_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = sub_saharan_africa_rv,
+                               plot_raster = "subsidies_selected_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$sub_saharan_africa_eez_select,
+                               input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
+                               eez_sf = eez_ter_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$sub_saharan_africa_subsidies_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ###--------------------------------------------------------
   ### High Seas ---------------------------------------------
@@ -4063,6 +4455,9 @@ shinyServer(function(input, output, session) {
                               type = "total",
                               plot_variable = "fishing_KWh")
     
+    # Save to rv
+    high_seas_rv$effort_all_raster <- raster
+    
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = high_seas_rv,
                   input_selected_eez = input$high_seas_eez_select,
@@ -4109,6 +4504,9 @@ shinyServer(function(input, output, session) {
       high_seas_effort_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      high_seas_rv$effort_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -4116,6 +4514,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$high_seas_effort_select_flag_state,
                                 type = "flag",
                                 plot_variable = "fishing_KWh")
+      
+      # Save to rv
+      high_seas_rv$effort_selected_raster <- raster
       
       # Remove any previously added raster images
       high_seas_effort_map_proxy %>% clearGroup("flag_state_dat")
@@ -4143,6 +4544,9 @@ shinyServer(function(input, output, session) {
                               input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
                               type = "total",
                               plot_variable = "subs")
+    
+    # Save to rv
+    high_seas_rv$subsidies_all_raster <- raster
     
     # Make leaflet object and add raster image
     EEZLeafletMap(region_dat = high_seas_rv,
@@ -4190,6 +4594,9 @@ shinyServer(function(input, output, session) {
       high_seas_subsidies_map_proxy %>% 
         clearGroup("flag_state_dat")
       
+      # Clear rv
+      high_seas_rv$subsidies_selected_raster <- NULL
+      
     }else{
       
       # Create raster layer and palette from EEZ data
@@ -4197,6 +4604,9 @@ shinyServer(function(input, output, session) {
                                 input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
                                 type = "flag",
                                 plot_variable = "subs")
+      
+      # Add to rv
+      high_seas_rv$subsidies_selected_raster <- raster
       
       # Remove any previously added raster images
       high_seas_subsidies_map_proxy %>% clearGroup("flag_state_dat")
@@ -4212,121 +4622,159 @@ shinyServer(function(input, output, session) {
     
   })
   
-  # ### plotOutput: Effort plot (all flag states) ----------------
-  # output$high_seas_effort_map_all <- renderPlot({
-  # 
-  #   # Require coastal state selection & data
-  #   req(input$high_seas_eez_select != "Select a coastal state...",
-  #       nrow(high_seas_rv$eez_dat) > 0)
-  # 
-  #   out <- EEZPlot(region_dat = high_seas_rv,
-  #                  input_selected_eez = input$high_seas_eez_select,
-  #                  input_selected_flag_state = input$high_seas_effort_select_flag_state,
-  #                  input_hs = input$high_seas_effort_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = fao_area_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  # 
-  #   high_seas_rv$effort_legend <- out$legend
-  # 
-  #   out$plot
-  # 
-  # })
-  # 
-  # ### plotOutput: Effort plot (selected flag state) ----------------
-  # output$high_seas_effort_map_selected <- renderPlot({
-  # 
-  #   # Require coastal state selection & data
-  #   req(input$high_seas_eez_select != "Select a coastal state...",
-  #       nrow(high_seas_rv$eez_dat) > 0,
-  #       input$high_seas_effort_select_flag_state != "Select a flag state...")
-  # 
-  #   out <- EEZPlot(region_dat = high_seas_rv,
-  #                  input_selected_eez = input$high_seas_eez_select,
-  #                  input_selected_flag_state = input$high_seas_effort_select_flag_state,
-  #                  input_hs = input$high_seas_effort_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "fishing_KWh",
-  #                  eez_sf = fao_area_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  # 
-  #   out$plot
-  # 
-  # })
-  # 
-  # ### plotOutput: Effort plot (legend) -------------------
-  # output$high_seas_effort_map_legend <- renderPlot({
-  # 
-  #   # Require coastal state selection & data
-  #   req(input$high_seas_eez_select != "Select a coastal state...",
-  #       nrow(high_seas_rv$eez_dat) > 0,
-  #       !is.null(high_seas_rv$effort_legend))
-  # 
-  #   # Plot legend
-  #   ggdraw(high_seas_rv$effort_legend)
-  # 
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (all flag states) ----------------
-  # output$high_seas_subsidies_map_all <- renderPlot({
-  # 
-  #   # Require coastal state selection & data
-  #   req(input$high_seas_eez_select != "Select a coastal state...",
-  #       nrow(high_seas_rv$eez_dat) > 0)
-  # 
-  #   out <- EEZPlot(region_dat = high_seas_rv,
-  #                  input_selected_eez = input$high_seas_eez_select,
-  #                  input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
-  #                  input_hs = input$high_seas_subsidies_high_seas,
-  #                  type = "total",
-  #                  plot_variable = "subs",
-  #                  eez_sf = fao_area_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  # 
-  #   high_seas_rv$subsidy_legend <- out$legend
-  # 
-  #   out$plot
-  # 
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (selected flag state) ----------------
-  # output$high_seas_subsidies_map_selected <- renderPlot({
-  # 
-  #   # Require coastal state selection & data
-  #   req(input$high_seas_eez_select != "Select a coastal state...",
-  #       nrow(high_seas_rv$eez_dat) > 0,
-  #       input$high_seas_subsidies_select_flag_state != "Select a flag state...")
-  # 
-  #   out <- EEZPlot(region_dat = high_seas_rv,
-  #                  input_selected_eez = input$high_seas_eez_select,
-  #                  input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
-  #                  input_hs = input$high_seas_subsidies_high_seas,
-  #                  type = "flag",
-  #                  plot_variable = "subs",
-  #                  eez_sf = fao_area_360,
-  #                  land_sf = land_ter_360,
-  #                  map_theme = eezmaptheme)
-  # 
-  #   out$plot
-  # 
-  # })
-  # 
-  # ### plotOutput: Subsidies plot (legend) -------------------
-  # output$high_seas_subsidies_map_legend <- renderPlot({
-  # 
-  #   # Require coastal state selection & data
-  #   req(input$high_seas_eez_select != "Select a coastal state...",
-  #       nrow(high_seas_rv$eez_dat) > 0,
-  #       !is.null(high_seas_rv$subsidy_legend))
-  # 
-  #   # Plot legend
-  #   ggdraw(high_seas_rv$subsidy_legend)
-  # 
-  # })
+  ### Download button: Effort maps (PDF) -----------------------
+  output$high_seas_db_effort_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_effort_maps_high_seas_area_",input$high_seas_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+      # Require coastal state selection & data
+      req(input$high_seas_eez_select != "Select a coastal state...",
+          nrow(high_seas_rv$eez_dat) > 0)
+      
+      title <- paste0("Distant Water Effort | High Seas FAO Area ", input$high_seas_eez_select)
+      
+      # Subsidy Plot (all flag states)
+      plot1 <- EEZPlotRaster(region_dat = high_seas_rv,
+                             plot_raster = "effort_all_raster",
+                             plot_variable = "fishing_KWh",
+                             input_selected_eez = input$high_seas_eez_select,
+                             input_selected_flag_state = input$high_seas_effort_select_flag_state,
+                             eez_sf = fao_area_360,
+                             land_sf = land_ter_360,
+                             map_theme = eezmaptheme)
+      
+      high_seas_rv$effort_legend <- plot1$legend
+      
+      # Make legend
+      legend <- ggdraw(high_seas_rv$effort_legend)
+      
+      # Subsidy Plot (selected flag state)
+      if(input$high_seas_effort_select_flag_state != "Select a flag state..."){
+        
+        plot2 <- EEZPlotRaster(region_dat = high_seas_rv,
+                               plot_raster = "effort_selected_raster",
+                               plot_variable = "fishing_KWh",
+                               input_selected_eez = input$high_seas_eez_select,
+                               input_selected_flag_state = input$high_seas_effort_select_flag_state,
+                               eez_sf = fao_area_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        # Combine into figure
+        top_row <- plot_grid(
+          plot1$plot + labs(title = title,
+                            subtitle = "All DW Vessels"), 
+          
+          plot2$plot + labs(title = "",
+                            subtitle = paste0("Flag state: ", input$high_seas_effort_select_flag_state)),
+          
+          align = "h", axis = "bt", rel_widths = c(1, 1))
+        
+        plot <- plot_grid(top_row,
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }else{
+        
+        # Combine into figure
+        plot <- plot_grid(plot1$plot + labs(title = title,
+                                            subtitle = "All DW Vessels") +
+                            theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                          legend,
+                          nrow = 2,
+                          rel_heights = c(1, 0.3))
+        
+      }
+      
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
+  
+  ### Download button: Fisheries subsidies maps (PDF) -----------------------
+  output$high_seas_db_subsidy_maps <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_subsidy_maps_high_seas_area_",input$high_seas_eez_select,".pdf")
+    },
+    content = function(file) {
+      
+        # Require coastal state selection & data
+        req(input$high_seas_eez_select != "Select a coastal state...",
+            nrow(high_seas_rv$eez_dat) > 0)
+
+        title <- paste0("Distant Water Subsidies | High Seas FAO Area ", input$high_seas_eez_select)
+        
+        # Subsidy Plot (all flag states)
+        plot1 <- EEZPlotRaster(region_dat = high_seas_rv,
+                               plot_raster = "subsidies_all_raster",
+                               plot_variable = "subs",
+                               input_selected_eez = input$high_seas_eez_select,
+                               input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
+                               eez_sf = fao_area_360,
+                               land_sf = land_ter_360,
+                               map_theme = eezmaptheme)
+        
+        high_seas_rv$subsidy_legend <- plot1$legend
+        
+        # Make legend
+        legend <- ggdraw(high_seas_rv$subsidy_legend)
+        
+        # Subsidy Plot (selected flag state)
+        if(input$high_seas_subsidies_select_flag_state != "Select a flag state..."){
+          
+          plot2 <- EEZPlotRaster(region_dat = high_seas_rv,
+                                 plot_raster = "subsidies_selected_raster",
+                                 plot_variable = "subs",
+                                 input_selected_eez = input$high_seas_eez_select,
+                                 input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
+                                 eez_sf = fao_area_360,
+                                 land_sf = land_ter_360,
+                                 map_theme = eezmaptheme)
+          
+          # Combine into figure
+          top_row <- plot_grid(
+            plot1$plot + labs(title = title,
+                              subtitle = "All DW Vessels"), 
+            
+            plot2$plot + labs(title = "",
+                              subtitle = paste0("Flag state: ", input$high_seas_subsidies_select_flag_state)),
+            
+            align = "h", axis = "bt", rel_widths = c(1, 1))
+          
+          plot <- plot_grid(top_row,
+                            legend,
+                            nrow = 2,
+                            rel_heights = c(1, 0.3))
+          
+        }else{
+          
+          # Combine into figure
+          plot <- plot_grid(plot1$plot + labs(title = title,
+                                              subtitle = "All DW Vessels") +
+                              theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                            legend,
+                            nrow = 2,
+                            rel_heights = c(1, 0.3))
+
+        }
+
+      # Output
+      pdf(file, width = 11, height = 8.5)
+      print(plot)
+      dev.off()
+      
+    }
+    
+  )
   
   ### -------------------------------------------------------------------------
   ### -------------------------------------------------------------------------
