@@ -9,14 +9,6 @@
 ### This script loads data needed for the app and performs some final data wrangling
 ### --------------------------------------------------------------------
 
-# region_names_long <- c("East Asia & Pacific" = "east_asia_pacific",
-#                   "Europe & Central Asia" = "europe_central_asia",
-#                   "Latin America & Caribbean" = "latin_america_caribbean",
-#                   "Middle East & North Africa" = "middle_east_north_africa",
-#                   "North America" = "north_america",
-#                   "South Asia" = "south_asia",
-#                   "Sub-Saharan Africa" = "sub_saharan_africa")
-
 # Should the EEZs of EU countries be visualized as a unit
 merge_EU <- FALSE
 
@@ -26,7 +18,13 @@ eu_countries <- c("AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN",
 
 # 1) EEZ Polygons - Merged by territory
 # Note this file contains duplicate polygons for disputed and joint areas attributed to each territory individually - additionally, all non-contiguous EEZ regions have been unionized for each territory. Also contains a merged EU polygon. 
-eez_ter_360 <- st_read("./data/world_eez_ter_neg360_360_subsidy_atlas.gpkg")
+eez_ter_360 <- st_read("./data/world_eez_ter_neg360_360_subsidy_atlas.gpkg") %>%
+  mutate(eez_ter_name = case_when(eez_ter_iso3 == "TWN" ~ "Chinese Taipei",
+                                  TRUE ~ eez_ter_name),
+         eez_sov_iso3 = case_when(eez_ter_iso3 == "TWN" ~ "CHN",
+                                  TRUE ~ eez_sov_iso3),
+         eez_sov_name = case_when(eez_ter_iso3 == "TWN" ~ "China",
+                                  TRUE ~ eez_sov_name))
 
 # 2) EEZ Polygons - Merged by region
 eez_region_360 <- st_read("./data/world_eez_regions_neg360_360.gpkg")
@@ -36,7 +34,12 @@ eez_region_360 <- st_read("./data/world_eez_regions_neg360_360.gpkg")
 land_ter_360 <- st_read("./data/ne_50m_admin_neg360_360.gpkg")
 
 # 4) EEZ / Flag State Connectivity Lines
-eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines.gpkg")
+eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines.gpkg") %>%
+  dplyr::filter(!(eez_ter_iso3 == "ARG" & flag_iso3 == "FLK")) %>%
+  mutate(eez_ter_name = case_when(eez_ter_iso3 == "TWN" ~ "Chinese Taipei",
+                                  TRUE ~ eez_ter_name),
+         admin = case_when(flag_iso3 == "TWN" ~ "Chinese Taipei",
+                           TRUE ~ admin))
 
 # 5) EEZ / FAO Region Lookup Table
 fao_regions_by_eez <- read_csv("./data/fao_regions_by_eez_ter_id.csv")

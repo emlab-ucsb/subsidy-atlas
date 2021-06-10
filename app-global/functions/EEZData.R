@@ -548,9 +548,15 @@ EEZPlotRaster <- function(region_dat,
     x_lim <- c(region_dat$eez_bb$xmin - 1, region_dat$eez_bb$xmax + 1)
     y_lim <- c(region_dat$eez_bb$ymin - 1, region_dat$eez_bb$ymax + 1)
 
-    # raster_extent <- bbox(region_dat[[plot_raster]]$r)
-    # x_lim <- c(raster_extent[1,1] - 1, raster_extent[1,2] - 1)
-    # y_lim <- c(raster_extent[2,1] - 1, raster_extent[2,2] - 1)
+    raster_extent <- bbox(region_dat[[plot_raster]]$r)
+    raster_x_lim <- c(raster_extent[1,1] - 1, raster_extent[1,2] - 1)
+    raster_y_lim <- c(raster_extent[2,1] - 1, raster_extent[2,2] - 1)
+    
+    if(x_lim[1] > (raster_x_lim[1] + 90)){
+      
+      x_lim <- x_lim - 360
+    
+    }
     
     ### Scale
     if(plot_variable == "fishing_KWh"){
