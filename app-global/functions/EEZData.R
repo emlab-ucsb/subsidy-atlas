@@ -362,31 +362,91 @@ EEZLeafletMap <- function(region_dat,
 ### ----------------------------------------------------
 
 EEZDatRasterize <- function(region_dat,
+                            input_selected_eez,
                             input_selected_flag_state,
                             type = "total",
-                            plot_variable = "fishing_KWh"){
+                            plot_variable = "fishing_KWh",
+                            is_hs = F){
   
-  ### Get totals for all flag states
-  eez_totals <- region_dat$eez_dat %>%
-    group_by(lon_cen, lat_cen) %>%
-    summarize(fishing_hours = sum(fishing_hours, na.rm = T),
-              fishing_KWh = sum(fishing_KWh, na.rm = T),
-              subs = sum(bad_subs, na.rm = T)) %>%
-    ungroup() %>%
-    mutate(bad_subs_per_fishing_KWh = subs/fishing_KWh)
+
   
   if(type == "total"){
     
-    ### Get totals for all flag states
+    ### Aggregate spatial totals for all flag states
+    eez_totals <- region_dat$eez_dat %>%
+      group_by(lon_cen, lat_cen) %>%
+      summarize(fishing_hours = sum(fishing_hours, na.rm = T),
+                fishing_KWh = sum(fishing_KWh, na.rm = T),
+                subs = sum(bad_subs, na.rm = T)) %>%
+      ungroup()
+    
     plot_totals <- eez_totals
+    
+    if(!is_hs){
+      
+    ### Get EEZ-wide totals from connectivity data (removes rounding issues from rasters)
+    connect_totals <- region_dat$connect %>%
+      st_drop_geometry() %>%
+      dplyr::filter(eez_ter_iso3 == input_selected_eez) %>% 
+      group_by(eez_ter_iso3, eez_ter_name, flag_iso3) %>%
+      summarize(fishing_KWh = unique(fishing_KWh),
+                bad_subs = unique(bad_subs)) %>%
+      ungroup() %>%
+      group_by(eez_ter_iso3, eez_ter_name) %>%
+      summarize(fishing_KWh = sum(fishing_KWh, na.rm = T),
+                subs = sum(bad_subs, na.rm = T)) %>%
+      ungroup() %>%
+      rename(title = eez_ter_name)
+    
+    }else{
+      
+    connect_totals <- region_dat$connect %>%
+        st_drop_geometry() %>%
+        mutate(fao_region = as.character(fao_region)) %>%
+        dplyr::filter(fao_region == input_selected_eez) %>%
+        group_by(fao_region, title, flag_iso3) %>%
+        summarize(fishing_KWh = unique(fishing_KWh),
+                  bad_subs = unique(bad_subs)) %>%
+        ungroup() %>%
+        group_by(fao_region, title) %>%
+        summarize(fishing_KWh = sum(fishing_KWh, na.rm = T),
+                  bad_subs = sum(bad_subs, na.rm = T)) %>%
+        ungroup()
+
+    }
     
   }else if(type == "flag"){
     
-    ### Get totals for selected flag states
+    ### Aggregate spatial totals for selected flag state
     plot_totals <- region_dat$eez_dat %>%
       dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
       rename(subs = bad_subs)
     
+    if(!is_hs){
+      
+    ### Get flag-specific totals from connectivity data (removes rounding issues from rasters)
+    connect_totals <- region_dat$connect %>%
+      st_drop_geometry() %>%
+      dplyr::filter(eez_ter_iso3 == input_selected_eez) %>% 
+      dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
+      group_by(eez_ter_iso3, eez_ter_name, flag_iso3) %>%
+      summarize(fishing_KWh = unique(fishing_KWh, na.rm = T),
+                subs = unique(bad_subs, na.rm = T)) %>%
+      ungroup() %>%
+      rename(title = eez_ter_name)
+    
+    }else{
+      
+      connect_totals <- region_dat$connect %>%
+        st_drop_geometry() %>%
+        mutate(fao_region = as.character(fao_region)) %>%
+        dplyr::filter(fao_region == input_selected_eez) %>%
+        dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
+        group_by(fao_region, title, flag_iso3) %>%
+        summarize(fishing_KWh = unique(fishing_KWh),
+                  bad_subs = unique(bad_subs)) %>%
+        ungroup()
+    }
   }
   
   # Make sure there's data
@@ -399,14 +459,21 @@ EEZDatRasterize <- function(region_dat,
     legend_options = "plasma"
     
     # Caption
+    # caption = paste0("<b>", "Total DW fishing effort (kWh): ", "</b>", 
+    #                  format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
     caption = paste0("<b>", "Total DW fishing effort (kWh): ", "</b>", 
-                     format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+                     format(round(sum(connect_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
     
-    caption_ggplot <- paste0("Total DW fishing effort \n(kWh): ", 
-                             format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+    # caption_ggplot <- paste0("Total DW fishing effort \n(kWh): ", 
+    #                          format(round(sum(plot_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
+    caption_ggplot <- paste0("Total DW fishing effort \n(kWh): ",
+                             format(round(sum(connect_totals$fishing_KWh, na.rm = T), 0), big.mark = ",", scientific = F))
     
     # Format caption
     caption <- tags$div(HTML(caption))  
+    
+    # Get display name
+    display_name <- unique(connect_totals$title)
     
     ## Log transform variable
     plot_totals <- plot_totals %>%
@@ -419,14 +486,21 @@ EEZDatRasterize <- function(region_dat,
     legend_options = "viridis"
     
     # Caption
+    # caption = paste0("<b>", "Estimated DW subsidies (2018 $US): ", "</b>",
+    #                  format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
     caption = paste0("<b>", "Estimated DW subsidies (2018 $US): ", "</b>",
-                     format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
+                     format(round(sum(connect_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
     
+    # caption_ggplot = paste0("Estimated DW subsidies \n(2018 $US): ",
+    #                  format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
     caption_ggplot = paste0("Estimated DW subsidies \n(2018 $US): ",
-                     format(round(sum(plot_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
+                            format(round(sum(connect_totals$subs, na.rm = T), 0), big.mark = ",", scientific = F))
     
     # Format caption
     caption <- tags$div(HTML(caption))  
+    
+    # Get display name
+    display_name <- unique(connect_totals$title)
     
     ## Log transform variable
     plot_totals <- plot_totals %>%
@@ -450,7 +524,8 @@ EEZDatRasterize <- function(region_dat,
          pal = pal,
          pal_title = legend_name,
          caption = caption,
-         caption_ggplot = caption_ggplot))
+         caption_ggplot = caption_ggplot,
+         display_name = display_name))
     
 }
 
@@ -525,5 +600,87 @@ EEZPlotRaster <- function(region_dat,
 
     return(list(plot = plot + theme(legend.position = "none"),
                 legend = cowplot::get_legend(plot)))
+
+}
+
+### ----------------------------------------------------
+### Wrapper - Building Static Maps for Download
+### ----------------------------------------------------
+
+EEZPlotDownloadWrapper <- function(region_dat,
+                                   plot_raster_type = "effort",
+                                   plot_variable = "fishing_KWh",
+                                   input_selected_eez,
+                                   input_selected_flag_state,
+                                   eez_sf,
+                                   land_sf,
+                                   map_theme,
+                                   is_hs = F){
+  
+  if(!is_hs){
+    
+    title <- paste0("Distant Water ", str_to_title(plot_raster_type), " | EEZ of ", region_dat[[paste0(plot_raster_type, "_all_raster")]]$display_name)
+  
+  }else{
+    
+    title <- paste0("Distant Water ", str_to_title(plot_raster_type), " | High Seas ", region_dat[[paste0(plot_raster_type, "_all_raster")]]$display_name)
+
+  }
+  
+  # Subsidy Plot (all flag states)
+  plot1 <- EEZPlotRaster(region_dat = region_dat,
+                         plot_raster = paste0(plot_raster_type, "_all_raster"),
+                         plot_variable = plot_variable,
+                         input_selected_eez = input_selected_eez,
+                         input_selected_flag_state = input_selected_flag_state,
+                         eez_sf = eez_sf,
+                         land_sf = land_sf,
+                         map_theme = map_theme)
+  
+  #east_asia_pacific_rv$effort_legend <- plot1$legend
+  
+  # Make legend
+  legend <- ggdraw(plot1$legend)
+  
+  # Subsidy Plot (selected flag state)
+  if(input_selected_flag_state != "Select a flag state..."){
+    
+    plot2 <- EEZPlotRaster(region_dat = region_dat,
+                           plot_raster = paste0(plot_raster_type, "_selected_raster"),
+                           plot_variable = plot_variable,
+                           input_selected_eez = input_selected_eez,
+                           input_selected_flag_state = input_selected_flag_state,
+                           eez_sf = eez_sf,
+                           land_sf = land_sf,
+                           map_theme = map_theme)
+    
+    # Combine into figure
+    top_row <- plot_grid(
+      plot1$plot + labs(title = title,
+                        subtitle = "All DW Vessels"), 
+      
+      plot2$plot + labs(title = "",
+                        subtitle = paste0("Flag state: ", input_selected_flag_state)),
+      
+      align = "h", axis = "bt", rel_widths = c(1, 1))
+    
+    plot <- plot_grid(top_row,
+                      legend,
+                      nrow = 2,
+                      rel_heights = c(1, 0.3))
+    
+  }else{
+    
+    # Combine into figure
+    plot <- plot_grid(plot1$plot + labs(title = title,
+                                        subtitle = "All DW Vessels") +
+                        theme(plot.title = element_text(face = "bold", size = 18, hjust = 0.5)),
+                      legend,
+                      nrow = 2,
+                      rel_heights = c(1, 0.3))
+    
+  }
+  
+  return(plot)
 
 }
