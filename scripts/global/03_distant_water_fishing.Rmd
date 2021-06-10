@@ -69,8 +69,9 @@ eez_attrib_clean <- eez_attrib_flat %>%
 vessel_list_update <- vessel_list_raw %>%
   dplyr::select(-contains("eez_territory"), -contains("eez_sovereign"), -is_EU, -is_dependency) %>%
   left_join(eez_attrib_clean, by = c("eez_id")) %>%
-  dplyr::filter(eez_id != 8399) # removes 3 entries corresponding to eez_id = 8399
-
+  dplyr::filter(eez_id != 8399) %>% # removes 3 entries corresponding to eez_id = 8399
+  mutate(flag_sovereign_iso3 = case_when(flag_iso3 %in% c("HKG", "TWN") ~ "CHN",
+                                         TRUE ~ flag_sovereign_iso3)) # fix Hong Kong and Taiwan
 ```
 
 # Identify EU flags and EEZx
@@ -95,6 +96,7 @@ Since the purpose of this tool is to show distant water fishing effort and subsi
 In the first step, the following is not considered to be "distant water fishing" and is therefore removed:
 - All fishing effort occuring on the high seas;
 - All fishing effort occuring in an EEZ when the flag state of the vessel is the same as the administering state of the EEZ in which it is fishing.
+- All fishing effort occuring in an EEZ when the sovereign flag state of the vessel is the same as the administering state of the EEZ in which it is fishing. 
 
 ```{r}
 # Participants in the EU Northern Agreement
@@ -106,15 +108,22 @@ eu_northern_agreement <- c("NOR", "ISL", "SJM")
 vessel_list_dw <- vessel_list_update %>%
   dplyr::filter(eez_id != 0000)
 
-# Remove cases where flag state of vessel matches the administering territory (or territories in the cases of joint regime/disputed areas)
+# Remove cases where flag state of vessel (or sovereign flag state of vessel) matches the administering territory (or territories in the cases of joint regime/disputed areas)
 distant_water_fishing <- vessel_list_dw %>%
    mutate(ter1_match = case_when(!is.na(iso_ter1) & !is.na(flag_iso3) & flag_iso3 == iso_ter1 ~ T,
                                  TRUE ~ F),
          ter2_match = case_when(!is.na(iso_ter2) & !is.na(flag_iso3) & flag_iso3 == iso_ter2 ~ T,
                                       TRUE ~ F),
          ter3_match = case_when(!is.na(iso_ter3) & !is.na(flag_iso3) & flag_iso3 == iso_ter3 ~ T,
-                                      TRUE ~ F)) %>%
-  dplyr::filter(!ter1_match & !ter2_match & !ter3_match)
+                                      TRUE ~ F),
+         ter1_sov_match = case_when(!is.na(iso_ter1) & !is.na(flag_sovereign_iso3) & flag_sovereign_iso3 == iso_ter1 ~ T,
+                                 TRUE ~ F),
+         ter2_sov_match = case_when(!is.na(iso_ter2) & !is.na(flag_sovereign_iso3) & flag_sovereign_iso3 == iso_ter2 ~ T,
+                                      TRUE ~ F),
+         ter3_sov_match = case_when(!is.na(iso_ter3) & !is.na(flag_sovereign_iso3) & flag_sovereign_iso3 == iso_ter3 ~ T,
+                                      TRUE ~ F)
+         ) %>%
+  dplyr::filter(!ter1_match & !ter2_match & !ter3_match & !ter1_sov_match & !ter2_sov_match & !ter3_sov_match)
 
 ```
 
@@ -124,7 +133,7 @@ Vessels flagged to EU member states have the right to fish in the EEZs of other 
 
 We define "intra-EU fishing" as fishing activity that meets one of the following criteria: 
 1. The flag state of the vessel is a member state of the EU, or the vessel is flagged to Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, or by Norway, Svalbard and Jan Mayen, or Iceland (e.g. a French-flagged vessel fishing in the EEZ of Spain);
-2. The sovereign of the vessel's flag state is a member state of the EU, or is Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a XXX-flagged vessel fishing in the EEZ of Spain).
+2. The sovereign of the vessel's flag state is a member state of the EU, or is Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing is administered by a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland (e.g. a French Polynesian-flagged vessel fishing in the EEZ of France).
 
 We do not consider the following to be "intra-EU fishing" (and is therefore distant water fishing): 
 1. The flag state of the vessel is a member state of the EU, Norway, Svalbard and Jan Mayen, or Iceland and the EEZ in which it is fishing belongs to a territory or distant region of an EU member state (e.g. a French-flagged vessel fishing in the EEZ of French Polynesia). 

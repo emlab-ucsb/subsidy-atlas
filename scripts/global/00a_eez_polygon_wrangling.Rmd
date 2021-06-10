@@ -136,7 +136,7 @@ eez_attrib_expanded <- eez_attrib_all %>%
          name_sov = countrycode(iso_sov_all, "iso3c", 'country.name.en'),
          region = countrycode(iso_ter, "iso3c", "region"))
 
-# Manually assign regions for those that are missing
+# Manually assign regions for those that are missing or are incorrect
 eez_attrib_expanded <- eez_attrib_expanded %>%
   mutate(region_custom = case_when(iso_ter == "ATA" ~ "NA",
                                    iso_ter == "ATF" ~ "Sub-Saharan Africa",
@@ -148,6 +148,7 @@ eez_attrib_expanded <- eez_attrib_expanded %>%
                                    iso_ter == "UMI" ~ "East Asia & Pacific",
                                    iso_ter == "WLF" ~ "East Asia & Pacific",
                                    iso_ter == "SGS" ~ "Latin America & Caribbean", # Fix South Georgia and the South Sandwich Islands
+                                   iso_ter == "MLT" ~ "Europe & Central Asia", # Fix Malta
                                    TRUE ~ region)) %>%
   dplyr::select(-region, -iso_ter_all) %>%
   rename(iso_sov = iso_sov_all,

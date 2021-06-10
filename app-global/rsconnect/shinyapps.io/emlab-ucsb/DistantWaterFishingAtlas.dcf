@@ -5,8 +5,8 @@ account: emlab-ucsb
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3848921
-bundleId: 4699513
+bundleId: 4702113
 url: https://emlab-ucsb.shinyapps.io/DistantWaterFishingAtlas/
-when: 1623299164.0752
+when: 1623347027.86817
 asMultiple: FALSE
 asStatic: FALSE

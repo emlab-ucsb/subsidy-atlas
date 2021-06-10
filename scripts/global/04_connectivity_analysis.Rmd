@@ -414,14 +414,14 @@ eez_mapping_wlines_east_asia_pacific <- flag_eez_summary_centroids %>%
   ungroup() %>%
   dplyr::filter(!is.na(flag_lon)) %>% # remove NA flagged
   dplyr::filter(region == "East Asia & Pacific") %>%
-  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  dplyr::select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
   purrr::transpose() %>% 
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
   purrr::map(st_linestring) %>%
   st_sfc(crs = 4326) %>%
   st_sf(geometry = .) %>% 
   bind_cols(flag_eez_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region == "East Asia & Pacific")) %>%
-  select(everything(), geometry) %>% 
+  dplyr::select(everything(), geometry) %>% 
   st_segmentize(units::set_units(100,km)) %>% 
   st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
   st_shift_longitude() %>%
@@ -449,14 +449,14 @@ eez_mapping_wlines_all_others <- flag_eez_summary_centroids %>%
   ungroup() %>%
   dplyr::filter(!is.na(flag_lon)) %>%
   dplyr::filter(region != "East Asia & Pacific") %>%
-  select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
+  dplyr::select(flag_lon, flag_lat, eez_lon, eez_lat) %>% 
   purrr::transpose() %>% 
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
   purrr::map(st_linestring) %>%
   st_sfc(crs = 4326) %>%
   st_sf(geometry = .) %>% 
   bind_cols(flag_eez_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region != "East Asia & Pacific")) %>%
-  select(everything(), geometry) %>% 
+  dplyr::select(everything(), geometry) %>% 
   st_segmentize(units::set_units(100,km)) %>% 
   st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
   sf::st_sf(crs = 4326) 
@@ -519,14 +519,14 @@ fao_mapping_wlines <- flag_fao_hs_summary_centroids %>%
   ungroup() %>%
   dplyr::filter(!is.na(flag_lon)) %>%
   dplyr::filter(region == "High Seas") %>%
-  select(flag_lon, flag_lat, fao_lon, fao_lat) %>% 
+  dplyr::select(flag_lon, flag_lat, fao_lon, fao_lat) %>% 
   purrr::transpose() %>% 
   purrr::map(~ matrix(flatten_dbl(.), nrow = 2, byrow = TRUE)) %>% 
   purrr::map(st_linestring) %>%
   st_sfc(crs = 4326) %>%
   st_sf(geometry = .) %>% 
   bind_cols(flag_fao_hs_summary_centroids %>% dplyr::filter(!is.na(flag_lon)) %>% dplyr::filter(region == "High Seas")) %>%
-  select(everything(), geometry) %>% 
+  dplyr::select(everything(), geometry) %>% 
   st_segmentize(units::set_units(100,km)) %>% 
   st_wrap_dateline(options = c("WRAPDATELINE=YES", "DATELINEOFFSET=10"), quiet = TRUE) %>% 
   sf::st_sf(crs = 4326) 
