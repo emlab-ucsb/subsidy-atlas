@@ -102,12 +102,12 @@ eez_ter_flag_lookup_table <- bq_table(project = bq_project,
 ## Pull Data (EEZ Level)
 
 ```{r}
-#do.call(file.remove, list(list.files("C:/Temp", full.names = TRUE)))
 # First clear our existing files
 eez_results_files <- list.files(results_dir, full.names = TRUE)
 do.call(file.remove, list(eez_results_files))
 
 eez_app_files <- list.files(app_eez_dir, full.names = TRUE)
+do.call(file.remove, list(eez_app_files))
 
 
 eez_ter_to_pull <- unique(flags_by_eez_id$eez_ter_iso3) 
