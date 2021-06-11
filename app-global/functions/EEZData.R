@@ -410,7 +410,7 @@ EEZDatRasterize <- function(region_dat,
         ungroup() %>%
         group_by(fao_region, title) %>%
         summarize(fishing_KWh = sum(fishing_KWh, na.rm = T),
-                  bad_subs = sum(bad_subs, na.rm = T)) %>%
+                  subs = sum(bad_subs, na.rm = T)) %>%
         ungroup()
 
     }
@@ -444,8 +444,9 @@ EEZDatRasterize <- function(region_dat,
         dplyr::filter(flag_iso3 == input_selected_flag_state) %>%
         group_by(fao_region, title, flag_iso3) %>%
         summarize(fishing_KWh = unique(fishing_KWh),
-                  bad_subs = unique(bad_subs)) %>%
+                  subs = unique(bad_subs)) %>%
         ungroup()
+      
     }
   }
   
