@@ -40,6 +40,10 @@ app_dir <- here::here("app-global/data/")
 
 # 50m World Political Units/Subunits (Land Map)
 
+For our land boundaries, we use a combination of two 50m cultural vector datasets from Natural Earth Data (https://www.naturalearthdata.com/downloads/50m-cultural-vectors/): 
+- Admin 0 - Details (map units - version 4.1.0)
+- Admin 0 - Details (map subunits - version 4.1.0)
+
 ## Preliminary edits
 
 Prior to making the edits detailed below, some edits were done to both shapefiles before importing a combined version into R. 
@@ -54,7 +58,7 @@ The final shapefile was outputted with the following CRS: WGS 84 (EPSG:4326).
 The edits done to this shapefile primarily relate to manually assigning some attributes, and joining some subunits back together.
 
 ```{r}
-land_map <- read_sf(dsn = here::here("data", "edited", "ne_50m_admin_0_map_units_subunits_neg360_360"), 
+land_map <- read_sf(dsn = here::here("data", "raw", "ne_50m_admin_0_map_units_subunits_neg360_360"), 
                     layer = "land_50m") %>%
   st_transform(crs = 4326) %>%
   setNames(tolower(names(.))) %>%

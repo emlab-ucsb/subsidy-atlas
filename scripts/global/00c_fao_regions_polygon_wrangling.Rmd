@@ -43,7 +43,7 @@ This is a shapefile previously created by us for use in another project. It was 
 
 ```{r}
 # Path where the raw data file lives
-fao_path <- here::here("data", "shapefiles", "eez_v10_fao_combined_simple", "eez_v10_fao_combined_simple.shp") 
+fao_path <- here::here("data", "edited", "eez_v10_fao_combined_simple", "eez_v10_fao_combined_simple.shp") 
 
 # Load file
 fao_sf <- st_read(fao_path) %>%
