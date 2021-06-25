@@ -88,7 +88,6 @@ vessel_list_update <- vessel_list_update %>%
                                TRUE ~ F))
 ```
 
-
 # Identify distant water fishing vessels
 
 Since the purpose of this tool is to show distant water fishing effort and subsidies, we need to separate out fishing effort considered to be "distant water" from the rest. This is done in a series of steps. 
