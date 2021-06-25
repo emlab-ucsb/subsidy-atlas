@@ -134,16 +134,18 @@ SummaryDT <- function(region_dat,
       st_drop_geometry() %>%
       dplyr::filter(fao_region == input_selected_eez) %>% 
       group_by(fao_region, title, flag_iso3, admin) %>%
-      summarize(`Number of DW vessels` = round(unique(n_vessels), 0),
+      summarize(`Number of DW vessels` = format(round(unique(n_vessels), 0), big.mark = ","),
                 `Total DW vessel capacity (kW)` = format(round(unique(tot_engine_power), 0), big.mark = ","),
                 `Total DW vessel tonnage (gt)` = format(round(unique(tot_tonnage), 0), big.mark = ","),
                 `Total DW fishing effort (hours)` = format(round(unique(fishing_hours), 0), big.mark = ","),
                 `Total DW fishing effort (kW hours)` = format(round(unique(fishing_KWh), 0), big.mark = ","),
-                `Estimated DW subsidies to area (2018 $US)` = format(round(unique(bad_subs), 0), big.mark = ",")) %>%
+                bad_subs = round(unique(bad_subs), 0)) %>%
       ungroup() %>%
-      arrange(desc(`Estimated DW subsidies to area (2018 $US)`)) %>%
+      arrange(desc(bad_subs)) %>%
       dplyr::select(-fao_region, -title, -flag_iso3) %>%
-      rename(`Flag state` = admin)
+      rename(`Flag state` = admin) %>%
+      mutate(`Estimated DW subsidies to area (2018 $US)` = format(bad_subs, big.mark = ",")) %>%
+      dplyr::select(-bad_subs)
     
   }else{
   
@@ -152,16 +154,18 @@ SummaryDT <- function(region_dat,
     st_drop_geometry() %>%
     dplyr::filter(eez_ter_iso3 == input_selected_eez) %>% 
     group_by(eez_ter_iso3, eez_ter_name, flag_iso3, admin) %>%
-    summarize(`Number of DW vessels` = round(unique(n_vessels), 0),
-              `Total DW vessel capacity (kW)` = round(unique(tot_engine_power), 0),
-              `Total DW vessel tonnage (gt)` = round(unique(tot_tonnage), 0),
-              `Total DW fishing effort (hours)` = round(unique(fishing_hours), 0),
-              `Total DW fishing effort (kW hours)` = round(unique(fishing_KWh), 0),
-              `Estimated DW subsidies to EEZ (2018 $US)` = round(unique(bad_subs), 0)) %>%
+    summarize(`Number of DW vessels` = format(round(unique(n_vessels), 0), big.mark = ","),
+              `Total DW vessel capacity (kW)` = format(round(unique(tot_engine_power), 0), big.mark = ","),
+              `Total DW vessel tonnage (gt)` = format(round(unique(tot_tonnage), 0), big.mark = ","),
+              `Total DW fishing effort (hours)` = format(round(unique(fishing_hours), 0), big.mark = ","),
+              `Total DW fishing effort (kW hours)` = format(round(unique(fishing_KWh), 0), big.mark = ","),
+              bad_subs = round(unique(bad_subs), 0)) %>%
     ungroup() %>%
-    arrange(admin) %>%
+    arrange(desc(bad_subs)) %>%
     dplyr::select(-eez_ter_iso3, -eez_ter_name, -flag_iso3) %>%
-    rename(`Flag state` = admin)
+    rename(`Flag state` = admin) %>%
+    mutate(`Estimated DW subsidies to area (2018 $US)` = format(bad_subs, big.mark = ",")) %>%
+    dplyr::select(-bad_subs)
   
   }
   
