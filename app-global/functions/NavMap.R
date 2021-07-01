@@ -51,7 +51,7 @@ NavMap <- function(region_dat,
     
     # Extract regional EEZs that should be selectable
     eezs <- region_dat$eezs %>%
-      dplyr::filter(pol_type == "200NM" & eez_ter_iso3 %in% good_eezs)
+      dplyr::filter(pol_type == "200NM" & eez_ter_iso3 %in% good_eezs_all)
     
     # Extract disputed areas
     disputed <- region_dat$eezs %>%
@@ -59,7 +59,7 @@ NavMap <- function(region_dat,
     
     # Non-selectable EEZs
     bad_eezs <- region_dat$eezs %>%
-      dplyr::filter(pol_type == "200NM" | !(eez_ter_iso3 %in% good_eezs))
+      dplyr::filter(pol_type == "200NM" | !(eez_ter_iso3 %in% good_eezs_all))
     
     # Map
     map <- leaflet(map_id, 
@@ -106,7 +106,7 @@ NavMap <- function(region_dat,
                                                  fillOpacity = 1,
                                                  bringToFront = FALSE),
                     label = bad_eezs$geoname_new,
-                    layerId = NULL, #need this to select input below
+                    layerId = bad_eezs$eez_ter_iso3, #need this to select input below
                     labelOptions = labelOptions(style = list("font-weight" = "normal",
                                                              padding = "3px 8px"),
                                                 textsize = "13px",

@@ -320,7 +320,7 @@ shinyServer(function(input, output, session) {
   ### UI output: Selected coastal state stats -----------
   output$east_asia_pacific_eez_select_stats <- renderUI({
     
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     StateInfo(region_dat = east_asia_pacific_rv,
               input_selected_eez = input$east_asia_pacific_eez_select)
@@ -355,7 +355,7 @@ shinyServer(function(input, output, session) {
   ### Leaflet proxy: Highlight and zoom to EEZ(s) cooresponding to selected state ---------
   observeEvent(input$east_asia_pacific_eez_select, {
     
-    if(input$east_asia_pacific_eez_select == "Select a coastal state..."){
+    if(input$east_asia_pacific_eez_select == "Select a coastal state..." | !(input$east_asia_pacific_eez_select %in% good_eezs_all)){
       
       # Remove any previously highlighted polygon and reorient
       east_asia_pacific_nav_map_proxy %>% 
@@ -387,7 +387,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_summary_ui_flag <- renderUI({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryUIFlag(region_name = "east_asia_pacific")
@@ -413,7 +413,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_summary_dt <- renderDataTable({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryDT(region_dat = east_asia_pacific_rv,
@@ -425,7 +425,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     # Make connectivity map
     VesselOriginsMap(region_dat = east_asia_pacific_rv,
@@ -442,7 +442,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_effort_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
                           input_selected_eez = input$east_asia_pacific_eez_select,
@@ -454,7 +454,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_subsidies_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = east_asia_pacific_rv,
                           input_selected_eez = input$east_asia_pacific_eez_select,
@@ -466,7 +466,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     # Load data
     eez_dat <- LoadEEZData(input_selected_eez = input$east_asia_pacific_eez_select)
@@ -480,7 +480,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...")
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all)
     
     # Crop eez shapefile based on the region 
     eez_region <- east_asia_pacific_rv$eezs %>%
@@ -495,7 +495,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all,
         input$east_asia_pacific_effort_high_seas == TRUE | input$east_asia_pacific_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
@@ -517,7 +517,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_effort_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all,
         nrow(east_asia_pacific_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -552,7 +552,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_effort_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all,
         nrow(east_asia_pacific_rv$eez_dat) > 0,
         input$east_asia_pacific_effort_select_flag_state != "Select a flag state...")
     
@@ -609,7 +609,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_subsidies_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all,
         nrow(east_asia_pacific_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -644,7 +644,7 @@ shinyServer(function(input, output, session) {
   output$east_asia_pacific_subsidies_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+    req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all,
         nrow(east_asia_pacific_rv$eez_dat) > 0,
         input$east_asia_pacific_subsidies_select_flag_state != "Select a flag state...")
     
@@ -706,7 +706,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+      req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all,
           nrow(east_asia_pacific_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -736,7 +736,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$east_asia_pacific_eez_select != "Select a coastal state...",
+      req(input$east_asia_pacific_eez_select != "Select a coastal state..." & input$east_asia_pacific_eez_select %in% good_eezs_all,
           nrow(east_asia_pacific_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -788,7 +788,7 @@ shinyServer(function(input, output, session) {
   ### UI output: Selected coastal state stats -----------
   output$europe_central_asia_eez_select_stats <- renderUI({
     
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     StateInfo(region_dat = europe_central_asia_rv,
               input_selected_eez = input$europe_central_asia_eez_select)
@@ -823,7 +823,7 @@ shinyServer(function(input, output, session) {
   ### Leaflet proxy: Highlight and zoom to EEZ(s) cooresponding to selected state --------
   observeEvent(input$europe_central_asia_eez_select, {
     
-    if(input$europe_central_asia_eez_select == "Select a coastal state..."){
+    if(input$europe_central_asia_eez_select == "Select a coastal state..." | !(input$europe_central_asia_eez_select %in% good_eezs_all)){
       
       # Remove any previously highlighted polygon and reorient
       europe_central_asia_nav_map_proxy %>% 
@@ -846,9 +846,6 @@ shinyServer(function(input, output, session) {
   ### UI output: Distant water summary for selected state -------------
   output$europe_central_asia_summary_ui <- renderUI({
     
-    # # Require coastal state selection
-    # req(input$europe_central_asia_eez_select != "Select a coastal state...")
-    
     # Generate summary
     SummaryUI(region_dat = europe_central_asia_rv,
               input_selected_eez = input$europe_central_asia_eez_select)
@@ -859,7 +856,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_summary_ui_flag <- renderUI({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryUIFlag(region_name = "europe_central_asia")
@@ -885,7 +882,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_summary_dt <- renderDataTable({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryDT(region_dat = europe_central_asia_rv,
@@ -897,7 +894,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     # Make connectivity map
     VesselOriginsMap(region_dat = europe_central_asia_rv,
@@ -914,7 +911,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_effort_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = europe_central_asia_rv,
                           input_selected_eez = input$europe_central_asia_eez_select,
@@ -926,7 +923,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_subsidies_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = europe_central_asia_rv,
                           input_selected_eez = input$europe_central_asia_eez_select,
@@ -938,7 +935,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     # Load data
     eez_dat <- LoadEEZData(input_selected_eez = input$europe_central_asia_eez_select)
@@ -952,7 +949,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...")
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all)
     
     # Crop eez shapefile based on the region 
     eez_region <- europe_central_asia_rv$eezs %>%
@@ -967,7 +964,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all,
         input$europe_central_asia_effort_high_seas == TRUE | input$europe_central_asia_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
@@ -989,7 +986,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_effort_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all,
         nrow(europe_central_asia_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -1024,7 +1021,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_effort_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all,
         nrow(europe_central_asia_rv$eez_dat) > 0,
         input$europe_central_asia_effort_select_flag_state != "Select a flag state...")
     
@@ -1081,7 +1078,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_subsidies_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all,
         nrow(europe_central_asia_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -1116,7 +1113,7 @@ shinyServer(function(input, output, session) {
   output$europe_central_asia_subsidies_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$europe_central_asia_eez_select != "Select a coastal state...",
+    req(input$europe_central_asia_eez_select != "Select a coastal state..." & input$europe_central_asia_eez_select %in% good_eezs_all,
         nrow(europe_central_asia_rv$eez_dat) > 0,
         input$europe_central_asia_subsidies_select_flag_state != "Select a flag state...")
     
@@ -1260,7 +1257,7 @@ shinyServer(function(input, output, session) {
   ### UI output: Selected coastal state stats -----------
   output$latin_america_caribbean_eez_select_stats <- renderUI({
     
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     StateInfo(region_dat = latin_america_caribbean_rv,
               input_selected_eez = input$latin_america_caribbean_eez_select)
@@ -1296,7 +1293,7 @@ shinyServer(function(input, output, session) {
   ### Leaflet proxy: Highlight selected coastal state --------------
   observeEvent(input$latin_america_caribbean_eez_select, {
     
-    if(input$latin_america_caribbean_eez_select == "Select a coastal state..."){
+    if(input$latin_america_caribbean_eez_select == "Select a coastal state..." | !(input$latin_america_caribbean_eez_select %in% good_eezs_all)){
       
       # Remove any previously highlighted polygon and reorient
       latin_america_caribbean_nav_map_proxy %>% 
@@ -1319,9 +1316,6 @@ shinyServer(function(input, output, session) {
   ### UI output: Distant water summary for selected state -------------
   output$latin_america_caribbean_summary_ui <- renderUI({
     
-    # # Require coastal state selection
-    # req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
-    
     # Generate summary
     SummaryUI(region_dat = latin_america_caribbean_rv,
               input_selected_eez = input$latin_america_caribbean_eez_select)
@@ -1332,7 +1326,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_summary_ui_flag <- renderUI({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryUIFlag(region_name = "latin_america_caribbean")
@@ -1358,7 +1352,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_summary_dt <- renderDataTable({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryDT(region_dat = latin_america_caribbean_rv,
@@ -1370,7 +1364,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     # Make connectivity map
     VesselOriginsMap(region_dat = latin_america_caribbean_rv,
@@ -1387,7 +1381,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_effort_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = latin_america_caribbean_rv,
                           input_selected_eez = input$latin_america_caribbean_eez_select,
@@ -1399,7 +1393,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_subsidies_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = latin_america_caribbean_rv,
                           input_selected_eez = input$latin_america_caribbean_eez_select,
@@ -1411,7 +1405,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     # Load data
     eez_dat <- LoadEEZData(input_selected_eez = input$latin_america_caribbean_eez_select)
@@ -1425,7 +1419,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...")
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all)
     
     # Crop eez shapefile based on the region 
     eez_region <- latin_america_caribbean_rv$eezs %>%
@@ -1440,7 +1434,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all,
         input$latin_america_caribbean_effort_high_seas == TRUE | input$latin_america_caribbean_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
@@ -1462,7 +1456,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_effort_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all,
         nrow(latin_america_caribbean_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -1497,7 +1491,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_effort_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all,
         nrow(latin_america_caribbean_rv$eez_dat) > 0,
         input$latin_america_caribbean_effort_select_flag_state != "Select a flag state...")
     
@@ -1554,7 +1548,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_subsidies_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all,
         nrow(latin_america_caribbean_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -1589,7 +1583,7 @@ shinyServer(function(input, output, session) {
   output$latin_america_caribbean_subsidies_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+    req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all,
         nrow(latin_america_caribbean_rv$eez_dat) > 0,
         input$latin_america_caribbean_subsidies_select_flag_state != "Select a flag state...")
     
@@ -1651,7 +1645,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+      req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all,
           nrow(latin_america_caribbean_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -1681,7 +1675,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$latin_america_caribbean_eez_select != "Select a coastal state...",
+      req(input$latin_america_caribbean_eez_select != "Select a coastal state..." & input$latin_america_caribbean_eez_select %in% good_eezs_all,
           nrow(latin_america_caribbean_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -1733,7 +1727,7 @@ shinyServer(function(input, output, session) {
   ### UI output: Selected coastal state stats -----------
   output$middle_east_north_africa_eez_select_stats <- renderUI({
     
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     StateInfo(region_dat = middle_east_north_africa_rv,
               input_selected_eez = input$middle_east_north_africa_eez_select)
@@ -1768,7 +1762,7 @@ shinyServer(function(input, output, session) {
   ### Leaflet proxy: Highlight and zoom to EEZ(s) cooresponding to selected state ---------
   observeEvent(input$middle_east_north_africa_eez_select, {
     
-    if(input$middle_east_north_africa_eez_select == "Select a coastal state..."){
+    if(input$middle_east_north_africa_eez_select == "Select a coastal state..." | !(input$middle_east_north_africa_eez_select %in% good_eezs_all)){
       
       # Remove any previously highlighted polygon
       middle_east_north_africa_nav_map_proxy %>% 
@@ -1792,9 +1786,6 @@ shinyServer(function(input, output, session) {
   ### UI output: Distant water summary for selected state -------------
   output$middle_east_north_africa_summary_ui <- renderUI({
     
-    # # Require coastal state selection
-    # req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
-    
     # Generate summary
     SummaryUI(region_dat = middle_east_north_africa_rv,
               input_selected_eez = input$middle_east_north_africa_eez_select)
@@ -1805,7 +1796,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_summary_ui_flag <- renderUI({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryUIFlag(region_name = "middle_east_north_africa")
@@ -1831,7 +1822,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_summary_dt <- renderDataTable({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryDT(region_dat = middle_east_north_africa_rv,
@@ -1843,7 +1834,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     # Make connectivity map
     VesselOriginsMap(region_dat = middle_east_north_africa_rv,
@@ -1860,7 +1851,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_effort_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = middle_east_north_africa_rv,
                           input_selected_eez = input$middle_east_north_africa_eez_select,
@@ -1872,7 +1863,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_subsidies_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = middle_east_north_africa_rv,
                           input_selected_eez = input$middle_east_north_africa_eez_select,
@@ -1884,7 +1875,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     # Load data
     eez_dat <- LoadEEZData(input_selected_eez = input$middle_east_north_africa_eez_select)
@@ -1898,7 +1889,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...")
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all)
     
     # Crop eez shapefile based on the region 
     eez_region <- middle_east_north_africa_rv$eezs %>%
@@ -1913,7 +1904,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all,
         input$middle_east_north_africa_effort_high_seas == TRUE | input$middle_east_north_africa_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
@@ -1935,7 +1926,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_effort_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all,
         nrow(middle_east_north_africa_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -1970,7 +1961,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_effort_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all,
         nrow(middle_east_north_africa_rv$eez_dat) > 0,
         input$middle_east_north_africa_effort_select_flag_state != "Select a flag state...")
     
@@ -2027,7 +2018,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_subsidies_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all,
         nrow(middle_east_north_africa_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -2062,7 +2053,7 @@ shinyServer(function(input, output, session) {
   output$middle_east_north_africa_subsidies_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+    req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all,
         nrow(middle_east_north_africa_rv$eez_dat) > 0,
         input$middle_east_north_africa_subsidies_select_flag_state != "Select a flag state...")
     
@@ -2124,7 +2115,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+      req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all,
           nrow(middle_east_north_africa_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -2154,7 +2145,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$middle_east_north_africa_eez_select != "Select a coastal state...",
+      req(input$middle_east_north_africa_eez_select != "Select a coastal state..." & input$middle_east_north_africa_eez_select %in% good_eezs_all,
           nrow(middle_east_north_africa_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -2206,7 +2197,7 @@ shinyServer(function(input, output, session) {
   ### UI output: Selected coastal state stats -----------
   output$north_america_eez_select_stats <- renderUI({
     
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all)
     
     StateInfo(region_dat = north_america_rv,
               input_selected_eez = input$north_america_eez_select)
@@ -2241,7 +2232,7 @@ shinyServer(function(input, output, session) {
   ### Leaflet proxy: Highlight and zoom to the EEZ(s) cooresponding to the selected state ----------
   observeEvent(input$north_america_eez_select, {
     
-    if(input$north_america_eez_select == "Select a coastal state..."){
+    if(input$north_america_eez_select == "Select a coastal state..." | !(input$north_america_eez_select %in% good_eezs_all)){
       
       # Remove any previously highlighted polygon and reorient
       north_america_nav_map_proxy %>% 
@@ -2265,9 +2256,6 @@ shinyServer(function(input, output, session) {
   ### UI output: Distant water summary for selected state -------------
   output$north_america_summary_ui <- renderUI({
     
-    # # Require coastal state selection
-    # req(input$north_america_eez_select != "Select a coastal state...")
-    
     # Generate summary
     SummaryUI(region_dat = north_america_rv,
               input_selected_eez = input$north_america_eez_select)
@@ -2278,7 +2266,7 @@ shinyServer(function(input, output, session) {
   output$north_america_summary_ui_flag <- renderUI({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryUIFlag(region_name = "north_america")
@@ -2304,7 +2292,7 @@ shinyServer(function(input, output, session) {
   output$north_america_summary_dt <- renderDataTable({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all) 
     
     # Generate summary
     SummaryDT(region_dat = north_america_rv,
@@ -2316,7 +2304,7 @@ shinyServer(function(input, output, session) {
   output$north_america_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all)
     
     # Make connectivity map
     VesselOriginsMap(region_dat = north_america_rv,
@@ -2333,7 +2321,7 @@ shinyServer(function(input, output, session) {
   output$north_america_effort_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = north_america_rv,
                           input_selected_eez = input$north_america_eez_select,
@@ -2345,7 +2333,7 @@ shinyServer(function(input, output, session) {
   output$north_america_subsidies_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = north_america_rv,
                           input_selected_eez = input$north_america_eez_select,
@@ -2357,7 +2345,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all)
     
     # Load data
     eez_dat <- LoadEEZData(input_selected_eez = input$north_america_eez_select)
@@ -2371,7 +2359,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...")
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all)
     
     # Crop eez shapefile based on the region 
     eez_region <- north_america_rv$eezs %>%
@@ -2386,7 +2374,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$north_america_eez_select != "Select a coastal state...",
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all,
         input$north_america_effort_high_seas == TRUE | input$north_america_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
@@ -2408,7 +2396,7 @@ shinyServer(function(input, output, session) {
   output$north_america_effort_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$north_america_eez_select != "Select a coastal state...",
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all,
         nrow(north_america_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -2443,7 +2431,7 @@ shinyServer(function(input, output, session) {
   output$north_america_effort_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$north_america_eez_select != "Select a coastal state...",
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all,
         nrow(north_america_rv$eez_dat) > 0,
         input$north_america_effort_select_flag_state != "Select a flag state...")
     
@@ -2500,7 +2488,7 @@ shinyServer(function(input, output, session) {
   output$north_america_subsidies_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$north_america_eez_select != "Select a coastal state...",
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all,
         nrow(north_america_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -2535,7 +2523,7 @@ shinyServer(function(input, output, session) {
   output$north_america_subsidies_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$north_america_eez_select != "Select a coastal state...",
+    req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all,
         nrow(north_america_rv$eez_dat) > 0,
         input$north_america_subsidies_select_flag_state != "Select a flag state...")
     
@@ -2597,7 +2585,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$north_america_eez_select != "Select a coastal state...",
+      req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all,
           nrow(north_america_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -2627,7 +2615,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$north_america_eez_select != "Select a coastal state...",
+      req(input$north_america_eez_select != "Select a coastal state..." & input$north_america_eez_select %in% good_eezs_all,
           nrow(north_america_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -2679,7 +2667,7 @@ shinyServer(function(input, output, session) {
   ### UI output: Selected coastal state stats -----------
   output$south_asia_eez_select_stats <- renderUI({
     
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     StateInfo(region_dat = south_asia_rv,
               input_selected_eez = input$south_asia_eez_select)
@@ -2714,7 +2702,7 @@ shinyServer(function(input, output, session) {
   ### Leaflet proxy: Highlight and zoom to EEZ(s) cooresponding to selected state ----------
   observeEvent(input$south_asia_eez_select, {
     
-    if(input$south_asia_eez_select == "Select a coastal state..."){
+    if(input$south_asia_eez_select == "Select a coastal state..." | !(input$south_asia_eez_select %in% good_eezs_all)){
       
       # Remove any previously highlighted polygon and reorient
       south_asia_nav_map_proxy %>% 
@@ -2738,9 +2726,6 @@ shinyServer(function(input, output, session) {
   ### UI output: Distant water summary for selected state -------------
   output$south_asia_summary_ui <- renderUI({
     
-    # # Require coastal state selection
-    # req(input$south_asia_eez_select != "Select a coastal state...")
-    
     # Generate summary
     SummaryUI(region_dat = south_asia_rv,
               input_selected_eez = input$south_asia_eez_select)
@@ -2751,7 +2736,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_summary_ui_flag <- renderUI({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryUIFlag(region_name = "south_asia")
@@ -2777,7 +2762,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_summary_dt <- renderDataTable({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryDT(region_dat = south_asia_rv,
@@ -2789,7 +2774,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     # Make connectivity map
     VesselOriginsMap(region_dat = south_asia_rv,
@@ -2806,7 +2791,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_effort_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = south_asia_rv,
                           input_selected_eez = input$south_asia_eez_select,
@@ -2818,7 +2803,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_subsidies_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = south_asia_rv,
                           input_selected_eez = input$south_asia_eez_select,
@@ -2830,7 +2815,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     # Load data
     eez_dat <- LoadEEZData(input_selected_eez = input$south_asia_eez_select)
@@ -2844,7 +2829,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...")
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all)
     
     # Crop eez shapefile based on the region 
     eez_region <- south_asia_rv$eezs %>%
@@ -2859,7 +2844,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$south_asia_eez_select != "Select a coastal state...",
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all,
         input$south_asia_effort_high_seas == TRUE | input$south_asia_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
@@ -2881,7 +2866,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_effort_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$south_asia_eez_select != "Select a coastal state...",
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all,
         nrow(south_asia_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -2916,7 +2901,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_effort_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$south_asia_eez_select != "Select a coastal state...",
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all,
         nrow(south_asia_rv$eez_dat) > 0,
         input$south_asia_effort_select_flag_state != "Select a flag state...")
     
@@ -2973,7 +2958,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_subsidies_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$south_asia_eez_select != "Select a coastal state...",
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all,
         nrow(south_asia_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -3008,7 +2993,7 @@ shinyServer(function(input, output, session) {
   output$south_asia_subsidies_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$south_asia_eez_select != "Select a coastal state...",
+    req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all,
         nrow(south_asia_rv$eez_dat) > 0,
         input$south_asia_subsidies_select_flag_state != "Select a flag state...")
     
@@ -3070,7 +3055,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$south_asia_eez_select != "Select a coastal state...",
+      req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all,
           nrow(south_asia_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -3100,7 +3085,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$south_asia_eez_select != "Select a coastal state...",
+      req(input$south_asia_eez_select != "Select a coastal state..." & input$south_asia_eez_select %in% good_eezs_all,
           nrow(south_asia_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -3152,7 +3137,7 @@ shinyServer(function(input, output, session) {
   ### UI output: Selected coastal state stats -----------
   output$sub_saharan_africa_eez_select_stats <- renderUI({
     
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
     
     StateInfo(region_dat = sub_saharan_africa_rv,
               input_selected_eez = input$sub_saharan_africa_eez_select)
@@ -3187,7 +3172,7 @@ shinyServer(function(input, output, session) {
   ### Leaflet proxy: Highlight and zoom to EEZ(s) cooresponding to selected state ------------
   observeEvent(input$sub_saharan_africa_eez_select, {
     
-    if(input$sub_saharan_africa_eez_select == "Select a coastal state..."){
+    if(input$sub_saharan_africa_eez_select == "Select a coastal state..." | !(input$sub_saharan_africa_eez_select %in% good_eezs_all)){
       
       # Remove any previously highlighted polygon and reorient
       sub_saharan_africa_nav_map_proxy %>% 
@@ -3210,9 +3195,6 @@ shinyServer(function(input, output, session) {
   ### UI output: Distant water summary for selected state -------------
   output$sub_saharan_africa_summary_ui <- renderUI({
     
-    # # Require coastal state selection
-    # req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
-    
     # Generate summary
     SummaryUI(region_dat = sub_saharan_africa_rv,
               input_selected_eez = input$sub_saharan_africa_eez_select)
@@ -3223,7 +3205,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_summary_ui_flag <- renderUI({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryUIFlag(region_name = "sub_saharan_africa")
@@ -3249,7 +3231,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_summary_dt <- renderDataTable({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
     
     # Generate summary
     SummaryDT(region_dat = sub_saharan_africa_rv,
@@ -3261,7 +3243,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_vessel_origins_map <- renderLeaflet({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
     
     # Make connectivity map
     VesselOriginsMap(region_dat = sub_saharan_africa_rv,
@@ -3277,7 +3259,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_effort_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
     
     WidgetFlagStateSelect(region_dat = sub_saharan_africa_rv,
                           input_selected_eez = input$sub_saharan_africa_eez_select,
@@ -3289,7 +3271,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_subsidies_select_flag_state <- renderUI({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
 
     WidgetFlagStateSelect(region_dat = sub_saharan_africa_rv,
                           input_selected_eez = input$sub_saharan_africa_eez_select,
@@ -3301,7 +3283,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
     
     # Load data
     eez_dat <- LoadEEZData(input_selected_eez = input$sub_saharan_africa_eez_select)
@@ -3315,7 +3297,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...")
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all)
     
     # Crop eez shapefile based on the region 
     eez_region <- sub_saharan_africa_rv$eezs %>%
@@ -3330,7 +3312,7 @@ shinyServer(function(input, output, session) {
   observe({
     
     # Require coastal state selection
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all,
         input$sub_saharan_africa_effort_high_seas == TRUE | input$sub_saharan_africa_subsidies_high_seas == TRUE)
     
     # Find Corresponding FAO regions 
@@ -3352,7 +3334,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_effort_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all,
         nrow(sub_saharan_africa_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -3387,7 +3369,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_effort_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all,
         nrow(sub_saharan_africa_rv$eez_dat) > 0,
         input$sub_saharan_africa_effort_select_flag_state != "Select a flag state...")
     
@@ -3444,7 +3426,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_subsidies_map_all <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all,
         nrow(sub_saharan_africa_rv$eez_dat) > 0)
     
     # Create raster layer and palette from EEZ data
@@ -3479,7 +3461,7 @@ shinyServer(function(input, output, session) {
   output$sub_saharan_africa_subsidies_map_selected <- renderLeaflet({
     
     # Require coastal state selection & data
-    req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+    req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all,
         nrow(sub_saharan_africa_rv$eez_dat) > 0,
         input$sub_saharan_africa_subsidies_select_flag_state != "Select a flag state...")
     
@@ -3541,7 +3523,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+      req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all,
           nrow(sub_saharan_africa_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend
@@ -3571,7 +3553,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       
       # Require coastal state selection & data
-      req(input$sub_saharan_africa_eez_select != "Select a coastal state...",
+      req(input$sub_saharan_africa_eez_select != "Select a coastal state..." & input$sub_saharan_africa_eez_select %in% good_eezs_all,
           nrow(sub_saharan_africa_rv$eez_dat) > 0)
       
       # Run wrapper to make and bind plots and legend

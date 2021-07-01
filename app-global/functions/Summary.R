@@ -5,7 +5,7 @@ SummaryUI <- function(region_dat,
   
   req(!is.null(input_selected_eez))
 
-  if(input_selected_eez != "Select a coastal state..."){
+  if(input_selected_eez != "Select a coastal state..." & input_selected_eez %in% good_eezs_all){
     
     if(is_hs){
       
@@ -90,13 +90,19 @@ SummaryUI <- function(region_dat,
   
     }
   
-  }else{
+  }else if(input_selected_eez == "Select a coastal state..."){
     
     ### Combine into country profile/summary of DW fishing
     info_out <- paste0(
       "<i style = 'color: red;'>Select a coastal state (or FAO area for the high seas) by clicking on the map or using the dropdown menu in the left panel to view a summary of distant water fishing activity in that EEZ or area.</b>") %>%
       lapply(htmltools::HTML)
     
+  }else if(input_selected_eez != "Select a coastal state..." & !(input_selected_eez %in% good_eezs_all)){
+    
+    info_out <- paste0(
+      "<i style = 'color: red;'>No AIS observed DWF activity in this EEZ in 2018. Please select a different coastal state by clicking on the map or using the dropdown menu in the left panel.</b>") %>%
+      lapply(htmltools::HTML)
+
   }
 
 }

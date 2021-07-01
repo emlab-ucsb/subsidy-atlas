@@ -41,6 +41,8 @@ eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines
          admin = case_when(flag_iso3 == "TWN" ~ "Chinese Taipei",
                            TRUE ~ admin))
 
+good_eezs_all <- unique(eez_flag_state_connectivity$eez_ter_iso3)
+
 # 5) EEZ / FAO Region Lookup Table
 fao_regions_by_eez <- read_csv("./data/fao_regions_by_eez_ter_id.csv")
 
