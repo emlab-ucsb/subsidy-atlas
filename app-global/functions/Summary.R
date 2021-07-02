@@ -5,7 +5,7 @@ SummaryUI <- function(region_dat,
   
   req(!is.null(input_selected_eez))
 
-  if(input_selected_eez != "Select a coastal state..." & input_selected_eez %in% good_eezs_all){
+  if(input_selected_eez != "Select a coastal state..." & (input_selected_eez %in% good_eezs_all | is_hs)){
     
     if(is_hs){
       
