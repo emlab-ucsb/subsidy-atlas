@@ -24,7 +24,9 @@ eez_ter_360 <- st_read("./data/world_eez_ter_neg360_360_subsidy_atlas.gpkg") %>%
          eez_sov_iso3 = case_when(eez_ter_iso3 == "TWN" ~ "CHN",
                                   TRUE ~ eez_sov_iso3),
          eez_sov_name = case_when(eez_ter_iso3 == "TWN" ~ "China",
-                                  TRUE ~ eez_sov_name))
+                                  TRUE ~ eez_sov_name),
+         geoname_new = case_when(eez_ter_iso3 == "TWN" ~ "Exclusive Economic Zone:\nChinese Taipei",
+                                 TRUE ~ geoname_new)) 
 
 # 2) EEZ Polygons - Merged by region
 eez_region_360 <- st_read("./data/world_eez_regions_neg360_360.gpkg")
@@ -39,6 +41,7 @@ eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines
   mutate(eez_ter_name = case_when(eez_ter_iso3 == "TWN" ~ "Chinese Taipei",
                                   TRUE ~ eez_ter_name),
          admin = case_when(flag_iso3 == "TWN" ~ "Chinese Taipei",
+                           flag_iso3 == "TUV" ~ "Tuvalu",
                            TRUE ~ admin))
 
 good_eezs_all <- unique(eez_flag_state_connectivity$eez_ter_iso3)
@@ -80,6 +83,7 @@ fao_region_360 <- st_read("./data/high_seas_region_neg360_360.gpkg")
 # 8) FAO / Flag State Connectivity Lines
 fao_flag_state_connectivity <- st_read("./data/fao_flag_state_connectivity_lines.gpkg") %>%
   mutate(admin = case_when(flag_iso3 == "TUV" ~ "Tuvalu",
+                           flag_iso3 == "TWN" ~ "Chinese Taipei",
                            TRUE ~ admin))
 
 # 9) Links for EEZs 
