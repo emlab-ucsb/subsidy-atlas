@@ -4238,6 +4238,20 @@ shinyServer(function(input, output, session) {
       file.copy("www/hs_activity_summary_by_flag_state.csv", file)
     }
   )
+  
+  
+  ### More info / Contact 
+  
+  ### Download button: Summary by Flag State - High Seas only (CSV) -----------------------
+  output$db_methods <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_methodology.pdf")
+    },
+    content = function(file){
+      file.copy("www/2021_09_02_DWFA_methods.pdf", file)
+    }
+  )
 
 }) # /close server
 

@@ -15,6 +15,7 @@ set.seed(123)
 dir.create('~/.fonts')
 file.copy("www/Avenir-Book.ttf", "~/.fonts")
 system('fc-cache -f ~/.fonts')
+sf::sf_use_s2(FALSE)
 
 ### Load packages -----
 

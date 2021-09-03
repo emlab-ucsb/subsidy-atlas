@@ -29,6 +29,20 @@ Contact = function(){
            
     ),
     
+    ### Methods download 
+    column(12, id = "tblr-small-spaced-div",
+           
+           # File download buttons
+           column(12, style = "text-align: center;",
+
+                  fluidRow(
+
+                    downloadButton("db_methods",
+                                   "Methodology\n(PDF)")
+                  )
+           )
+    ),
+    
     # ### Data summaries
     # column(12, id = "tblr-small-spaced-div",
     #        
@@ -82,7 +96,14 @@ Contact = function(){
                includeHTML("./text/faqs-and-contact/faq_three.html"),
                collapsible = T,
                collapsed = T,
-               width = 12)
+               width = 12),
+           
+           # four
+           box(title = "Where did the land and ocean area boundaries depicted in this tool come from?",
+               includeHTML("./text/faqs-and-contact/faq_four.html"),
+               collapsible = T,
+               collapsed = T,
+               width = 12),
            
     ),
     
