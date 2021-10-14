@@ -180,13 +180,19 @@ shinyUI(
                                          selected = NULL),
                                 
                                 # Summary Info
-                                menuItem("Data Summaries",
+                                menuItem("Results Summaries",
                                          tabName = "summary",
                                          icon = NULL,
                                          selected = NULL),
+                                
+                                # Data & Assumptions
+                                menuItem("Data & Methods", 
+                                         tabName = "assumptions", 
+                                         icon = NULL,
+                                         selected = NULL),
 
-                                # Learn More
-                                menuItem("More Info, FAQs, and Contact", 
+                                # More Info & Contact
+                                menuItem("Glossary & Contact", 
                                          tabName = "contact", 
                                          icon = NULL,
                                          selected = NULL)
@@ -261,7 +267,12 @@ shinyUI(
                Summary()
        ),
        
-       # FAQs and Contact
+       # Data & Assumptions
+       tabItem(tabName = "assumptions",
+               Assumptions()
+       ),
+       
+       # More Info & Contact
        tabItem(tabName = "contact",
                Contact()
        )
