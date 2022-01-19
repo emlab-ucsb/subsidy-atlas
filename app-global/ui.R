@@ -93,7 +93,7 @@ shinyUI(
         id = "custom-title-container",
         class = "dropdown",
         tags$button(id = "ab_home",
-                    tags$h3("Distant Water Fishing Atlas",
+                    tags$h3("Distant Water Fishing Subsidy Atlas",
                             style = "margin: 0;"),
                     class = "btn action-button") # /h3
       ), # /tags$li
