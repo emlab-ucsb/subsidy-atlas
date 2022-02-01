@@ -77,7 +77,8 @@ vessel_list_dw_expanded <- vessel_list_dw_raw %>%
   mutate(eez_ter_iso3 = ifelse(!is.na(eez_ter_iso3_all), eez_ter_iso3_all, eez_sov_iso3_all)) %>%
   rename(eez_sov_iso3 = eez_sov_iso3_all) %>%
   dplyr::select(-eez_ter_iso3_all) %>%
-  dplyr::filter(!is.na(eez_ter_iso3))
+  dplyr::filter(!is.na(eez_ter_iso3)) %>%
+  dplyr::filter(!is.na(flag_iso3)) # remove entries where the flag is unknown - NEW 2/1/2022
 ```
 
 # Flag state / EEZ summaries (Distant Water Fishing)
@@ -254,8 +255,6 @@ flag_state_summary <- flag_state_summary %>%
   bind_rows(flag_state_eu_summary) %>%
   arrange(desc(fishing_hours))
 
-flag_state_summary$flag_iso3[is.na(flag_state_summary$flag_iso3)] <- "Unknown"
-
 write_csv(flag_state_summary, paste0(results_dir, "dw_activity_summary_by_flag_state.csv"))
 write_csv(flag_state_summary, paste0(app_www_dir, "dw_activity_summary_by_flag_state.csv"))
 ```
@@ -266,7 +265,8 @@ We now repeat the process for our high seas data, but this is more straightforwa
 
 ```{r}
 # Load vessel list
-vessel_list_hs_raw <- read.csv(vessel_list_hs_path, stringsAsFactors = F) 
+vessel_list_hs_raw <- read.csv(vessel_list_hs_path, stringsAsFactors = F) %>%
+  dplyr::filter(!is.na(flag_iso3)) # REMOVE ENTRIES WITH NO KNOWN FLAG STATE - NEW 2/1/2022
 ```
 
 ```{r}
@@ -284,7 +284,7 @@ flag_fao_hs_summary <- vessel_list_hs_raw %>%
             bad_subs = sum(bad_subs, na.rm = T),
             ugly_subs = sum(ugly_subs, na.rm = T)) %>%
   ungroup() %>%
-  arrange(fao_region, flag_iso3)
+  arrange(fao_region, flag_iso3) 
 
 write_csv(flag_fao_hs_summary, paste0(results_dir, "flag_fao_hs_summary.csv"))
 write_csv(flag_fao_hs_summary, paste0(app_dir, "flag_fao_hs_summary.csv"))
@@ -348,8 +348,6 @@ hs_flag_state_eu_summary <- vessel_list_hs_raw %>%
 hs_flag_state_summary <- hs_flag_state_summary %>%
   bind_rows(hs_flag_state_eu_summary) %>%
   arrange(desc(fishing_hours))
-
-hs_flag_state_summary$flag_iso3[is.na(hs_flag_state_summary$flag_iso3)] <- "Unknown"
 
 write_csv(hs_flag_state_summary, paste0(results_dir, "hs_activity_summary_by_flag_state.csv"))
 write_csv(hs_flag_state_summary, paste0(app_www_dir, "hs_activity_summary_by_flag_state.csv"))

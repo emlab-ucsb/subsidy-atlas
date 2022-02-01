@@ -320,7 +320,7 @@ RegionPageLayout <- function(region_name,
                                   ),
 
                                   ### --------------------------
-                                  ### Tab # 4  - Global fishing footprint
+                                  ### Tab # 4  - Subsidies
                                   ### --------------------------
 
                                   tabPanel(value = paste0(str_replace_all(region_name, "_", "-"), "-subsidies"),

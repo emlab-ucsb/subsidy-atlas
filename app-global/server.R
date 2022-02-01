@@ -742,7 +742,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = east_asia_pacific_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$east_asia_pacific_eez_select,
                                      input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -1211,7 +1211,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = europe_central_asia_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$europe_central_asia_eez_select,
                                      input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -1681,7 +1681,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = latin_america_caribbean_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$latin_america_caribbean_eez_select,
                                      input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -2151,7 +2151,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = middle_east_north_africa_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$middle_east_north_africa_eez_select,
                                      input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -2621,7 +2621,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = north_america_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$north_america_eez_select,
                                      input_selected_flag_state = input$north_america_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -3091,7 +3091,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = south_asia_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$south_asia_eez_select,
                                      input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -3559,7 +3559,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = sub_saharan_africa_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$sub_saharan_africa_eez_select,
                                      input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -4035,7 +4035,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = high_seas_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$high_seas_eez_select,
                                      input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
                                      eez_sf = fao_area_360,
