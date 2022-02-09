@@ -96,7 +96,7 @@ vessel_origins_fill_choices <- c("# of vessels" = "n_vessels",
                                    "Total vessel capacity (kW)" = "tot_engine_power",
                                    "Total vessel tonnage (gt)" = "tot_tonnage",
                                    "Total fishing effort (hours)" = "fishing_hours",
-                                   "Total fishing effort (kW hours)" = "fishing_KWh")
+                                   "Total fishing effort (kWh)" = "fishing_KWh")
 
 vessel_origins_fill_scale <- c("All distant water fishing in the region (default)" = "region",
                                "Selected coastal state only" = "selected_eez")

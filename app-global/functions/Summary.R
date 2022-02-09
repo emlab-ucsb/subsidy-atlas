@@ -32,7 +32,7 @@ SummaryUI <- function(region_dat,
       
       ### Combine into country profile/summary of DW fishing
       info_out <- paste0(
-        "<h4>AIS-observed distant water fishing in the high seas area of ", unique(total_stats_eez$title), " (2018)</h4>",
+        "<h4>AIS-observed distant-water fishing in the high seas area of ", unique(total_stats_eez$title), " (2018)</h4>",
         "<h5>Totals</h5>",
         "<b>Different DW vessels: </b>", format(round(total_stats_eez$vessels, 0), big.mark = ","),
         "<br>",
@@ -42,7 +42,7 @@ SummaryUI <- function(region_dat,
         "<br>",
         "<b>Total DW fishing effort (hours): </b>", format(round(total_stats_eez$fishing_hours, 0), big.mark = ","),
         "<br>",
-        "<b>Total DW fishing effort (kW hours): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
+        "<b>Total DW fishing effort (kWh): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
         "<br>",
         "<b>Estimated DW subsidies (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
         "<hr>") %>%
@@ -72,7 +72,7 @@ SummaryUI <- function(region_dat,
     
   ### Combine into country profile/summary of DW fishing
   info_out <- paste0(
-    "<h4>AIS-observed distant water fishing in the EEZ of ", unique(total_stats_eez$eez_ter_name), " (2018)</h4>",
+    "<h4>AIS-observed distant-water fishing in the EEZ of ", unique(total_stats_eez$eez_ter_name), " (2018)</h4>",
     "<h5>Totals</h5>",
     "<b>Different DW vessels: </b>", format(round(total_stats_eez$vessels, 0), big.mark = ","),
     "<br>",
@@ -82,7 +82,7 @@ SummaryUI <- function(region_dat,
     "<br>",
     "<b>Total DW fishing effort (hours): </b>", format(round(total_stats_eez$fishing_hours, 0), big.mark = ","),
     "<br>",
-    "<b>Total DW fishing effort (kW hours): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
+    "<b>Total DW fishing effort (kWh): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
     "<br>",
     "<b>Estimated DW subsidies (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
     "<hr>") %>%
@@ -144,7 +144,7 @@ SummaryDT <- function(region_dat,
                 `Total DW vessel capacity (kW)` = round(unique(tot_engine_power), 0),
                 `Total DW vessel tonnage (gt)` = round(unique(tot_tonnage), 0),
                 `Total DW fishing effort (hours)` = round(unique(fishing_hours), 0),
-                `Total DW fishing effort (kW hours)` = round(unique(fishing_KWh), 0),
+                `Total DW fishing effort (kWh)` = round(unique(fishing_KWh), 0),
                 bad_subs = round(unique(bad_subs), 0)) %>%
       ungroup() %>%
       arrange(desc(bad_subs)) %>%
@@ -164,7 +164,7 @@ SummaryDT <- function(region_dat,
               `Total DW vessel capacity (kW)` = round(unique(tot_engine_power), 0),
               `Total DW vessel tonnage (gt)` = round(unique(tot_tonnage), 0),
               `Total DW fishing effort (hours)` = round(unique(fishing_hours), 0),
-              `Total DW fishing effort (kW hours)` = round(unique(fishing_KWh), 0),
+              `Total DW fishing effort (kWh)` = round(unique(fishing_KWh), 0),
               bad_subs = round(unique(bad_subs), 0)) %>%
     ungroup() %>%
     arrange(desc(bad_subs)) %>%
@@ -178,7 +178,7 @@ SummaryDT <- function(region_dat,
   # Convert format
   DT::datatable(flag_stats_eez, options = list(orderClasses = TRUE, dom = 'tip', pageLength = 5), rownames = F) %>%
     formatCurrency(c("Estimated DW subsidies (2018 $US)")) %>%
-    formatRound(c("Number of DW vessels", "Total DW vessel capacity (kW)", "Total DW vessel tonnage (gt)", "Total DW fishing effort (hours)", "Total DW fishing effort (kW hours)"), 0)
+    formatRound(c("Number of DW vessels", "Total DW vessel capacity (kW)", "Total DW vessel tonnage (gt)", "Total DW fishing effort (hours)", "Total DW fishing effort (kWh)"), 0)
   
 }
 

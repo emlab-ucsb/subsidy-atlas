@@ -12,7 +12,7 @@ DataSummaryDT <- function(dat,
                     `Total DW vessel capacity (kW)` = format(round(tot_engine_power, 0), big.mark = ","),
                     `Total DW vessel tonnage (gt)` = format(round(tot_tonnage, 0), big.mark = ","),
                     `Total DW fishing effort (hours)` = format(round(fishing_hours, 0), big.mark = ","),
-                    `Total DW fishing effort (kW hours)` = format(round(fishing_KWh, 0), big.mark = ","),
+                    `Total DW fishing effort (kWh)` = format(round(fishing_KWh, 0), big.mark = ","),
                     `Estimated DW subsidies to EEZ (2018 $US)` = format(round(bad_subs, 0), big.mark = ",")) %>%
       dplyr::select(-geoname, -n_vessels, -tot_engine_power, -tot_tonnage, -fishing_hours, -fishing_KWh, -bad_subs) 
     
@@ -26,7 +26,7 @@ DataSummaryDT <- function(dat,
                     `Total DW vessel capacity (kW)` = format(round(tot_engine_power, 0), big.mark = ","),
                     `Total DW vessel tonnage (gt)` = format(round(tot_tonnage, 0), big.mark = ","),
                     `Total DW fishing effort (hours)` = format(round(fishing_hours, 0), big.mark = ","),
-                    `Total DW fishing effort (kW hours)` = format(round(fishing_KWh, 0), big.mark = ","),
+                    `Total DW fishing effort (kWh)` = format(round(fishing_KWh, 0), big.mark = ","),
                     `Estimated DW subsidies to all EEZs (2018 $US)` = format(round(bad_subs, 0), big.mark = ",")) %>%
       dplyr::select(-flag_iso3, -n_vessels, -tot_engine_power, -tot_tonnage, -fishing_hours, -fishing_KWh, -bad_subs) 
     
@@ -64,7 +64,7 @@ DataSummaryDT <- function(dat,
                     `Total DW vessel capacity (kW)` = format(round(tot_engine_power, 0), big.mark = ","),
                     `Total DW vessel tonnage (gt)` = format(round(tot_tonnage, 0), big.mark = ","),
                     `Total DW fishing effort (hours)` = format(round(fishing_hours, 0), big.mark = ","),
-                    `Total DW fishing effort (kW hours)` = format(round(fishing_KWh, 0), big.mark = ","),
+                    `Total DW fishing effort (kWh)` = format(round(fishing_KWh, 0), big.mark = ","),
                     `Estimated DW subsidies to area (2018 $US)` = format(round(bad_subs, 0), big.mark = ",")) %>%
       dplyr::select(-fao_region, -name, -n_vessels, -tot_engine_power, -tot_tonnage, -fishing_hours, -fishing_KWh, -bad_subs) 
     
@@ -79,7 +79,7 @@ DataSummaryDT <- function(dat,
                     `Total DW vessel capacity (kW)` = format(round(tot_engine_power, 0), big.mark = ","),
                     `Total DW vessel tonnage (gt)` = format(round(tot_tonnage, 0), big.mark = ","),
                     `Total DW fishing effort (hours)` = format(round(fishing_hours, 0), big.mark = ","),
-                    `Total DW fishing effort (kW hours)` = format(round(fishing_KWh, 0), big.mark = ","),
+                    `Total DW fishing effort (kWh)` = format(round(fishing_KWh, 0), big.mark = ","),
                     `Estimated DW subsidies to high seas (2018 $US)` = format(round(bad_subs, 0), big.mark = ",")) %>%
       dplyr::select(-flag_iso3, -n_vessels, -tot_engine_power, -tot_tonnage, -fishing_hours, -fishing_KWh, -bad_subs) 
     
