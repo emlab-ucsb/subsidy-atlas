@@ -87,39 +87,66 @@ Since our vessel list of distant water fishing (and subsidies) is currently at t
 
 ```{r}
 # Now calculate summaries for each EEZ - these will be used for the connectivity plots. 
-flag_eez_id_summary <- vessel_list_dw_expanded %>%
+# Note: as of 3/30/22 we realized we were overestimating total tonnage and engine power because vessel characteristics for vessels fishing inside and outside of territorial waters and across multiple area types (joint regime, 200nm, overlapping claim) cooresponding to the same administering territory were being double counted. This didn't affect fishing hour and subsidy calculations. 
+flag_eez_id_summary_vessel_stats <- vessel_list_dw_expanded %>%
+   group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU, ssvid) %>%
+   summarize(length_m = unique(length_m),
+             tonnage_gt = unique(tonnage_gt),
+             engine_power_kw = unique(engine_power_kw)) %>%
+  ungroup() %>%
   group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
             tot_tonnage = sum(tonnage_gt, na.rm = T),
             mean_engine_power = mean(engine_power_kw, na.rm = T),
-            tot_engine_power = sum(engine_power_kw, na.rm = T),
-            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T)) %>%
+  ungroup()
+
+flag_eez_id_summary_fishing_stats <- vessel_list_dw_expanded %>%
+  group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
+  summarize(fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
             ugly_subs = sum(ugly_subs, na.rm = T),
             eez_id = list(unique(eez_id))) %>%
-  ungroup() %>%
+  ungroup()
+
+flag_eez_id_summary <- flag_eez_id_summary_vessel_stats %>%
+  left_join(flag_eez_id_summary_fishing_stats) %>%
   unnest(eez_id) %>%
   arrange(eez_ter_iso3, eez_id, flag_iso3)
 
 # Create an aggregated entry for the EU EEZ as a whole
-eu_eez_id_summary <- vessel_list_dw_expanded %>%
+eu_eez_id_summary_vessel_stats <- vessel_list_dw_expanded %>%
   dplyr::filter(eez_is_EU) %>%
   mutate(eez_ter_iso3 = "EU") %>%
+  group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU, ssvid) %>%
+   summarize(length_m = unique(length_m),
+             tonnage_gt = unique(tonnage_gt),
+             engine_power_kw = unique(engine_power_kw)) %>%
+  ungroup() %>%
   group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
             mean_tonnage = mean(tonnage_gt, na.rm = T),
             tot_tonnage = sum(tonnage_gt, na.rm = T),
             mean_engine_power = mean(engine_power_kw, na.rm = T),
-            tot_engine_power = sum(engine_power_kw, na.rm = T),
-            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T)) %>%
+  ungroup()
+  
+eu_eez_id_summary_fishing_stats <- vessel_list_dw_expanded %>%
+  dplyr::filter(eez_is_EU) %>%
+  mutate(eez_ter_iso3 = "EU") %>%  
+  group_by(eez_ter_iso3, eez_is_EU, flag_iso3, flag_is_EU) %>%
+  summarize(fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
             fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
             bad_subs = sum(bad_subs, na.rm = T),
             ugly_subs = sum(ugly_subs, na.rm = T)) %>%
-  ungroup() %>%
+  ungroup() 
+
+eu_eez_id_summary <- eu_eez_id_summary_vessel_stats %>%
+  left_join(eu_eez_id_summary_fishing_stats) %>%
   arrange(eez_ter_iso3, flag_iso3) %>%
   mutate(eez_id = 9999)
 
@@ -179,7 +206,9 @@ write_csv(flag_eez_ter_summary, paste0(app_dir, "flag_eez_ter_summary.csv"))
 Now let's create a pretty summary version by EEZ ID that will be available for download... 
 
 ```{r}
+# Deal with the normal EEZs first
 eez_summary <- vessel_list_dw_expanded %>%
+  dplyr::filter(pol_type == "200NM") %>%
   group_by(geoname, eez_id) %>%
   summarize(n_vessels = n_distinct(ssvid),
             mean_length = mean(length_m, na.rm = T),
@@ -193,6 +222,32 @@ eez_summary <- vessel_list_dw_expanded %>%
             ugly_subs = sum(ugly_subs, na.rm = T)) %>%
   ungroup()
 
+# We need to do some additional wrangling to the overlapping claim and joint regime areas because we duplicated these earlier
+eez_summary_overlapping_joint <- vessel_list_dw_expanded %>%
+  dplyr::filter(pol_type %in% c("Overlapping claim", "Joint regime")) %>%
+  group_by(eez_id, geoname, ssvid, year, is_territorial, fao_region) %>%
+  summarize(length_m = unique(length_m),
+            tonnage_gt = unique(tonnage_gt),
+            engine_power_kw = unique(engine_power_kw),
+            fishing_hours_eez_fao_ter = unique(fishing_hours_eez_fao_ter),
+            fishing_KWh_eez_fao_ter = unique(fishing_KWh_eez_fao_ter),
+            bad_subs = unique(bad_subs),
+            ugly_subs = unique(ugly_subs)) %>%
+  ungroup() %>%
+  group_by(geoname, eez_id) %>%
+  summarize(n_vessels = n_distinct(ssvid),
+            mean_length = mean(length_m, na.rm = T),
+            mean_tonnage = mean(tonnage_gt, na.rm = T),
+            tot_tonnage = sum(tonnage_gt, na.rm = T),
+            mean_engine_power = mean(engine_power_kw, na.rm = T),
+            tot_engine_power = sum(engine_power_kw, na.rm = T),
+            fishing_hours = sum(fishing_hours_eez_fao_ter, na.rm = T),
+            fishing_KWh = sum(fishing_KWh_eez_fao_ter, na.rm = T),
+            bad_subs = sum(bad_subs, na.rm = T),
+            ugly_subs = sum(ugly_subs, na.rm = T)) %>%
+  ungroup()
+
+# And finally an aggregate entry for the EU
 eu_eez_summary <- vessel_list_dw_expanded %>%
   dplyr::filter(eez_is_EU) %>%
   mutate(geoname = "European Union Exclusive Economic Zone",
@@ -211,6 +266,7 @@ eu_eez_summary <- vessel_list_dw_expanded %>%
   ungroup()
 
 eez_summary <- eez_summary %>%
+  bind_rows(eez_summary_overlapping_joint) %>%
   bind_rows(eu_eez_summary) %>%
   arrange(desc(fishing_hours))
 
@@ -479,8 +535,8 @@ We then join them together and save.
 eez_mapping_wlines <- eez_mapping_wlines_east_asia_pacific %>%
   rbind(eez_mapping_wlines_all_others)
 
-st_write(eez_mapping_wlines, paste0(results_dir, "eez_flag_state_connectivity_lines.gpkg"), delete_layer = T)
-st_write(eez_mapping_wlines, paste0(app_dir, "eez_flag_state_connectivity_lines.gpkg"), delete_layer = T)
+st_write(eez_mapping_wlines, paste0(results_dir, "eez_flag_state_connectivity_lines_NEW.gpkg"), delete_layer = T)
+st_write(eez_mapping_wlines, paste0(app_dir, "eez_flag_state_connectivity_lines_NEW.gpkg"), delete_layer = T)
 ```
 
 # Connectivity Plots (High Seas Fishing)
