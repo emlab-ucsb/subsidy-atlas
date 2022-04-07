@@ -178,6 +178,34 @@ write_csv(flag_eez_ter_summary, paste0(app_dir, "flag_eez_ter_summary.csv"))
 Now let's create a pretty summary version by EEZ ID that will be available for download... 
 
 ```{r}
+### Let's quickly create some new variables pertaining to all types of areas cooresponding to an administering territory
+area_lookup <- vessel_list_dw_expanded %>%
+  group_by(eez_ter_iso3) %>%
+  mutate(n_eez_areas = n_distinct(eez_id[pol_type == "200NM"]),
+         n_overlapping = n_distinct(eez_id[pol_type == "Overlapping claim"]),
+         n_joint = n_distinct(eez_id[pol_type == "Joint regime"])) %>%
+  ungroup() %>%
+  distinct(eez_ter_iso3, geoname, eez_id, pol_type, n_eez_areas, n_overlapping, n_joint) %>%
+  mutate(mark = case_when(
+    pol_type == "200NM" & n_eez_areas > 1 & n_overlapping > 0 & n_joint > 0 ~ "multi-eez & overlapping & joint",
+    pol_type == "200NM" & n_eez_areas > 1 & n_overlapping > 0 ~ "multi-eez & overlapping",
+    pol_type == "200NM" & n_eez_areas > 1 & n_joint > 0 ~ "multi-eez & joint",
+    pol_type == "200NM" & n_overlapping > 0 & n_joint > 0 ~ "overlapping & joint",
+    pol_type == "200NM" & n_eez_areas > 1 ~ "multi-eez",
+    pol_type == "200NM" & n_overlapping >= 1 ~ "overlapping",
+    pol_type == "200NM" & n_joint >= 1 ~ "joint",
+    pol_type == "Overlapping claim" ~ "is_overlapping",
+    pol_type == "Joint regime" ~ "is_joint",
+    TRUE ~ "none"))
+
+eu_area_lookup <- tibble(eez_id = 9999,
+                         mark = "aggregate")
+
+area_lookup_out <- area_lookup %>%
+  dplyr::select(eez_id, mark) %>%
+  bind_rows(eu_area_lookup)
+
+# Now let's create the actual summary characteristics
 eez_summary <- vessel_list_dw_expanded %>%
   group_by(geoname, eez_id) %>%
   summarize(n_vessels = n_distinct(ssvid),
@@ -211,7 +239,8 @@ eu_eez_summary <- vessel_list_dw_expanded %>%
 
 eez_summary <- eez_summary %>%
   bind_rows(eu_eez_summary) %>%
-  arrange(desc(fishing_hours))
+  arrange(desc(fishing_hours)) %>%
+  left_join(area_lookup_out, by = "eez_id")
 
 write_csv(eez_summary, paste0(results_dir, "dw_activity_summary_by_eez.csv"))
 write_csv(eez_summary, paste0(app_www_dir, "dw_activity_summary_by_eez.csv"))

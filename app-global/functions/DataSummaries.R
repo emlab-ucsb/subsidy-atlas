@@ -5,16 +5,28 @@ DataSummaryDT <- function(dat,
   if(type == "eez"){
     
     summary_stats <- dat %>%
+      distinct(geoname, n_vessels, tot_engine_power, tot_tonnage, fishing_hours, fishing_KWh, bad_subs, mark) %>%
       arrange(desc(bad_subs)) %>%
-      dplyr::select(geoname, n_vessels, tot_engine_power, tot_tonnage, fishing_hours, fishing_KWh, bad_subs) %>%
+      # dplyr::select(geoname, n_vessels, tot_engine_power, tot_tonnage, fishing_hours, fishing_KWh, bad_subs, mark) %>%
       dplyr::mutate(`EEZ` = geoname,
                     `Number of DW vessels` = format(n_vessels, big.mark = ","),
                     `Total DW vessel capacity (kW)` = format(round(tot_engine_power, 0), big.mark = ","),
                     `Total DW vessel tonnage (gt)` = format(round(tot_tonnage, 0), big.mark = ","),
                     `Total DW fishing effort (hours)` = format(round(fishing_hours, 0), big.mark = ","),
                     `Total DW fishing effort (kW hours)` = format(round(fishing_KWh, 0), big.mark = ","),
-                    `Estimated DW subsidies to EEZ (2018 $US)` = format(round(bad_subs, 0), big.mark = ",")) %>%
-      dplyr::select(-geoname, -n_vessels, -tot_engine_power, -tot_tonnage, -fishing_hours, -fishing_KWh, -bad_subs) 
+                    `Estimated DW subsidies to EEZ (2018 $US)` = format(round(bad_subs, 0), big.mark = ","),
+                    Notes = case_when(mark == "none" ~ "",
+                                      mark == "is_overlapping" ~ "ᵝ",
+                                      mark == "is_joint" ~ "ᵞ",
+                                      mark == "multi-eez" ~ "¹",
+                                      mark == "multi-eez & overlapping" ~ "¹˒²",
+                                      mark == "multi-eez & joint" ~ "¹˒³",
+                                      mark == "multi-eez & overlapping & joint" ~ "¹˒²˒³",
+                                      mark == "overlapping" ~ "²",
+                                      mark == "joint" ~ "³",
+                                      mark == "overlapping & joint" ~ "²˒³",
+                                      mark == "aggregate" ~ "ᵟ")) %>%
+      dplyr::select(-geoname, -n_vessels, -tot_engine_power, -tot_tonnage, -fishing_hours, -fishing_KWh, -bad_subs, -mark) 
     
   }else if(type == "flag_eezs_only"){
     
