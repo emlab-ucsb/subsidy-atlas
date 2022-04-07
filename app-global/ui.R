@@ -15,6 +15,7 @@ set.seed(123)
 dir.create('~/.fonts')
 file.copy("www/Avenir-Book.ttf", "~/.fonts")
 system('fc-cache -f ~/.fonts')
+sf::sf_use_s2(FALSE)
 
 ### Load packages -----
 
@@ -92,7 +93,7 @@ shinyUI(
         id = "custom-title-container",
         class = "dropdown",
         tags$button(id = "ab_home",
-                    tags$h3("Distant Water Fishing Atlas",
+                    tags$h3("Distant Water Fishing Subsidy Atlas",
                             style = "margin: 0;"),
                     class = "btn action-button") # /h3
       ), # /tags$li
@@ -179,13 +180,19 @@ shinyUI(
                                          selected = NULL),
                                 
                                 # Summary Info
-                                menuItem("Data Summaries",
+                                menuItem("Results Summaries",
                                          tabName = "summary",
                                          icon = NULL,
                                          selected = NULL),
+                                
+                                # Data & Assumptions
+                                menuItem("Data & Methods", 
+                                         tabName = "assumptions", 
+                                         icon = NULL,
+                                         selected = NULL),
 
-                                # Learn More
-                                menuItem("More Info, FAQs, and Contact", 
+                                # More Info & Contact
+                                menuItem("Glossary & Contact", 
                                          tabName = "contact", 
                                          icon = NULL,
                                          selected = NULL)
@@ -260,7 +267,12 @@ shinyUI(
                Summary()
        ),
        
-       # FAQs and Contact
+       # Data & Assumptions
+       tabItem(tabName = "assumptions",
+               Assumptions()
+       ),
+       
+       # More Info & Contact
        tabItem(tabName = "contact",
                Contact()
        )

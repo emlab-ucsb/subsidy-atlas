@@ -17,7 +17,7 @@ Summary = function(){
     column(12, id = "tblr-small-spaced-div",
            
            # Title
-           tags$h4("Data Summaries")
+           tags$h4("Results Summaries")
            
     ),
     

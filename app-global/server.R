@@ -120,7 +120,7 @@ shinyServer(function(input, output, session) {
                  input$sub_saharan_africa_info_effort), {
                    
                    shinyalert(title = "Fishing Effort",
-                              text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) in the EEZ(s) of the selected coastal state in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the engine power of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude.  If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
+                              text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) in the EEZ(s) of the selected coastal state in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the capacity (engine power) of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude.  If no figure(s) are visible, please select a coastal state using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
                               size = "l",
                               closeOnEsc = TRUE,
                               closeOnClickOutside = TRUE,
@@ -137,7 +137,7 @@ shinyServer(function(input, output, session) {
   observeEvent(c(input$high_seas_info_effort), {
                    
                    shinyalert(title = "Fishing Effort",
-                              text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) on the high seas in the selected FAO Major Fishing Area in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the engine power of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a high seas area using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
+                              text = paste0("This tab illustrates satellite derived estimates of distant water fishing effort (in kilowatt-hours, or kWh) on the high seas in the selected FAO Major Fishing Area in 2018. We calculate fishing effort in units of fishing kilowatt-hours (kWh) by weighting the hours spent fishing by the capacity (engine power) of the vessel. Expressing fishing effort in kWh (as opposed to just hours) gives us a better metric for comparing fishing effort across vessels with different gear types and/or sizes. Fishing effort is aggregated by 0.1 x 0.1 degree latitude/longitude. If no figure(s) are visible, please select a high seas area using the map or widget in the left panel. The figure on the left shows total distant water fishing effort from all flag states and the figure on the right shows distant water fishing effort for vessels from the selected flag state."),
                               size = "l",
                               closeOnEsc = TRUE,
                               closeOnClickOutside = TRUE,
@@ -742,7 +742,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = east_asia_pacific_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$east_asia_pacific_eez_select,
                                      input_selected_flag_state = input$east_asia_pacific_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -1211,7 +1211,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = europe_central_asia_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$europe_central_asia_eez_select,
                                      input_selected_flag_state = input$europe_central_asia_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -1681,7 +1681,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = latin_america_caribbean_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$latin_america_caribbean_eez_select,
                                      input_selected_flag_state = input$latin_america_caribbean_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -2151,7 +2151,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = middle_east_north_africa_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$middle_east_north_africa_eez_select,
                                      input_selected_flag_state = input$middle_east_north_africa_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -2621,7 +2621,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = north_america_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$north_america_eez_select,
                                      input_selected_flag_state = input$north_america_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -3091,7 +3091,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = south_asia_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$south_asia_eez_select,
                                      input_selected_flag_state = input$south_asia_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -3559,7 +3559,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = sub_saharan_africa_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$sub_saharan_africa_eez_select,
                                      input_selected_flag_state = input$sub_saharan_africa_subsidies_select_flag_state,
                                      eez_sf = eez_ter_360,
@@ -4035,7 +4035,7 @@ shinyServer(function(input, output, session) {
       # Run wrapper to make and bind plots and legend
       plot <- EEZPlotDownloadWrapper(region_dat = high_seas_rv,
                                      plot_raster_type = "subsidies",
-                                     plot_variable = "fishing_KWh",
+                                     plot_variable = "subsidies",
                                      input_selected_eez = input$high_seas_eez_select,
                                      input_selected_flag_state = input$high_seas_subsidies_select_flag_state,
                                      eez_sf = fao_area_360,
@@ -4236,6 +4236,20 @@ shinyServer(function(input, output, session) {
     },
     content = function(file){
       file.copy("www/hs_activity_summary_by_flag_state.csv", file)
+    }
+  )
+  
+  
+  ### More info / Contact 
+  
+  ### Download button: Summary by Flag State - High Seas only (CSV) -----------------------
+  output$db_methods <- downloadHandler(
+    
+    filename = function(){
+      paste0("DWFA_methodology.pdf")
+    },
+    content = function(file){
+      file.copy("www/2021_09_02_DWFA_methods.pdf", file)
     }
   )
 

@@ -32,7 +32,7 @@ SummaryUI <- function(region_dat,
       
       ### Combine into country profile/summary of DW fishing
       info_out <- paste0(
-        "<h4>AIS-observed distant water fishing in the high seas area of ", unique(total_stats_eez$title), " (2018)</h4>",
+        "<h4>AIS-observed distant-water fishing in the high seas area of ", unique(total_stats_eez$title), " (2018)</h4>",
         "<h5>Totals</h5>",
         "<b>Different DW vessels: </b>", format(round(total_stats_eez$vessels, 0), big.mark = ","),
         "<br>",
@@ -42,9 +42,9 @@ SummaryUI <- function(region_dat,
         "<br>",
         "<b>Total DW fishing effort (hours): </b>", format(round(total_stats_eez$fishing_hours, 0), big.mark = ","),
         "<br>",
-        "<b>Total DW fishing effort (kW hours): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
+        "<b>Total DW fishing effort (kWh): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
         "<br>",
-        "<b>Estimated DW subsidies to area (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
+        "<b>Estimated DW subsidies (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
         "<hr>") %>%
         lapply(htmltools::HTML)
       
@@ -72,7 +72,7 @@ SummaryUI <- function(region_dat,
     
   ### Combine into country profile/summary of DW fishing
   info_out <- paste0(
-    "<h4>AIS-observed distant water fishing in the EEZ of ", unique(total_stats_eez$eez_ter_name), " (2018)</h4>",
+    "<h4>AIS-observed distant-water fishing in the EEZ of ", unique(total_stats_eez$eez_ter_name), " (2018)</h4>",
     "<h5>Totals</h5>",
     "<b>Different DW vessels: </b>", format(round(total_stats_eez$vessels, 0), big.mark = ","),
     "<br>",
@@ -82,9 +82,9 @@ SummaryUI <- function(region_dat,
     "<br>",
     "<b>Total DW fishing effort (hours): </b>", format(round(total_stats_eez$fishing_hours, 0), big.mark = ","),
     "<br>",
-    "<b>Total DW fishing effort (kW hours): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
+    "<b>Total DW fishing effort (kWh): </b>", format(round(total_stats_eez$fishing_KWh, 0), big.mark = ","),
     "<br>",
-    "<b>Estimated DW subsidies to EEZ (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
+    "<b>Estimated DW subsidies (2018 $US): </b>", "$", format(round(total_stats_eez$bad_subs, 0), big.mark = ","),
     "<hr>") %>%
     lapply(htmltools::HTML)
   
@@ -140,17 +140,17 @@ SummaryDT <- function(region_dat,
       st_drop_geometry() %>%
       dplyr::filter(fao_region == input_selected_eez) %>% 
       group_by(fao_region, title, flag_iso3, admin) %>%
-      summarize(`Number of DW vessels` = format(round(unique(n_vessels), 0), big.mark = ","),
-                `Total DW vessel capacity (kW)` = format(round(unique(tot_engine_power), 0), big.mark = ","),
-                `Total DW vessel tonnage (gt)` = format(round(unique(tot_tonnage), 0), big.mark = ","),
-                `Total DW fishing effort (hours)` = format(round(unique(fishing_hours), 0), big.mark = ","),
-                `Total DW fishing effort (kW hours)` = format(round(unique(fishing_KWh), 0), big.mark = ","),
+      summarize(`Number of DW vessels` = round(unique(n_vessels), 0),
+                `Total DW vessel capacity (kW)` = round(unique(tot_engine_power), 0),
+                `Total DW vessel tonnage (gt)` = round(unique(tot_tonnage), 0),
+                `Total DW fishing effort (hours)` = round(unique(fishing_hours), 0),
+                `Total DW fishing effort (kWh)` = round(unique(fishing_KWh), 0),
                 bad_subs = round(unique(bad_subs), 0)) %>%
       ungroup() %>%
       arrange(desc(bad_subs)) %>%
       dplyr::select(-fao_region, -title, -flag_iso3) %>%
       rename(`Flag state` = admin) %>%
-      mutate(`Estimated DW subsidies to area (2018 $US)` = format(bad_subs, big.mark = ",")) %>%
+      mutate(`Estimated DW subsidies (2018 $US)` = bad_subs) %>%
       dplyr::select(-bad_subs)
     
   }else{
@@ -160,23 +160,25 @@ SummaryDT <- function(region_dat,
     st_drop_geometry() %>%
     dplyr::filter(eez_ter_iso3 == input_selected_eez) %>% 
     group_by(eez_ter_iso3, eez_ter_name, flag_iso3, admin) %>%
-    summarize(`Number of DW vessels` = format(round(unique(n_vessels), 0), big.mark = ","),
-              `Total DW vessel capacity (kW)` = format(round(unique(tot_engine_power), 0), big.mark = ","),
-              `Total DW vessel tonnage (gt)` = format(round(unique(tot_tonnage), 0), big.mark = ","),
-              `Total DW fishing effort (hours)` = format(round(unique(fishing_hours), 0), big.mark = ","),
-              `Total DW fishing effort (kW hours)` = format(round(unique(fishing_KWh), 0), big.mark = ","),
+    summarize(`Number of DW vessels` = round(unique(n_vessels), 0),
+              `Total DW vessel capacity (kW)` = round(unique(tot_engine_power), 0),
+              `Total DW vessel tonnage (gt)` = round(unique(tot_tonnage), 0),
+              `Total DW fishing effort (hours)` = round(unique(fishing_hours), 0),
+              `Total DW fishing effort (kWh)` = round(unique(fishing_KWh), 0),
               bad_subs = round(unique(bad_subs), 0)) %>%
     ungroup() %>%
     arrange(desc(bad_subs)) %>%
     dplyr::select(-eez_ter_iso3, -eez_ter_name, -flag_iso3) %>%
     rename(`Flag state` = admin) %>%
-    mutate(`Estimated DW subsidies to area (2018 $US)` = format(bad_subs, big.mark = ",")) %>%
+    mutate(`Estimated DW subsidies (2018 $US)` = bad_subs) %>%
     dplyr::select(-bad_subs)
   
   }
   
   # Convert format
-  DT::datatable(flag_stats_eez, options = list(orderClasses = TRUE, dom = 'tip', pageLength = 5), rownames = F)
+  DT::datatable(flag_stats_eez, options = list(orderClasses = TRUE, dom = 'tip', pageLength = 5), rownames = F) %>%
+    formatCurrency(c("Estimated DW subsidies (2018 $US)")) %>%
+    formatRound(c("Number of DW vessels", "Total DW vessel capacity (kW)", "Total DW vessel tonnage (gt)", "Total DW fishing effort (hours)", "Total DW fishing effort (kWh)"), 0)
   
 }
 

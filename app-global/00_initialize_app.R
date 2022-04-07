@@ -36,7 +36,7 @@ eez_region_360 <- st_read("./data/world_eez_regions_neg360_360.gpkg")
 land_ter_360 <- st_read("./data/ne_50m_admin_neg360_360.gpkg")
 
 # 4) EEZ / Flag State Connectivity Lines
-eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines.gpkg") %>%
+eez_flag_state_connectivity <- st_read("./data/eez_flag_state_connectivity_lines_NEW.gpkg") %>%
   dplyr::filter(!(eez_ter_iso3 == "ARG" & flag_iso3 == "FLK")) %>%
   mutate(eez_ter_name = case_when(eez_ter_iso3 == "TWN" ~ "Chinese Taipei",
                                   TRUE ~ eez_ter_name),
@@ -96,7 +96,7 @@ vessel_origins_fill_choices <- c("# of vessels" = "n_vessels",
                                    "Total vessel capacity (kW)" = "tot_engine_power",
                                    "Total vessel tonnage (gt)" = "tot_tonnage",
                                    "Total fishing effort (hours)" = "fishing_hours",
-                                   "Total fishing effort (kW hours)" = "fishing_KWh")
+                                   "Total fishing effort (kWh)" = "fishing_KWh")
 
 vessel_origins_fill_scale <- c("All distant water fishing in the region (default)" = "region",
                                "Selected coastal state only" = "selected_eez")
