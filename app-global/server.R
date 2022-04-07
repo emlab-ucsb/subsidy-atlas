@@ -4084,7 +4084,6 @@ shinyServer(function(input, output, session) {
     
     # Read in data
     dat <- read.csv("www/dw_activity_summary_by_eez.csv")
-    
     summary_rv$by_eez <- dat
     
     # Create pretty summary table

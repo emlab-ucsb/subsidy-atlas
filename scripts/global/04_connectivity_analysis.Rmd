@@ -206,7 +206,6 @@ write_csv(flag_eez_ter_summary, paste0(app_dir, "flag_eez_ter_summary.csv"))
 Now let's create a pretty summary version by EEZ ID that will be available for download... 
 
 ```{r}
-<<<<<<< HEAD
 ### Let's quickly create some new variables pertaining to all types of areas cooresponding to an administering territory
 area_lookup <- vessel_list_dw_expanded %>%
   group_by(eez_ter_iso3) %>%
@@ -214,7 +213,7 @@ area_lookup <- vessel_list_dw_expanded %>%
          n_overlapping = n_distinct(eez_id[pol_type == "Overlapping claim"]),
          n_joint = n_distinct(eez_id[pol_type == "Joint regime"])) %>%
   ungroup() %>%
-  distinct(eez_ter_iso3, geoname, eez_id, pol_type, n_eez_areas, n_overlapping, n_joint) %>%
+  distinct(geoname, eez_id, pol_type, n_eez_areas, n_overlapping, n_joint) %>%
   mutate(mark = case_when(
     pol_type == "200NM" & n_eez_areas > 1 & n_overlapping > 0 & n_joint > 0 ~ "multi-eez & overlapping & joint",
     pol_type == "200NM" & n_eez_areas > 1 & n_overlapping > 0 ~ "multi-eez & overlapping",
@@ -235,9 +234,7 @@ area_lookup_out <- area_lookup %>%
   bind_rows(eu_area_lookup)
 
 # Now let's create the actual summary characteristics
-=======
 # Deal with the normal EEZs first
->>>>>>> 7be902b8e13c2d3f97fe3ca187ac248767773659
 eez_summary <- vessel_list_dw_expanded %>%
   dplyr::filter(pol_type == "200NM") %>%
   group_by(geoname, eez_id) %>%
