@@ -129,7 +129,14 @@ VesselOriginsMap <- function(region_dat,
                 values = fill_scale[[domain]], 
                 opacity=0.9, 
                 title = NULL, 
-                position = "bottomleft" ) %>%
+                position = "bottomleft",
+                labFormat = function(type, cuts, p) {
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       setView(lng= region_dat$map_lng, 
               lat = region_dat$map_lat, 
               zoom = region_dat$map_zoom-1)
@@ -255,7 +262,14 @@ VesselOriginsMap <- function(region_dat,
               values = fill_scale[[domain]], 
               opacity=0.9, 
               title = NULL, 
-              position = "bottomleft" ) %>%
+              position = "bottomleft",
+              labFormat = function(type, cuts, p) {
+                cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                paste0(
+                  format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                  " &ndash; ", 
+                  format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+              }) %>%
     setView(lng= region_dat$map_lng, 
             lat = region_dat$map_lat, 
             zoom = region_dat$map_zoom-1)

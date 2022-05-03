@@ -542,8 +542,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -634,8 +640,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -1011,8 +1023,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -1103,8 +1121,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -1481,8 +1505,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -1573,8 +1603,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -1951,8 +1987,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -2043,8 +2085,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -2421,8 +2469,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -2513,8 +2567,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -2891,8 +2951,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -2983,8 +3049,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -3359,8 +3431,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -3451,8 +3529,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -3831,8 +3915,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal, 
                 values = values(raster$r), 
                 title = raster$pal_title, 
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
@@ -3925,8 +4015,14 @@ shinyServer(function(input, output, session) {
                 pal = raster$pal,
                 values = values(raster$r),
                 title = raster$pal_title,
-                labFormat = labelFormat(
-                  transform = function(x) 10^x)) %>%
+                labFormat = function(type, cuts, p) {
+                  cuts <- 10^cuts
+                  cuts_pretty <- c(cuts[1], cuts[-1]+1)
+                  paste0(
+                    format(cuts_pretty, scientific = FALSE, big.mark = ","), 
+                    " &ndash; ", 
+                    format(cuts[-1], scientific = FALSE, big.mark = ",")) 
+                }) %>%
       addControl(raster$caption, position = "topright")
     
   })
