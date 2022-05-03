@@ -66,6 +66,16 @@ Summary = function(){
                                          # Data table
                                          dataTableOutput("summary_table_by_EEZ")    
                                                           
+                                  ),
+                                  
+                                  column(12, id = "tblr-spaced-div",
+                                         
+                                         tags$p("ᵝ This area is claimed by two or more states."),
+                                         tags$p("ᵞ This area is jointly managed by two or more states."),
+                                         tags$p("ᵟ This is an aggregated entry for the entire European Union area. Areas cooresponding to individual Member states are also listed separately."),
+                                         tags$p("¹ This area is part of a non-contiguous EEZ administered by a single state."),
+                                         tags$p("² The administering state of this EEZ area also lays claim to one or more contested area(s)."),
+                                         tags$p("³ The administering state of this EEZ area also administers one or more jointly managed area(s).")
                                   )
                                                    
                          ),
